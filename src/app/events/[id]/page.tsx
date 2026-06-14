@@ -402,101 +402,101 @@ export default function EventDetailPage() {
 
   return (
     <div className="animate-in fade-in-0 w-full pb-8">
-        {/* ===== HERO: A4 portre poster (210/297) + başlık üzerinde, kulüp afişleri için optimize ===== */}
-        <div className="relative w-full bg-muted/30">
-            <div className="max-w-md mx-auto pt-3 pb-4 sm:pt-4 px-3 sm:px-0 relative">
-                {/* Üst sol: Geri butonu (poster dışında, üstte) */}
-                <div className="absolute top-2 left-2 sm:left-0 z-20">
-                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-10 w-10" aria-label="Geri">
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                </div>
-                {/* Üst sağ: Share */}
-                <div className="absolute top-2 right-2 sm:right-0 z-20">
-                    <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} buttonClassName="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-10 w-10" />
-                </div>
+      {/* ===== Apple.com tarzı iki kolonlu detay: SOLDA afiş (sticky), SAĞDA bilgiler ===== */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 lg:pt-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] gap-8 lg:gap-16 items-start">
 
-                {/* A4 portre poster — 210/297 oranı, kulüp afişleri için ideal */}
-                <div className="relative aspect-[210/297] w-full rounded-3xl overflow-hidden shadow-2xl border border-black/5 bg-muted">
-                    <Image
-                        src={safeImageUrl}
-                        alt={event.name}
-                        fill
-                        className="object-cover"
-                        priority
-                        sizes="(max-width: 768px) 100vw, 448px"
-                        data-ai-hint="event poster a4 portrait"
-                    />
-                </div>
+          {/* ───────── SOL KOLON: Afiş (desktop'ta sticky) ───────── */}
+          <div className="lg:sticky lg:top-8">
+            <div className="relative">
+              {/* Üst sol: Geri butonu */}
+              <div className="absolute top-3 left-3 z-20">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-10 w-10" aria-label="Geri">
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              </div>
+              {/* Üst sağ: Share */}
+              <div className="absolute top-3 right-3 z-20">
+                <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} buttonClassName="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-10 w-10" />
+              </div>
+
+              {/* A4 portre poster — büyük, net, yumuşak köşeler, ince kenarlık */}
+              <div className="relative aspect-[210/297] w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-black/10 border border-black/5 bg-muted">
+                <Image
+                  src={safeImageUrl}
+                  alt={event.name}
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 460px"
+                  data-ai-hint="event poster a4 portrait"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ───────── SAĞ KOLON: Başlık + bilgiler + CTA ───────── */}
+          <div className="space-y-8 sm:space-y-10">
+
+            {/* Başlık bloğu — büyük kalın başlık, tracking-tight */}
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <Badge className="bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3 py-1">{event.type}</Badge>
+                {organizerCategory && (
+                  <Badge variant="outline" className="text-[10px] font-medium rounded-full px-3 py-1">{organizerCategory}</Badge>
+                )}
+              </div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-headline tracking-tight leading-[1.05] break-words">{event.name}</h1>
+              <p className="text-base sm:text-lg font-semibold text-primary">
+                <Link href={organizerLink} className="hover:underline">{event.organizer}</Link>
+              </p>
             </div>
 
-            {/* Başlık + organizer + tür/kategori — poster altında */}
-            <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-2 pb-3 space-y-2">
-                <div className="flex flex-wrap gap-2">
-                    <Badge className="bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3 py-1">{event.type}</Badge>
-                    {organizerCategory && (
-                        <Badge variant="outline" className="text-[10px] font-medium rounded-full px-3 py-1">{organizerCategory}</Badge>
-                    )}
+            {/* Quick info chips — ferah, nötr palet + turuncu vurgu */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full bg-primary/10 text-primary">
+                <Calendar className="h-3.5 w-3.5" />
+                {formatDateTime(event.startDate).split(',')[0]}
+              </div>
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full bg-muted">
+                <Clock className="h-3.5 w-3.5" />
+                {formatDateTime(event.startDate).split(',')[1]?.trim() || '—'}
+              </div>
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full bg-muted">
+                <MapPin className="h-3.5 w-3.5" />
+                {event.location.type === 'Online' ? 'Online' : `${event.location.district}, ${event.location.city}`}
+              </div>
+              {event.capacity?.max > 0 && (
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full bg-muted">
+                  <Users className="h-3.5 w-3.5" />
+                  {event.capacity.current}/{event.capacity.max}
                 </div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold font-headline leading-tight break-words">{event.name}</h1>
-                <p className="text-sm sm:text-base font-bold text-primary">
-                    <Link href={organizerLink} className="hover:underline">{event.organizer}</Link>
-                </p>
+              )}
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full bg-muted">
+                <Languages className="h-3.5 w-3.5" />
+                {event.language}
+              </div>
+              {event.providesCertificate && (
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                  <CheckCircle className="h-3.5 w-3.5" />
+                  Sertifika
+                </div>
+              )}
             </div>
 
-            {/* Quick info chips — hero altında, hangel orange accent */}
-            <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 -mt-4 sm:-mt-6 relative z-10">
-                <div className="glass-surface rounded-3xl shadow-xl border border-white/40 p-3 sm:p-4 flex flex-wrap items-center gap-2 sm:gap-3">
-                    <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {formatDateTime(event.startDate).split(',')[0]}
-                    </div>
-                    <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-muted">
-                        <Clock className="h-3.5 w-3.5" />
-                        {formatDateTime(event.startDate).split(',')[1]?.trim() || '—'}
-                    </div>
-                    <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-muted">
-                        <MapPin className="h-3.5 w-3.5" />
-                        {event.location.type === 'Online' ? 'Online' : `${event.location.district}, ${event.location.city}`}
-                    </div>
-                    {event.capacity?.max > 0 && (
-                        <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-muted">
-                            <Users className="h-3.5 w-3.5" />
-                            {event.capacity.current}/{event.capacity.max}
-                        </div>
-                    )}
-                    <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-muted">
-                        <Languages className="h-3.5 w-3.5" />
-                        {event.language}
-                    </div>
-                    {event.providesCertificate && (
-                        <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
-                            <CheckCircle className="h-3.5 w-3.5" />
-                            Sertifika
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+            {/* PRIMARY RSVP CTA */}
+            <Button
+              size="lg"
+              disabled={isRsvpLoading}
+              onClick={() => submitRsvp(isGoing ? 'cancel' : 'going')}
+              variant={isGoing ? 'outline' : 'default'}
+              className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
+            >
+              {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isGoing ? 'Katıldın ✓ — Vazgeç' : 'Etkinliğe Katıl')}
+            </Button>
 
-        {/* PRIMARY RSVP CTA — sabit bar yerine sayfa akışında, posterin hemen altında (her zaman görünür) */}
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 mt-4">
-          <Button
-            size="lg"
-            disabled={isRsvpLoading}
-            onClick={() => submitRsvp(isGoing ? 'cancel' : 'going')}
-            variant={isGoing ? 'outline' : 'default'}
-            className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
-          >
-            {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isGoing ? 'Katıldın ✓ — Vazgeç' : 'Etkinliğe Katıl')}
-          </Button>
-        </div>
-
-        <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-      <div className="space-y-6 sm:space-y-8">
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-            {/* Hero zaten poster'ı içeriyor; içerik alanı tek kolon (geniş okuma) */}
-            <div className="space-y-6">
+            {/* İçerik: tabs + kapasite + aksiyonlar */}
+            <div className="space-y-8">
                 <Tabs defaultValue="details" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 h-12 rounded-2xl glass-surface border border-white/40 p-1">
                         <TabsTrigger value="details" className="rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Etkinlik Detayları</TabsTrigger>
@@ -640,25 +640,20 @@ export default function EventDetailPage() {
                         </Card>
                     </TabsContent>
                 </Tabs>
-            </div>
 
-        </div>
+                {/* FEAT-EVENT-RSVP — capacity progress */}
+                {event.capacity?.max > 0 && (
+                  <div className="glass-surface rounded-2xl p-4 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-muted-foreground">Kapasite</span>
+                      <span className="text-primary">{event.capacity.current} / {event.capacity.max}</span>
+                    </div>
+                    <Progress value={Math.min(100, (event.capacity.current / event.capacity.max) * 100)} className="h-2 rounded-full" />
+                  </div>
+                )}
 
-        {/* FEAT-EVENT-RSVP — capacity progress */}
-        {event.capacity?.max > 0 && (
-          <div className="glass-surface rounded-2xl p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold">
-              <span className="text-muted-foreground">Kapasite</span>
-              <span className="text-primary">{event.capacity.current} / {event.capacity.max}</span>
-            </div>
-            <Progress value={Math.min(100, (event.capacity.current / event.capacity.max) * 100)} className="h-2 rounded-full" />
-          </div>
-        )}
-      </div>
-      </div>{/* end max-w-6xl wrapper */}
-
-      <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 mt-2 pb-10">
-        <div className="flex flex-wrap gap-2 sm:gap-3">
+                {/* Aksiyon butonları — sağ kolon içinde */}
+                <div className="flex flex-wrap gap-2 sm:gap-3 pt-1 pb-2">
             {isGoing ? (
               <>
               <Button
@@ -692,24 +687,21 @@ export default function EventDetailPage() {
                       await Browser.open({ url });
                       return;
                     }
-                    const res = await fetch(`/api/passkit/event/${resolvedEventId}`, {
+                    // Web (özellikle iOS Safari): .pkpass blob+download ile İNMEZ —
+                    // Safari "bu dosyayı indiremiyor" der. Wallet pkpass'i ancak
+                    // doğrudan bir GET navigasyonundan teslim alır. Önce probe ile
+                    // sertifika/yetki durumunu kontrol et, sonra tarayıcıyı pkpass
+                    // URL'ine doğrudan yönlendir (?token= query route'ça destekleniyor).
+                    const probe = await fetch(`/api/passkit/event/${resolvedEventId}`, {
                       headers: { authorization: `Bearer ${idToken}` },
                     });
-                    if (res.status === 503) {
+                    if (probe.status === 503) {
                       toast({ title: 'Apple Wallet yakında', description: 'hangel ekibi Wallet sertifikasını yapılandırıyor; çok yakında aktif olacak.' });
                       return;
                     }
-                    if (!res.ok) throw new Error('PassKit hazır değil');
-                    const blob = await res.blob();
-                    // Blob'u .pkpass olarak indir (location.href boş sayfa bırakabiliyordu).
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `hangel-yaka-karti-${resolvedEventId}.pkpass`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    setTimeout(() => URL.revokeObjectURL(url), 4000);
+                    if (!probe.ok) throw new Error('PassKit hazır değil');
+                    // Doğrudan navigasyon → iOS Safari application/vnd.apple.pkpass'i Wallet'a verir.
+                    window.location.href = `/api/passkit/event/${resolvedEventId}?token=${encodeURIComponent(idToken)}`;
                   } catch (e) {
                     toast({ variant: 'destructive', title: 'Apple Wallet hazırlanamadı', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
                   }
@@ -873,10 +865,14 @@ export default function EventDetailPage() {
             )}
 
             <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} />
-        </div>
-      </div>
+                </div>{/* end aksiyon butonları */}
+            </div>{/* end içerik wrapper (tabs + kapasite + aksiyon) */}
+          </div>{/* end SAĞ KOLON */}
+
+        </div>{/* end grid */}
+      </div>{/* end max-w-6xl wrapper */}
     </div>
   );
 
-    
+
 }

@@ -237,21 +237,40 @@ export default function MarketPage() {
   }, [brandsToShow]);
 
   return (
-    <div className="flex flex-col h-full bg-secondary/30 backdrop-blur-sm relative">
-      <div className="p-4 space-y-4 border-b bg-background sticky top-12 z-20 shrink-0">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col h-full bg-background relative">
+      {/* Apple-style header: generous whitespace, large tracking-tight title,
+          minimal borders. All data/filter/search/sort behaviour preserved. */}
+      <div className="px-5 sm:px-8 pt-7 pb-5 space-y-6 border-b border-border/40 bg-background/80 backdrop-blur-xl sticky top-12 z-20 shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+              {t('marketPage.title') !== 'marketPage.title' ? t('marketPage.title') : 'market'}
+            </h1>
+            <p className="text-sm text-muted-foreground tracking-tight">
+              {t('marketPage.subtitle') !== 'marketPage.subtitle' ? t('marketPage.subtitle') : 'Alışverişin kalbiyle buluştuğu yer.'}
+            </p>
+          </div>
+          <Button asChild variant="ghost" className="h-11 self-start sm:self-auto rounded-full gap-2 px-5 text-primary font-medium hover:bg-primary/5">
+            <Link href="/market/products">
+              <ShoppingBag className="h-5 w-5" />
+              Ürünleri Keşfet
+            </Link>
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-3">
           <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               placeholder={t('marketPage.searchPlaceholder')}
-              className="pl-10 h-12 rounded-2xl border-none bg-muted/50 focus-visible:ring-1 text-lg"
+              className="pl-11 h-12 rounded-full border border-border/50 bg-muted/40 focus-visible:ring-1 focus-visible:bg-background text-base tracking-tight transition-colors"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm" aria-label={t('marketPage.filterAria')}>
+              <Button variant="ghost" size="icon" className="h-12 w-12 shrink-0 rounded-full border border-border/50 bg-background hover:bg-muted/60" aria-label={t('marketPage.filterAria')}>
                 <Filter className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
@@ -265,7 +284,7 @@ export default function MarketPage() {
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm" aria-label={t('marketPage.sortAria')}>
+              <Button variant="ghost" size="icon" className="h-12 w-12 shrink-0 rounded-full border border-border/50 bg-background hover:bg-muted/60" aria-label={t('marketPage.sortAria')}>
                 <ArrowDownUp className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
@@ -279,36 +298,31 @@ export default function MarketPage() {
           </DropdownMenu>
         </div>
 
-        <Button asChild variant="outline" className="w-full rounded-2xl gap-2 border-none bg-primary/10 text-primary font-bold shadow-sm hover:bg-primary/15">
-          <Link href="/market/products">
-            <ShoppingBag className="h-5 w-5" />
-            Ürünleri Keşfet
-          </Link>
-        </Button>
-
+        {/* Brand-type filter as pill segmented control (Apple-style). */}
         <Tabs defaultValue="all" onValueChange={setBrandType} className="w-full">
-          <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <TabsTrigger value="all" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabAll')}</TabsTrigger>
-            <TabsTrigger value="brand" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabCommercial')}</TabsTrigger>
-            <TabsTrigger value="cooperative" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabCooperative')}</TabsTrigger>
-            <TabsTrigger value="social" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabSocial')}</TabsTrigger>
-            <TabsTrigger value="economic" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabEconomic')}</TabsTrigger>
+          <TabsList className="flex w-full justify-start gap-2 bg-transparent p-0 h-auto overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <TabsTrigger value="all" className="shrink-0 rounded-full border border-border/50 px-4 py-1.5 text-xs font-medium tracking-tight data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-none">{t('marketPage.tabAll')}</TabsTrigger>
+            <TabsTrigger value="brand" className="shrink-0 rounded-full border border-border/50 px-4 py-1.5 text-xs font-medium tracking-tight data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-none">{t('marketPage.tabCommercial')}</TabsTrigger>
+            <TabsTrigger value="cooperative" className="shrink-0 rounded-full border border-border/50 px-4 py-1.5 text-xs font-medium tracking-tight data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-none">{t('marketPage.tabCooperative')}</TabsTrigger>
+            <TabsTrigger value="social" className="shrink-0 rounded-full border border-border/50 px-4 py-1.5 text-xs font-medium tracking-tight data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-none">{t('marketPage.tabSocial')}</TabsTrigger>
+            <TabsTrigger value="economic" className="shrink-0 rounded-full border border-border/50 px-4 py-1.5 text-xs font-medium tracking-tight data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-none">{t('marketPage.tabEconomic')}</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-[100px] sm:w-1/4 border-r overflow-y-auto bg-background/50">
-          <nav className="flex flex-col py-2">
+        {/* Category rail: borderless, airy, pill active-state. */}
+        <aside className="w-[108px] sm:w-1/5 overflow-y-auto bg-background [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <nav className="flex flex-col gap-1 py-4 px-2 sm:px-4">
             {allCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={cn(
-                  "text-left text-[11px] sm:text-sm px-3 py-1.5 whitespace-nowrap truncate transition-all",
+                  "text-left text-[12px] sm:text-sm rounded-full px-3 py-2 whitespace-nowrap truncate tracking-tight transition-colors",
                   activeCategory === cat
-                    ? "bg-primary/10 text-primary border-l-4 border-primary font-black"
-                    : "text-muted-foreground hover:bg-accent/50"
+                    ? "bg-primary/10 text-primary font-semibold"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
                 {cat}
@@ -317,11 +331,11 @@ export default function MarketPage() {
           </nav>
         </aside>
 
-        <main className="flex-1 overflow-y-auto p-4 pb-32">
+        <main className="flex-1 overflow-y-auto px-5 sm:px-8 py-6 pb-32">
           {activeCategory === 'Ürünler' ? (
             productsLoading && (allProducts?.length ?? 0) === 0 ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {[...Array(8)].map((_, i) => <Card key={i} variant="glass" className="h-64 animate-pulse" />)}
+              <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+                {[...Array(8)].map((_, i) => <Card key={i} variant="glass" className="h-64 animate-pulse rounded-3xl" />)}
               </div>
             ) : productsToShow.length === 0 ? (
               <EmptyState
@@ -330,13 +344,13 @@ export default function MarketPage() {
                 description={searchTerm ? 'Aramanıza uygun ürün yok.' : 'Henüz listelenecek ürün yok.'}
               />
             ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
                 {productsToShow.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
             )
           ) : isLoading && brandsToShow.length === 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[...Array(12)].map((_, i) => <Card key={i} variant="glass" className="h-32 animate-pulse" />)}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[...Array(12)].map((_, i) => <Card key={i} variant="glass" className="h-40 animate-pulse rounded-3xl" />)}
             </div>
           ) : brandsToShow.length === 0 ? (
             <EmptyState
@@ -353,21 +367,21 @@ export default function MarketPage() {
               } : undefined}
             />
           ) : (
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-8">
               {brandsToShow.map((brand) => {
                 const safeDonationRate = Math.max(0, Math.min(100, brand.donationRate || 0));
                 return (
                   <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
-                    <div className="flex flex-col items-center text-center space-y-2">
+                    <div className="flex flex-col items-center text-center space-y-3">
                       <div className="relative w-full aspect-square">
-                        <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 overflow-hidden shadow-sm group-hover:shadow-xl transition-all relative">
+                        <div className="w-full h-full rounded-[1.75rem] bg-muted/30 overflow-hidden transition-all duration-300 group-hover:bg-muted/50 relative">
                           <BrandLogo brand={brand} />
                         </div>
-                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
+                        <div className="absolute top-2 right-2 flex h-9 min-w-9 px-1.5 items-center justify-center rounded-full bg-background/90 backdrop-blur text-[11px] font-bold text-primary shadow-sm">
                           %{safeDonationRate}
                         </div>
                       </div>
-                      <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
+                      <p className="text-xs sm:text-sm font-medium tracking-tight leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">{brand.name}</p>
                     </div>
                   </Link>
                 );

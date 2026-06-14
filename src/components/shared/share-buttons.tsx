@@ -14,8 +14,31 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { EVENTS, logHangelEvent } from "@/lib/analytics";
 
-export function ShareButtons({ url, title, buttonClassName }: { url: string; title: string, buttonClassName?: string }) {
+export function ShareButtons({
+  url,
+  title,
+  qrTitle,
+  buttonClassName,
+}: {
+  url: string;
+  title: string;
+  /**
+   * QR önizleme modalının başlığı. Verilmezse `title`'dan akıllı bir başlık
+   * türetilir (ör. "Etkinlik QR Kodu — {ad}"); çağıran tarafın değişmesi
+   * gerekmez. Bağlamı netleştirmek için çağıran açıkça da geçebilir.
+   */
+  qrTitle?: string;
+  buttonClassName?: string;
+}) {
   const { toast } = useToast();
+
+  // QR'ın NEYİN QR'ı olduğunu göster. Çağıran açık `qrTitle` geçmediyse,
+  // mevcut `title`'ı bağlamla birleştir; en azından "QR Kodu" + içerik adı.
+  const resolvedQrTitle = qrTitle?.trim()
+    ? qrTitle
+    : title?.trim()
+      ? `QR Kodu — ${title}`
+      : 'QR Kodu';
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(url);
@@ -38,12 +61,14 @@ export function ShareButtons({ url, title, buttonClassName }: { url: string; tit
             </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Profil QR Kodu</DialogTitle>
+          {/* pr-8: başlık, sağ üstteki absolute X kapatma butonunun altına
+              kaymasın diye boşluk bırak (mobil hizalama bozukluğu fix). */}
+          <DialogHeader className="text-left">
+            <DialogTitle className="pr-8 break-words">{resolvedQrTitle}</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center p-4">
-            <Image src={qrCodeUrl} alt="QR Code" width={150} height={150} />
-            <p className="mt-4 text-sm text-muted-foreground">{url}</p>
+          <div className="flex flex-col items-center justify-center gap-4 py-2 text-center">
+            <Image src={qrCodeUrl} alt="QR kodu" width={150} height={150} className="rounded-xl bg-white p-2" />
+            <p className="max-w-full break-all text-sm text-muted-foreground">{url}</p>
           </div>
         </DialogContent>
       </Dialog>

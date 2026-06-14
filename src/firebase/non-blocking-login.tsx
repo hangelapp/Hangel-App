@@ -32,12 +32,24 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
   // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
 }
 
-/** Build Firebase action code settings that redirect to our custom /auth/action page. */
+/**
+ * Build Firebase action code settings for email verification / password reset.
+ *
+ * ÖNEMLİ — bu `url` Firebase'in oobCode'u İŞLEDİKTEN SONRA döneceği "continueUrl"dir;
+ * action handler'ın kendisi DEĞİLDİR. oobCode'u işleyen sayfa (mode + oobCode query
+ * param'ları ile) Firebase Console → Authentication → Templates → "Action URL"
+ * ayarıyla `https://hangel.org.tr/auth/action`'a yönlendirilir; bizim sayfamız
+ * `applyActionCode(auth, oobCode)` çağırır.
+ *
+ * `handleCodeInApp` MUTLAKA `false` olmalı: `true` değeri, linki (artık kapatılmış)
+ * Firebase Dynamic Links akışına sokar ve "doğrulama başarısız" hatasına yol açar.
+ * `false` ile Firebase oobCode'u doğrudan continueUrl'e query param olarak ekler.
+ */
 export function getAuthActionSettings(): ActionCodeSettings | undefined {
   if (typeof window === 'undefined') return undefined;
   return {
     url: `${window.location.origin}/auth/action`,
-    handleCodeInApp: true,
+    handleCodeInApp: false,
   };
 }
 

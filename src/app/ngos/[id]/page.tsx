@@ -427,7 +427,7 @@ export default function NgoProfilePage() {
                 <Button onClick={handleStoreClick} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" aria-label="Mağaza">
                     <Store className="h-4 w-4" />
                 </Button>
-                <ShareButtons url={profileUrl} title={`hangel'deki ${ngo.name} profilini incele!`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
+                <ShareButtons url={profileUrl} title={`hangel'deki ${ngo.name} profilini incele!`} qrTitle={`STK QR Kodu — ${ngo.name}`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
                 <Button aria-label="QR Kodu" onClick={() => setIsQrOpen(true)} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
                     <QrCode className="h-4 w-4" />
                 </Button>

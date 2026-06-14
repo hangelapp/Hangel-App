@@ -18,7 +18,11 @@ import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { VolunteerApplicants } from '@/components/volunteering/volunteer-applicants';
 
 
-const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteering[] }) => {
+// Başvuru çekme + onay/red mantığını tek yerde topla. Hem üstteki ilan
+// kartlarının başvuru-sayısı rozetleri hem alttaki başvuru listesi aynı
+// veriyi (applications) kullansın diye parent (VolunteerPage) seviyesinde
+// çağrılır. Veri yazımı (status update + bildirim + volunteerCount) AYNEN korunur.
+const useVolunteerApplications = (opportunities: Volunteering[]) => {
     const { toast } = useToast();
     const db = useFirestore();
     const { user: authUser } = useUser();
@@ -124,6 +128,34 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
         }
     };
 
+    return { applications, isLoading, handleApplication };
+};
+
+// Bir ilana ait başvuru sayıları (rozet + özet için). entityId = ilan id.
+type PerListingCounts = { total: number; pending: number; approved: number; rejected: number };
+const useApplicationCountsByListing = (applications: UserApplication[]): Record<string, PerListingCounts> => {
+    return useMemo(() => {
+        const map: Record<string, PerListingCounts> = {};
+        for (const a of applications) {
+            const key = a.entityId || '';
+            if (!key) continue;
+            if (!map[key]) map[key] = { total: 0, pending: 0, approved: 0, rejected: 0 };
+            map[key].total++;
+            if (a.status === 'Onaylandı') map[key].approved++;
+            else if (a.status === 'Reddedildi') map[key].rejected++;
+            else map[key].pending++;
+        }
+        return map;
+    }, [applications]);
+};
+
+const VolunteerApplicationsTab = ({
+    applications, isLoading, handleApplication,
+}: {
+    applications: UserApplication[];
+    isLoading: boolean;
+    handleApplication: (application: UserApplication, decision: 'approved' | 'rejected') => void;
+}) => {
     const groupedApplications = useMemo(() => {
         return applications.reduce((acc, app) => {
             const key = app.title;
@@ -216,7 +248,7 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
 };
 
 
-const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities: Volunteering[], isLoading: boolean }) => {
+const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing }: { opportunities: Volunteering[], isLoading: boolean, countsByListing: Record<string, PerListingCounts> }) => {
     const { toast } = useToast();
     const db = useFirestore();
     // Herkese açık ilan linki için origin. SSR/ilk render'da window yok → canlı
@@ -253,9 +285,23 @@ const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities:
         <div className="space-y-4">
             {opportunities.length > 0 ? opportunities.map((opp) => {
               const isPassive = (opp as Volunteering & { status?: string }).status === 'Pasif';
+              const lc = countsByListing[opp.id];
+              const pendingCount = lc?.pending || 0;
+              const totalApps = lc?.total ?? (opp.volunteerCount?.applications || 0);
               return (
               // Yayındaki (Aktif) ilan renkli/vurgulu; yayında olmayan (Pasif) gri/soluk.
-              <Card key={opp.id} className={isPassive ? 'opacity-60 grayscale' : 'border-primary/30 ring-1 ring-primary/10'}>
+              <Card key={opp.id} className={`relative ${isPassive ? 'opacity-60 grayscale' : 'border-primary/30 ring-1 ring-primary/10'}`}>
+
+                {/* Bildirim rozeti: bekleyen başvuru sayısı (sağ üst köşe, turuncu yuvarlak). */}
+                {pendingCount > 0 && (
+                  <span
+                    className="absolute -top-2 -right-2 z-10 flex h-7 min-w-[28px] items-center justify-center rounded-full bg-[#F4624A] px-2 text-xs font-black text-white shadow-md ring-2 ring-background"
+                    title={`${pendingCount} bekleyen başvuru`}
+                    aria-label={`${pendingCount} bekleyen başvuru`}
+                  >
+                    {pendingCount > 99 ? '99+' : pendingCount}
+                  </span>
+                )}
 
                 <CardHeader className='pb-4'>
                   <CardTitle className="text-base">{opp.title}</CardTitle>
@@ -263,7 +309,7 @@ const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities:
                 <CardContent className="flex justify-between items-center text-sm">
                     <div>
                         <p><strong>Durum:</strong> <Badge variant={isPassive ? 'secondary' : 'default'}>{isPassive ? 'Pasif' : 'Aktif'}</Badge></p>
-                        <p><strong>Başvurular:</strong> {opp.volunteerCount?.applications || 0}</p>
+                        <p><strong>Başvurular:</strong> {totalApps}{pendingCount > 0 && <span className="text-[#F4624A] font-semibold"> ({pendingCount} bekleyen)</span>}</p>
                     </div>
                 </CardContent>
                 <CardFooter className="flex flex-wrap gap-2">
@@ -414,6 +460,12 @@ const VolunteerPage = () => {
   const { data: opportunities, isLoading: oppsLoading } = useCollection<Volunteering>(oppsQuery);
   const isLoading = entityLoading || oppsLoading;
 
+  // Başvuruları + onay/red mantığını tek kaynaktan çek (hem üst ilan rozetleri
+  // hem alttaki başvuru listesi aynı veriyi kullanır). Veri yazımı korunur.
+  const oppList = useMemo(() => opportunities || [], [opportunities]);
+  const { applications, isLoading: appsLoading, handleApplication } = useVolunteerApplications(oppList);
+  const countsByListing = useApplicationCountsByListing(applications);
+
   // Aktif STK doc'u — bozuk ilan self-heal için ad + logo kaynağı.
   const ngoDocRef = useMemoFirebase(() => {
     if (!db || !activeId) return null;
@@ -468,20 +520,25 @@ const VolunteerPage = () => {
             </Button>
           </div>
 
-          <Tabs defaultValue="applications" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="applications">Başvurular</TabsTrigger>
-              <TabsTrigger value="opportunities">İlan Yönetimi</TabsTrigger>
+          <Tabs defaultValue="manage" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="manage">İlanlar & Başvurular</TabsTrigger>
               <TabsTrigger value="publish">Web'de Yayınla</TabsTrigger>
             </TabsList>
-            <TabsContent value="applications" className="mt-4">
-                <VolunteerApplicationsTab opportunities={opportunities || []} />
-            </TabsContent>
-            <TabsContent value="opportunities" className="mt-4">
-                <OpportunityManagementTab opportunities={opportunities || []} isLoading={isLoading} />
+            <TabsContent value="manage" className="mt-4 space-y-8">
+                {/* ÜSTTE: STK'nın kendi gönüllülük ilanları (her kartta bekleyen
+                    başvuru sayısı rozeti). ALTTA: gelen başvurular yönetimi. */}
+                <section className="space-y-3">
+                    <h2 className="text-lg font-bold px-1">Gönüllülük İlanların</h2>
+                    <OpportunityManagementTab opportunities={oppList} isLoading={isLoading} countsByListing={countsByListing} />
+                </section>
+                <section className="space-y-3">
+                    <h2 className="text-lg font-bold px-1">Başvurular</h2>
+                    <VolunteerApplicationsTab applications={applications} isLoading={appsLoading} handleApplication={handleApplication} />
+                </section>
             </TabsContent>
             <TabsContent value="publish" className="mt-4">
-                <PublishTab ngoId={activeId} opportunities={opportunities || []} />
+                <PublishTab ngoId={activeId} opportunities={oppList} />
             </TabsContent>
           </Tabs>
         </div>

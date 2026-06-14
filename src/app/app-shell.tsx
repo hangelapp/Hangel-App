@@ -567,19 +567,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             secondaryItems={translateItems(filteredSecondaryItems)}
           />
            <Sheet open={isDrawerOpen} onOpenChange={setDrawerOpen}>
-              <SheetContent side="left" className="w-full max-w-sm p-0">
+              {/* [&>button]:hidden → SheetContent'in varsayılan (status bar
+                  altında kalan) sağ-üst X'ini gizle; bu drawer kendi safe-area
+                  hizalı X'ini header'da render ediyor. */}
+              <SheetContent side="left" className="w-full max-w-sm p-0 [&>button]:hidden">
                    <SheetHeader>
                        <SheetTitle className="sr-only">Ana Menü</SheetTitle>
                        <SheetDescription className="sr-only">Uygulama ana navigasyon menüsü</SheetDescription>
                    </SheetHeader>
                    {/* Liquid Glass drawer body — sheet zaten glass-prominent, içerik transparent kalır. */}
                    <div className="flex h-full flex-col overflow-y-auto glass-scroll">
-                        <div className="p-4 border-b border-glass-black-8 dark:border-glass-white-8 sticky top-0 z-10 glass">
+                        {/* safe-area: iOS status bar (saat/sinyal/pil) menü
+                            başlığıyla çakışmasın diye üst padding'e
+                            env(safe-area-inset-top) eklenir; logo ve X buton
+                            status bar'ın ALTINDA kalır ve X rahat tıklanır. */}
+                        <div className="px-4 pb-4 border-b border-glass-black-8 dark:border-glass-white-8 sticky top-0 z-10 glass" style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}>
                             <div className="flex justify-between items-center mb-6">
                                 <Link href="/login" onClick={() => setDrawerOpen(false)}>
                                     <HangelLogo className="text-2xl" href={null} />
                                 </Link>
-                                <SheetClose>
+                                <SheetClose className="flex h-10 w-10 items-center justify-center rounded-full -mr-2 hover:bg-glass-black-5 dark:hover:bg-glass-white-8 active:scale-95 transition" aria-label="Menüyü kapat">
                                     <X className="h-6 w-6 text-muted-foreground" />
                                 </SheetClose>
                             </div>

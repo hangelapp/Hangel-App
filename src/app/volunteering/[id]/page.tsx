@@ -1,6 +1,5 @@
 'use client';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -163,11 +162,11 @@ export default function VolunteeringDetailPage() {
   if (isOppLoading) {
     return (
         <div className="animate-in fade-in-0 pb-20">
-            <Skeleton className="h-48 w-full" />
-            <div className="p-4 space-y-6 -mt-16">
-                <Skeleton className="h-20 w-full rounded-2xl" />
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-[42vh] min-h-[320px] w-full rounded-none" />
+            <div className="mx-auto max-w-5xl px-5 md:px-8 pt-10 space-y-8">
+                <Skeleton className="h-10 w-2/3 rounded-2xl" />
+                <Skeleton className="h-28 w-full rounded-2xl" />
+                <Skeleton className="h-44 w-full rounded-2xl" />
             </div>
         </div>
     );
@@ -372,24 +371,21 @@ export default function VolunteeringDetailPage() {
         await Browser.open({ url });
         return;
       }
-      const res = await fetch(`/api/passkit/volunteer/${opportunity.id}`, {
+      // Web (özellikle iOS Safari): .pkpass blob+download ile İNMEZ — Safari
+      // "bu dosyayı indiremiyor" der. Wallet pkpass'i ancak doğrudan bir GET
+      // navigasyonundan teslim alır. Önce probe ile sertifika/yetki durumunu
+      // kontrol et (ham JSON hata sayfası göstermemek için), sonra tarayıcıyı
+      // pkpass URL'ine doğrudan yönlendir (?token= query route'ça destekleniyor).
+      const probe = await fetch(`/api/passkit/volunteer/${opportunity.id}`, {
         headers: { authorization: `Bearer ${idToken}` },
       });
-      if (res.status === 503) {
+      if (probe.status === 503) {
         toast({ title: 'Apple Wallet yakında', description: 'hangel ekibi Wallet sertifikasını yapılandırıyor; çok yakında aktif olacak.' });
         return;
       }
-      if (!res.ok) throw new Error('PassKit hazır değil');
-      const blob = await res.blob();
-      // Blob'u .pkpass olarak indir (location.href boş sayfa bırakabiliyordu).
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `hangel-yaka-karti-${opportunity.id}.pkpass`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      if (!probe.ok) throw new Error('PassKit hazır değil');
+      // Doğrudan navigasyon → iOS Safari application/vnd.apple.pkpass'i Wallet'a verir.
+      window.location.href = `/api/passkit/volunteer/${opportunity.id}?token=${encodeURIComponent(idToken)}`;
     } catch (e) {
       toast({ variant: 'destructive', title: 'Apple Wallet hazırlanamadı', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
     }
@@ -517,217 +513,216 @@ export default function VolunteeringDetailPage() {
 
   return (
     <div className="animate-in fade-in-0 bg-background min-h-screen">
-        <div className="relative h-48 w-full bg-muted">
-            {ngo?.coverPhotoUrl && <Image src={ngo.coverPhotoUrl} alt={`${ngo.name} Cover`} fill className="object-cover" />}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/0" />
-            <div className="absolute top-4 left-4 z-10">
-              <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full" aria-label="Geri">
-                  <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="absolute top-4 right-4 z-10">
+        {/* ── HERO — büyük, sakin görsel; üstte minimal nav ── */}
+        <div className="relative h-[42vh] min-h-[320px] max-h-[520px] w-full bg-muted overflow-hidden">
+            {ngo?.coverPhotoUrl
+                ? <Image src={ngo.coverPhotoUrl} alt={`${ngo.name} Kapak`} fill priority className="object-cover" />
+                : <div className="absolute inset-0 bg-gradient-to-br from-muted to-secondary" />}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/20" />
+
+            <div className="absolute top-5 left-0 right-0 z-10 flex items-center justify-between px-5 md:px-8">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-white bg-black/25 hover:bg-black/45 hover:text-white rounded-full backdrop-blur-md h-10 w-10" aria-label="Geri">
+                    <ArrowLeft className="h-5 w-5" />
+                </Button>
                 <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük İlanı`} />
+            </div>
+
+            {/* Hero başlık — büyük, kalın, tracking-tight */}
+            <div className="absolute bottom-0 left-0 right-0 z-10 px-5 md:px-8 pb-7 md:pb-10">
+                <div className="mx-auto max-w-5xl">
+                    <Link href={`/ngos/${opportunity.ngoId}`} className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium tracking-wide transition-colors">
+                        {organizerName}
+                    </Link>
+                    <h1 className="mt-2 text-white text-[2rem] sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.05] max-w-3xl">
+                        {opportunity.title}
+                    </h1>
+                </div>
             </div>
         </div>
 
-        <div className="p-4 space-y-6 -mt-16 relative z-10">
-            <div className='p-1 bg-background/80 backdrop-blur-xl rounded-2xl'>
-                 <h1 className="text-2xl font-bold font-headline text-foreground p-3">{opportunity.title}</h1>
-                 <Link href={`/ngos/${opportunity.ngoId}`} className="text-foreground/90 text-base font-medium hover:underline px-3 pb-3 block">{organizerName}</Link>
-            </div>
+        {/* ── GÖVDE — ferah, iki kolonlu (web) / tek kolon (mobil) ── */}
+        <div className="mx-auto max-w-5xl px-5 md:px-8 pt-10 md:pt-14 pb-32">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-x-12 gap-y-12 items-start">
 
-            {authUser && hasProfile && (
-                <Card>
-                    <CardContent className="p-4 space-y-2">
-                        <div className="flex justify-between items-center text-xs uppercase tracking-wider">
-                            <span className="font-bold text-muted-foreground">Profil Uygunluğun</span>
-                            <span className={`font-black text-base ${matchTone.text}`}>%{matchPercentage}</span>
-                        </div>
-                        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                            <div
-                                className={`h-full ${matchTone.bar} rounded-full transition-all duration-700 ease-out`}
-                                style={{ width: `${matchPercentage}%` }}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
+                {/* ───── SOL KOLON: özet + içerik ───── */}
+                <div className="space-y-12 min-w-0">
 
-            <div className="space-y-4 mt-4">
-                <Card>
-                    <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
-                        <div className="p-2 bg-muted/50 rounded-lg relative">
+                    {/* Profil uygunluğu — ince, minimal */}
+                    {authUser && hasProfile && (
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-baseline">
+                                <span className="text-sm font-semibold text-muted-foreground tracking-tight">Profil uygunluğun</span>
+                                <span className={`text-2xl font-bold tracking-tight ${matchTone.text}`}>%{matchPercentage}</span>
+                            </div>
+                            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full ${matchTone.bar} rounded-full transition-all duration-700 ease-out`}
+                                    style={{ width: `${matchPercentage}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Açıklama — büyük, okunur özet */}
+                    <section className="space-y-4">
+                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Genel bakış</h2>
+                        <p className="text-lg leading-relaxed text-muted-foreground whitespace-pre-line">
+                            {opportunity.description}
+                        </p>
+                    </section>
+
+                    {/* Etki metrikleri — sade, kenarlıksız, ferah ızgara */}
+                    <section className="grid grid-cols-2 gap-px bg-border rounded-2xl overflow-hidden border border-border">
+                        <div className="relative bg-card p-6">
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <button type="button" className="absolute top-1.5 right-1.5 text-muted-foreground hover:text-primary" aria-label="Etki puanı nasıl hesaplanır?">
-                                        <Info className="h-3.5 w-3.5" />
+                                    <button type="button" className="absolute top-4 right-4 text-muted-foreground hover:text-primary transition-colors" aria-label="Etki puanı nasıl hesaplanır?">
+                                        <Info className="h-4 w-4" />
                                     </button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-72 text-xs text-muted-foreground whitespace-pre-line leading-relaxed">
                                     Etki Puanı, iş kaleminin saatlik puanı × tahmini gönüllü saati ile hesaplanır; gönüllülüğün sembolik etki skorudur.
                                 </PopoverContent>
                             </Popover>
-                            <p className="font-bold text-lg text-primary">{opportunity.points}</p>
-                            <p className="text-xs text-muted-foreground">Etki Puanı</p>
+                            <p className="text-3xl md:text-4xl font-bold tracking-tight text-primary">{opportunity.points}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">Etki Puanı</p>
                         </div>
-                        <div className="p-2 bg-muted/50 rounded-lg relative">
+                        <div className="relative bg-card p-6">
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <button type="button" className="absolute top-1.5 right-1.5 text-muted-foreground hover:text-primary" aria-label="Sosyal etki mali değeri nasıl hesaplanır?">
-                                        <Info className="h-3.5 w-3.5" />
+                                    <button type="button" className="absolute top-4 right-4 text-muted-foreground hover:text-primary transition-colors" aria-label="Sosyal etki mali değeri nasıl hesaplanır?">
+                                        <Info className="h-4 w-4" />
                                     </button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-72 text-xs text-muted-foreground whitespace-pre-line leading-relaxed">
                                     {socialImpactExplanation()}
                                 </PopoverContent>
                             </Popover>
-                            <p className="font-bold text-lg text-green-700">{impactValueTRY}</p>
-                            <p className="text-xs text-muted-foreground">Sosyal Etki Mali Değeri</p>
+                            <p className="text-3xl md:text-4xl font-bold tracking-tight text-green-700">{impactValueTRY}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">Sosyal Etki Mali Değeri</p>
                         </div>
-                    </CardContent>
-                </Card>
+                    </section>
 
-                <Card>
-                    <CardHeader><CardTitle className="text-lg">Açıklama</CardTitle></CardHeader>
-                    <CardContent className="text-sm text-muted-foreground">
-                        {opportunity.description}
-                    </CardContent>
-                </Card>
-
-                {/* Hava durumu — yalnız Saha/Hibrit */}
-                {isPhysical && weather && weather.length > 0 && (
-                    <Card>
-                        <CardHeader><CardTitle className="text-lg">Hava Durumu</CardTitle></CardHeader>
-                        <CardContent>
-                            <div className="flex gap-3 overflow-x-auto no-scrollbar">
+                    {/* Hava durumu — yalnız Saha/Hibrit */}
+                    {isPhysical && weather && weather.length > 0 && (
+                        <section className="space-y-4">
+                            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Hava durumu</h2>
+                            <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-1 px-1">
                                 {weather.map((d) => (
-                                    <div key={d.date} className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl bg-muted/50 min-w-[88px] shrink-0 text-center">
-                                        <span className="text-[10px] font-bold uppercase text-muted-foreground">{safeFormatDateTime(d.date).split(',')[0]}</span>
-                                        <span className="text-2xl leading-none">{d.emoji}</span>
-                                        <span className="text-[11px] font-medium">{d.label}</span>
-                                        <span className="text-xs font-bold">{d.tempMax}° / {d.tempMin}°</span>
+                                    <div key={d.date} className="flex flex-col items-center gap-1.5 px-4 py-4 rounded-2xl border border-border bg-card min-w-[96px] shrink-0 text-center">
+                                        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{safeFormatDateTime(d.date).split(',')[0]}</span>
+                                        <span className="text-3xl leading-none">{d.emoji}</span>
+                                        <span className="text-xs text-muted-foreground">{d.label}</span>
+                                        <span className="text-sm font-semibold tracking-tight">{d.tempMax}° / {d.tempMin}°</span>
                                     </div>
                                 ))}
                             </div>
-                        </CardContent>
-                    </Card>
-                )}
+                        </section>
+                    )}
 
-                 <Card>
-                    <CardHeader><CardTitle className="text-lg">İlan Detayları</CardTitle></CardHeader>
-                    <CardContent className="text-sm space-y-3">
-                        <div className='flex items-center gap-3'><MapPin className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.location.city}, {opportunity.location.district} ({opportunity.location.type})</span></div>
-                        <div className='flex items-center gap-3'><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.commitment} ({taskType})</span></div>
-                        <div className='flex items-center gap-3'><Award className="h-4 w-4 text-muted-foreground" /> <span>Sertifika: {providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span></div>
-                        <div className='flex items-center gap-3'>
-                            <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                                <span><span className="text-muted-foreground">İhtiyaç:</span> <span className="font-bold">{neededCount}</span></span>
-                                <span><span className="text-muted-foreground">Başvuran:</span> <span className="font-bold">{applicationsCount}</span></span>
-                                <span><span className="text-muted-foreground">Onaylanan:</span> <span className="font-bold text-emerald-700">{approvedCount}</span></span>
+                    {/* İlan detayları — düzenli, kenarlıkla ayrılmış satırlar */}
+                    <section className="space-y-5">
+                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">İlan detayları</h2>
+                        <dl className="divide-y divide-border border-t border-b border-border">
+                            <div className="flex items-center gap-4 py-4">
+                                <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                                <dt className="sr-only">Konum</dt>
+                                <dd className="text-base text-foreground">{opportunity.location.city}, {opportunity.location.district} ({opportunity.location.type})</dd>
+                            </div>
+                            <div className="flex items-center gap-4 py-4">
+                                <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
+                                <dt className="sr-only">Süre / Görev</dt>
+                                <dd className="text-base text-foreground">{opportunity.commitment} ({taskType})</dd>
+                            </div>
+                            <div className="flex items-center gap-4 py-4">
+                                <Award className="h-5 w-5 text-muted-foreground shrink-0" />
+                                <dt className="sr-only">Sertifika</dt>
+                                <dd className="text-base text-foreground">Sertifika: {providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</dd>
+                            </div>
+                            <div className="flex items-start gap-4 py-4">
+                                <Users className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                                <dd className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-base">
+                                    <span><span className="text-muted-foreground">İhtiyaç</span> <span className="font-semibold">{neededCount}</span></span>
+                                    <span><span className="text-muted-foreground">Başvuran</span> <span className="font-semibold">{applicationsCount}</span></span>
+                                    <span><span className="text-muted-foreground">Onaylanan</span> <span className="font-semibold text-emerald-700">{approvedCount}</span></span>
+                                </dd>
+                            </div>
+                        </dl>
+                    </section>
+
+                    {/* Tarihler — düzenli liste */}
+                    <section className="space-y-5">
+                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Tarihler</h2>
+                        <dl className="divide-y divide-border border-t border-b border-border">
+                            <div className="flex justify-between items-baseline gap-4 py-4">
+                                <dt className="text-base text-muted-foreground">Başvuru başlangıç</dt>
+                                <dd className="text-base font-medium text-right tracking-tight">{formatDateWithTime(opp.dates?.applicationStart, opp.dates?.applicationStartTime)}</dd>
+                            </div>
+                            <div className="flex justify-between items-baseline gap-4 py-4">
+                                <dt className="text-base text-muted-foreground">Başvuru bitiş</dt>
+                                <dd className="text-base font-semibold text-primary text-right tracking-tight">{formatDateWithTime(opp.dates?.applicationEnd, opp.dates?.applicationEndTime)}</dd>
+                            </div>
+                            <div className="flex justify-between items-baseline gap-4 py-4">
+                                <dt className="text-base text-muted-foreground">Aktivite başlangıç</dt>
+                                <dd className="text-base font-medium text-right tracking-tight">{formatDateWithTime(opp.dates?.eventStart, opp.dates?.eventStartTime)}</dd>
+                            </div>
+                            <div className="flex justify-between items-baseline gap-4 py-4">
+                                <dt className="text-base text-muted-foreground">Aktivite bitiş</dt>
+                                <dd className="text-base font-medium text-right tracking-tight">{formatDateWithTime(opp.dates?.eventEnd, opp.dates?.eventEndTime)}</dd>
+                            </div>
+                        </dl>
+                    </section>
+
+                    {/* Katılım Koşulu */}
+                    {opportunity.participationCondition && (
+                        <section className="space-y-4">
+                            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Katılım koşulu</h2>
+                            <div className="flex items-start gap-4">
+                                <UserCheck className="h-5 w-5 text-primary mt-1 shrink-0" />
+                                <p className="text-lg leading-relaxed text-muted-foreground">{opportunity.participationCondition}</p>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Başvuru durumu rozeti — başvuruldu/onaylandı/kabul edilmedi */}
+                    {applicationStatus && (
+                        <div className={cn(
+                            'rounded-2xl border p-5 flex items-center gap-4',
+                            applicationStatus === 'Onaylandı' ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                                : applicationStatus === 'Reddedildi' ? 'bg-red-50 border-red-200 text-red-800'
+                                    : 'bg-amber-50 border-amber-200 text-amber-800',
+                        )}>
+                            {applicationStatus === 'Onaylandı' ? <CheckCircle2 className="h-6 w-6 shrink-0" />
+                                : applicationStatus === 'Reddedildi' ? <XCircle className="h-6 w-6 shrink-0" />
+                                    : <Clock className="h-6 w-6 shrink-0" />}
+                            <div className="min-w-0">
+                                <p className="font-semibold text-base leading-tight tracking-tight">
+                                    {applicationStatus === 'Onaylandı' ? 'Başvurun onaylandı 🎉'
+                                        : applicationStatus === 'Reddedildi' ? 'Başvurun kabul edilmedi'
+                                            : 'Başvurun alındı'}
+                                </p>
+                                <p className="text-sm opacity-80 mt-0.5">
+                                    {applicationStatus === 'Onaylandı' ? 'Etkinlik günü yaka kartını hazır bulundur.'
+                                        : applicationStatus === 'Reddedildi' ? 'Başka ilanlara başvurmayı deneyebilirsin.'
+                                            : 'Kurum başvurunu değerlendiriyor; sonuç bildirilecek.'}
+                                </p>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                    )}
 
-                {/* Fiziksel (Saha/Hibrit) → tam adres + Adres Tarifi Al */}
-                {isPhysical && (
-                    <Card>
-                        <CardHeader><CardTitle className="text-lg">Konum</CardTitle></CardHeader>
-                        <CardContent className="text-sm space-y-3">
-                            {opportunity.location.address && (
-                                <div className="flex items-start gap-3"><MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" /> <span>{opportunity.location.address}</span></div>
-                            )}
-                            <div className="flex items-center gap-3 text-muted-foreground">
-                                <MapPin className="h-4 w-4 shrink-0" /> <span>{opportunity.location.district}, {opportunity.location.city}</span>
-                            </div>
-                            <Button variant="outline" size="sm" className="w-fit h-8 rounded-lg text-xs font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(directionsUrl, '_blank')}>
-                                <Map className="h-3.5 w-3.5" /> Adres Tarifi Al
-                            </Button>
-                            <div><DistanceBadge target={coords ? { lat: coords.lat, lon: coords.lon } : null} /></div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                 <Card>
-                    <CardHeader><CardTitle className="text-lg">Tarihler</CardTitle></CardHeader>
-                    <CardContent className="space-y-3">
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Başvuru Başlangıç:</span><span className='font-normal text-right'>{formatDateWithTime(opp.dates?.applicationStart, opp.dates?.applicationStartTime)}</span></div>
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Başvuru Bitiş:</span><span className='font-normal text-primary text-right'>{formatDateWithTime(opp.dates?.applicationEnd, opp.dates?.applicationEndTime)}</span></div>
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Aktivite Başlangıç:</span><span className='font-normal text-right'>{formatDateWithTime(opp.dates?.eventStart, opp.dates?.eventStartTime)}</span></div>
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Aktivite Bitiş:</span><span className='font-normal text-right'>{formatDateWithTime(opp.dates?.eventEnd, opp.dates?.eventEndTime)}</span></div>
-                    </CardContent>
-                </Card>
-
-                {/* Katılım Koşulu */}
-                {opportunity.participationCondition && (
-                    <Card>
-                        <CardHeader><CardTitle className="text-lg">Katılım Koşulu</CardTitle></CardHeader>
-                        <CardContent className="text-sm">
-                            <div className="flex items-start gap-3"><UserCheck className="h-4 w-4 text-primary mt-0.5 shrink-0" /> <span className="text-muted-foreground">{opportunity.participationCondition}</span></div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Organize eden STK — başlık "Organize Eden: {ad}", tıklanınca profile gider */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">
-                            Organize Eden:{' '}
-                            <Link href={`/ngos/${opportunity.ngoId}`} className="hover:underline text-primary">{ngo?.name || opportunity.organization}</Link>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {ngo && (
-                            <div className="space-y-4">
-                                <p className="text-sm text-muted-foreground line-clamp-4">{ngo.about}</p>
-                                <Button asChild variant="secondary" className="w-full">
-                                    <Link href={`/ngos/${ngo.id}`}>Kuruluş Profilini İncele</Link>
-                                </Button>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Başvuru durumu rozeti — başvuruldu/onaylandı/kabul edilmedi */}
-                {applicationStatus && (
-                    <div className={cn(
-                        'rounded-2xl border p-4 flex items-center gap-3',
-                        applicationStatus === 'Onaylandı' ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                            : applicationStatus === 'Reddedildi' ? 'bg-red-50 border-red-200 text-red-800'
-                                : 'bg-amber-50 border-amber-200 text-amber-800',
-                    )}>
-                        {applicationStatus === 'Onaylandı' ? <CheckCircle2 className="h-5 w-5 shrink-0" />
-                            : applicationStatus === 'Reddedildi' ? <XCircle className="h-5 w-5 shrink-0" />
-                                : <Clock className="h-5 w-5 shrink-0" />}
-                        <div className="min-w-0">
-                            <p className="font-bold text-sm leading-tight">
-                                {applicationStatus === 'Onaylandı' ? 'Başvurun onaylandı 🎉'
-                                    : applicationStatus === 'Reddedildi' ? 'Başvurun kabul edilmedi'
-                                        : 'Başvurun alındı'}
-                            </p>
-                            <p className="text-xs opacity-80">
-                                {applicationStatus === 'Onaylandı' ? 'Etkinlik günü yaka kartını hazır bulundur.'
-                                    : applicationStatus === 'Reddedildi' ? 'Başka ilanlara başvurmayı deneyebilirsin.'
-                                        : 'Kurum başvurunu değerlendiriyor; sonuç bildirilecek.'}
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Başvuru onaylanmış kullanıcıya: Wallet + NFC + Yaka Kartı (yalnız Onaylandı) */}
-                {hasApplied && !isApproved && applicationStatus !== 'Reddedildi' && (
-                    <p className="text-xs text-muted-foreground px-1">
-                        Başvurun onaylanınca yaka kartın, Apple Wallet ve NFC seçeneklerin burada görünecek.
-                    </p>
-                )}
-                {isApproved && (
-                    <div className="flex flex-wrap gap-2 sm:gap-3">
+                    {/* Başvuru onaylanmış kullanıcıya: Wallet + NFC + Yaka Kartı (yalnız Onaylandı) */}
+                    {hasApplied && !isApproved && applicationStatus !== 'Reddedildi' && (
+                        <p className="text-sm text-muted-foreground">
+                            Başvurun onaylanınca yaka kartın, Apple Wallet ve NFC seçeneklerin burada görünecek.
+                        </p>
+                    )}
+                    {isApproved && (
+                        <div className="flex flex-wrap gap-3">
                         <Button
                             size="lg"
                             variant="secondary"
                             onClick={handleAddToWallet}
-                            className="h-14 rounded-2xl font-black px-4 flex items-center gap-2"
+                            className="h-14 rounded-2xl font-semibold px-5 flex items-center gap-2"
                             aria-label="Apple Wallet'a Ekle"
                             title="Apple Wallet'a Ekle"
                         >
@@ -737,7 +732,7 @@ export default function VolunteeringDetailPage() {
                             size="lg"
                             variant="outline"
                             onClick={handleNfcRead}
-                            className="h-14 rounded-2xl font-black px-4 flex items-center gap-2"
+                            className="h-14 rounded-2xl font-semibold px-5 flex items-center gap-2"
                             aria-label="NFC Oku"
                             title="NFC Oku"
                         >
@@ -745,7 +740,7 @@ export default function VolunteeringDetailPage() {
                         </Button>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button size="lg" variant="secondary" className="h-14 rounded-2xl font-black px-4">Yaka Kartı</Button>
+                                <Button size="lg" variant="secondary" className="h-14 rounded-2xl font-semibold px-5">Yaka Kartı</Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-[2.5rem]">
                                 <AlertDialogHeader>
@@ -839,41 +834,86 @@ export default function VolunteeringDetailPage() {
                     </div>
                 )}
 
-                {/* QR + Paylaş — sayfa altı (üstte de var) */}
-                <Card>
-                    <CardContent className="p-4 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                            <HeartHandshake className="h-4 w-4 text-primary" /> Bu gönüllülük ilanını paylaş
+                </div>
+
+                {/* ───── SAĞ KOLON (web sidebar / mobil alt) — konum, STK, paylaş ───── */}
+                <aside className="space-y-10 lg:sticky lg:top-8">
+
+                    {/* Konum — fiziksel (Saha/Hibrit) → tam adres + Adres Tarifi Al */}
+                    {isPhysical && (
+                        <section className="space-y-4">
+                            <h2 className="text-xl font-bold tracking-tight text-foreground">Konum</h2>
+                            <div className="space-y-3 text-base">
+                                {opportunity.location.address && (
+                                    <div className="flex items-start gap-3"><MapPin className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" /> <span className="text-foreground">{opportunity.location.address}</span></div>
+                                )}
+                                <div className="flex items-center gap-3 text-muted-foreground">
+                                    <MapPin className="h-5 w-5 shrink-0" /> <span>{opportunity.location.district}, {opportunity.location.city}</span>
+                                </div>
+                            </div>
+                            <Button variant="outline" size="sm" className="w-fit h-9 rounded-full text-sm font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5" onClick={() => window.open(directionsUrl, '_blank')}>
+                                <Map className="h-4 w-4" /> Adres Tarifi Al
+                            </Button>
+                            <div><DistanceBadge target={coords ? { lat: coords.lat, lon: coords.lon } : null} /></div>
+                        </section>
+                    )}
+
+                    {/* Organize eden STK */}
+                    <section className="space-y-4">
+                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Organize eden</p>
+                        <Link href={`/ngos/${opportunity.ngoId}`} className="flex items-center gap-3 group">
+                            <Avatar className="h-12 w-12 border border-border bg-card shrink-0">
+                                {organizerLogo && <AvatarImage src={organizerLogo} alt={organizerName} className="object-contain p-1" />}
+                                <AvatarFallback className="text-sm font-bold text-primary">{organizerInitials}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-lg font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors">{ngo?.name || opportunity.organization}</span>
+                        </Link>
+                        {ngo && (
+                            <>
+                                <p className="text-base leading-relaxed text-muted-foreground line-clamp-4">{ngo.about}</p>
+                                <Button asChild variant="secondary" className="w-full rounded-full h-11 font-semibold">
+                                    <Link href={`/ngos/${ngo.id}`}>Kuruluş Profilini İncele</Link>
+                                </Button>
+                            </>
+                        )}
+                    </section>
+
+                    {/* Paylaş */}
+                    <section className="space-y-4 pt-2 border-t border-border">
+                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground pt-2">
+                            <HeartHandshake className="h-4 w-4 text-primary" /> Bu ilanı paylaş
                         </div>
                         <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük İlanı`} />
-                    </CardContent>
-                </Card>
+                    </section>
+                </aside>
             </div>
         </div>
 
-        <div className="sticky bottom-0 bg-background/80 backdrop-blur-lg p-4 border-t mt-auto">
+        <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl px-5 md:px-8 py-4 border-t border-border mt-auto">
+          <div className="mx-auto max-w-5xl">
              {applicationStatus === 'Beklemede' ? (
-                <div className="w-full h-14 rounded-2xl flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-base font-bold px-4 text-center">
+                <div className="w-full h-14 rounded-full flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-base font-semibold px-4 text-center">
                     <Clock className="h-5 w-5 shrink-0" /> Başvurun alındı, onay bekliyorsunuz
                 </div>
              ) : applicationStatus === 'Onaylandı' ? (
-                <div className="w-full h-14 rounded-2xl flex items-center justify-center gap-2 bg-emerald-600 text-white text-base font-bold px-4 text-center">
+                <div className="w-full h-14 rounded-full flex items-center justify-center gap-2 bg-emerald-600 text-white text-base font-semibold px-4 text-center">
                     <CheckCircle2 className="h-5 w-5 shrink-0" /> Başvurunuz onaylandı
                 </div>
              ) : applicationStatus === 'Reddedildi' ? (
-                <div className="w-full h-14 rounded-2xl flex items-center justify-center gap-2 bg-muted border text-muted-foreground text-base font-bold px-4 text-center">
+                <div className="w-full h-14 rounded-full flex items-center justify-center gap-2 bg-muted border border-border text-muted-foreground text-base font-semibold px-4 text-center">
                     <XCircle className="h-5 w-5 shrink-0" /> Başvurun bu sefer onaylanmadı
                 </div>
              ) : (
                 <Button
                     size="lg"
-                    className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20"
+                    className="w-full h-14 rounded-full text-lg font-semibold tracking-tight shadow-lg shadow-primary/20"
                     disabled={isApplying || daysRemaining < 0}
                     onClick={handleApply}
                 >
                   {isApplying ? <Loader2 className="animate-spin h-5 w-5" /> : daysRemaining < 0 ? 'Başvuru Süresi Doldu' : `${countdownText}, Hemen Başvur`}
                 </Button>
              )}
+          </div>
         </div>
     </div>
   );
