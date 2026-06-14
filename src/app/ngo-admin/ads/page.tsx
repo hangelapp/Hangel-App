@@ -964,6 +964,12 @@ export default function AdsPage() {
                                             </span>
                                         )}
                                     </div>
+                                    <button
+                                        onClick={connectGoogleAds}
+                                        disabled={connecting}
+                                        className="text-[12px] font-semibold text-emerald-800 underline underline-offset-2 shrink-0 disabled:opacity-60">
+                                        {connecting ? 'Bağlanıyor…' : 'Yeniden bağla'}
+                                    </button>
                                 </div>
 
                                 {publishablePlans.length > 0 ? (
