@@ -7,6 +7,7 @@ import { SideNav } from '@/components/layout/SideNav';
 import { AutoBreadcrumb } from '@/components/layout/auto-breadcrumb';
 import type { SideNavItem, User } from '@/lib/types';
 import { Sheet, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { UserAvatar } from '@/components/shared/user-avatar';
@@ -236,12 +237,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // Auth Guard Logic
     useEffect(() => {
         if (!isUserLoading && !authUser && isMounted) {
+            // ADIM 7 — Misafir/Keşfet modu: keşif yüzeyleri (feed/timeline,
+            // market, gönüllülük, kulüpler, etkinlikler, STK profili, veri
+            // kütüphanesi, liderlik) anonim GEZİLEBİLİR; bu yüzden artık
+            // protectedPaths'te DEĞİLLER. Giriş yalnızca bir EYLEM anında
+            // (başvur/bağışla/takip/RSVP/mesaj) useRequireAuth ile istenir.
+            // Kişisel/yönetim alanları (profil, ayarlar, my-*, admin'ler)
+            // GİZLİ/GATELİ kalır — anonim kullanıcıya açılmaz.
             const protectedPaths = [
-                '/timeline', '/market', '/volunteering', '/clubs', '/events',
-                '/qr-payment', '/emergency', '/leaderboard', '/stories',
+                '/qr-payment', '/emergency', '/stories',
                 '/invite', '/profile', '/my-donations',
                 '/my-applications', '/my-badges', '/messages', '/settings',
-                '/ngo-admin', '/super-admin', '/admin', '/library'
+                '/ngo-admin', '/super-admin', '/admin'
             ];
 
             const isProtected = protectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
@@ -510,6 +517,39 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // Giriş YAPMAMIŞ kullanıcıya hiçbir sayfada APP menüsü / sol sidebar gösterme —
     // app chrome'suz, salt içerik. Auth çözülürken (isUserLoading) bekle, flash olmasın.
     const isLoggedOut = !isUserLoading && !authUser;
+
+    // ADIM 7 — Misafir/Keşfet modu: anonim kullanıcı bu keşif yüzeylerini
+    // gezebilir. SideNav (my-* / messages gibi korumalı linkler) gösterilmez;
+    // bunun yerine üstte logo + "Giriş yap / Kayıt ol" CTA'lı sade bir misafir
+    // çubuğu render edilir.
+    const guestDiscoveryPrefixes = [
+        '/timeline', '/market', '/volunteering', '/clubs', '/events',
+        '/ngos', '/library', '/leaderboard',
+    ];
+    const isGuestDiscoveryPage = guestDiscoveryPrefixes.some(
+        path => pathname === path || pathname.startsWith(path + '/'),
+    );
+
+    if (isLoggedOut && isGuestDiscoveryPage && !isPublicPage && !isNgoSitePage) {
+        return (
+            <div className="min-h-dvh bg-background">
+                <header className="sticky top-0 z-40 flex h-12 items-center justify-between gap-2 border-b bg-background/80 px-4 backdrop-blur-lg" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+                    <Link href="/" aria-label="hangel ana sayfa">
+                        <HangelLogo className="text-xl" href={null} />
+                    </Link>
+                    <div className="flex items-center gap-2">
+                        <Button asChild variant="ghost" size="sm" className="h-8 rounded-full px-4 text-xs font-bold">
+                            <Link href={`/login/selection?action=login&next=${encodeURIComponent(pathname)}`}>{t('nav.login')}</Link>
+                        </Button>
+                        <Button asChild size="sm" className="h-8 rounded-full px-4 text-xs font-bold">
+                            <Link href={`/login/selection?action=register&next=${encodeURIComponent(pathname)}`}>Kayıt ol</Link>
+                        </Button>
+                    </div>
+                </header>
+                <main className="min-h-dvh">{children}</main>
+            </div>
+        );
+    }
 
     if (isPreviewPage || isSuperAdminPage || isNgoSitePage || isPublicPage || isLoggedOut || (isAppHubPage && !authUser)) {
         return <div className="min-h-dvh bg-background">{children}</div>;

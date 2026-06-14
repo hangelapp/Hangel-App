@@ -34,6 +34,7 @@ import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 import { COLLECTIONS } from '@/firebase/collections';
 
 const InfoRow = ({ icon: Icon, label, children, href }: { icon: React.ElementType; label: string; children: React.ReactNode, href?: string }) => {
@@ -66,6 +67,7 @@ export default function EventDetailPage() {
   const { user: authUser } = useUser();
   const [profileUrl, setProfileUrl] = useState('');
   const { toast } = useToast();
+  const requireAuth = useRequireAuth();
   const cardFrontRef = useRef<HTMLDivElement>(null);
   const cardBackRef = useRef<HTMLDivElement>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -192,10 +194,9 @@ export default function EventDetailPage() {
   const [isRsvpLoading, setIsRsvpLoading] = useState(false);
 
   const submitRsvp = async (action: 'going' | 'cancel') => {
-    if (!authUser || !resolvedEventId) {
-      toast({ variant: 'destructive', title: 'Giriş yap', description: 'Etkinliğe katılmak için giriş yapmalısın.' });
-      return;
-    }
+    // ADIM 7 — Misafir/Keşfet: anonim kullanıcı eylem anında giriş'e davet edilir.
+    if (!requireAuth({ title: 'Etkinliğe katılmak için giriş yap', description: 'Etkinliğe katılmak için giriş yap ya da hemen kayıt ol.' })) return;
+    if (!authUser || !resolvedEventId) return; // requireAuth yönlendirdi; TS daraltması için.
     setIsRsvpLoading(true);
     try {
       const idToken = await authUser.getIdToken();

@@ -12,6 +12,7 @@ import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 import type { Post, Brand } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
@@ -69,6 +70,7 @@ export default function BrandProfilePage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const requireAuth = useRequireAuth();
   const { user: authUser } = useUser();
   const db = useFirestore();
   const slug = params.id as string;
@@ -90,10 +92,9 @@ export default function BrandProfilePage() {
   const isFollowing = !!(brand && userDoc?.followedBrands?.includes(brand.id));
 
   const handleToggleFollow = async () => {
-    if (!authUser) {
-      router.push('/login/selection?action=login');
-      return;
-    }
+    // ADIM 7 — Misafir/Keşfet: anonim kullanıcı eylem anında giriş'e davet edilir.
+    if (!requireAuth({ title: 'Takip için giriş yap', description: 'Bu markayı takip etmek için giriş yap ya da hemen kayıt ol.' })) return;
+    if (!authUser) return; // requireAuth yönlendirdi; TS daraltması için.
     if (pendingFollow || !db || !brand) return;
     setPendingFollow(true);
     try {

@@ -24,6 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { COLLECTIONS } from '@/firebase/collections';
 import { normalizeDefs, mergeCriteria, computeScore } from '@/lib/transparency';
 import { useVerifiedAction } from '@/hooks/use-verified-action';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 
 // transparency/{adminUid}.criteria[] öğesi — şeffaflık sekmesinde gerçek belge/bilgi.
 interface ProfileCriteriaItem {
@@ -119,6 +120,7 @@ export default function NgoProfilePage() {
   const params = useParams();
   const { toast } = useToast();
   const requireVerifiedEmail = useVerifiedAction();
+  const requireAuth = useRequireAuth();
   const id = params.id as string;
   const db = useFirestore();
 
@@ -186,10 +188,9 @@ export default function NgoProfilePage() {
   }, [id]);
 
   const handleToggleDonor = async () => {
-    if (!authUser || !userDocRef) {
-      router.push('/login/selection?action=login');
-      return;
-    }
+    // ADIM 7 — Misafir/Keşfet: anonim kullanıcı eylem anında giriş'e davet edilir.
+    if (!requireAuth({ title: 'Bağışçı olmak için giriş yap', description: 'Bu STK\'nın bağışçısı olmak için giriş yap ya da hemen kayıt ol.' })) return;
+    if (!userDocRef) return;
     if (donorBusy) return;
 
     const current = Array.isArray(userData?.supportedNgos) ? userData!.supportedNgos! : [];
@@ -264,10 +265,9 @@ export default function NgoProfilePage() {
   };
 
   const handleToggleVolunteer = async () => {
-    if (!authUser || !userDocRef) {
-      router.push('/login/selection?action=login');
-      return;
-    }
+    // ADIM 7 — Misafir/Keşfet: anonim kullanıcı eylem anında giriş'e davet edilir.
+    if (!requireAuth({ title: 'Gönüllü olmak için giriş yap', description: 'Bu STK\'ya gönüllü olmak için giriş yap ya da hemen kayıt ol.' })) return;
+    if (!userDocRef) return;
     if (volunteerBusy) return;
     setVolunteerBusy(true);
     try {

@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
@@ -51,6 +52,7 @@ export default function ClubProfilePage() {
   const [profileUrl, setProfileUrl] = useState('');
   const [pendingJoin, setPendingJoin] = useState(false);
   const { toast } = useToast();
+  const requireAuth = useRequireAuth();
   const { user: authUser } = useUser();
 
   const clubDocRef = useMemoFirebase(() => {
@@ -120,10 +122,9 @@ export default function ClubProfilePage() {
   const otherBoardMembers = activeAdmins.filter(a => a.role !== 'Kulüp Başkanı' && a.role !== 'Genel Yönetici');
 
   const handleToggleJoin = async () => {
-    if (!authUser) {
-      router.push('/login/selection?action=login');
-      return;
-    }
+    // ADIM 7 — Misafir/Keşfet: anonim kullanıcı eylem anında giriş'e davet edilir.
+    if (!requireAuth({ title: 'Kulübe katılmak için giriş yap', description: 'Bu kulübe katılmak için giriş yap ya da hemen kayıt ol.' })) return;
+    if (!authUser) return; // requireAuth yönlendirdi; TS daraltması için.
     if (pendingJoin || !db || !club) return;
     setPendingJoin(true);
     try {

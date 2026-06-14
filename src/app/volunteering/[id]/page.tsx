@@ -31,6 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { COLLECTIONS } from '@/firebase/collections';
 import { scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
 import { useVerifiedAction } from '@/hooks/use-verified-action';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 import { startVolunteerTaskActivity } from '@/lib/native-live-activity';
 import { socialImpactValueTRY, formatTRY, socialImpactExplanation } from '@/lib/social-impact';
 
@@ -60,6 +61,7 @@ export default function VolunteeringDetailPage() {
   const { user: authUser } = useUser();
   const { toast } = useToast();
   const requireVerifiedEmail = useVerifiedAction();
+  const requireAuth = useRequireAuth();
   const [isApplying, setIsApplying] = useState(false);
   const [weather, setWeather] = useState<WeatherDay[] | null>(null);
   const cardFrontRef = useRef<HTMLDivElement>(null);
@@ -408,12 +410,10 @@ export default function VolunteeringDetailPage() {
   };
 
   const handleApply = () => {
-    if (!authUser) {
-        toast({ variant: 'destructive', title: "Giriş Yapmalısınız", description: "Başvuru yapmak için lütfen oturum açın." });
-        const redirectUrl = `/login/selection?action=login&redirect=${encodeURIComponent(window.location.pathname)}`;
-        router.push(redirectUrl);
-        return;
-    }
+    // ADIM 7 — Misafir/Keşfet: anonim kullanıcı eylem anında giriş'e davet edilir
+    // (sayfa bloklanmaz). useVerifiedAction'dan ÖNCE çağrılır.
+    if (!requireAuth({ title: 'Başvuru için giriş yap', description: 'Gönüllülük başvurusu yapmak için giriş yap ya da hemen kayıt ol.' })) return;
+    if (!authUser) return; // requireAuth zaten yönlendirdi; TS daraltması için.
 
     // Hassas eylem kapısı: gönüllülük başvurusu için e-posta doğrulaması iste
     // (yalnız e-posta/password ile kayıt olanlar; telefon/WhatsApp etkilenmez).
