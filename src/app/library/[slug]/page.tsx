@@ -647,6 +647,23 @@ export default function LibraryItemPage() {
       </div>
       <div>
         <h1 className="text-2xl font-bold font-headline">{item.title}</h1>
+        {/* Künye — yayın başlığının hemen altında: tam akademik/kaynak künyesi + kaynak linki */}
+        {(item.citation || item.sourceUrl) && (
+          <div className="mt-3 rounded-xl border-l-4 border-primary bg-primary/5 p-3 text-sm leading-relaxed">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Künye</p>
+            {item.citation && <p className="text-foreground/90">{item.citation}</p>}
+            {item.sourceUrl && (
+              <a
+                href={item.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-flex items-center gap-1 font-medium text-primary hover:underline break-all"
+              >
+                Kaynağa git ↗
+              </a>
+            )}
+          </div>
+        )}
       </div>
       <article
         className="prose prose-sm sm:prose-base dark:prose-invert max-w-none space-y-4"

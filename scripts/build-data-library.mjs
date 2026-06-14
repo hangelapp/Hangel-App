@@ -138,18 +138,9 @@ function slugify(s) {
     .slice(0, 70);
 }
 
-// --- içerik HTML (künye üstte + istatistik + filtre metni) ---
+// --- içerik HTML (istatistik + metadata; künye detay sayfasında başlık altında render edilir) ---
 function buildContent(e, source, scope, topic) {
-  const cite = e.citation && e.citation.trim()
-    ? e.citation.trim()
-    : `${source} (${e.year}). ${e.sourceTitle || ''}`.trim();
-  const linkUrl = e.sourceUrl || '';
   return [
-    `<div class="not-prose mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs leading-relaxed">`,
-    `<p class="font-semibold text-foreground" style="margin:0 0 2px">📌 Künye</p>`,
-    `<p class="text-muted-foreground" style="margin:0">${esc(cite)}</p>`,
-    linkUrl ? `<p style="margin:6px 0 0"><a href="${esc(linkUrl)}" target="_blank" rel="noopener noreferrer">Kaynağa git ↗</a></p>` : '',
-    `</div>`,
     `<p>${esc(e.stat)}</p>`,
     `<ul>`,
     `<li><strong>Kaynak:</strong> ${esc(source)}</li>`,
@@ -207,7 +198,7 @@ items.sort((a, b) => (a.source.localeCompare(b.source, 'tr') || (a.topic || '').
 const section = {
   slug: 'veri-kutuphanesi',
   title: 'Veri Kütüphanesi',
-  description: 'Resmi kurum ve araştırma merkezlerinden sosyal fayda, gönüllülük, bağış ve sosyal sorunlar verileri — kaynak künyeli.',
+  description: 'Resmi kurum ve araştırma merkezlerinden verileri',
   icon: 'Database',
   items,
 };

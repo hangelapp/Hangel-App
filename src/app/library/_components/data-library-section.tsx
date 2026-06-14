@@ -63,7 +63,7 @@ export function DataLibrarySection() {
   const { section } = useSectionDoc(SLUG, {
     slug: SLUG,
     title: 'Veri Kütüphanesi',
-    description: 'Resmi kurumlar ve araştırma merkezlerinden veri setleri.',
+    description: 'Resmi kurum ve araştırma merkezlerinden verileri',
     icon: 'Database',
   });
   return <SectionAccordion section={section} filterDefs={FILTERS} />;
