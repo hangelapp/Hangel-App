@@ -28,7 +28,6 @@ import {
   exchangeCodeForTokens,
   getGoogleAdsConfig,
   listAccessibleCustomers,
-  listServingCustomers,
   ADS_OAUTH_NGO_COOKIE,
 } from '@/lib/ads/google-ads';
 import { getAdminFirestore } from '@/lib/firebase-admin';
@@ -160,24 +159,19 @@ export async function GET(req: NextRequest) {
       return htmlResponse(errorPage('token_exchange_failed'), { status: 502, clearCookies: true });
     }
 
-    // Servis edebilecek (manager olmayan) hesabı çöz. MCC sahibi yetkilendirince
-    // listAccessibleCustomers genelde YALNIZCA MCC'yi döndürür → önce MCC altındaki
-    // customer_client'lardan non-manager hesabı (örn. Ad Grants) al; bulunamazsa
-    // erişilebilir hesaplara düş (MCC'yi ele). customerId boş kalırsa publish 409 verir.
+    // STK SELF-SERVİS: STK kendi Google hesabıyla bağlanır ve KENDİ reklam hesabında
+    // işlem yapar. Bu yüzden STK'nın doğrudan eriştiği (listAccessibleCustomers) hesabı
+    // alırız; hangel MCC'sini ELERİZ (o hangel ajans/süper-admin işlemi içindir).
+    // (Eskiden MCC altı customer_client sorgulanıyordu — STK kullanıcısı MCC'ye erişemediği
+    //  için bu yanlıştı ve publish'i kırıyordu.)
     let customerId: string | undefined;
     if (tokens.accessToken) {
-      const serving = await listServingCustomers(tokens.accessToken, config);
-      if (serving.length > 0) {
-        customerId = serving[0];
-      } else {
-        const accessible = await listAccessibleCustomers(tokens.accessToken, config);
-        customerId = accessible.find((c) => c && c !== config.loginCustomerId) ?? accessible[0];
-      }
-      // Teşhis (sır içermez): hangi hesap çözüldü, kaç servis hesabı bulundu.
-      console.log('[ads/callback] resolved customerId', {
+      const accessible = await listAccessibleCustomers(tokens.accessToken, config);
+      customerId = accessible.find((c) => c && c !== config.loginCustomerId) ?? accessible[0];
+      console.log('[ads/callback] resolved STK customerId', {
         ngoId,
         customerId: customerId ?? '(none)',
-        servingCount: serving.length,
+        accessibleCount: accessible.length,
       });
     }
 

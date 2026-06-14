@@ -88,14 +88,29 @@ export function buildAdsAuthorizeUrl(clientId: string, redirectUri: string, stat
   return `${GOOGLE_AUTHORIZE_BASE}?${params.toString()}`;
 }
 
-/** Common headers for Google Ads REST calls. */
-function adsHeaders(config: GoogleAdsConfig, accessToken: string): Record<string, string> {
-  return {
+/**
+ * Common headers for Google Ads REST calls.
+ *
+ * login-customer-id MODELİ:
+ *  - STK self-servis (STK paneli): STK kendi hesabıyla bağlanır ve KENDİ hesabında
+ *    işlem yapar → login-customer-id = STK'nın kendi customerId'si (hangel MCC'si DEĞİL).
+ *    `loginCustomerId` parametresi olarak işlenen hesap geçilir.
+ *  - hangel ajans (süper-admin): MCC'ye bağlı alt-hesapları yönetir → login-customer-id =
+ *    hangel MCC (config.loginCustomerId). Parametre verilmezse varsayılan budur.
+ */
+function adsHeaders(
+  config: GoogleAdsConfig,
+  accessToken: string,
+  loginCustomerId?: string
+): Record<string, string> {
+  const headers: Record<string, string> = {
     authorization: `Bearer ${accessToken}`,
     'developer-token': config.developerToken,
-    'login-customer-id': config.loginCustomerId,
     'content-type': 'application/json',
   };
+  const lcid = digitsOnly(loginCustomerId ?? config.loginCustomerId ?? '');
+  if (lcid) headers['login-customer-id'] = lcid;
+  return headers;
 }
 
 /**
@@ -280,7 +295,8 @@ export async function fetchCampaignMetrics(
   try {
     const res = await fetch(`${ADS_API_BASE}/customers/${id}/googleAds:searchStream`, {
       method: 'POST',
-      headers: adsHeaders(config, accessToken),
+      // STK self-servis: login-customer-id = işlenen hesabın kendisi.
+      headers: adsHeaders(config, accessToken, id),
       body: JSON.stringify({ query }),
     });
     if (!res.ok) return null;
@@ -323,7 +339,8 @@ async function mutate(
 ): Promise<{ results?: Array<{ resourceName?: string }> }> {
   const res = await fetch(`${ADS_API_BASE}/customers/${customerId}/${service}:mutate`, {
     method: 'POST',
-    headers: adsHeaders(config, accessToken),
+    // STK self-servis: login-customer-id = işlenen hesabın kendisi (hangel MCC değil).
+    headers: adsHeaders(config, accessToken, customerId),
     body: JSON.stringify({ operations }),
   });
   if (!res.ok) {

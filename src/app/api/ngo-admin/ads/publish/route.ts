@@ -21,7 +21,6 @@ import {
   createSearchCampaign,
   getGoogleAdsConfig,
   refreshAccessToken,
-  listServingCustomers,
   listAccessibleCustomers,
   type AdPlanForCampaign,
 } from '@/lib/ads/google-ads';
@@ -110,12 +109,11 @@ export async function POST(req: NextRequest) {
   if (!customerId) {
     const accessToken = await refreshAccessToken(config, refreshToken);
     if (accessToken) {
-      const serving = await listServingCustomers(accessToken, config);
-      customerId = serving[0]
-        || (await listAccessibleCustomers(accessToken, config)).find((c) => c && c !== config.loginCustomerId)
-        || '';
-      console.log('[ads/publish] self-heal customerId', {
-        ngoId: actor.ngoId, customerId: customerId || '(none)', servingCount: serving.length,
+      // STK self-servis: STK'nın doğrudan eriştiği hesabı al (hangel MCC'yi ele).
+      const accessible = await listAccessibleCustomers(accessToken, config);
+      customerId = accessible.find((c) => c && c !== config.loginCustomerId) || accessible[0] || '';
+      console.log('[ads/publish] self-heal STK customerId', {
+        ngoId: actor.ngoId, customerId: customerId || '(none)', accessibleCount: accessible.length,
       });
       if (customerId) {
         await db.collection(COLLECTIONS.adAccounts).doc(actor.ngoId)

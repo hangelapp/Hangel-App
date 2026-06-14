@@ -32,9 +32,13 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "glass-prominent text-foreground",
+        // Okunur: solid (opak) arka plan + koyu/siyah yazı (cam saydamlığı kaldırıldı).
+        default:
+          "border border-black/10 bg-white text-zinc-900 shadow-xl dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-50",
+        // Hata: kırmızı sol-çizgi ile belli; yazı yine okunur siyah (group-[.destructive]
+        // light-text modifier'larını tetiklememek için 'destructive' class'ı eklenmez).
         destructive:
-          "destructive group bg-destructive/90 border border-white/15 text-destructive-foreground backdrop-blur-glass-3",
+          "border border-black/10 border-l-4 border-l-red-600 bg-white text-zinc-900 shadow-xl dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-50",
       },
     },
     defaultVariants: {
