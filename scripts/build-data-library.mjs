@@ -207,7 +207,7 @@ items.sort((a, b) => (a.source.localeCompare(b.source, 'tr') || (a.topic || '').
 const section = {
   slug: 'veri-kutuphanesi',
   title: 'Veri Kütüphanesi',
-  description: 'Resmi kurumlar ve uluslararası araştırma merkezlerinden (OECD, Dünya Bankası, UNDP, Eurostat, AB, B Lab, GEM, SESRIC, British Council, DCMS, TÜİK...) son yılların sosyal fayda, sosyal girişimcilik, gönüllülük, bağış ve sosyal sorunlar verileri — her veri kaynak-linkli künyeyle.',
+  description: 'Resmi kurum ve araştırma merkezlerinden sosyal fayda, gönüllülük, bağış ve sosyal sorunlar verileri — kaynak künyeli.',
   icon: 'Database',
   items,
 };
