@@ -125,6 +125,7 @@ export async function fetchGenericGoogleMerchantProducts(
       gtin: gTag(b, 'gtin'),
       mpn: gTag(b, 'mpn'),
       donationRate: opts.donationRate,
+      random: Math.random(),
       updatedAt: now,
     });
   }

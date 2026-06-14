@@ -111,6 +111,7 @@ export async function fetchGelirOrtaklariProducts(
       gtin: tag(b, 'gtin') || tag(b, 'g:gtin'),
       mpn: tag(b, 'mpn') || tag(b, 'g:mpn'),
       donationRate: opts.donationRate,
+      random: Math.random(),
       updatedAt: now,
     });
   }

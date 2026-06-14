@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
-import { collection, limit, query } from 'firebase/firestore';
+import { collection, limit, query, orderBy, startAt } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
 
 export default function ProductsPage() {
@@ -24,9 +24,14 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeBrand, setActiveBrand] = useState('Tümü');
 
+  // Her yüklemede farklı `random` başlangıç noktası → ürünler rastgele gelir.
+  // 0.8 tavanı: imleçten sonra her zaman bolca ürün kalır (limit dolar).
+  const [randSeed, setRandSeed] = useState(0);
+  useEffect(() => { setRandSeed(Math.random() * 0.8); }, []);
+
   const productsQuery = useMemoFirebase(
-    () => query(collection(db, COLLECTIONS.products), limit(60)),
-    [db]
+    () => query(collection(db, COLLECTIONS.products), orderBy('random'), startAt(randSeed), limit(120)),
+    [db, randSeed]
   );
   const { data: products, isLoading } =
     useCollection<CanonicalProduct>(productsQuery);

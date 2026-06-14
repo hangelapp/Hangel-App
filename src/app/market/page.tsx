@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { Brand } from '@/lib/types';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, limit, query } from 'firebase/firestore';
+import { collection, limit, query, orderBy, startAt } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
 import { ProductCard } from '@/components/market/product-card';
 import type { CanonicalProduct } from '@/lib/feed/types';
@@ -92,7 +92,10 @@ export default function MarketPage() {
   const { data: firestoreBrands, isLoading: firestoreLoading } = useCollection<Brand>(brandsQuery);
 
   // "Ürünler" kategorisi: tüm markaların ürünleri (feed ile çekilmiş).
-  const productsQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.products), limit(120)), [db]);
+  // Her yüklemede `random` alanına rastgele başlangıç → ürünler her seferinde farklı gelir.
+  const [productsRandSeed, setProductsRandSeed] = useState(0);
+  useEffect(() => { setProductsRandSeed(Math.random() * 0.8); }, []);
+  const productsQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.products), orderBy('random'), startAt(productsRandSeed), limit(120)), [db, productsRandSeed]);
   const { data: allProducts, isLoading: productsLoading } = useCollection<CanonicalProduct>(productsQuery);
   const productsToShow = useMemo(() => {
     const lower = searchTerm.trim().toLowerCase();
