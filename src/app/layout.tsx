@@ -77,6 +77,8 @@ export const metadata: Metadata = {
   },
   other: {
     'facebook-domain-verification': '0kyl1g9when1n8e7ua1stqwe1n2hyg',
+    // Google Search Console domain sahipliği (OAuth doğrulaması ön koşulu, 2026-06-14).
+    'google-site-verification': 'ZZSMykfTS8sh0i8_RT7RcXt5IcimisF_2gvAWtfOTVo',
     // Apple Smart App Banner — Safari iOS'ta üstte "Open in App" bandı.
     'apple-itunes-app': 'app-id=6664058822',
   },
