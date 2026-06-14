@@ -20,6 +20,9 @@ import { COLLECTIONS } from '@/firebase/collections';
 import {
   createSearchCampaign,
   getGoogleAdsConfig,
+  refreshAccessToken,
+  listServingCustomers,
+  listAccessibleCustomers,
   type AdPlanForCampaign,
 } from '@/lib/ads/google-ads';
 
@@ -93,12 +96,42 @@ export async function POST(req: NextRequest) {
     ? (acctSnap.data() as { refreshToken?: unknown; customerId?: unknown } | undefined)
     : undefined;
   const refreshToken = typeof acct?.refreshToken === 'string' ? acct.refreshToken : '';
-  const customerId = typeof acct?.customerId === 'string' ? acct.customerId : '';
-  if (!refreshToken || !customerId) {
+  let customerId = typeof acct?.customerId === 'string' ? acct.customerId : '';
+  if (!refreshToken) {
     return NextResponse.json(
       { errorCode: 'NOT_CONNECTED', message: 'Önce Google Ads hesabını bağlayın.' },
       { status: 409 }
     );
+  }
+
+  // SELF-HEAL: customerId boşsa (callback çözememişse) burada stored refresh token
+  // ile servis edebilen hesabı çöz + kaydet. Böylece "Yayınla → 409 → tekrar bağla"
+  // döngüsü kırılır (kullanıcının yeniden bağlanması gerekmez).
+  if (!customerId) {
+    const accessToken = await refreshAccessToken(config, refreshToken);
+    if (accessToken) {
+      const serving = await listServingCustomers(accessToken, config);
+      customerId = serving[0]
+        || (await listAccessibleCustomers(accessToken, config)).find((c) => c && c !== config.loginCustomerId)
+        || '';
+      console.log('[ads/publish] self-heal customerId', {
+        ngoId: actor.ngoId, customerId: customerId || '(none)', servingCount: serving.length,
+      });
+      if (customerId) {
+        await db.collection(COLLECTIONS.adAccounts).doc(actor.ngoId)
+          .set({ customerId }, { merge: true }).catch(() => {});
+      }
+    }
+    if (!customerId) {
+      return NextResponse.json(
+        {
+          errorCode: 'NO_SERVING_ACCOUNT',
+          message: 'Google Ads servis hesabı çözülemedi.',
+          detail: 'Bağlanan hesapta reklam servis edebilen (manager olmayan) bir Google Ads hesabı bulunamadı. MCC bağlantısını ve hesap erişimini kontrol edin; gerekirse MCC sahibi hesapla yeniden bağlanın.',
+        },
+        { status: 409 }
+      );
+    }
   }
 
   // --- Plan ownership. ---

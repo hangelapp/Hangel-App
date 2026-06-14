@@ -399,6 +399,12 @@ export default function AdsPage() {
                 toast({ title: 'Yapılandırma bekleniyor', description: 'hangel ekibi Google Ads bağlantısını yapılandırıyor — çok yakında.' });
                 return;
             }
+            if (data?.errorCode === 'NO_SERVING_ACCOUNT') {
+                // Hesap bağlı ama reklam servis eden alt-hesap çözülemedi — bağlantıyı
+                // KOPARMA (döngü yapma), net neden göster.
+                toast({ variant: 'destructive', title: 'Servis hesabı bulunamadı', description: data?.detail || 'Reklam servis edebilen Google Ads hesabı bulunamadı. MCC sahibi hesapla yeniden bağlanmayı dene.' });
+                return;
+            }
             if (res.status === 409 || data?.errorCode === 'NOT_CONNECTED') {
                 setConnection((prev) => ({ ...prev, connected: false }));
                 toast({ variant: 'destructive', title: 'Hesap bağlı değil', description: 'Önce Google Ads hesabını bağla, sonra yayına al.' });
