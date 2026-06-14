@@ -17,11 +17,12 @@ const FILTERS: FilterDef[] = [
   {
     key: 'topic', label: 'topic', type: 'select',
     options: [
-      'Etki Odaklı Yardım', 'Etki Ölçümü', 'Kalkınma İktisadı',
-      'Kalkınma ve Yoksulluk', 'Kalkınma ve Sosyal Politika', 'Sosyal Sermaye',
-      'Katılımcı Demokrasi', 'Davranışsal Politika', 'Bilişsel Bilim',
-      'Sosyal İnovasyon', 'Sosyal Etki', 'Sivil Toplum Araştırmaları',
-      'Siyaset Sosyolojisi', 'STK Yönetişimi',
+      'Sosyal Girişimcilik', 'Gönüllülük', 'Hayırseverlik ve Bağış',
+      'Sosyal Etki', 'Etki Ölçümü', 'Sosyal Sorunlar',
+      'Sivil Toplum Araştırmaları', 'Sosyal İnovasyon',
+      'Etki Odaklı Yardım', 'Kalkınma İktisadı', 'Kalkınma ve Yoksulluk',
+      'Kalkınma ve Sosyal Politika', 'Sosyal Sermaye', 'Katılımcı Demokrasi',
+      'Davranışsal Politika', 'Bilişsel Bilim', 'Siyaset Sosyolojisi', 'STK Yönetişimi',
     ],
   },
   {

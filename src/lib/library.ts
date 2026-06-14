@@ -1,5 +1,6 @@
 import hangelImpactInventory from './hangel-impact-inventory.json';
 import hangelDataLibrary from './hangel-data-library.json';
+import hangelAcademicArticles from './hangel-academic-articles.json';
 import { templatesSection } from './library-templates';
 
 export interface LibraryItem {
@@ -45,6 +46,8 @@ export interface LibraryItem {
   sourceUrl?: string;
   /** Veri Kütüphanesi: tam künye metni ("Kurum (Yıl). Yayın. Erişim: URL"). */
   citation?: string;
+  /** Akademik Makaleler: kaynağın kökeni ("Türkiye" / "Yurt dışı"). */
+  origin?: string;
 }
 
 /**
@@ -485,6 +488,7 @@ export const librarySections: LibrarySection[] = [
         { slug: 'akademik-kalkinma-iktisadi', title: "Kalkınma İktisadı — Ayşe Buğra", content: "<p>Türkiye'de refah devleti, yoksulluk ve sosyal politika arasındaki ilişkiyi yapısal bir çerçevede inceleyen akademik eser.</p><ul><li><strong>Yazar:</strong> Ayşe Buğra</li><li><strong>Yayınevi:</strong> İletişim Yayınları</li><li><strong>Konu:</strong> Kalkınma ve Sosyal Politika</li></ul>" },
         { slug: 'akademik-turk-modernlesmesi', title: "Türk Modernleşmesi — Şerif Mardin", content: "<p>Türkiye'nin modernleşme sürecini merkez-çevre ilişkisi ve toplumsal gruplar üzerinden analiz eden ufuk açıcı çalışma.</p><ul><li><strong>Yazar:</strong> Şerif Mardin</li><li><strong>Yayınevi:</strong> İletişim Yayınları</li><li><strong>Konu:</strong> Siyaset Sosyolojisi</li></ul>" },
         { slug: 'akademik-jossey-bass-nonprofit', title: "The Jossey-Bass Handbook of Nonprofit Leadership — David O. Renz", content: "<p>Kâr amacı gütmeyen kuruluşların yönetimi, stratejik planlaması ve yönetişimi üzerine referans niteliğinde akademik derleme.</p><ul><li><strong>Yazar:</strong> David O. Renz</li><li><strong>Yayınevi:</strong> Jossey-Bass</li><li><strong>Konu:</strong> STK Yönetişimi</li></ul>" },
+        ...(hangelAcademicArticles as LibraryItem[]),
         ]
     },
     {
