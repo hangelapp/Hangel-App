@@ -196,6 +196,45 @@ export async function listAccessibleCustomers(
   }
 }
 
+/**
+ * MCC (login-customer-id) altındaki SERVİS edebilen (manager olmayan, ENABLED)
+ * müşteri hesaplarını döndürür. MCC sahibi OAuth verdiğinde listAccessibleCustomers
+ * çoğu zaman YALNIZCA MCC'yi döndürür; reklam servis eden gerçek alt-hesap (örn.
+ * Ad Grants hesabı) buradan çözülür. Hata/erişim sorununda boş dizi.
+ */
+export async function listServingCustomers(
+  accessToken: string,
+  config: GoogleAdsConfig
+): Promise<string[]> {
+  const mcc = digitsOnly(config.loginCustomerId);
+  if (!mcc) return [];
+  const query =
+    'SELECT customer_client.id, customer_client.manager, customer_client.status ' +
+    "FROM customer_client WHERE customer_client.manager = false AND customer_client.status = 'ENABLED'";
+  try {
+    const res = await fetch(`${ADS_API_BASE}/customers/${mcc}/googleAds:searchStream`, {
+      method: 'POST',
+      headers: adsHeaders(config, accessToken),
+      body: JSON.stringify({ query }),
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as Array<{
+      results?: Array<{ customerClient?: { id?: string | number; manager?: boolean } }>;
+    }>;
+    const chunks = Array.isArray(data) ? data : [];
+    const ids: string[] = [];
+    for (const chunk of chunks) {
+      for (const row of chunk.results ?? []) {
+        const cid = digitsOnly(String(row.customerClient?.id ?? ''));
+        if (cid && cid !== mcc && row.customerClient?.manager === false) ids.push(cid);
+      }
+    }
+    return ids;
+  } catch {
+    return [];
+  }
+}
+
 export interface CampaignMetrics {
   impressions: number;
   clicks: number;

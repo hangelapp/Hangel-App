@@ -28,6 +28,7 @@ import {
   exchangeCodeForTokens,
   getGoogleAdsConfig,
   listAccessibleCustomers,
+  listServingCustomers,
   ADS_OAUTH_NGO_COOKIE,
 } from '@/lib/ads/google-ads';
 import { getAdminFirestore } from '@/lib/firebase-admin';
@@ -159,13 +160,25 @@ export async function GET(req: NextRequest) {
       return htmlResponse(errorPage('token_exchange_failed'), { status: 502, clearCookies: true });
     }
 
-    // Best-effort: erişilebilir hesaplardan SERVİS edebilecek olanı seç (non-fatal).
-    // listAccessibleCustomers MCC'nin kendisini de (loginCustomerId) döndürebilir;
-    // yönetici (manager) hesabı reklam servis edemez → onu ele, ilk gerçek hesabı al.
+    // Servis edebilecek (manager olmayan) hesabı çöz. MCC sahibi yetkilendirince
+    // listAccessibleCustomers genelde YALNIZCA MCC'yi döndürür → önce MCC altındaki
+    // customer_client'lardan non-manager hesabı (örn. Ad Grants) al; bulunamazsa
+    // erişilebilir hesaplara düş (MCC'yi ele). customerId boş kalırsa publish 409 verir.
     let customerId: string | undefined;
     if (tokens.accessToken) {
-      const customers = await listAccessibleCustomers(tokens.accessToken, config);
-      customerId = customers.find((c) => c && c !== config.loginCustomerId) ?? customers[0];
+      const serving = await listServingCustomers(tokens.accessToken, config);
+      if (serving.length > 0) {
+        customerId = serving[0];
+      } else {
+        const accessible = await listAccessibleCustomers(tokens.accessToken, config);
+        customerId = accessible.find((c) => c && c !== config.loginCustomerId) ?? accessible[0];
+      }
+      // Teşhis (sır içermez): hangi hesap çözüldü, kaç servis hesabı bulundu.
+      console.log('[ads/callback] resolved customerId', {
+        ngoId,
+        customerId: customerId ?? '(none)',
+        servingCount: serving.length,
+      });
     }
 
     const db = getAdminFirestore();
