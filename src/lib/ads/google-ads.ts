@@ -135,6 +135,7 @@ export async function exchangeCodeForTokens(
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: form.toString(),
+      signal: AbortSignal.timeout(20000),
     });
     if (!res.ok) return null;
     const data = (await res.json()) as { refresh_token?: string; access_token?: string };
@@ -172,6 +173,7 @@ export async function refreshAccessToken(
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: form.toString(),
+      signal: AbortSignal.timeout(20000),
     });
     if (!res.ok) return null;
     const data = (await res.json()) as { access_token?: string };
@@ -198,6 +200,7 @@ export async function listAccessibleCustomers(
         authorization: `Bearer ${accessToken}`,
         'developer-token': config.developerToken,
       },
+      signal: AbortSignal.timeout(20000),
     });
     if (!res.ok) return [];
     const data = (await res.json()) as { resourceNames?: string[] };
@@ -212,42 +215,65 @@ export async function listAccessibleCustomers(
 }
 
 /**
- * MCC (login-customer-id) altındaki SERVİS edebilen (manager olmayan, ENABLED)
- * müşteri hesaplarını döndürür. MCC sahibi OAuth verdiğinde listAccessibleCustomers
- * çoğu zaman YALNIZCA MCC'yi döndürür; reklam servis eden gerçek alt-hesap (örn.
- * Ad Grants hesabı) buradan çözülür. Hata/erişim sorununda boş dizi.
+ * Verilen hesabın (manager olabilir) altındaki ENABLED müşteri hesaplarını döndürür
+ * ({id, manager}). login-customer-id = sorgulanan hesabın kendisi. Bir serving
+ * (non-manager) hesap için liste sadece kendisini içerir.
  */
-export async function listServingCustomers(
+async function listClientCustomers(
   accessToken: string,
-  config: GoogleAdsConfig
-): Promise<string[]> {
-  const mcc = digitsOnly(config.loginCustomerId);
-  if (!mcc) return [];
+  config: GoogleAdsConfig,
+  underCustomerId: string
+): Promise<Array<{ id: string; manager: boolean }>> {
+  const mid = digitsOnly(underCustomerId);
+  if (!mid) return [];
   const query =
     'SELECT customer_client.id, customer_client.manager, customer_client.status ' +
-    "FROM customer_client WHERE customer_client.manager = false AND customer_client.status = 'ENABLED'";
+    "FROM customer_client WHERE customer_client.status = 'ENABLED'";
   try {
-    const res = await fetch(`${ADS_API_BASE}/customers/${mcc}/googleAds:searchStream`, {
+    const res = await fetch(`${ADS_API_BASE}/customers/${mid}/googleAds:searchStream`, {
       method: 'POST',
-      headers: adsHeaders(config, accessToken),
+      headers: adsHeaders(config, accessToken, mid),
       body: JSON.stringify({ query }),
+      signal: AbortSignal.timeout(20000),
     });
     if (!res.ok) return [];
     const data = (await res.json()) as Array<{
       results?: Array<{ customerClient?: { id?: string | number; manager?: boolean } }>;
     }>;
-    const chunks = Array.isArray(data) ? data : [];
-    const ids: string[] = [];
-    for (const chunk of chunks) {
+    const out: Array<{ id: string; manager: boolean }> = [];
+    for (const chunk of Array.isArray(data) ? data : []) {
       for (const row of chunk.results ?? []) {
-        const cid = digitsOnly(String(row.customerClient?.id ?? ''));
-        if (cid && cid !== mcc && row.customerClient?.manager === false) ids.push(cid);
+        const id = digitsOnly(String(row.customerClient?.id ?? ''));
+        if (id) out.push({ id, manager: row.customerClient?.manager === true });
       }
     }
-    return ids;
+    return out;
   } catch {
     return [];
   }
+}
+
+/**
+ * STK'nın eriştiği hesaplar arasından reklam SERVİS edebilen (non-manager, ENABLED)
+ * bir hesabı + onu işlerken kullanılacak login-customer-id bağlamını çözer.
+ *
+ * Hem doğrudan sahip olunan serving hesabı (login-customer-id = hesabın kendisi) hem
+ * de bir manager (MCC dahil) altındaki serving alt-hesabı (login-customer-id = o
+ * manager) bulur. Böylece STK hesabına ister doğrudan ister bir yönetici hesap
+ * üzerinden erişsin çalışır. Bulunamazsa null.
+ */
+export async function resolveServingCustomer(
+  accessToken: string,
+  config: GoogleAdsConfig
+): Promise<{ customerId: string; loginCustomerId: string } | null> {
+  const accessible = await listAccessibleCustomers(accessToken, config);
+  for (const acc of accessible) {
+    if (!acc) continue;
+    const clients = await listClientCustomers(accessToken, config, acc);
+    const serving = clients.find((c) => c.id && !c.manager);
+    if (serving) return { customerId: serving.id, loginCustomerId: acc };
+  }
+  return null;
 }
 
 export interface CampaignMetrics {
@@ -282,12 +308,14 @@ function toNumber(value: string | number | undefined): number {
 export async function fetchCampaignMetrics(
   config: GoogleAdsConfig,
   refreshToken: string,
-  customerId: string
+  customerId: string,
+  loginCustomerId?: string
 ): Promise<CampaignMetrics | null> {
   const accessToken = await refreshAccessToken(config, refreshToken);
   if (!accessToken) return null;
   const id = digitsOnly(customerId);
   if (!id) return null;
+  const lcid = digitsOnly(loginCustomerId || customerId) || id;
 
   const query =
     'SELECT metrics.impressions, metrics.clicks, metrics.ctr, metrics.cost_micros FROM campaign DURING LAST_30_DAYS';
@@ -295,9 +323,10 @@ export async function fetchCampaignMetrics(
   try {
     const res = await fetch(`${ADS_API_BASE}/customers/${id}/googleAds:searchStream`, {
       method: 'POST',
-      // STK self-servis: login-customer-id = işlenen hesabın kendisi.
-      headers: adsHeaders(config, accessToken, id),
+      // login-customer-id = hesabın erişim bağlamı (doğrudan ise kendisi, manager ise o).
+      headers: adsHeaders(config, accessToken, lcid),
       body: JSON.stringify({ query }),
+      signal: AbortSignal.timeout(20000),
     });
     if (!res.ok) return null;
     // searchStream returns an array of result chunks: [{ results: [...] }, ...]
@@ -335,13 +364,16 @@ async function mutate(
   accessToken: string,
   customerId: string,
   service: string,
-  operations: unknown[]
+  operations: unknown[],
+  loginCustomerId?: string
 ): Promise<{ results?: Array<{ resourceName?: string }> }> {
   const res = await fetch(`${ADS_API_BASE}/customers/${customerId}/${service}:mutate`, {
     method: 'POST',
-    // STK self-servis: login-customer-id = işlenen hesabın kendisi (hangel MCC değil).
-    headers: adsHeaders(config, accessToken, customerId),
+    // login-customer-id = işlenen hesabın erişim bağlamı (doğrudan ise hesabın kendisi,
+    // bir manager üzerinden ise o manager). Verilmezse hesabın kendisi varsayılır.
+    headers: adsHeaders(config, accessToken, loginCustomerId ?? customerId),
     body: JSON.stringify({ operations }),
+    signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) {
     // Google Ads hata gövdesini (policy/billing/auth nedeni) teşhis için taşı.
@@ -379,6 +411,7 @@ export async function createSearchCampaign(
   config: GoogleAdsConfig,
   refreshToken: string,
   customerId: string,
+  loginCustomerId: string | undefined,
   plan: AdPlanForCampaign
 ): Promise<{ campaignResourceName: string }> {
   const accessToken = await refreshAccessToken(config, refreshToken);
@@ -389,6 +422,9 @@ export async function createSearchCampaign(
   if (!id) {
     throw new Error('ads_invalid_customer');
   }
+  // login-customer-id bağlamı: serving hesabın erişim yolu (manager ise o manager,
+  // doğrudan ise hesabın kendisi).
+  const lcid = digitsOnly(loginCustomerId || customerId) || id;
 
   const stamp = Date.now();
   const title = (plan.title ?? 'hangel kampanya').slice(0, 120);
@@ -403,7 +439,7 @@ export async function createSearchCampaign(
         explicitlyShared: false,
       },
     },
-  ]);
+  ], lcid);
   const budgetResourceName = firstResourceName(budgetOut, 'budget');
 
   // 2) Campaign — PAUSED start, SEARCH channel, conservative defaults.
@@ -423,7 +459,7 @@ export async function createSearchCampaign(
         },
       },
     },
-  ]);
+  ], lcid);
   const campaignResourceName = firstResourceName(campaignOut, 'campaign');
 
   // 3) Ad group under the campaign.
@@ -437,7 +473,7 @@ export async function createSearchCampaign(
         cpcBidMicros: '1000000',
       },
     },
-  ]);
+  ], lcid);
   const adGroupResourceName = firstResourceName(adGroupOut, 'adGroup');
 
   // 4) Keyword criteria (broad match). Cap at 20 to stay conservative.
@@ -456,7 +492,8 @@ export async function createSearchCampaign(
           status: 'ENABLED',
           keyword: { text: kw.slice(0, 80), matchType: 'BROAD' },
         },
-      }))
+      })),
+      lcid
     );
   }
 
@@ -517,7 +554,7 @@ export async function createSearchCampaign(
         },
       },
     },
-  ]);
+  ], lcid);
 
   return { campaignResourceName };
 }

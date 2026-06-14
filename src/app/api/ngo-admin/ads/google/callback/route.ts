@@ -27,7 +27,7 @@ import {
 import {
   exchangeCodeForTokens,
   getGoogleAdsConfig,
-  listAccessibleCustomers,
+  resolveServingCustomer,
   ADS_OAUTH_NGO_COOKIE,
 } from '@/lib/ads/google-ads';
 import { getAdminFirestore } from '@/lib/firebase-admin';
@@ -159,19 +159,21 @@ export async function GET(req: NextRequest) {
       return htmlResponse(errorPage('token_exchange_failed'), { status: 502, clearCookies: true });
     }
 
-    // STK SELF-SERVİS: STK kendi Google hesabıyla bağlanır ve KENDİ reklam hesabında
-    // işlem yapar. Bu yüzden STK'nın doğrudan eriştiği (listAccessibleCustomers) hesabı
-    // alırız; hangel MCC'sini ELERİZ (o hangel ajans/süper-admin işlemi içindir).
-    // (Eskiden MCC altı customer_client sorgulanıyordu — STK kullanıcısı MCC'ye erişemediği
-    //  için bu yanlıştı ve publish'i kırıyordu.)
+    // STK SELF-SERVİS: STK'nın eriştiği hesaplar arasından reklam SERVİS edebilen
+    // (non-manager) hesabı + doğru login-customer-id bağlamını çöz. STK hesabına ister
+    // doğrudan ister bir manager (kendi MCC'si dahil) üzerinden erişsin çalışır.
     let customerId: string | undefined;
+    let loginCustomerId: string | undefined;
     if (tokens.accessToken) {
-      const accessible = await listAccessibleCustomers(tokens.accessToken, config);
-      customerId = accessible.find((c) => c && c !== config.loginCustomerId) ?? accessible[0];
-      console.log('[ads/callback] resolved STK customerId', {
+      const resolved = await resolveServingCustomer(tokens.accessToken, config);
+      if (resolved) {
+        customerId = resolved.customerId;
+        loginCustomerId = resolved.loginCustomerId;
+      }
+      console.log('[ads/callback] resolved serving customer', {
         ngoId,
         customerId: customerId ?? '(none)',
-        accessibleCount: accessible.length,
+        loginCustomerId: loginCustomerId ?? '(none)',
       });
     }
 
@@ -184,6 +186,7 @@ export async function GET(req: NextRequest) {
       connectedAt: FieldValue.serverTimestamp(),
     };
     if (customerId) docData.customerId = customerId;
+    if (loginCustomerId) docData.loginCustomerId = loginCustomerId;
 
     await db.collection(COLLECTIONS.adAccounts).doc(ngoId).set(docData, { merge: true });
 

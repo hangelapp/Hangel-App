@@ -21,7 +21,7 @@ import {
   createSearchCampaign,
   getGoogleAdsConfig,
   refreshAccessToken,
-  listAccessibleCustomers,
+  resolveServingCustomer,
   type AdPlanForCampaign,
 } from '@/lib/ads/google-ads';
 
@@ -92,10 +92,11 @@ export async function POST(req: NextRequest) {
     .get()
     .catch(() => null);
   const acct = acctSnap?.exists
-    ? (acctSnap.data() as { refreshToken?: unknown; customerId?: unknown } | undefined)
+    ? (acctSnap.data() as { refreshToken?: unknown; customerId?: unknown; loginCustomerId?: unknown } | undefined)
     : undefined;
   const refreshToken = typeof acct?.refreshToken === 'string' ? acct.refreshToken : '';
   let customerId = typeof acct?.customerId === 'string' ? acct.customerId : '';
+  let loginCustomerId = typeof acct?.loginCustomerId === 'string' ? acct.loginCustomerId : '';
   if (!refreshToken) {
     return NextResponse.json(
       { errorCode: 'NOT_CONNECTED', message: 'Önce Google Ads hesabını bağlayın.' },
@@ -103,21 +104,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // SELF-HEAL: customerId boşsa (callback çözememişse) burada stored refresh token
-  // ile servis edebilen hesabı çöz + kaydet. Böylece "Yayınla → 409 → tekrar bağla"
-  // döngüsü kırılır (kullanıcının yeniden bağlanması gerekmez).
+  // SELF-HEAL: customerId boşsa (callback çözememişse) burada stored refresh token ile
+  // servis edebilen hesabı (+ login-customer-id bağlamını) çöz + kaydet. Böylece
+  // "Yayınla → 409 → tekrar bağla" döngüsü kırılır; STK'nın hesaba doğrudan ya da bir
+  // manager üzerinden erişmesi fark etmez.
   if (!customerId) {
     const accessToken = await refreshAccessToken(config, refreshToken);
     if (accessToken) {
-      // STK self-servis: STK'nın doğrudan eriştiği hesabı al (hangel MCC'yi ele).
-      const accessible = await listAccessibleCustomers(accessToken, config);
-      customerId = accessible.find((c) => c && c !== config.loginCustomerId) || accessible[0] || '';
-      console.log('[ads/publish] self-heal STK customerId', {
-        ngoId: actor.ngoId, customerId: customerId || '(none)', accessibleCount: accessible.length,
+      const resolved = await resolveServingCustomer(accessToken, config);
+      if (resolved) {
+        customerId = resolved.customerId;
+        loginCustomerId = resolved.loginCustomerId;
+      }
+      console.log('[ads/publish] self-heal resolved', {
+        ngoId: actor.ngoId, customerId: customerId || '(none)', loginCustomerId: loginCustomerId || '(none)',
       });
       if (customerId) {
         await db.collection(COLLECTIONS.adAccounts).doc(actor.ngoId)
-          .set({ customerId }, { merge: true }).catch(() => {});
+          .set({ customerId, loginCustomerId }, { merge: true }).catch(() => {});
       }
     }
     if (!customerId) {
@@ -125,7 +129,7 @@ export async function POST(req: NextRequest) {
         {
           errorCode: 'NO_SERVING_ACCOUNT',
           message: 'Google Ads servis hesabı çözülemedi.',
-          detail: 'Bağlanan hesapta reklam servis edebilen (manager olmayan) bir Google Ads hesabı bulunamadı. MCC bağlantısını ve hesap erişimini kontrol edin; gerekirse MCC sahibi hesapla yeniden bağlanın.',
+          detail: 'Bağlanan Google hesabıyla, reklam servis edebilen (manager olmayan) bir Google Ads hesabına ulaşılamadı. Lütfen derneğin Google Ads hesabına erişimi olan Google hesabıyla (kendi hesap sahibi) yeniden bağlanın.',
         },
         { status: 409 }
       );
@@ -183,7 +187,7 @@ export async function POST(req: NextRequest) {
 
   let campaignResourceName: string;
   try {
-    const result = await createSearchCampaign(config, refreshToken, customerId, planForCampaign);
+    const result = await createSearchCampaign(config, refreshToken, customerId, loginCustomerId || undefined, planForCampaign);
     campaignResourceName = result.campaignResourceName;
   } catch (err) {
     // Gerçek Google Ads hatasını sunucu loguna yaz (Cloud Logging). Yöneticiye

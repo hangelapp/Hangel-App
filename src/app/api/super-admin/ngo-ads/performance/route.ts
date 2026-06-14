@@ -66,9 +66,10 @@ export async function GET(req: NextRequest) {
   const metrics: PerformanceMetric[] = [];
   if (snap) {
     for (const doc of snap.docs) {
-      const data = doc.data() as { refreshToken?: unknown; customerId?: unknown };
+      const data = doc.data() as { refreshToken?: unknown; customerId?: unknown; loginCustomerId?: unknown };
       const refreshToken = typeof data.refreshToken === 'string' ? data.refreshToken : '';
       const customerId = typeof data.customerId === 'string' ? data.customerId : '';
+      const loginCustomerId = typeof data.loginCustomerId === 'string' ? data.loginCustomerId : undefined;
       const base: PerformanceMetric = {
         ngoId: doc.id,
         customerId: customerId || undefined,
@@ -78,7 +79,7 @@ export async function GET(req: NextRequest) {
         costMicros: 0,
       };
       if (refreshToken && customerId) {
-        const m = await fetchCampaignMetrics(config, refreshToken, customerId);
+        const m = await fetchCampaignMetrics(config, refreshToken, customerId, loginCustomerId);
         if (m) {
           base.impressions = m.impressions;
           base.clicks = m.clicks;
