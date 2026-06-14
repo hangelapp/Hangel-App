@@ -104,6 +104,30 @@ env:
     availability:
       - RUNTIME
 
+  # Google Ads — STK ücretsiz reklam (Faz 1). Basic Access ONAYLI (2026-06-14,
+  # 15.000 işlem/gün). OAuth istemcisi contacts ile PAYLAŞILIYOR (aynı GCP
+  # uygulaması) → CLIENT_ID/SECRET için GOOGLE_CONTACTS_* secret'ları referans
+  # alınır. ÖN KOŞUL: ads redirect URI'si bu OAuth client'a eklenmeli:
+  #   https://hangel.org.tr/api/ngo-admin/ads/google/callback   (+ adwords scope)
+  # NOT: DEVELOPER_TOKEN şimdilik plaintext (Resend paterni; kullanıcı verdi
+  # 2026-06-14) → Secret Manager'a taşı (dev token MCC'ye sabit, klasik rotate yok).
+  - variable: GOOGLE_ADS_CLIENT_ID
+    secret: GOOGLE_CONTACTS_CLIENT_ID
+    availability:
+      - RUNTIME
+  - variable: GOOGLE_ADS_CLIENT_SECRET
+    secret: GOOGLE_CONTACTS_CLIENT_SECRET
+    availability:
+      - RUNTIME
+  - variable: GOOGLE_ADS_DEVELOPER_TOKEN
+    value: "9pZQeWbJnchWRCrra0jQYA"
+    availability:
+      - RUNTIME
+  - variable: GOOGLE_ADS_LOGIN_CUSTOMER_ID
+    value: "5350794741"
+    availability:
+      - RUNTIME
+
   # Apple Wallet (PassKit) — yaka kartı .pkpass imzalama (2026-06-13 kuruldu).
   # Pass Type ID cert: pass.com.hangel.ios.app (WWDR G4). Özel anahtar AES256 +
   # passphrase; plaintext base64 (RESEND paterni) — rotasyon/Secret Manager fast-follow.
