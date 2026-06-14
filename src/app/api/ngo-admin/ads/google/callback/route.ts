@@ -159,11 +159,13 @@ export async function GET(req: NextRequest) {
       return htmlResponse(errorPage('token_exchange_failed'), { status: 502, clearCookies: true });
     }
 
-    // Best-effort: resolve the first accessible customer id (non-fatal).
+    // Best-effort: erişilebilir hesaplardan SERVİS edebilecek olanı seç (non-fatal).
+    // listAccessibleCustomers MCC'nin kendisini de (loginCustomerId) döndürebilir;
+    // yönetici (manager) hesabı reklam servis edemez → onu ele, ilk gerçek hesabı al.
     let customerId: string | undefined;
     if (tokens.accessToken) {
       const customers = await listAccessibleCustomers(tokens.accessToken, config);
-      customerId = customers[0];
+      customerId = customers.find((c) => c && c !== config.loginCustomerId) ?? customers[0];
     }
 
     const db = getAdminFirestore();
