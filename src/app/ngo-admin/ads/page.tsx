@@ -394,7 +394,7 @@ export default function AdsPage() {
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
                 body: JSON.stringify({ planId }),
             });
-            const data = (await res.json().catch(() => null)) as { ok?: boolean; status?: PlanStatus; errorCode?: string; message?: string } | null;
+            const data = (await res.json().catch(() => null)) as { ok?: boolean; status?: PlanStatus; errorCode?: string; message?: string; detail?: string } | null;
             if (res.status === 503 || data?.errorCode === 'ADS_NOT_CONFIGURED') {
                 toast({ title: 'Yapılandırma bekleniyor', description: 'hangel ekibi Google Ads bağlantısını yapılandırıyor — çok yakında.' });
                 return;
@@ -405,7 +405,8 @@ export default function AdsPage() {
                 return;
             }
             if (!res.ok || !data?.ok) {
-                throw new Error(data?.message || 'Yayınlanamadı.');
+                // detail = Google Ads teşhis özeti (policy/billing) — nedeni görmek için göster.
+                throw new Error(data?.detail ? `${data?.message || 'Yayınlanamadı.'} (${data.detail})` : (data?.message || 'Yayınlanamadı.'));
             }
             setSavedPlans((prev) => prev.map((p) => (p.id === planId ? { ...p, status: 'active' } : p)));
             toast({ title: 'Kampanya yayında', description: title ? `"${title}" Google Ads üzerinde yayına alındı.` : 'Kampanya Google Ads üzerinde yayına alındı.' });

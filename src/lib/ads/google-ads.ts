@@ -288,8 +288,10 @@ async function mutate(
     body: JSON.stringify({ operations }),
   });
   if (!res.ok) {
-    // Do not surface the raw provider error to callers/clients.
-    throw new Error(`ads_mutate_failed:${service}:${res.status}`);
+    // Google Ads hata gövdesini (policy/billing/auth nedeni) teşhis için taşı.
+    // Çağıran tarafta SADECE sunucu loguna yazılır + sadeleştirilmiş özet döner.
+    const detail = await res.text().catch(() => '');
+    throw new Error(`ads_mutate_failed:${service}:${res.status}:${detail.slice(0, 3000)}`);
   }
   return (await res.json()) as { results?: Array<{ resourceName?: string }> };
 }

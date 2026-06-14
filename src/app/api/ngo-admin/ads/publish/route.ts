@@ -25,6 +25,40 @@ import {
 
 export const runtime = 'nodejs';
 
+/**
+ * createSearchCampaign'in fırlattığı hata mesajını yöneticiye gösterilebilir kısa
+ * bir TEŞHİS özetine çevirir. mutate hataları "ads_mutate_failed:<service>:<status>:<bodyJson>"
+ * biçiminde gelir; Google Ads REST hata gövdesinden errorCode + mesaj çıkarılır.
+ * (Sağlayıcı policy/billing kodu — STK'nın kendi hesabına dair teşhis, sır değil.)
+ */
+function summarizeAdsError(raw: string): string {
+  const m = raw.match(/^ads_mutate_failed:([^:]+):(\d+):([\s\S]*)$/);
+  if (m) {
+    const [, service, status, body] = m;
+    let reason: string;
+    try {
+      const j = JSON.parse(body) as {
+        error?: {
+          message?: string;
+          details?: Array<{ errors?: Array<{ message?: string; errorCode?: Record<string, string> }> }>;
+        };
+      };
+      const first = j.error?.details?.[0]?.errors?.[0];
+      const codeObj = first?.errorCode ?? {};
+      const codeKey = Object.keys(codeObj)[0];
+      const codeVal = codeKey ? `${codeKey}.${codeObj[codeKey]}` : '';
+      reason = [codeVal, first?.message || j.error?.message].filter(Boolean).join(' — ');
+    } catch {
+      reason = body.slice(0, 200);
+    }
+    return `Adım: ${service} (HTTP ${status})${reason ? ' · ' + reason : ''}`.slice(0, 320);
+  }
+  if (raw.includes('ads_token_refresh_failed')) return 'Yetki/oturum yenilenemedi — hesabı yeniden bağlayın.';
+  if (raw.includes('ads_invalid_customer')) return 'Geçersiz reklam hesabı numarası.';
+  if (raw.startsWith('ads_missing_resource')) return 'Google beklenen kaynağı döndürmedi.';
+  return raw.slice(0, 200);
+}
+
 export async function POST(req: NextRequest) {
   const auth = await requireNgoAdmin(req, { scope: 'ads' });
   if ('error' in auth) return auth.error;
@@ -120,10 +154,20 @@ export async function POST(req: NextRequest) {
   try {
     const result = await createSearchCampaign(config, refreshToken, customerId, planForCampaign);
     campaignResourceName = result.campaignResourceName;
-  } catch {
-    // Do not leak the raw provider error.
+  } catch (err) {
+    // Gerçek Google Ads hatasını sunucu loguna yaz (Cloud Logging). Yöneticiye
+    // sadeleştirilmiş bir TEŞHİS özeti döndür (Ads policy/billing kodu — STK'nın
+    // kendi hesabına dair, sır değil; "neden yayınlanmadı"yı görmesi gerekir).
+    const raw = err instanceof Error ? err.message : String(err);
+    console.error('[ads/publish] createSearchCampaign failed', {
+      ngoId: actor.ngoId,
+      customerId,
+      loginCustomerId: config.loginCustomerId,
+      planId,
+      raw,
+    });
     return NextResponse.json(
-      { errorCode: 'PUBLISH_FAILED', message: 'Yayınlama başarısız.' },
+      { errorCode: 'PUBLISH_FAILED', message: 'Yayınlama başarısız.', detail: summarizeAdsError(raw) },
       { status: 502 }
     );
   }
