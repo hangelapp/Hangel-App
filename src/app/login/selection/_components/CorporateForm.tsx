@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { allCountries, allSdgs, neighborhoodsData } from '@/lib/data';
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
+import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 import { LocationFields } from '@/components/shared/location-fields';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser } from '@/firebase';
@@ -307,7 +308,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             // Kulüp formu formData.email kullanmıyor → clubPresidentEmail veya authorized email'den resolve.
             const resolvedEmail = (formData.email || authorizedEmail || formData.authorized?.email || '').trim();
 
-            await addDoc(collection(db, COLLECTIONS.applications), {
+            const applicationRef = await addDoc(collection(db, COLLECTIONS.applications), {
                 ...formData,
                 email: resolvedEmail,
                 website: normalizedWebsite,
@@ -349,6 +350,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
                         body: JSON.stringify({ uid: authUser.uid, isCorporate: true, entityType }),
                     });
+                    // Kurumsal yaşam döngüsü: "kaydınızı aldık" (bildirim + SMS)
+                    await fireOrgLifecycle(idToken, { kind: 'ngo_registration', stage: 'received', refId: applicationRef.id });
                 } catch (e) {
                     reportNonFatalError('welcome_send_corporate', e, { entityType });
                 }

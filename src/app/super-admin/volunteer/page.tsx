@@ -44,11 +44,12 @@ import {
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { Volunteering } from '@/lib/types';
 import { Loader2, Calendar, MapPin, Users } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
+import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 
 type Status = 'Aktif' | 'Pasif' | 'Beklemede';
 
@@ -421,6 +422,7 @@ const OpportunityCard = ({ opp, onStatusChange, onDelete, onSave }: {
 
 export default function VolunteerManagementPage() {
   const db = useFirestore();
+  const { user: authUser } = useUser();
   const { toast } = useToast();
 
   const oppsQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.volunteering) : null), [db]);
@@ -429,6 +431,13 @@ export default function VolunteerManagementPage() {
   const handleUpdateStatus = async (id: string, newStatus: Status) => {
     try {
       await updateDoc(doc(db, COLLECTIONS.volunteering, id), { status: newStatus });
+      // Yaşam döngüsü: "gönüllülük ilanınız onaylandı ve yayında" → kuruma bildirim + SMS
+      if (newStatus === 'Aktif') {
+        try {
+          const lifecycleToken = await authUser?.getIdToken();
+          await fireOrgLifecycle(lifecycleToken, { kind: 'volunteer', stage: 'approved', refId: id });
+        } catch { /* best-effort */ }
+      }
       toast({
         title: 'İlan Durumu Güncellendi',
         description: newStatus === 'Aktif' ? 'İlan yayına alındı.' : newStatus === 'Pasif' ? 'İlan yayından kaldırıldı.' : 'İlan onay bekliyor.',

@@ -48,6 +48,7 @@ import { useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { EventContributor, EventContributorRole, EventAgendaItem } from '@/lib/types';
+import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -451,7 +452,7 @@ export default function EventManagementPage() {
 
             // ---- OLUŞTURMA modu ----
             // Force status='Beklemede' regardless of any other inputs
-            await addDoc(collection(firestore, COLLECTIONS.events), {
+            const eventRef = await addDoc(collection(firestore, COLLECTIONS.events), {
                 name: evName.trim(),
                 slug: finalSlug,
                 organizer: activeEntity.data.name || t('ngo_admin_events.defaultOrganizer'),
@@ -485,6 +486,12 @@ export default function EventManagementPage() {
                 createdAt: Date.now(),
                 createdBy: authUser?.uid || null,
             });
+
+            // Yaşam döngüsü: "etkinlik kaydınız alındı" (bildirim + kurumsal SMS)
+            try {
+                const lifecycleToken = await authUser?.getIdToken();
+                await fireOrgLifecycle(lifecycleToken, { kind: 'event', stage: 'received', refId: eventRef.id });
+            } catch { /* best-effort */ }
 
             toast({
                 title: t('ngo_admin_events.requestReceivedToast'),

@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     PlusCircle, Bell, Inbox, Search, Droplet, HeartHandshake,
     DollarSign, Newspaper, ShieldCheck, Loader2, ExternalLink,
@@ -18,6 +18,7 @@ import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useTranslation } from '@/components/providers/language-provider';
+import { NOTIF_CATEGORIES, categorizeNotif, type NotifCategoryKey } from '@/lib/notification-categories';
 
 interface NotifItem {
     id: string;
@@ -95,6 +96,24 @@ export default function NgoNotificationsPage() {
 
     const unread = sorted.filter(n => !n.read);
 
+    // Bildirim merkezi sekmesi: 'all' | 'unread' | kategori anahtarı.
+    const [activeTab, setActiveTab] = useState<string>('all');
+
+    // Her kategori başlığındaki OKUNMAMIŞ işlem sayısı (süper admin badge mantığı).
+    const categoryUnread = useMemo(() => {
+        const counts: Record<NotifCategoryKey, number> = {
+            registration: 0, events: 0, volunteer: 0, donations: 0, emergency: 0, messages: 0, other: 0,
+        };
+        for (const n of unread) counts[categorizeNotif(n.type)] += 1;
+        return counts;
+    }, [unread]);
+
+    const displayed = useMemo(() => {
+        if (activeTab === 'all') return sorted;
+        if (activeTab === 'unread') return unread;
+        return sorted.filter(n => categorizeNotif(n.type) === activeTab);
+    }, [activeTab, sorted, unread]);
+
     const markRead = async (id: string) => {
         try { await updateDoc(doc(db, COLLECTIONS.notifications, id), { read: true, readAt: new Date().toISOString() }); } catch { /* sessiz */ }
     };
@@ -157,35 +176,34 @@ export default function NgoNotificationsPage() {
 
             <Card className="border-none shadow-none bg-transparent">
                 <CardContent className="p-0">
-                    <Tabs defaultValue="all" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 max-w-md h-12 items-center bg-muted/50 p-1 rounded-xl">
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        <TabsList className="flex w-full flex-wrap h-auto items-center justify-start gap-1 bg-muted/50 p-1 rounded-xl">
                             <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                                 <Inbox className="mr-2 h-4 w-4" /> {t('ngoAdminNotifs.allTab')} {unread.length > 0 && <span className="ml-1.5 px-1.5 py-0.5 bg-primary text-white text-[10px] rounded-full">{unread.length}</span>}
                             </TabsTrigger>
                             <TabsTrigger value="unread" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                                 <Bell className="mr-2 h-4 w-4" /> {t('ngoAdminNotifs.unreadTab')}
                             </TabsTrigger>
+                            {NOTIF_CATEGORIES.map(cat => (
+                                <TabsTrigger key={cat.key} value={cat.key} className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                                    {cat.label}
+                                    {categoryUnread[cat.key] > 0 && (
+                                        <span className="ml-1.5 px-1.5 py-0.5 bg-primary text-white text-[10px] rounded-full">{categoryUnread[cat.key]}</span>
+                                    )}
+                                </TabsTrigger>
+                            ))}
                         </TabsList>
 
-                        <TabsContent value="all" className="mt-6 space-y-3">
+                        <div className="mt-6 space-y-3">
                             {isLoading ? (
                                 <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-                            ) : sorted.length === 0 ? (
+                            ) : displayed.length === 0 ? (
                                 <div className="text-center py-24 bg-background rounded-2xl border border-dashed border-muted-foreground/20">
                                     <Inbox className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                                    <p className="text-muted-foreground font-medium">{t('ngoAdminNotifs.emptyAll')}</p>
+                                    <p className="text-muted-foreground font-medium">{activeTab === 'unread' ? t('ngoAdminNotifs.emptyUnread') : t('ngoAdminNotifs.emptyAll')}</p>
                                 </div>
-                            ) : sorted.map(renderRow)}
-                        </TabsContent>
-
-                        <TabsContent value="unread" className="mt-6 space-y-3">
-                            {unread.length === 0 ? (
-                                <div className="text-center py-24 bg-background rounded-2xl border border-dashed border-muted-foreground/20">
-                                    <Inbox className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                                    <p className="text-muted-foreground font-medium">{t('ngoAdminNotifs.emptyUnread')}</p>
-                                </div>
-                            ) : unread.map(renderRow)}
-                        </TabsContent>
+                            ) : displayed.map(renderRow)}
+                        </div>
                     </Tabs>
                 </CardContent>
             </Card>

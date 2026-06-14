@@ -29,6 +29,7 @@ import { Loader2, CheckCircle, XCircle, Clock, ShieldCheck, Building, Store, Sch
 import { useFirestore, useUser, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { collection, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 
 // Map entityType values from the form to Turkish labels
 const entityTypeLabels: Record<string, string> = {
@@ -510,6 +511,14 @@ export default function ApplicationsPage() {
           approvedAt: serverTimestamp(),
           createdEntityId: entityId,
         });
+
+        // Kurumsal yaşam döngüsü: "kaydınız onaylandı" (bildirim + SMS).
+        // createdEntityId güncellemesi async olduğundan route'un entity'yi
+        // okuyabilmesi için kısa bekleme yerine route owner uid'yi de bildirir.
+        try {
+          const lifecycleToken = await authUser?.getIdToken();
+          await fireOrgLifecycle(lifecycleToken, { kind: 'ngo_registration', stage: 'approved', refId: id });
+        } catch { /* best-effort */ }
 
         // STK: kayıt formunda yüklenen yasal belgeleri (tüzük/faaliyet) şeffaflık
         // onay kuyruğuna ekle — onaylanınca puana dahil olur. (Admin SDK; client

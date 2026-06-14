@@ -31,6 +31,7 @@ import {
   CERTIFICATES, PROGRAMS, VISAS,
 } from '@/lib/volunteer-data';
 import { COLLECTIONS } from '@/firebase/collections';
+import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 
 const allInterests = INTERESTS;
 const allSkills = SKILLS;
@@ -342,7 +343,13 @@ function NewOpportunityForm() {
         createdBy: authUser?.uid || null,
       };
 
-      await addDoc(collection(db, COLLECTIONS.volunteering), payload);
+      const volunteerRef = await addDoc(collection(db, COLLECTIONS.volunteering), payload);
+
+      // Yaşam döngüsü: "gönüllülük ilanınızın kaydı alındı" (bildirim + kurumsal SMS)
+      try {
+        const lifecycleToken = await authUser?.getIdToken();
+        await fireOrgLifecycle(lifecycleToken, { kind: 'volunteer', stage: 'received', refId: volunteerRef.id });
+      } catch { /* best-effort */ }
 
       toast({
         title: 'İlan Onaya Gönderildi',

@@ -64,6 +64,7 @@ import {
   PowerOff,
 } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
+import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 
 type EventStatus = 'Beklemede' | 'Yayında' | 'Reddedildi' | 'Aktif' | 'Pasif';
 
@@ -465,6 +466,12 @@ export default function SuperAdminEventsPage() {
       } catch (notifErr) {
         console.warn('[event approve] member notification failed', notifErr);
       }
+
+      // Yaşam döngüsü: "etkinliğiniz onaylandı ve yayında" → kuruma bildirim + SMS
+      try {
+        const lifecycleToken = await authUser?.getIdToken();
+        await fireOrgLifecycle(lifecycleToken, { kind: 'event', stage: 'approved', refId: id });
+      } catch { /* best-effort */ }
 
       toast({ title: 'Etkinlik Onaylandı', description: 'Etkinlik yayında. Kulüp üyelerine bildirim gönderildi.' });
     } catch (e) {
