@@ -530,7 +530,33 @@ export default function LoginPage() {
         }
     ];
 
-    if (!mounted) return <div className="min-h-screen bg-background" />;
+    // Hidrasyon öncesi / JS'siz istemci (ve Google OAuth doğrulama denetçisi) için
+    // SSR HTML'inde uygulamanın amacını NET anlatan görünür içerik. mounted=true olunca
+    // aşağıdaki tam açılış sayfası bunun yerini alır. (Önceden boş div dönüyordu →
+    // "ana sayfa amacı açıklanmıyor" reddine sebep oluyordu.)
+    if (!mounted) return (
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center">
+            <h1 className="text-4xl font-black tracking-tight text-[#1d1d1f]">hangel</h1>
+            <p className="mt-4 text-lg font-semibold text-foreground/80 max-w-2xl">
+                Türkiye&apos;nin sosyal etki platformu
+            </p>
+            <p className="mt-3 text-base text-muted-foreground max-w-2xl leading-relaxed">
+                hangel; sivil toplum kuruluşlarını (STK), gönüllüleri, öğrenci kulüplerini ve
+                markaları tek bir platformda buluşturur. Kullanıcılar bağış yapar ve gönüllülük
+                fırsatlarına başvurur; STK&apos;lar kampanya, etkinlik ve gönüllülük ilanlarını
+                yönetir; markalar satışlarından STK&apos;lara katkı sağlar. STK&apos;lar ayrıca
+                kendi Google Ads / Google Ad Grants reklam hesaplarını doğrudan hangel panelinden
+                bağlayıp yönetebilir.
+            </p>
+            <p className="mt-6 text-sm text-muted-foreground">
+                <a href="/login/selection?action=register" className="underline underline-offset-2">Hemen Katıl</a>
+                {' · '}
+                <a href="/gizlilik-politikasi" className="underline underline-offset-2">Gizlilik Politikası</a>
+                {' · '}
+                <a href="/kullanici-sozlesmesi" className="underline underline-offset-2">Kullanıcı Sözleşmesi</a>
+            </p>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
