@@ -87,6 +87,35 @@ export default function FeedAdminPage() {
     }
   };
 
+  // Tüm listelenen feed'leri sırayla ingest et (tek tıkla tüm markalar).
+  const ingestAll = async () => {
+    if (!feeds || feeds.length === 0) {
+      toast({ variant: 'destructive', title: 'Önce "Feed\'leri Yükle"', description: 'İçe aktarılacak feed yok.' });
+      return;
+    }
+    setBulkBusy(true);
+    let okCount = 0;
+    let total = 0;
+    try {
+      for (const f of feeds) {
+        setIngesting(f.feedId);
+        try {
+          const res = await authedFetch({
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ feedId: f.feedId, offerId: f.offerId, name: f.name, type: f.type, limit: 500 }),
+          });
+          const payload = await res.json();
+          if (res.ok) { okCount += 1; total += Number(payload.ingested || 0); }
+        } catch { /* bu feed atlandı, diğerlerine devam */ }
+      }
+      toast({ title: 'Toplu içe aktarma bitti', description: `${okCount}/${feeds.length} feed · ${total} ürün kütüphaneye eklendi.` });
+    } finally {
+      setIngesting(null);
+      setBulkBusy(false);
+    }
+  };
+
   const ingestManual = async () => {
     const feedUrl = manualUrl.trim();
     const name = manualName.trim();
@@ -172,10 +201,18 @@ export default function FeedAdminPage() {
               <CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Ürün Feed&apos;leri (GelirOrtakları Go Feed)</CardTitle>
               <CardDescription>Onaylı markaların ürün feed&apos;leri. &quot;Ürünleri Çek&quot; ile kütüphaneye ingest edilir.</CardDescription>
             </div>
-            <Button onClick={loadFeeds} disabled={loadingFeeds} className="rounded-xl font-bold">
-              {loadingFeeds ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-              Feed&apos;leri Yükle
-            </Button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button onClick={loadFeeds} disabled={loadingFeeds || bulkBusy} variant="outline" className="rounded-xl font-bold">
+                {loadingFeeds ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                Feed&apos;leri Yükle
+              </Button>
+              {feeds && feeds.length > 0 && (
+                <Button onClick={ingestAll} disabled={bulkBusy} className="rounded-xl font-bold">
+                  {bulkBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                  Tümünü İçe Aktar ({feeds.length})
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
