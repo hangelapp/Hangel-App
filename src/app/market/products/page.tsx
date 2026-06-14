@@ -115,7 +115,7 @@ export default function ProductsPage() {
 
       <main className="flex-1 overflow-y-auto p-4 pb-32">
         {isLoading && (!products || products.length === 0) ? (
-          <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-5">
+          <div className="grid grid-cols-3 gap-x-2 gap-y-3 sm:gap-x-3 lg:grid-cols-5">
             {[...Array(8)].map((_, i) => (
               <Card key={i} variant="glass" className="h-64 animate-pulse" />
             ))}
@@ -142,7 +142,7 @@ export default function ProductsPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-5">
+          <div className="grid grid-cols-3 gap-x-2 gap-y-3 sm:gap-x-3 lg:grid-cols-5">
             {filtered.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

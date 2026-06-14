@@ -11,6 +11,7 @@
  * Cert kurulumu: src/lib/passkit/generator.ts başındaki uzun yorum bloğuna bak.
  */
 import { PKPass } from 'passkit-generator';
+import { PASS_ASSETS } from './pass-assets';
 
 const PASS_TYPE_ID = process.env.PASSKIT_PASS_TYPE_ID ?? 'pass.com.hangel.ios.app';
 const TEAM_ID = process.env.PASSKIT_TEAM_ID ?? 'NKZNY8NU8S';
@@ -99,6 +100,7 @@ export async function generateEventTicket(input: EventTicketInput): Promise<Buff
   }
 
   const pass = new PKPass({
+    ...PASS_ASSETS,
     'pass.json': Buffer.from(JSON.stringify({
       ...SHARED_DEFAULTS,
       serialNumber,

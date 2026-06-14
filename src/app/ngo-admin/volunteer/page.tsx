@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone, Globe, Send, MessageCircle, Check } from "lucide-react";
+import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone, Globe, Send, MessageCircle, Check, Users, Clock } from "lucide-react";
 import React, { useMemo, useEffect, useRef, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { VolunteerApplicants } from '@/components/volunteering/volunteer-applicants';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
 
 // Başvuru çekme + onay/red mantığını tek yerde topla. Hem üstteki ilan
@@ -149,108 +150,77 @@ const useApplicationCountsByListing = (applications: UserApplication[]): Record<
     }, [applications]);
 };
 
-const VolunteerApplicationsTab = ({
-    applications, isLoading, handleApplication,
+// Tek bir ilana ait başvuru listesi — ilan kartının ALTINDA (accordion içinde)
+// gösterilir. Onayla/Reddet aksiyonları ve markup ESKİSİYLE birebir aynı; tek
+// fark: artık global liste yerine o ilanın (entityId) başvurularını alır.
+const ListingApplications = ({
+    listingTitle, apps, handleApplication,
 }: {
-    applications: UserApplication[];
-    isLoading: boolean;
+    listingTitle: string;
+    apps: UserApplication[];
     handleApplication: (application: UserApplication, decision: 'approved' | 'rejected') => void;
 }) => {
-    const groupedApplications = useMemo(() => {
-        return applications.reduce((acc, app) => {
-            const key = app.title;
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(app);
-            return acc;
-        }, {} as Record<string, UserApplication[]>);
-    }, [applications]);
-
-    // Özet sayaç: toplam / onaylanan / bekleyen başvuru sayısı.
-    const counts = useMemo(() => {
-        let approved = 0, pending = 0, rejected = 0;
-        for (const a of applications) {
-            if (a.status === 'Onaylandı') approved++;
-            else if (a.status === 'Reddedildi') rejected++;
-            else pending++;
-        }
-        return { total: applications.length, approved, pending, rejected };
-    }, [applications]);
-
-    if (isLoading) return <div className="space-y-4"><Skeleton className="h-40 w-full" /><Skeleton className="h-40 w-full" /></div>;
-
+    if (apps.length === 0) {
+        return <p className="text-center text-muted-foreground text-sm py-4">Bu ilana henüz başvuru yok.</p>;
+    }
     return (
-        <div className="space-y-6">
-            {applications.length > 0 && (
-                <Card className="bg-muted/40">
-                    <CardContent className="p-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                        <span className="font-semibold">Toplam başvuru: {counts.total}</span>
-                        <span className="text-muted-foreground">·</span>
-                        <span className="text-green-600 font-medium">Onaylanan: {counts.approved}</span>
-                        <span className="text-muted-foreground">·</span>
-                        <span className="text-amber-600 font-medium">Bekleyen: {counts.pending}</span>
-                        {counts.rejected > 0 && (
-                            <>
-                                <span className="text-muted-foreground">·</span>
-                                <span className="text-red-600 font-medium">Reddedilen: {counts.rejected}</span>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
-            {Object.keys(groupedApplications).length > 0 ? Object.entries(groupedApplications).map(([opportunityTitle, apps]) => (
-                <Card key={opportunityTitle}>
-                    <CardHeader className="flex flex-row items-start justify-between gap-2">
+        <div className="space-y-3">
+            {/* Başvuran listesi: indir / yazdır / paylaş (etkinliklerdeki gibi) */}
+            <div className="flex justify-end">
+                <VolunteerApplicants
+                    title={listingTitle}
+                    applicants={apps.map((a) => ({ name: a.userName || 'Gönüllü', status: a.status, date: a.date }))}
+                />
+            </div>
+            {apps.map((app) => (
+                <div key={app.id} className="p-3 border rounded-lg flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-3">
+                        <Avatar>
+                            <AvatarFallback>{app.userName?.charAt(0) || 'G'}</AvatarFallback>
+                        </Avatar>
                         <div>
-                            <CardTitle>{opportunityTitle}</CardTitle>
-                            <CardDescription>{apps.length} başvuru</CardDescription>
+                            <p className="font-semibold text-sm">{app.userName || 'Gönüllü'}</p>
+                            <p className="text-xs text-muted-foreground">{app.date}</p>
                         </div>
-                        {/* Başvuran listesi: indir / yazdır / paylaş (etkinliklerdeki gibi) */}
-                        <VolunteerApplicants
-                            title={opportunityTitle}
-                            applicants={apps.map((a) => ({ name: a.userName || 'Gönüllü', status: a.status, date: a.date }))}
-                        />
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        {apps.map((app) => (
-                            <div key={app.id} className="p-3 border rounded-lg flex items-center justify-between flex-wrap gap-2">
-                                <div className="flex items-center gap-3">
-                                    <Avatar>
-                                        <AvatarFallback>{app.userName?.charAt(0) || 'G'}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <p className="font-semibold text-sm">{app.userName || 'Gönüllü'}</p>
-                                        <p className="text-xs text-muted-foreground">{app.date}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2 basis-full sm:basis-auto justify-end">
-                                  <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" asChild>
-                                    <Link href={`/profile/${app.userId}`}>Profil</Link>
-                                  </Button>
-                                  {app.status === 'Onaylandı' ? (
-                                    <Badge className="bg-green-600 hover:bg-green-600 text-white"><Check className="h-3.5 w-3.5 mr-1" /> Onaylandı</Badge>
-                                  ) : app.status === 'Reddedildi' ? (
-                                    <Badge variant="destructive">Reddedildi</Badge>
-                                  ) : (
-                                    <>
-                                      <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">Beklemede</Badge>
-                                      <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleApplication(app, 'approved')}>Onayla</Button>
-                                      <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => handleApplication(app, 'rejected')}>Reddet</Button>
-                                    </>
-                                  )}
-                                </div>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
-            )) : <p className="text-center text-muted-foreground p-8">Henüz başvuru bulunmuyor.</p>}
+                    </div>
+                    <div className="flex items-center gap-2 basis-full sm:basis-auto justify-end">
+                      <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" asChild>
+                        <Link href={`/profile/${app.userId}`}>Profil</Link>
+                      </Button>
+                      {app.status === 'Onaylandı' ? (
+                        <Badge className="bg-green-600 hover:bg-green-600 text-white"><Check className="h-3.5 w-3.5 mr-1" /> Onaylandı</Badge>
+                      ) : app.status === 'Reddedildi' ? (
+                        <Badge variant="destructive">Reddedildi</Badge>
+                      ) : (
+                        <>
+                          <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">Beklemede</Badge>
+                          <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleApplication(app, 'approved')}>Onayla</Button>
+                          <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => handleApplication(app, 'rejected')}>Reddet</Button>
+                        </>
+                      )}
+                    </div>
+                </div>
+            ))}
         </div>
     );
 };
 
 
-const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing }: { opportunities: Volunteering[], isLoading: boolean, countsByListing: Record<string, PerListingCounts> }) => {
+const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, applications, handleApplication }: { opportunities: Volunteering[], isLoading: boolean, countsByListing: Record<string, PerListingCounts>, applications: UserApplication[], handleApplication: (application: UserApplication, decision: 'approved' | 'rejected') => void }) => {
     const { toast } = useToast();
     const db = useFirestore();
+
+    // Başvuruları ait olduğu ilana (entityId === ilan.id) grupla. Her ilan
+    // kartının ALTINDAki accordion bölümü kendi başvurularını buradan alır.
+    const appsByListing = useMemo(() => {
+        const map: Record<string, UserApplication[]> = {};
+        for (const a of applications) {
+            const key = a.entityId || '';
+            if (!key) continue;
+            (map[key] ||= []).push(a);
+        }
+        return map;
+    }, [applications]);
     // Herkese açık ilan linki için origin. SSR/ilk render'da window yok → canlı
     // domaine düş (PublishTab ile tutarlı), client'ta gerçek origin'e geçer.
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org.tr';
@@ -284,10 +254,15 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing }:
     return (
         <div className="space-y-4">
             {opportunities.length > 0 ? opportunities.map((opp) => {
-              const isPassive = (opp as Volunteering & { status?: string }).status === 'Pasif';
+              const status = (opp as Volunteering & { status?: string }).status;
+              const isPassive = status === 'Pasif';
+              // "Beklemede" = ilan süper admin onayı bekliyor. STK bu durumda
+              // statusü değiştiremez (rules); yalnızca bilgi rozeti gösterilir.
+              const isPending = status === 'Beklemede';
               const lc = countsByListing[opp.id];
               const pendingCount = lc?.pending || 0;
               const totalApps = lc?.total ?? (opp.volunteerCount?.applications || 0);
+              const listingApps = appsByListing[opp.id] || [];
               return (
               // Yayındaki (Aktif) ilan renkli/vurgulu; yayında olmayan (Pasif) gri/soluk.
               <Card key={opp.id} className={`relative ${isPassive ? 'opacity-60 grayscale' : 'border-primary/30 ring-1 ring-primary/10'}`}>
@@ -306,17 +281,50 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing }:
                 <CardHeader className='pb-4'>
                   <CardTitle className="text-base">{opp.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="flex justify-between items-center text-sm">
+                <CardContent className="space-y-3 text-sm">
                     <div>
-                        <p><strong>Durum:</strong> <Badge variant={isPassive ? 'secondary' : 'default'}>{isPassive ? 'Pasif' : 'Aktif'}</Badge></p>
+                        <p><strong>Durum:</strong>{' '}
+                          {isPending ? (
+                            <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100"><Clock className="h-3.5 w-3.5 mr-1" /> Beklemede</Badge>
+                          ) : (
+                            <Badge variant={isPassive ? 'secondary' : 'default'}>{isPassive ? 'Pasif' : 'Aktif'}</Badge>
+                          )}
+                        </p>
                         <p><strong>Başvurular:</strong> {totalApps}{pendingCount > 0 && <span className="text-[#F4624A] font-semibold"> ({pendingCount} bekleyen)</span>}</p>
+                        {isPending && (
+                          <p className="text-xs text-amber-700 mt-1">Bu ilan süper admin onayı bekliyor. Onaylandığında otomatik yayına alınır.</p>
+                        )}
                     </div>
+                    {/* İLANIN ALTINDA: o ilana ait başvurular + onayla/reddet aksiyonları,
+                        açılır (collapsible) bölüm içinde toplanır. */}
+                    <Accordion type="single" collapsible className="border rounded-lg px-3">
+                      <AccordionItem value="apps" className="border-b-0">
+                        <AccordionTrigger className="text-sm">
+                          <span className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            Başvurular ({listingApps.length})
+                            {pendingCount > 0 && (
+                              <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#F4624A] px-1.5 text-[11px] font-bold text-white">{pendingCount}</span>
+                            )}
+                          </span>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <ListingApplications listingTitle={opp.title} apps={listingApps} handleApplication={handleApplication} />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                 </CardContent>
                 <CardFooter className="flex flex-wrap gap-2">
                     <Button asChild variant="secondary" size="sm" className='flex-1'>
                         <Link href={`/volunteering/${opp.id}`}>Görüntüle</Link>
                     </Button>
-                    {isPassive ? (
+                    {/* NOT: ayrı bir ilan "düzenle" rotası henüz yok (yalnızca /new
+                        var ve onun ?id'si STK id'sini ifade eder, ilan id'sini değil).
+                        Mevcut desene aykırı bir edit linki uydurmuyoruz; düzenleme
+                        rotası eklendiğinde buraya "Düzenle" butonu gelecek. */}
+                    {/* Süper admin onayı bekleyen (Beklemede) ilanlarda STK statusü
+                        değiştiremez → yayınla/pasife al butonu gösterilmez. */}
+                    {isPending ? null : isPassive ? (
                         <Button variant="default" size="sm" className='flex-1' onClick={() => handleToggleStatus(opp)}>Yayına Al</Button>
                     ) : (
                         <Button variant="destructive" size="sm" className='flex-1' onClick={() => handleToggleStatus(opp)}>Pasife Al</Button>
@@ -525,16 +533,42 @@ const VolunteerPage = () => {
               <TabsTrigger value="manage">İlanlar & Başvurular</TabsTrigger>
               <TabsTrigger value="publish">Web'de Yayınla</TabsTrigger>
             </TabsList>
-            <TabsContent value="manage" className="mt-4 space-y-8">
-                {/* ÜSTTE: STK'nın kendi gönüllülük ilanları (her kartta bekleyen
-                    başvuru sayısı rozeti). ALTTA: gelen başvurular yönetimi. */}
+            <TabsContent value="manage" className="mt-4 space-y-4">
+                {/* Her ilan bir başlık kartı; o ilana ait başvurular + onay/red
+                    aksiyonları kartın ALTINDA açılır (collapsible) bölümde
+                    gruplanır. Üstte toplam başvuru özeti. */}
                 <section className="space-y-3">
                     <h2 className="text-lg font-bold px-1">Gönüllülük İlanların</h2>
-                    <OpportunityManagementTab opportunities={oppList} isLoading={isLoading} countsByListing={countsByListing} />
-                </section>
-                <section className="space-y-3">
-                    <h2 className="text-lg font-bold px-1">Başvurular</h2>
-                    <VolunteerApplicationsTab applications={applications} isLoading={appsLoading} handleApplication={handleApplication} />
+                    {applications.length > 0 && !appsLoading && (
+                      <Card className="bg-muted/40">
+                        <CardContent className="p-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                          {(() => {
+                            let approved = 0, pending = 0, rejected = 0;
+                            for (const a of applications) {
+                              if (a.status === 'Onaylandı') approved++;
+                              else if (a.status === 'Reddedildi') rejected++;
+                              else pending++;
+                            }
+                            return (
+                              <>
+                                <span className="font-semibold">Toplam başvuru: {applications.length}</span>
+                                <span className="text-muted-foreground">·</span>
+                                <span className="text-green-600 font-medium">Onaylanan: {approved}</span>
+                                <span className="text-muted-foreground">·</span>
+                                <span className="text-amber-600 font-medium">Bekleyen: {pending}</span>
+                                {rejected > 0 && (
+                                  <>
+                                    <span className="text-muted-foreground">·</span>
+                                    <span className="text-red-600 font-medium">Reddedilen: {rejected}</span>
+                                  </>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </CardContent>
+                      </Card>
+                    )}
+                    <OpportunityManagementTab opportunities={oppList} isLoading={isLoading} countsByListing={countsByListing} applications={applications} handleApplication={handleApplication} />
                 </section>
             </TabsContent>
             <TabsContent value="publish" className="mt-4">

@@ -24,6 +24,7 @@
  */
 
 import { PKPass } from 'passkit-generator';
+import { PASS_ASSETS } from './pass-assets';
 
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -97,6 +98,7 @@ export async function generateEventPass(input: EventPassInput): Promise<Buffer> 
   // PKPass.from() bir dizin path'i ister; alternatif olarak PKPass constructor
   // ile programmatic create edilebilir.
   const pass = new PKPass({
+    ...PASS_ASSETS,
     'pass.json': Buffer.from(JSON.stringify({
       ...SHARED_PASS_DEFAULTS,
       serialNumber: input.serialNumber,
@@ -149,6 +151,7 @@ export async function generateTaskPass(input: TaskPassInput): Promise<Buffer> {
   const certificates = loadCertificates();
 
   const pass = new PKPass({
+    ...PASS_ASSETS,
     'pass.json': Buffer.from(JSON.stringify({
       ...SHARED_PASS_DEFAULTS,
       serialNumber: input.serialNumber,

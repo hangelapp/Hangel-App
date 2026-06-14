@@ -1,29 +1,39 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink, ImageOff, HeartHandshake } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { ImageOff, HeartHandshake, Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import type { CanonicalProduct } from '@/lib/feed/types';
 
 function formatPrice(value: number, currency: string): string {
-  return `${value.toLocaleString('tr-TR')} ${currency}`;
+  const sym = currency === 'TRY' ? 'TL' : currency;
+  return `${value.toLocaleString('tr-TR')} ${sym}`;
 }
 
 export function ProductCard({ product }: { product: CanonicalProduct }) {
   const hasSale =
     typeof product.salePrice === 'number' && product.salePrice < product.price;
+  const salePrice = product.salePrice as number;
+  const discountPct = hasSale
+    ? Math.round((1 - salePrice / product.price) * 100)
+    : 0;
   const donationRate =
     typeof product.donationRate === 'number' && product.donationRate > 0
       ? product.donationRate
       : null;
 
+  // Trendyol imzası: favori kalbi. Şimdilik yerel görsel durum (ileride
+  // kullanıcı favorilerine kalıcılaştırılabilir).
+  const [fav, setFav] = useState(false);
+
   return (
-    <Card variant="glass" className="flex flex-col overflow-hidden rounded-2xl">
+    <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border/60 bg-white transition-shadow hover:shadow-md">
+      {/* Görsel */}
       <Link
         href={`/products/${product.id}`}
-        className="group relative block aspect-square w-full overflow-hidden bg-white"
+        className="relative block aspect-[3/4] w-full overflow-hidden bg-white"
       >
         {product.imageLink ? (
           <img
@@ -31,56 +41,84 @@ export function ProductCard({ product }: { product: CanonicalProduct }) {
             alt={product.title}
             loading="lazy"
             referrerPolicy="no-referrer"
-            className="h-full w-full object-contain p-2 transition-transform group-hover:scale-105"
+            className="h-full w-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-[1.04]"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground/50">
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">
             <ImageOff className="h-10 w-10" aria-hidden="true" />
           </div>
         )}
         {donationRate !== null && (
-          <Badge className="absolute left-2 top-2 gap-1 bg-primary text-white">
+          <Badge className="absolute left-1.5 top-1.5 gap-0.5 rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
             <HeartHandshake className="h-3 w-3" aria-hidden="true" />
-            ~%{donationRate} bağış
+            %{donationRate} bağış
           </Badge>
         )}
       </Link>
 
-      <div className="flex flex-1 flex-col gap-2 p-3">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-          {product.brandName}
-        </p>
+      {/* Favori kalbi (Link dışında — tıklayınca sayfaya gitmez) */}
+      <button
+        type="button"
+        onClick={() => setFav((v) => !v)}
+        aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+        className="absolute right-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white"
+      >
+        <Heart
+          className={cn(
+            'h-4 w-4 transition-colors',
+            fav ? 'fill-primary text-primary' : 'text-muted-foreground',
+          )}
+          aria-hidden="true"
+        />
+      </button>
+
+      {/* Bilgi */}
+      <div className="flex flex-1 flex-col gap-0.5 p-2">
+        <div className="flex items-baseline gap-1">
+          <span className="truncate text-xs font-bold text-foreground">
+            {product.brandName}
+          </span>
+        </div>
         <Link href={`/products/${product.id}`} className="hover:text-primary">
-          <h3 className="line-clamp-2 text-sm font-semibold leading-tight">
+          <h3 className="line-clamp-2 min-h-[2rem] text-xs leading-tight text-muted-foreground">
             {product.title}
           </h3>
         </Link>
 
-        <div className="mt-auto flex items-baseline gap-2 pt-1">
+        {/* Fiyat satırı — Trendyol tarzı */}
+        <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
           {hasSale ? (
             <>
-              <span className="text-base font-black text-primary">
-                {formatPrice(product.salePrice as number, product.currency)}
+              {discountPct > 0 && (
+                <span className="rounded bg-emerald-50 px-1 py-0.5 text-[11px] font-extrabold text-emerald-600">
+                  %{discountPct}
+                </span>
+              )}
+              <span className="text-[15px] font-extrabold text-primary">
+                {formatPrice(salePrice, product.currency)}
               </span>
-              <span className="text-xs text-muted-foreground line-through">
+              <span className="text-[11px] text-muted-foreground line-through">
                 {formatPrice(product.price, product.currency)}
               </span>
             </>
           ) : (
-            <span className="text-base font-black text-foreground">
+            <span className="text-[15px] font-extrabold text-foreground">
               {formatPrice(product.price, product.currency)}
             </span>
           )}
         </div>
 
-        <Button asChild size="sm" className="mt-2 w-full rounded-xl gap-2">
-          <a href={product.productUrl} target="_blank" rel="noopener noreferrer">
-            Ürüne Git
-            <ExternalLink className="h-4 w-4" aria-hidden="true" />
-          </a>
-        </Button>
+        {/* Trendyol turuncu CTA */}
+        <a
+          href={product.productUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-flex h-8 w-full items-center justify-center rounded-md bg-primary text-xs font-bold text-white transition-colors hover:bg-primary/90"
+        >
+          Ürüne Git
+        </a>
       </div>
-    </Card>
+    </div>
   );
 }
 

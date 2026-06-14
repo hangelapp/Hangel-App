@@ -315,12 +315,9 @@ export default function EventDetailPage() {
   const nameQrData = user.name;
   const nameQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(nameQrData)}`;
 
-  // Doğum tarihi — yıl gizli, gün + ay.
+  // Doğum tarihi — kartta GÖSTERİLMEZ; yalnız arka QR (vCard BDAY) içinde kodlanır.
   const cardBirthRaw = (user.personalInfo as { birthDate?: string } | undefined)?.birthDate || '';
-  const birthDayLabel = (() => {
-    if (!cardBirthRaw) return '';
-    try { const d = parse(cardBirthRaw, 'yyyy-MM-dd', new Date()); return isNaN(d.getTime()) ? '' : format(d, 'd MMMM', { locale: tr }); } catch { return ''; }
-  })();
+  // hangel profil linki — kartta gösterilmez; yalnız arka QR (vCard URL) içinde.
   const profileUrlForCard = authUser?.uid ? `hangel.org.tr/profile/${authUser.uid}` : '';
 
   const socialLinks = [];
@@ -771,76 +768,60 @@ export default function EventDetailPage() {
                 <div className="my-6 flex flex-col items-center gap-8">
                     <div>
                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Ön Yüzü</h3>
-                    <div ref={cardFrontRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
-                        <div className="p-4 bg-[#f5f5f7] flex justify-between items-center border-b">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <span className="text-xl font-black text-primary">hangel</span>
-                                {organizerLogo && (
+                    <div ref={cardFrontRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border border-black/5 flex flex-col overflow-hidden mx-auto">
+                        {/* Üst: ince turuncu vurgu şeridi + rol */}
+                        <div className="relative shrink-0">
+                            <div className="h-1.5 w-full bg-primary" />
+                            <div className="px-5 pt-5 pb-1 flex items-center justify-between">
+                                <span className="text-xl font-black tracking-tight text-foreground">hangel</span>
+                                <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground">{roleLabelTr(getUserEventRole(event?.contributors, authUser?.uid))}</span>
+                            </div>
+                        </div>
+                        {/* Orta: büyük isim tipografisi + etkinlik adı */}
+                        <div className="px-5 flex-1 flex flex-col justify-center min-h-0">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Yaka Kartı</p>
+                            <p className="mt-1.5 text-2xl font-black leading-[1.05] tracking-tight text-foreground line-clamp-3">{user.name}</p>
+                            <div className="mt-3 h-px w-10 bg-primary" />
+                            <p className="mt-3 text-[13px] font-bold leading-snug text-foreground/90 line-clamp-2">{event.name}</p>
+                            <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-primary">{formatDateTime(event.startDate)}</p>
+                        </div>
+                        {/* Alt: organizatör logo/ad + QR */}
+                        <div className="px-5 pb-5 pt-3 flex items-end justify-between gap-3 shrink-0">
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2">
                                     <Avatar className="h-8 w-8 bg-white border shrink-0">
-                                        <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
-                                        <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
+                                        {organizerLogo && <AvatarImage src={organizerLogo} alt={event.organizer} className="p-0.5 object-contain"/>}
+                                        <AvatarFallback className="text-[10px] font-black text-primary">{event.organizer.slice(0, 2)}</AvatarFallback>
                                     </Avatar>
-                                )}
-                            </div>
-                            {/* Yaka kartı askı deliği (tasarım öğesi) */}
-                            <span className="h-8 w-8 rounded-full border-2 border-muted-foreground/25 bg-white shrink-0" aria-hidden />
-                        </div>
-                        <div className="p-3 flex-1 flex flex-col justify-between items-center text-center min-h-0 gap-1">
-                            <div className="space-y-0.5 w-full">
-                                <p className="text-sm font-black text-foreground leading-tight line-clamp-2">{event.name}</p>
-                                <p className="text-[10px] font-bold text-primary uppercase">{formatDateTime(event.startDate)}</p>
-                            </div>
-                            <Image src={nameQrCodeUrl} alt="İsim QR Kodu" width={84} height={84} className="mx-auto rounded-xl border p-1 bg-white shadow-sm" />
-                            <div className='w-full space-y-1'>
-                                <div className="bg-primary text-primary-foreground py-1 w-full rounded-lg">
-                                    <p className="text-xs font-black uppercase tracking-[0.2em]">{roleLabelTr(getUserEventRole(event?.contributors, authUser?.uid))}</p>
+                                    <p className="text-[11px] font-bold text-foreground/80 truncate">{event.organizer}</p>
                                 </div>
-                                <p className="text-base font-black truncate">{user.name}</p>
-                                {user.volunteerInfo?.education?.[0]?.school && (
-                                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider truncate">
-                                        {user.volunteerInfo.education[0].school}
-                                    </p>
-                                )}
                             </div>
-                        </div>
-                        <div className='bg-[#f5f5f7] p-3 text-[10px] text-muted-foreground border-t text-center font-mono'>
-                            <p>{eventHashtag}</p>
+                            <Image src={nameQrCodeUrl} alt="Doğrulama QR Kodu" width={64} height={64} className="rounded-lg bg-white shrink-0" />
                         </div>
                     </div>
                     </div>
 
                     <div>
                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Arka Yüzü</h3>
-                    <div ref={cardBackRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
-                        <div className="p-4 bg-[#f5f5f7] flex justify-between items-center border-b">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <span className="text-xl font-black text-primary">hangel</span>
-                                {organizerLogo && (
-                                    <Avatar className="h-8 w-8 bg-white border shrink-0">
-                                        <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
-                                        <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
-                                    </Avatar>
-                                )}
-                            </div>
-                            {/* Yaka kartı askı deliği (tasarım öğesi) */}
-                            <span className="h-8 w-8 rounded-full border-2 border-muted-foreground/25 bg-white shrink-0" aria-hidden />
-                        </div>
-                        <div className="p-3 flex-1 flex flex-col justify-center items-center text-center space-y-2 min-h-0">
-                            <h3 className="text-base font-black uppercase tracking-widest">İLETİŞİM BİLGİLERİ</h3>
-                            <Image src={backQrCodeUrl} alt="İletişim QR Kodu" width={104} height={104} className="mx-auto rounded-xl border-2 border-primary/20 p-1 bg-white shadow-sm" />
-                            <p className="text-[9px] text-muted-foreground leading-tight px-2">Kişisel iletişim bilgileriniz bu karekodda bulunmaktadır.</p>
-                            <div className="text-left w-full space-y-1.5 pt-1">
-                                <div className="flex items-center gap-2"><UserCheck className="h-3.5 w-3.5 text-primary shrink-0" /> <span className="font-bold text-xs truncate">{user.name}</span></div>
-                                {birthDayLabel && (
-                                    <div className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-primary shrink-0" /> <span className="text-[11px] font-bold">{birthDayLabel}</span></div>
-                                )}
-                                {profileUrlForCard && (
-                                    <div className="flex items-center gap-2"><Users className="h-3.5 w-3.5 text-primary shrink-0" /> <span className="text-[10px] font-bold truncate">{profileUrlForCard}</span></div>
-                                )}
+                    <div ref={cardBackRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border border-black/5 flex flex-col overflow-hidden mx-auto">
+                        <div className="relative shrink-0">
+                            <div className="h-1.5 w-full bg-primary" />
+                            <div className="px-5 pt-5 pb-1 flex items-center justify-between">
+                                <span className="text-xl font-black tracking-tight text-foreground">hangel</span>
+                                <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Doğrulama</span>
                             </div>
                         </div>
-                        <div className='bg-primary/5 p-3 text-[10px] text-primary font-black border-t text-center uppercase tracking-widest'>
-                            <p>Sadece Etkinlik Alanında Geçerlidir</p>
+                        {/* Orta: büyük net QR — doğrulama */}
+                        <div className="px-5 flex-1 flex flex-col items-center justify-center text-center min-h-0">
+                            <div className="rounded-2xl bg-white p-2 ring-1 ring-black/5">
+                                <Image src={backQrCodeUrl} alt="Doğrulama QR Kodu" width={132} height={132} className="rounded-lg" />
+                            </div>
+                            <p className="mt-4 text-[11px] font-bold text-foreground/90">Doğrulamak için karekodu okutun</p>
+                            <p className="mt-1 text-[10px] text-muted-foreground leading-tight px-2">İletişim bilgileri karekodda saklıdır.</p>
+                        </div>
+                        <div className="px-5 pb-5 pt-3 shrink-0 flex items-center justify-between gap-2 border-t border-black/5">
+                            <p className="text-[10px] font-bold text-foreground/70 truncate">{user.name}</p>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-primary shrink-0">{eventHashtag}</p>
                         </div>
                     </div>
                     </div>
