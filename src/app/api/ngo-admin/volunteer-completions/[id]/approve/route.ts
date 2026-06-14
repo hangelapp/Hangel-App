@@ -34,11 +34,10 @@ import { requireNgoAdminForRoute } from '@/lib/auth/require-ngo-admin';
 import { calculateUserImpactValue } from '@/lib/volunteer-impact';
 import { sendPushToUser } from '@/lib/push-notifications';
 import { generateCertificateHtml } from '@/lib/certificates/generate';
+import { notifyUser } from '@/lib/notify-user';
+import { awardBadgesForUser, resolveBadgeArea } from '@/lib/award-badges';
 
 export const runtime = 'nodejs';
-
-const HANGEL_SYSTEM_UID = 'hangel-system';
-const HANGEL_SYSTEM_NAME = 'hangel Resmi';
 
 const BodySchema = z.object({
   approved: z.boolean(),
@@ -122,8 +121,10 @@ export async function PATCH(
 
   // Görev bilgisini sertifika için çek
   const oppSnap = await db.collection(COLLECTIONS.volunteering).doc(taskId).get();
-  const oppTitle = (oppSnap.data() as { title?: string } | undefined)?.title ?? 'Gönüllülük';
-  const ngoName = (oppSnap.data() as { ngoName?: string } | undefined)?.ngoName ?? 'STK';
+  const oppData = oppSnap.data() as { title?: string; ngoName?: string; socialArea?: string } | undefined;
+  const oppTitle = oppData?.title ?? 'Gönüllülük';
+  const ngoName = oppData?.ngoName ?? 'STK';
+  const badgeArea = resolveBadgeArea(oppData?.socialArea);
 
   // --- Red akışı ---
   if (!approved) {
@@ -229,50 +230,52 @@ export async function PATCH(
     { merge: true },
   );
 
-  // 3) pastVolunteering özet kayıt — profil etki sekmesi için
+  // 3) pastVolunteering özet kayıt — profil etki sekmesi için.
+  //    socialArea + points yazılır → rozet alan-puanı (areaPoints) hem istemci
+  //    hem sunucu motorunda doğru hesaplanır.
   await userRef.collection(COLLECTIONS.pastVolunteering).add({
     volunteeringId: taskId,
     volunteeringTitle: oppTitle,
     ngoId: completionNgoId,
     ngoName,
     completionId,
+    ...(badgeArea ? { socialArea: badgeArea } : {}),
+    points: finalImpactPoints,
     hoursLogged: finalHours,
     impactValueTRY: finalImpactValue,
     impactPointsTotal: finalImpactPoints,
     completedAt: FieldValue.serverTimestamp(),
   });
 
-  // 4) Bildirim — gönüllüye
-  const subject = 'Tamamlama onaylandı, sertifikan hazır';
-  const content =
-    `"${oppTitle}" görevini başarıyla tamamladın. ${ngoName} ${finalHours} saatlik katkını onayladı — ` +
-    `${finalImpactValue.toLocaleString('tr-TR')} ₺ sosyal etki değeri profilinde görüntülenebilir.`;
+  // 4) Rozet kazandırma motoru — areaPoints yeniden hesapla, yeni tier(ler)
+  //    aşıldıysa rozet yaz + "yeni rozet kazandın" bildirimi gönder (best-effort).
+  const award = await awardBadgesForUser(db, volunteerUid, { notify: true });
 
-  await userRef.collection(COLLECTIONS.notifications).add({
+  // 5) Tamamlama onayı bildirimi — üst düzey notifications (merkez) + mesaj + push.
+  //    "saatin onaylandı → X puan kazandın → sertifikan hazır" zincirini netleştir.
+  const subject = 'Tamamlama onaylandı, sertifikan hazır 🧡';
+  const content =
+    `"${oppTitle}" görevini başarıyla tamamladın. ${ngoName} ${finalHours} saatlik katkını onayladı. ` +
+    `${finalImpactPoints.toLocaleString('tr-TR')} puan ve ${finalImpactValue.toLocaleString('tr-TR')} ₺ sosyal etki değeri kazandın. ` +
+    `Sertifikan hazır — profilinden görüntüleyebilirsin.`;
+
+  await notifyUser({
     userId: volunteerUid,
     type: 'volunteer_completion_approved',
     title: subject,
-    body: content.slice(0, 160),
-    completionId,
-    taskId,
-    impactValueTRY: finalImpactValue,
-    read: false,
-    pushSent: true,
-    createdAt: FieldValue.serverTimestamp(),
-  });
-
-  // 5) In-app mesaj
-  await db.collection(COLLECTIONS.messages).add({
-    sender: { id: HANGEL_SYSTEM_UID, name: HANGEL_SYSTEM_NAME, avatarUrl: '' },
-    senderId: HANGEL_SYSTEM_UID,
-    senderType: 'system',
-    recipient: { id: volunteerUid, name: '', avatarUrl: '' },
-    recipientId: volunteerUid,
-    subject,
-    content,
-    timestamp: FieldValue.serverTimestamp(),
-    status: 'sent',
-    meta: {
+    body: content,
+    link: '/profile?tab=etki',
+    data: {
+      completionId,
+      taskId,
+      ngoId: completionNgoId,
+      impactValueTRY: finalImpactValue,
+      impactPoints: finalImpactPoints,
+    },
+    storeAsMessage: true,
+    messageSubject: subject,
+    messageContent: content,
+    messageMeta: {
       kind: 'volunteer_completion_approved',
       completionId,
       taskId,
@@ -281,27 +284,13 @@ export async function PATCH(
     },
   });
 
-  // 6) Push (best-effort)
-  try {
-    await sendPushToUser(volunteerUid, {
-      title: 'Tamamlaman onaylandı',
-      body: `"${oppTitle}" — ${finalImpactValue.toLocaleString('tr-TR')} ₺ etki`,
-      clickAction: `/profile?tab=etki`,
-      data: {
-        type: 'volunteer_completion_approved',
-        completionId,
-        taskId,
-      },
-    });
-  } catch (e) {
-    console.warn('[ngo-admin/volunteer-completions/approve] push failed', e);
-  }
-
   return NextResponse.json({
     ok: true,
     ngoApproved: true,
     impactValueTRY: finalImpactValue,
+    impactPoints: finalImpactPoints,
     hoursLogged: finalHours,
     certificateIssued: true,
+    newBadges: award.newBadges,
   });
 }
