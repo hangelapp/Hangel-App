@@ -472,6 +472,8 @@ export async function createSearchCampaign(
         name: `${title}-${stamp}`,
         status: 'PAUSED',
         advertisingChannelType: 'SEARCH',
+        // AB siyasi reklam mevzuatı (yeni zorunlu alan): sosyal fayda reklamı → içermez.
+        containsEuPoliticalAdvertising: 'DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING',
         // Manual CPC, Arama kampanyaları + Ad Grants için artık geçersiz; Ad Grants
         // Maximize Conversions (dönüşüm odaklı akıllı teklif) zorunlu kılıyor.
         maximizeConversions: {},
