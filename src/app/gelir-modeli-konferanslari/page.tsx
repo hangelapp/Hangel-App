@@ -36,12 +36,48 @@ const SERIES_TAG = 'gelir-modeli-konferansi';
 
 // Firestore'da etkinlik yoksa/yüklenirken gösterilecek poster takvimi (fallback).
 const fallbackSchedule = [
-  { city: 'Tekirdağ', date: '13 Haziran Cuma', venue: 'Tekirdağ' },
-  { city: 'Antalya', date: '15 Haziran Pazar', venue: 'Muratpaşa' },
-  { city: 'Ankara', date: '17 Haziran Salı', venue: 'Ankara Kent Konseyi' },
-  { city: 'İstanbul', date: '24 Haziran Salı', venue: 'Kadıköy' },
-  { city: 'İstanbul', date: '25 Haziran Çarşamba', venue: 'Avcılar' },
-  { city: 'Bursa', date: '8 Temmuz Salı', venue: 'Bursa' },
+  {
+    city: 'Ankara',
+    date: '17 Haziran Çarşamba',
+    time: '14:00',
+    venue: 'Ankara Kent Konseyi Opera',
+    address: 'Hacı Bayram Mh. Atatürk Bulvarı No:18 Altındağ, Ankara',
+  },
+  {
+    city: 'Antalya, Muratpaşa',
+    date: '19 Haziran Cuma',
+    time: '14:00',
+    venue: 'Abdullah Sevimçok Sivil Toplum ve İnovasyon Merkezi',
+    address: 'Doğuyaka Mah. 1219 Sk. No:9 Muratpaşa, Antalya',
+  },
+  {
+    city: 'İstanbul, Kadıköy',
+    date: '24 Haziran Çarşamba',
+    time: '14:00',
+    venue: 'Sanatçı Fabrikası Coffee',
+    address: 'Bağdat Cad. No:312 Caddebostan, Kadıköy, İstanbul',
+  },
+  {
+    city: 'İstanbul, Avcılar',
+    date: '25 Haziran Perşembe',
+    time: '14:00',
+    venue: 'Barış Manço Kültür Merkezi Merkez',
+    address: 'Merkez, Reşit Paşa Cd. No:63, 34310 Avcılar, İstanbul',
+  },
+  {
+    city: 'Tekirdağ',
+    date: '26 Haziran Cuma',
+    time: '14:00',
+    venue: 'Arsera Cafe & Events',
+    address: 'Değirmenaltı, Adnan Karaevli Sk. 28/A Süleymanpaşa, Tekirdağ',
+  },
+  {
+    city: 'Bursa, Nilüfer',
+    date: '8 Temmuz',
+    time: '14:00',
+    venue: 'Nilüfer Belediyesi Kültür Merkezi',
+    address: 'Nilüfer, Bursa',
+  },
 ];
 
 const curriculum = [
@@ -144,7 +180,7 @@ function EventCard({ ev }: { ev: Event & { id: string } }) {
         <CardContent className="p-4 flex flex-col gap-1">
           <h3 className="text-lg font-bold leading-tight">{ev.location?.city || ev.name}</h3>
           <p className="flex items-center gap-1 text-sm text-muted-foreground">
-            <CalendarDays className="h-3.5 w-3.5" /> {ev.date} · {ev.time || '14:30'}
+            <CalendarDays className="h-3.5 w-3.5" /> {ev.date} · {ev.time || '14:00'}
           </p>
           <p className="flex items-center gap-1 text-sm font-medium text-primary">
             <MapPin className="h-3.5 w-3.5" /> {ev.location?.district || ev.location?.city}
@@ -247,10 +283,11 @@ export default function IncomeModelConferencePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold leading-tight">{e.city}</h3>
-                    <p className="text-sm text-muted-foreground">{e.date} · 14:30</p>
+                    <p className="text-sm text-muted-foreground">{e.date} · {e.time}</p>
                     <p className="mt-1 flex items-center gap-1 text-sm font-medium text-primary">
-                      <MapPin className="h-3.5 w-3.5" /> {e.venue}
+                      <MapPin className="h-3.5 w-3.5 shrink-0" /> {e.venue}
                     </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{e.address}</p>
                   </div>
                 </CardContent>
               </Card>
