@@ -35,7 +35,9 @@ export const ADS_OAUTH_SCOPE = 'https://www.googleapis.com/auth/adwords';
 export const ADS_OAUTH_NGO_COOKIE = 'ads_oauth_ngo';
 
 /** Google Ads REST API base (v17). */
-const ADS_API_BASE = 'https://googleads.googleapis.com/v17';
+// Google Ads API sürümü. v17 2026'da sunset edildi (404) → desteklenen sürüme alındı.
+// Desteklenen: v22/v23/v24 (en yeni v24). v22 = v17'ye en yakın, en düşük kırılma riski.
+const ADS_API_BASE = 'https://googleads.googleapis.com/v22';
 const GOOGLE_AUTHORIZE_BASE = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
