@@ -16,7 +16,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
-import { collection, limit, query, orderBy, startAt } from 'firebase/firestore';
+import { collection, limit, query, orderBy, startAt, getCountFromServer } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
 
 export default function ProductsPage() {
@@ -28,6 +28,16 @@ export default function ProductsPage() {
   // 0.8 tavanı: imleçten sonra her zaman bolca ürün kalır (limit dolar).
   const [randSeed, setRandSeed] = useState(0);
   useEffect(() => { setRandSeed(Math.random() * 0.8); }, []);
+
+  // Toplam ürün sayısı (koleksiyonun tamamı) — placeholder yalnız çekilen 120'yi
+  // değil GERÇEK toplamı göstersin diye getCountFromServer ile ayrıca sayılır.
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!db) return;
+    getCountFromServer(collection(db, COLLECTIONS.products))
+      .then((snap) => setTotalCount(snap.data().count))
+      .catch(() => { /* sessiz — placeholder yine çalışır */ });
+  }, [db]);
 
   const productsQuery = useMemoFirebase(
     () => query(collection(db, COLLECTIONS.products), orderBy('random'), startAt(randSeed), limit(120)),
@@ -83,7 +93,7 @@ export default function ProductsPage() {
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder={`${(products?.length ?? 0).toLocaleString('tr-TR')} ürün arasında seçiniz`}
+              placeholder={`${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün arasında seçiniz`}
               className="h-12 rounded-2xl border-none bg-muted/50 pl-10 text-base focus-visible:ring-1"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

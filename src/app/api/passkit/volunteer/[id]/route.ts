@@ -22,15 +22,22 @@ import { randomBytes } from 'crypto';
 interface VolunteeringDoc {
   title?: string;
   organization?: string;
+  organizerLogoUrl?: string;
   location?: {
     city?: string;
     district?: string;
+    neighborhood?: string;
+    address?: string;
     type?: string;
     coordinates?: { lat: number; lon: number };
   };
   dates?: {
     eventStart?: string;
     eventEnd?: string;
+  };
+  hours?: {
+    start?: string;
+    end?: string;
   };
 }
 
@@ -109,6 +116,11 @@ export async function GET(
     // Generator gönüllülüğe özel bir input/fonksiyon sunmuyor; etkinlik route
     // ile birebir tutarlılık için generateEventPass'i gönüllülük verisiyle
     // (başlık=gönüllülük title, STK=organization, "GÖNÜLLÜ" rolü) doldurarak çağır.
+    const fullAddress = [v.location?.address, v.location?.neighborhood, v.location?.district, v.location?.city]
+      .filter(Boolean).join(', ') || locationLabel;
+    const timeLabel = v.hours?.start
+      ? (v.hours?.end ? `${v.hours.start} – ${v.hours.end}` : v.hours.start)
+      : '';
     const buffer = await generateEventPass({
       serialNumber,
       eventTitle: v.title ?? 'hangel Gönüllülük',
@@ -119,7 +131,13 @@ export async function GET(
       coordinates,
       ticketId: serialNumber,
       authenticationToken,
-      qrPayload: `${userName} — GÖNÜLLÜ — ${serialNumber}`,
+      kind: 'volunteer',
+      role: 'Gönüllü',
+      userName,
+      address: fullAddress,
+      timeLabel,
+      ngoLogoUrl: v.organizerLogoUrl,
+      qrPayload: `https://hangel.org.tr/volunteering/${volunteeringId}`,
     });
 
     return new NextResponse(new Uint8Array(buffer), {

@@ -43,6 +43,41 @@ export interface EventPassInput {
   ticketId?: string;             // backend tarafından üretilen unique kayıt
   authenticationToken?: string;  // pass update web service için (32+ char)
   qrPayload?: string;            // QR kod içeriği (URL veya unique kod)
+  /** 'event' | 'volunteer' — başlık etiketlerini belirler. */
+  kind?: 'event' | 'volunteer';
+  /** Katılımcı statüsü/rolü: Katılımcı / Konuşmacı / Gönüllü vb. */
+  role?: string;
+  /** Katılımcı/gönüllü adı (kartın arka yüzünde). */
+  userName?: string;
+  /** Tam adres (arka yüz). */
+  address?: string;
+  /** Başlangıç–bitiş saati etiketi, örn "14:00 – 17:00". */
+  timeLabel?: string;
+  /** STK logo URL'si — PNG ise thumbnail olarak gömülür (hangel logosu pass logosu olarak zaten var). */
+  ngoLogoUrl?: string;
+}
+
+/**
+ * STK logosunu indir; YALNIZ geçerli PNG ise Buffer döndür (pass'i bozmamak için).
+ * Hata/timeout/non-PNG → null (thumbnail atlanır, hangel logosu yine görünür).
+ */
+async function fetchPngBuffer(url?: string): Promise<Buffer | null> {
+  if (!url || !/^https?:\/\//i.test(url)) return null;
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 4000);
+    const res = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    // PNG magic: 89 50 4E 47
+    if (buf.length > 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) {
+      return buf;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export interface TaskPassInput {
@@ -91,43 +126,73 @@ const SHARED_PASS_DEFAULTS = {
 
 export async function generateEventPass(input: EventPassInput): Promise<Buffer> {
   const certificates = loadCertificates();
+  const isVolunteer = input.kind === 'volunteer';
+  const titleLabel = isVolunteer ? 'GÖNÜLLÜLÜK' : 'ETKİNLİK';
+  const role = (input.role && input.role.trim()) || (isVolunteer ? 'Gönüllü' : 'Katılımcı');
 
-  // Pass template assets (icon.png, logo.png, strip.png) sonra Hangel
-  // tasarımcısı tarafından `src/lib/passkit/templates/event.pass/` altına
-  // konacak. Şimdilik en küçük geçerli template (sadece pass.json).
-  // PKPass.from() bir dizin path'i ister; alternatif olarak PKPass constructor
-  // ile programmatic create edilebilir.
+  // hangel logosu pass logosu olarak zaten var (PASS_ASSETS). STK logosunu —
+  // yalnız geçerli PNG ise — sağ thumbnail olarak ekle (pass'i bozmadan).
+  const ngoThumb = await fetchPngBuffer(input.ngoLogoUrl);
+  const bundle: Record<string, Buffer> = { ...PASS_ASSETS };
+  if (ngoThumb) {
+    bundle['thumbnail.png'] = ngoThumb;
+    bundle['thumbnail@2x.png'] = ngoThumb;
+  }
+
+  // İkincil satır: STATÜ/rol + SAAT (timeLabel varsa) ya da tarih.
+  const secondaryFields: Record<string, unknown>[] = [
+    { key: 'role', label: 'STATÜ', value: role },
+  ];
+  if (input.timeLabel) {
+    secondaryFields.push({ key: 'time', label: 'SAAT', value: input.timeLabel });
+  } else {
+    secondaryFields.push({
+      key: 'date', label: 'TARİH', value: input.startDate.toISOString(),
+      dateStyle: 'PKDateStyleMedium', timeStyle: 'PKDateStyleShort',
+    });
+  }
+
+  // Yardımcı satır: düzenleyen STK + konum.
+  const auxiliaryFields: Record<string, unknown>[] = [
+    { key: 'ngo', label: 'DÜZENLEYEN', value: input.ngoName },
+  ];
+  if (input.location) {
+    auxiliaryFields.push({ key: 'loc', label: 'KONUM', value: input.location });
+  }
+
+  // Arka yüz: katılımcı adı, statü, tam tarih/saat, adres, düzenleyen, kayıt no.
+  const backFields: Record<string, unknown>[] = [];
+  if (input.userName) backFields.push({ key: 'name', label: isVolunteer ? 'Gönüllü' : 'Katılımcı', value: input.userName });
+  backFields.push({ key: 'roleBack', label: 'Statü / Rol', value: role });
+  backFields.push({
+    key: 'dateBack', label: 'Tarih & Saat', value: input.startDate.toISOString(),
+    dateStyle: 'PKDateStyleFull', timeStyle: 'PKDateStyleShort',
+  });
+  if (input.timeLabel) backFields.push({ key: 'hours', label: 'Saat', value: input.timeLabel });
+  if (input.address) backFields.push({ key: 'addr', label: 'Adres', value: input.address });
+  backFields.push({ key: 'org', label: 'Düzenleyen', value: input.ngoName });
+  backFields.push({ key: 'ticketId', label: 'Kayıt No', value: input.ticketId ?? input.serialNumber });
+  backFields.push({
+    key: 'terms', label: 'Bilgi',
+    value: 'Bu kart yalnızca kayıtlı kullanıcı için geçerlidir. Girişte karekod taratılır. hangel.org.tr',
+  });
+
   const pass = new PKPass({
-    ...PASS_ASSETS,
+    ...bundle,
     'pass.json': Buffer.from(JSON.stringify({
       ...SHARED_PASS_DEFAULTS,
       serialNumber: input.serialNumber,
       description: `hangel — ${input.eventTitle}`,
       eventTicket: {
+        headerFields: [
+          { key: 'hdr', label: titleLabel, value: input.startDate.toISOString(), dateStyle: 'PKDateStyleShort', timeStyle: 'PKDateStyleNone' },
+        ],
         primaryFields: [
-          { key: 'event', label: 'ETKİNLİK', value: input.eventTitle },
+          { key: 'event', label: titleLabel, value: input.eventTitle },
         ],
-        secondaryFields: [
-          { key: 'loc', label: 'LOKASYON', value: input.location },
-          {
-            key: 'date',
-            label: 'TARİH',
-            value: input.startDate.toISOString(),
-            dateStyle: 'PKDateStyleMedium',
-            timeStyle: 'PKDateStyleShort',
-          },
-        ],
-        auxiliaryFields: [
-          { key: 'ngo', label: 'STK', value: input.ngoName },
-        ],
-        backFields: [
-          { key: 'ticketId', label: 'Bilet No', value: input.ticketId ?? input.serialNumber },
-          {
-            key: 'terms',
-            label: 'Şartlar',
-            value: 'Bilet sadece kayıtlı kullanıcı için geçerlidir. Etkinlik girişinde QR kod taratılacaktır.',
-          },
-        ],
+        secondaryFields,
+        auxiliaryFields,
+        backFields,
       },
       barcodes: [
         {

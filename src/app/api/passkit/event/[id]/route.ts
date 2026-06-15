@@ -22,6 +22,18 @@ interface EventDoc {
   startDate?: { toDate?: () => Date };
   endDate?: { toDate?: () => Date };
   coordinates?: { lat: number; lng: number };
+  organizerLogoUrl?: string;
+  contributors?: Array<{ userId?: string; role?: string }>;
+}
+
+/** Date → "HH:mm" (Europe/Istanbul). Geçersizse boş. */
+function hm(d?: Date): string {
+  if (!d || isNaN(d.getTime())) return '';
+  try {
+    return d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
+  } catch {
+    return '';
+  }
 }
 
 export async function GET(
@@ -39,10 +51,12 @@ export async function GET(
 
   // Auth: bearer header veya ?token= query
   let uid: string | null = null;
+  let userName = 'Katılımcı';
   if (rawToken) {
     try {
       const decoded = await getAdminAuth().verifyIdToken(rawToken);
       uid = decoded.uid;
+      userName = decoded.name ?? decoded.email?.split('@')[0] ?? 'Katılımcı';
     } catch {
       return NextResponse.json({ errorCode: 'INVALID_TOKEN' }, { status: 401 });
     }
@@ -68,6 +82,13 @@ export async function GET(
   const e = eventSnap.data() as EventDoc;
   const startDate = e.startDate?.toDate?.() ?? new Date();
   const endDate = e.endDate?.toDate?.();
+  // Başlangıç–bitiş saati etiketi.
+  const startHm = hm(startDate);
+  const endHm = hm(endDate);
+  const timeLabel = startHm ? (endHm ? `${startHm} – ${endHm}` : startHm) : '';
+  // Rol: kullanıcı etkinlik ekibinde (konuşmacı/katkı) ise rolünü kullan; değilse Katılımcı.
+  const contributor = (e.contributors ?? []).find((c) => c.userId === uid);
+  const role = contributor?.role?.trim() || 'Katılımcı';
 
   // Authentication token üret (Apple update web service için) ve passkit
   // kaydı oluştur (event update'inde tüm pass'lere push edilir).
@@ -77,7 +98,7 @@ export async function GET(
   try {
     const buffer = await generateEventPass({
       serialNumber,
-      eventTitle: e.title ?? 'Hangel Etkinliği',
+      eventTitle: e.title ?? 'hangel Etkinliği',
       ngoName: e.ngoName ?? '',
       location: e.location ?? '',
       startDate,
@@ -85,6 +106,13 @@ export async function GET(
       coordinates: e.coordinates,
       ticketId: serialNumber,
       authenticationToken,
+      kind: 'event',
+      role,
+      userName,
+      address: e.location ?? '',
+      timeLabel,
+      ngoLogoUrl: e.organizerLogoUrl,
+      qrPayload: `https://hangel.org.tr/events/${eventId}`,
     });
 
     return new NextResponse(new Uint8Array(buffer), {

@@ -769,25 +769,43 @@ export default function EventDetailPage() {
                     <div>
                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Ön Yüzü</h3>
                     <div ref={cardFrontRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border border-black/5 flex flex-col overflow-hidden mx-auto">
-                        {/* Üst: ince turuncu vurgu şeridi + rol */}
+                        {/* Üst: ince turuncu vurgu şeridi + hangel markası + rol etiketi */}
                         <div className="relative shrink-0">
                             <div className="h-1.5 w-full bg-primary" />
-                            <div className="px-5 pt-5 pb-1 flex items-center justify-between">
-                                <span className="text-xl font-black tracking-tight text-foreground">hangel</span>
-                                <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground">{roleLabelTr(getUserEventRole(event?.contributors, authUser?.uid))}</span>
+                            <div className="px-6 pt-5 pb-1 flex items-center justify-between">
+                                <span className="text-base font-black tracking-tight text-foreground">hangel</span>
+                                <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.2em] text-primary">{roleLabelTr(getUserEventRole(event?.contributors, authUser?.uid))}</span>
                             </div>
                         </div>
-                        {/* Orta: büyük isim tipografisi + etkinlik adı */}
-                        <div className="px-5 flex-1 flex flex-col justify-center min-h-0">
-                            <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Yaka Kartı</p>
-                            <p className="mt-1.5 text-2xl font-black leading-[1.05] tracking-tight text-foreground line-clamp-3">{user.name}</p>
+                        {/* Orta: en belirgin öğe — kişinin adı; altında etkinlik adı */}
+                        <div className="px-6 flex-1 flex flex-col justify-center min-h-0">
+                            <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Katılımcı</p>
+                            <p className="mt-2 text-[28px] font-black leading-[1] tracking-tight text-foreground line-clamp-3">{user.name}</p>
                             <div className="mt-3 h-px w-10 bg-primary" />
-                            <p className="mt-3 text-[13px] font-bold leading-snug text-foreground/90 line-clamp-2">{event.name}</p>
-                            <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-primary">{formatDateTime(event.startDate)}</p>
+                            <p className="mt-3 text-[12px] font-bold leading-snug text-foreground/90 line-clamp-2">{event.name}</p>
+                        </div>
+                        {/* Faaliyet bilgileri: tarih/saat + konum */}
+                        <div className="px-6 pb-3 pt-2 shrink-0 space-y-1.5">
+                            <div className="flex items-start gap-2">
+                                <Clock className="h-3 w-3 text-primary mt-px shrink-0" />
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-bold leading-tight text-foreground/90 truncate">{formatDateTime(event.startDate)}</p>
+                                    {event.endDate && <p className="text-[9px] font-medium leading-tight text-muted-foreground truncate">Bitiş: {formatDateTime(event.endDate)}</p>}
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                                <MapPin className="h-3 w-3 text-primary mt-px shrink-0" />
+                                <p className="text-[10px] font-medium leading-tight text-foreground/90 line-clamp-2">
+                                    {event.location.type === 'Online'
+                                        ? 'Online'
+                                        : [event.location.address, [event.location.district, event.location.city].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
+                                </p>
+                            </div>
                         </div>
                         {/* Alt: organizatör logo/ad + QR */}
-                        <div className="px-5 pb-5 pt-3 flex items-end justify-between gap-3 shrink-0">
+                        <div className="px-6 pb-5 pt-3 flex items-end justify-between gap-3 shrink-0 border-t border-black/5">
                             <div className="min-w-0">
+                                <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Düzenleyen</p>
                                 <div className="flex items-center gap-2">
                                     <Avatar className="h-8 w-8 bg-white border shrink-0">
                                         {organizerLogo && <AvatarImage src={organizerLogo} alt={event.organizer} className="p-0.5 object-contain"/>}
@@ -796,7 +814,7 @@ export default function EventDetailPage() {
                                     <p className="text-[11px] font-bold text-foreground/80 truncate">{event.organizer}</p>
                                 </div>
                             </div>
-                            <Image src={nameQrCodeUrl} alt="Doğrulama QR Kodu" width={64} height={64} className="rounded-lg bg-white shrink-0" />
+                            <Image src={nameQrCodeUrl} alt="Doğrulama QR Kodu" width={60} height={60} className="rounded-lg bg-white shrink-0" />
                         </div>
                     </div>
                     </div>
@@ -806,20 +824,41 @@ export default function EventDetailPage() {
                     <div ref={cardBackRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border border-black/5 flex flex-col overflow-hidden mx-auto">
                         <div className="relative shrink-0">
                             <div className="h-1.5 w-full bg-primary" />
-                            <div className="px-5 pt-5 pb-1 flex items-center justify-between">
-                                <span className="text-xl font-black tracking-tight text-foreground">hangel</span>
-                                <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Doğrulama</span>
+                            <div className="px-6 pt-5 pb-1 flex items-center justify-between">
+                                <span className="text-base font-black tracking-tight text-foreground">hangel</span>
+                                <span className="text-[8px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Doğrulama</span>
                             </div>
                         </div>
-                        {/* Orta: büyük net QR — doğrulama */}
-                        <div className="px-5 flex-1 flex flex-col items-center justify-center text-center min-h-0">
+                        {/* Orta: net QR — doğrulama */}
+                        <div className="px-6 pt-4 flex flex-col items-center text-center shrink-0">
                             <div className="rounded-2xl bg-white p-2 ring-1 ring-black/5">
-                                <Image src={backQrCodeUrl} alt="Doğrulama QR Kodu" width={132} height={132} className="rounded-lg" />
+                                <Image src={backQrCodeUrl} alt="Doğrulama QR Kodu" width={104} height={104} className="rounded-lg" />
                             </div>
-                            <p className="mt-4 text-[11px] font-bold text-foreground/90">Doğrulamak için karekodu okutun</p>
-                            <p className="mt-1 text-[10px] text-muted-foreground leading-tight px-2">İletişim bilgileri karekodda saklıdır.</p>
+                            <p className="mt-2.5 text-[10px] font-bold text-foreground/90">Giriş için karekodu okutun</p>
                         </div>
-                        <div className="px-5 pb-5 pt-3 shrink-0 flex items-center justify-between gap-2 border-t border-black/5">
+                        {/* Faaliyet detayı: tarih/saat + konum (arka yüz) */}
+                        <div className="px-6 pt-3 flex-1 min-h-0 flex flex-col justify-center space-y-2.5">
+                            <div className="flex items-start gap-2">
+                                <Calendar className="h-3.5 w-3.5 text-primary mt-px shrink-0" />
+                                <div className="min-w-0">
+                                    <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Tarih & Saat</p>
+                                    <p className="text-[10px] font-bold leading-tight text-foreground/90">{formatDateTime(event.startDate)}</p>
+                                    {event.endDate && <p className="text-[9px] font-medium leading-tight text-muted-foreground">Bitiş: {formatDateTime(event.endDate)}</p>}
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                                <MapPin className="h-3.5 w-3.5 text-primary mt-px shrink-0" />
+                                <div className="min-w-0">
+                                    <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Konum</p>
+                                    <p className="text-[10px] font-medium leading-tight text-foreground/90 line-clamp-3">
+                                        {event.location.type === 'Online'
+                                            ? 'Online etkinlik'
+                                            : [event.location.address, [event.location.district, event.location.city].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="px-6 pb-5 pt-3 shrink-0 flex items-center justify-between gap-2 border-t border-black/5">
                             <p className="text-[10px] font-bold text-foreground/70 truncate">{user.name}</p>
                             <p className="text-[9px] font-bold uppercase tracking-widest text-primary shrink-0">{eventHashtag}</p>
                         </div>
