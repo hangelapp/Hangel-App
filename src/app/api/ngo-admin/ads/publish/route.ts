@@ -43,14 +43,21 @@ function summarizeAdsError(raw: string): string {
       const j = JSON.parse(body) as {
         error?: {
           message?: string;
-          details?: Array<{ errors?: Array<{ message?: string; errorCode?: Record<string, string> }> }>;
+          details?: Array<{ errors?: Array<{
+            message?: string;
+            errorCode?: Record<string, string>;
+            location?: { fieldPathElements?: Array<{ fieldName?: string }> };
+          }> }>;
         };
       };
       const first = j.error?.details?.[0]?.errors?.[0];
       const codeObj = first?.errorCode ?? {};
       const codeKey = Object.keys(codeObj)[0];
       const codeVal = codeKey ? `${codeKey}.${codeObj[codeKey]}` : '';
-      reason = [codeVal, first?.message || j.error?.message].filter(Boolean).join(' — ');
+      const fieldPath = (first?.location?.fieldPathElements ?? [])
+        .map((e) => e.fieldName).filter(Boolean).join('.');
+      reason = [codeVal, fieldPath ? `alan: ${fieldPath}` : '', first?.message || j.error?.message]
+        .filter(Boolean).join(' — ');
     } catch {
       reason = body.slice(0, 200);
     }

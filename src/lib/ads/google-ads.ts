@@ -472,7 +472,9 @@ export async function createSearchCampaign(
         name: `${title}-${stamp}`,
         status: 'PAUSED',
         advertisingChannelType: 'SEARCH',
-        manualCpc: {},
+        // Manual CPC, Arama kampanyaları + Ad Grants için artık geçersiz; Ad Grants
+        // Maximize Conversions (dönüşüm odaklı akıllı teklif) zorunlu kılıyor.
+        maximizeConversions: {},
         campaignBudget: budgetResourceName,
         networkSettings: {
           targetGoogleSearch: true,
