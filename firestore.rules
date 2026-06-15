@@ -999,6 +999,39 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
+    // Çift yönlü değerlendirme kayıtları (gönüllü ↔ STK).
+    // Doc id deterministik: `${kind}_${refId}_${volunteerId}` (src/lib/evaluations.ts).
+    // Doc şekli: { volunteerId, ngoId, kind, refId, createdAt,
+    //             volunteerToNgo?: { answers, score, comment, completedAt },
+    //             ngoToVolunteer?: { answers, score, comment, completedAt },
+    //             certificateUnlocked?: boolean }
+    //
+    // Read: değerlendirilen gönüllü (volunteerId == auth.uid), kaydın bağlı
+    //       olduğu STK'nın admin'i (managedNgoId == doc.ngoId) veya super-admin.
+    // Write: client'tan TÜM yazımlar kapalı. Her iki yön de Admin SDK üzerinden
+    //        yazılır (api/evaluations/volunteer-to-ngo + ngo-to-volunteer);
+    //        Admin SDK rules'ı bypass eder. Böylece "gönüllü yalnız kendi
+    //        yönünü, STK yalnız kendi yönünü yazar" kuralı route içinde
+    //        zorlanır ve client doğrudan yazıp puan/sertifika kilidini
+    //        manipüle edemez (volunteerCompletions deseninin daha sıkı hali).
+    match /evaluations/{evalId} {
+      function isEvalVolunteer() {
+        return isSignedIn() && resource.data.volunteerId == request.auth.uid;
+      }
+      function isEvalNgoAdmin() {
+        return isSignedIn()
+          && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId;
+      }
+      allow read: if isSuperAdmin() || isEvalVolunteer() || isEvalNgoAdmin();
+      allow list: if isSuperAdmin() || (isSignedIn() && (
+        resource.data.volunteerId == request.auth.uid ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId)
+      ));
+      allow write: if false; // SADECE Admin SDK (api/evaluations/*) yazar
+    }
+
     // bloodCalls — Acil kan/trombosit/kök hücre ilanları
     // Read: imzalı kullanıcılar görebilir (yardım çağrısı public)
     // Write: sadece NGO admin (managedNgoId == ngoId) veya super-admin
