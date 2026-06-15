@@ -22,6 +22,7 @@ import {
   getGoogleAdsConfig,
   refreshAccessToken,
   resolveServingCustomer,
+  diagnoseAccess,
   type AdPlanForCampaign,
 } from '@/lib/ads/google-ads';
 
@@ -125,11 +126,12 @@ export async function POST(req: NextRequest) {
       }
     }
     if (!customerId) {
+      const diag = accessToken ? await diagnoseAccess(accessToken, config).catch(() => '') : 'Erişim belirteci alınamadı (token reddedildi).';
       return NextResponse.json(
         {
           errorCode: 'NO_SERVING_ACCOUNT',
           message: 'Google Ads servis hesabı çözülemedi.',
-          detail: 'Bağlanan Google hesabıyla, reklam servis edebilen (manager olmayan) bir Google Ads hesabına ulaşılamadı. Lütfen derneğin Google Ads hesabına erişimi olan Google hesabıyla (kendi hesap sahibi) yeniden bağlanın.',
+          detail: `Bağlanan Google hesabıyla reklam servis edebilen (manager olmayan) bir Google Ads hesabına ulaşılamadı. Teşhis: ${diag}`,
         },
         { status: 409 }
       );

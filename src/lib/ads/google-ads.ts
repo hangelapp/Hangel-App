@@ -276,6 +276,27 @@ export async function resolveServingCustomer(
   return null;
 }
 
+/**
+ * Teşhis: bağlı hesabın API gözünden NEYE eriştiğini insan-okur metne çevirir
+ * (erişilebilir hesaplar + her birinin altındaki servis/manager alt-hesap sayıları).
+ * NO_SERVING_ACCOUNT durumunda kullanıcıya gösterilir; hesap no'ları kullanıcının
+ * kendi Ads hesaplarıdır (sır değil). Sadece teşhis amaçlı, başarısızlıkta çağrılır.
+ */
+export async function diagnoseAccess(accessToken: string, config: GoogleAdsConfig): Promise<string> {
+  const accessible = await listAccessibleCustomers(accessToken, config);
+  if (accessible.length === 0) {
+    return 'Bu Google hesabı hiçbir Google Ads hesabına erişemiyor (listAccessibleCustomers boş).';
+  }
+  const parts: string[] = [];
+  for (const acc of accessible.slice(0, 6)) {
+    const clients = await listClientCustomers(accessToken, config, acc);
+    const serv = clients.filter((c) => !c.manager).map((c) => c.id);
+    const mgr = clients.filter((c) => c.manager).length;
+    parts.push(`${acc} → servis:[${serv.join(', ') || 'yok'}] manager:${mgr}`);
+  }
+  return `Erişilebilir hesaplar: ${accessible.join(', ')}. Alt-hesaplar: ${parts.join(' ; ')}`;
+}
+
 export interface CampaignMetrics {
   impressions: number;
   clicks: number;
