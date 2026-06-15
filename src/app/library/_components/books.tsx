@@ -23,7 +23,6 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   Search, ChevronRight, ArrowUpDown, BookOpen, Star, X, Library, ChevronDown,
 } from 'lucide-react';
@@ -42,7 +41,6 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
-import { isAllowedImageHost } from '@/lib/image-host';
 import { useTranslation } from '@/components/providers/language-provider';
 import { useSectionDoc } from './_use-section-doc';
 import { parseBookMetadata, type LibraryItem, type BookMetadata } from '@/lib/library';
@@ -150,41 +148,14 @@ function FilterDropdown({
   );
 }
 
-function BookCoverThumb({ meta }: { meta: BookMetadata }) {
-  const { t } = useTranslation();
-  const rawSrc = meta.coverUrl || meta.cover;
-  const src = isAllowedImageHost(rawSrc) ? rawSrc : undefined;
-  if (src) {
-    return (
-      <div className="relative h-32 w-24 sm:h-36 sm:w-28 shrink-0 rounded-lg overflow-hidden bg-muted shadow-md">
-        <Image
-          src={src}
-          alt={meta.title || t('library.books.coverAlt')}
-          fill
-          sizes="(max-width: 640px) 96px, 112px"
-          className="object-cover"
-        />
-      </div>
-    );
-  }
-  // Fallback: hangel placeholder (lowercase wordmark, gradient bg).
-  return (
-    <div className="relative h-32 w-24 sm:h-36 sm:w-28 shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-primary/15 via-primary/5 to-background border flex flex-col items-center justify-center text-primary">
-      <span className="font-black text-2xl tracking-tight">hangel</span>
-      <span className="text-[9px] uppercase tracking-widest text-muted-foreground mt-1">
-        {t('library.books.coverPlaceholderAlt')}
-      </span>
-    </div>
-  );
-}
-
 function BookCard({ enriched }: { enriched: EnrichedBook }) {
   const { t } = useTranslation();
   const { item, meta } = enriched;
 
+  // Künye listede sade: kapak + detaylı künye (yayınevi/yıl/sayfa/dil/kategori)
+  // DETAY sayfasında. Kartta yalnız ad, yazar, puan ve konu (kısa açıklama).
   return (
-    <Card className="glass-surface rounded-2xl overflow-hidden flex flex-col sm:flex-row gap-4 p-4 h-full">
-      <BookCoverThumb meta={meta} />
+    <Card className="glass-surface rounded-2xl overflow-hidden flex flex-col gap-2 p-4 h-full">
       <div className="flex-1 min-w-0 flex flex-col gap-2">
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
@@ -202,24 +173,6 @@ function BookCard({ enriched }: { enriched: EnrichedBook }) {
               </span>
             </span>
           </Badge>
-        </div>
-
-        <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
-          {meta.publisher && (
-            <Badge variant="outline" className="px-1.5 py-0 font-normal">{meta.publisher}</Badge>
-          )}
-          {meta.year > 0 && (
-            <Badge variant="outline" className="px-1.5 py-0 font-normal">{meta.year}</Badge>
-          )}
-          <Badge variant="outline" className="px-1.5 py-0 font-normal">
-            {meta.pages} {t('library.books.pages')}
-          </Badge>
-          {meta.language && (
-            <Badge variant="outline" className="px-1.5 py-0 font-normal">{meta.language}</Badge>
-          )}
-          {meta.category && (
-            <Badge variant="outline" className="px-1.5 py-0 font-normal">{meta.category}</Badge>
-          )}
         </div>
 
         {meta.shortDescription && (

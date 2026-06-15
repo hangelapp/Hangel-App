@@ -29,7 +29,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import {
   Search, ChevronRight, BookOpen, X, Filter, ChevronDown, ChevronUp,
-  Library, GraduationCap, BookMarked, FileText, BookA, Globe, Database, Film, HelpCircle, ExternalLink,
+  Library, GraduationCap, BookMarked, FileText, BookA, Globe, Database, Film, HelpCircle, Star,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { LibrarySection, LibraryItem } from '@/lib/library';
@@ -412,24 +412,43 @@ export function SectionAccordion({
                         <span className="text-sm font-medium pr-2">{item.title}</span>
                         <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                       </Link>
-                      <div className="flex items-center gap-x-1.5 gap-y-0.5 flex-wrap px-3 pb-2 text-[11px] text-muted-foreground">
-                        {item.source && (
+                      {/* "kaynağa git" linki yalnız DETAY sayfasında; listede künye satırı
+                          sade tutulur (kaynak + yıl). */}
+                      {item.source && (
+                        <div className="flex items-center gap-x-1.5 gap-y-0.5 flex-wrap px-3 pb-2 text-[11px] text-muted-foreground">
                           <span className="font-medium text-foreground/70">
                             {item.source}{item.year ? ` · ${item.year}` : ''}
                           </span>
-                        )}
-                        {item.sourceUrl && (
-                          <a
-                            href={item.sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-0.5 text-primary hover:underline"
-                          >
-                            kaynağa git <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
+                  );
+                }
+                // Filmler: kapaksız sade künye — başlık + puan + konu (yazar yok).
+                // Kapak + detaylı künye DETAY sayfasında.
+                if (section.slug === 'filmler') {
+                  return (
+                    <Link
+                      href={`/library/${item.slug}`}
+                      key={item.slug}
+                      className="block px-3 py-2.5 border-b last:border-b-0 hover:bg-muted/50"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-sm font-medium pr-2">{item.title}</span>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {typeof item.rating === 'number' && (
+                            <Badge variant="secondary" className="gap-1 px-1.5 py-0.5">
+                              <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                              <span className="text-[11px] font-bold tabular-nums">{item.rating.toFixed(1)}</span>
+                            </Badge>
+                          )}
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </div>
+                      {item.description && (
+                        <p className="mt-0.5 text-[12px] text-muted-foreground line-clamp-2 leading-snug">{item.description}</p>
+                      )}
+                    </Link>
                   );
                 }
                 return (
