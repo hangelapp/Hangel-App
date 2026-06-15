@@ -194,6 +194,7 @@ const CATEGORY_CARDS: Array<{
   { key: 'federasyonlar', label: 'Federasyonlar',                 icon: Landmark,  color: 'bg-emerald-500', count: 98,      targetTab: 'outreach', typeFilter: 'Federasyon' },
   { key: 'spor',         label: 'Spor Kulüpleri',                 icon: Trophy,    color: 'bg-orange-500', count: 5266,    targetTab: 'outreach', typeFilter: 'SporKulübü' },
   { key: 'genc-spor-mudurluk', label: 'Gençlik ve Spor İl Müdürlükleri', icon: Server, color: 'bg-violet-500', count: 81, targetTab: 'outreach', typeFilter: 'GencSporMudurlugu' },
+  { key: 'genc-spor-ilce', label: 'Gençlik ve Spor İlçe Müdürlükleri', icon: Server, color: 'bg-violet-400', count: 0, targetTab: 'outreach', typeFilter: 'GencSporIlceMudurlugu' },
 ];
 
 // Export sütunları — sekmeye göre. Excel (.xlsx) çıktısında kullanılır.
