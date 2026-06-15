@@ -165,8 +165,36 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                     </div>
                      <div className="h-px bg-black/10 w-full" />
                     <p className="text-[12px] text-[#1d1d1f]/70 pt-2">Diğer alışveriş seçenekleri: Yakınınızda bir <a href="#" className="text-primary font-bold hover:underline">hangel destek</a> bulun veya 0554 700 70 07 numaralı telefonu arayın.</p>
-                     
-                    
+
+                    {/* Teknoloji & Reklam İş Ortakları — reklam planlaması (Google/Meta/TikTok),
+                        mesajlaşma (Netgsm/WhatsApp) ve ödeme (N-Kolay) için entegre olduğumuz
+                        3. parti kurumlar. Resmi rozet görselleri public/partners/ altına eklenince
+                        wordmark'lar <img> ile değiştirilebilir (marka kılavuzlarına uygun). */}
+                    <div className="h-px bg-black/10 w-full mt-4" />
+                    <div className="pt-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-[#1d1d1f]/40 mb-3">Teknoloji ve Reklam İş Ortaklarımız</p>
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            {[
+                                'Google Ads',
+                                'Meta',
+                                'TikTok',
+                                'WhatsApp Business',
+                                'Netgsm',
+                                'N-Kolay',
+                            ].map((name) => (
+                                <span
+                                    key={name}
+                                    className="inline-flex items-center rounded-md border border-black/10 bg-white px-3 py-1.5 text-[12px] font-bold tracking-tight text-[#1d1d1f]/60 grayscale transition-all hover:grayscale-0 hover:text-[#1d1d1f] hover:border-black/20"
+                                    title={`${name} — entegre iş ortağımız`}
+                                >
+                                    {name}
+                                </span>
+                            ))}
+                        </div>
+                        <p className="text-[10px] text-[#1d1d1f]/40 mt-2">Reklam planlaması, toplu mesajlaşma ve ödeme altyapısı için yetkili/entegre iş ortaklarımızla çalışıyoruz.</p>
+                    </div>
+
+                    <div className="h-px bg-black/10 w-full mt-4" />
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4">
                          <div className="flex flex-wrap gap-x-1 gap-y-1 text-[11px] text-[#1d1d1f]/50 font-medium tracking-tight">
                             {policyLinks.map((link, index) => (
