@@ -34,10 +34,16 @@ import {
   CalendarIcon,
   StickyNote,
   CheckCircle2,
+  Mic,
+  MicOff,
+  PhoneIncoming,
 } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useSipPhone } from '@/lib/santral/sipjs-provider';
 
 interface ContactDetail {
   id: string;
@@ -73,6 +79,27 @@ interface NoteRow {
 }
 
 type CallState = 'idle' | 'ringing' | 'in-progress' | 'ended';
+
+/** users/{uid} — managedNgoId çekmek için minimal shape. */
+interface UserDocLite {
+  managedNgoId?: string;
+}
+
+/**
+ * ngoCallCenter/{ngoId} — WebRTC geçidinin TARAYICI endpoint credential'ları.
+ * Bu, operatör trunk şifresi DEĞİL; geçidin (Asterisk) browser SIP endpoint'i.
+ */
+interface NgoCallCenterSipDoc {
+  sipUsername?: string;
+  sipPassword?: string;
+  sipDomain?: string;
+}
+
+/**
+ * GATE: WebRTC santral geçidi WSS URL'i. Env yoksa gerçek arama PASİF kalır;
+ * panel mevcut mock davranışına düşer.
+ */
+const SANTRAL_WSS_URL = process.env.NEXT_PUBLIC_SANTRAL_WSS_URL ?? '';
 
 const DISPOSITIONS: { value: string; label: string }[] = [
   { value: 'answered', label: 'Görüşüldü' },
@@ -129,6 +156,34 @@ export default function ActiveCallPage() {
   const contactId = params?.contactId ?? '';
   const { toast } = useToast();
 
+  // --- WebRTC santral entegrasyonu ---------------------------------------
+  // ngoId → users/{uid}.managedNgoId, sonra ngoCallCenter/{ngoId}'den geçidin
+  // tarayıcı SIP endpoint credential'ları okunur. Env (WSS) veya credential
+  // eksikse useSipPhone pasif kalır ve panel mock akışına düşer.
+  const db = useFirestore();
+  const { user } = useUser();
+  const userRef = useMemoFirebase(
+    () => (user ? doc(db, 'users', user.uid) : null),
+    [db, user],
+  );
+  const { data: userDoc } = useDoc<UserDocLite>(userRef);
+  const ngoId = userDoc?.managedNgoId ?? null;
+
+  const ccRef = useMemoFirebase(
+    () => (ngoId ? doc(db, 'ngoCallCenter', ngoId) : null),
+    [db, ngoId],
+  );
+  const { data: ccSipDoc } = useDoc<NgoCallCenterSipDoc>(ccRef);
+
+  const sip = useSipPhone({
+    wssUrl: SANTRAL_WSS_URL || null,
+    username: ccSipDoc?.sipUsername ?? null,
+    password: ccSipDoc?.sipPassword ?? null,
+    domain: ccSipDoc?.sipDomain ?? null,
+  });
+  // Gerçek arama yalnızca env + credential tam olduğunda aktif.
+  const sipEnabled = sip.ready;
+
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [contact, setContact] = useState<ContactDetail | null>(null);
@@ -178,16 +233,42 @@ export default function ActiveCallPage() {
     void loadContact();
   }, [loadContact]);
 
-  // Saniye sayacı — sadece in-progress sırasında işler.
+  // Saniye sayacı — mock modda in-progress boyunca işler. SIP modda süre
+  // gerçek session'dan (sip.durationSeconds) gelir, bu sayaç çalışmaz.
   useEffect(() => {
-    if (callState === 'in-progress') {
+    if (!sipEnabled && callState === 'in-progress') {
       tickRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
       return () => {
         if (tickRef.current) clearInterval(tickRef.current);
       };
     }
     return undefined;
-  }, [callState]);
+  }, [callState, sipEnabled]);
+
+  // SIP session state → panel callState + süre. Yalnızca gerçek arama aktifken.
+  useEffect(() => {
+    if (!sipEnabled) return;
+    switch (sip.state) {
+      case 'calling':
+        setCallState('ringing');
+        break;
+      case 'incoming':
+        // Gelen arama: oturum id ata (yoksa) ve ringing göster.
+        setSessionId((cur) => cur ?? `call-${contactId}-${Date.now()}`);
+        setCallState('ringing');
+        break;
+      case 'in-call':
+        setCallState('in-progress');
+        setSeconds(sip.durationSeconds);
+        break;
+      case 'ended':
+      case 'failed':
+        setCallState((cur) => (cur === 'idle' ? 'idle' : 'ended'));
+        break;
+      default:
+        break;
+    }
+  }, [sipEnabled, sip.state, sip.durationSeconds, contactId]);
 
   // Notları yükle (mock session id de olsa boş array gelir; gerçek session'da API döner)
   const loadNotes = useCallback(async (sid: string) => {
@@ -205,28 +286,45 @@ export default function ActiveCallPage() {
 
   function handleStartCall() {
     if (!contact) return;
-    const sid = `mock-${contactId}-${Date.now()}`;
+    const sid = `${sipEnabled ? 'call' : 'mock'}-${contactId}-${Date.now()}`;
     setSessionId(sid);
-    setCallState('ringing');
     setSeconds(0);
     setNotes([]);
     setDisposition('');
-    // 1.5 sn ringing → in-progress (mock animasyon)
+
+    // GERÇEK arama: env + credential tam → SIP.js ile geçide bağlan.
+    if (sipEnabled) {
+      setCallState('ringing');
+      void sip.call(contact.phone).catch(() => undefined);
+      return;
+    }
+
+    // GATE kapalı (env/credential yok) → mevcut mock akışı korunur.
+    setCallState('ringing');
     setTimeout(() => {
       setCallState((cur) => (cur === 'ringing' ? 'in-progress' : cur));
     }, 1500);
     toast({
       title: 'Mock arama başlatıldı',
-      description: 'Faz 3\'te gerçek SIP entegrasyonu devreye alınacak.',
+      description: 'Santral altyapısı henüz hazır değil; gerçek arama pasif.',
     });
   }
 
   function handleEndCall() {
+    if (sipEnabled) {
+      void sip.hangup().catch(() => undefined);
+      // SIP 'Terminated' state'i callState'i 'ended'e çekecek; yine de UI'yı
+      // anında güncelle.
+    }
     setCallState('ended');
     if (tickRef.current) {
       clearInterval(tickRef.current);
       tickRef.current = null;
     }
+  }
+
+  async function handleAnswer() {
+    await sip.answer().catch(() => undefined);
   }
 
   async function handleAddNote() {
@@ -350,6 +448,8 @@ export default function ActiveCallPage() {
   }
 
   const callActive = callState === 'ringing' || callState === 'in-progress';
+  // SIP modunda süre gerçek session'dan; mock modda local sayaçtan.
+  const displaySeconds = sipEnabled ? sip.durationSeconds : seconds;
   const customFieldEntries = useMemo(() => {
     if (!contact?.customFields) return [];
     return Object.entries(contact.customFields).filter(([, v]) => v !== undefined && v !== null && v !== '');
@@ -477,6 +577,31 @@ export default function ActiveCallPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Remote ses — SIP modunda karşı tarafın sesi buradan çalar. */}
+            <audio ref={sip.remoteAudioRef} autoPlay className="hidden" />
+
+            {/* Gelen arama bandı — yalnızca SIP modunda. */}
+            {sipEnabled && sip.state === 'incoming' && (
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-emerald-800">
+                  <PhoneIncoming className="h-4 w-4 animate-pulse" />
+                  Gelen arama: {sip.remoteIdentity ?? 'Bilinmeyen'}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => void handleAnswer()}
+                    size="sm"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    <Phone className="h-4 w-4 mr-1" /> Cevapla
+                  </Button>
+                  <Button onClick={handleEndCall} size="sm" variant="destructive" className="flex-1">
+                    <PhoneOff className="h-4 w-4 mr-1" /> Reddet
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col items-center py-6 space-y-4">
               {callState === 'idle' && (
                 <>
@@ -488,9 +613,15 @@ export default function ActiveCallPage() {
                     <Phone className="h-8 w-8" />
                     <span>ARA</span>
                   </Button>
-                  <p className="text-xs text-muted-foreground text-center">
-                    Mock arama — Faz 3'te gerçek SIP entegrasyonu.
-                  </p>
+                  {sipEnabled ? (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Tarayıcıdan gerçek arama — santral geçidine bağlı.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Santral altyapısı henüz hazır değil; arama demo (mock) modunda.
+                    </p>
+                  )}
                 </>
               )}
 
@@ -509,7 +640,7 @@ export default function ActiveCallPage() {
                     <Phone className="h-10 w-10 text-violet-600" />
                   </div>
                   <div className="text-sm font-medium text-violet-700">Görüşülüyor</div>
-                  <div className="font-mono text-3xl tabular-nums">{formatDuration(seconds)}</div>
+                  <div className="font-mono text-3xl tabular-nums">{formatDuration(displaySeconds)}</div>
                 </>
               )}
 
@@ -520,26 +651,43 @@ export default function ActiveCallPage() {
                   </div>
                   <div className="text-sm font-medium text-slate-600">Görüşme sonlandı</div>
                   <div className="font-mono text-xl tabular-nums text-muted-foreground">
-                    {formatDuration(seconds)}
+                    {formatDuration(displaySeconds)}
                   </div>
                 </>
               )}
             </div>
 
             {callActive && (
-              <Button
-                onClick={handleEndCall}
-                variant="destructive"
-                className="w-full"
-              >
-                <PhoneOff className="h-4 w-4 mr-2" /> Sonlandır
-              </Button>
+              <div className="space-y-2">
+                {sipEnabled && callState === 'in-progress' && (
+                  <Button
+                    onClick={sip.mute}
+                    variant={sip.muted ? 'secondary' : 'outline'}
+                    className="w-full"
+                  >
+                    {sip.muted ? (
+                      <><MicOff className="h-4 w-4 mr-2" /> Mikrofon kapalı</>
+                    ) : (
+                      <><Mic className="h-4 w-4 mr-2" /> Mikrofonu kapat</>
+                    )}
+                  </Button>
+                )}
+                <Button onClick={handleEndCall} variant="destructive" className="w-full">
+                  <PhoneOff className="h-4 w-4 mr-2" /> Sonlandır
+                </Button>
+              </div>
             )}
 
             {callState === 'ended' && (
               <Button onClick={handleStartCall} variant="outline" className="w-full">
                 <Phone className="h-4 w-4 mr-2" /> Tekrar Ara
               </Button>
+            )}
+
+            {sipEnabled && sip.state === 'failed' && sip.error && (
+              <div className="text-xs text-rose-600 border-t pt-3">
+                Santral hatası: {sip.error}
+              </div>
             )}
 
             {sessionId && (

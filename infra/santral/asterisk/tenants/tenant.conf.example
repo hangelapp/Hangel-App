@@ -1,0 +1,78 @@
+;==============================================================================
+; YENİ KİRACI DESENİ — pjsip parçası
+;------------------------------------------------------------------------------
+; KULLANIM:
+;   1) Bu dosyayı kopyala:  cp tenant.conf.example tenant2.conf
+;   2) "tenant1" geçen her yeri "tenant2" yap.
+;   3) santral.env'e bu kiracıya ait değişkenleri ekle, ör:
+;        TENANT2_WEBRTC_USER=...
+;        TENANT2_WEBRTC_PWD=...
+;        TENANT2_DID=...
+;        OPERATOR2_HOST=...  OPERATOR2_PORT=5060
+;        OPERATOR2_EXT=...   OPERATOR2_PWD=...
+;   4) setup.sh tekrar çalıştır. Bu dosyalar /etc/asterisk/pjsip.d/ altına
+;      envsubst ile yazılır ve pjsip.conf'taki #include ile yüklenir.
+;   5) extensions.conf'taki üç context'i (from-browser/from-pstn/ring-browser)
+;      aynı kiracı adıyla extensions.d/ altına kopyala.
+;==============================================================================
+
+[tenant2-webrtc-100](tenant1-webrtc)   ; tenant1-webrtc şablonunu miras al
+type=endpoint
+auth=tenant2-webrtc-100-auth
+aors=tenant2-webrtc-100-aor
+context=tenant2-from-browser
+callerid=KIRACI 2 <${TENANT2_DID}>
+
+[tenant2-webrtc-100-auth]
+type=auth
+auth_type=userpass
+username=${TENANT2_WEBRTC_USER}
+password=${TENANT2_WEBRTC_PWD}
+
+[tenant2-webrtc-100-aor]
+type=aor
+max_contacts=3
+remove_existing=yes
+qualify_frequency=30
+
+[tenant2-operator-trunk]
+type=endpoint
+transport=transport-udp
+context=tenant2-from-pstn
+disallow=all
+allow=ulaw,alaw
+outbound_auth=tenant2-operator-auth
+aors=tenant2-operator-aor
+from_user=${OPERATOR2_EXT}
+from_domain=${OPERATOR2_HOST}
+direct_media=no
+rtp_symmetric=yes
+force_rport=yes
+rewrite_contact=yes
+
+[tenant2-operator-auth]
+type=auth
+auth_type=userpass
+username=${OPERATOR2_EXT}
+password=${OPERATOR2_PWD}
+
+[tenant2-operator-aor]
+type=aor
+contact=sip:${OPERATOR2_HOST}:${OPERATOR2_PORT}
+qualify_frequency=60
+
+[tenant2-operator-reg]
+type=registration
+transport=transport-udp
+outbound_auth=tenant2-operator-auth
+server_uri=sip:${OPERATOR2_HOST}:${OPERATOR2_PORT}
+client_uri=sip:${OPERATOR2_EXT}@${OPERATOR2_HOST}:${OPERATOR2_PORT}
+contact_user=${OPERATOR2_EXT}
+expiration=3600
+line=yes
+endpoint=tenant2-operator-trunk
+
+[tenant2-operator-identify]
+type=identify
+endpoint=tenant2-operator-trunk
+match=${OPERATOR2_HOST}

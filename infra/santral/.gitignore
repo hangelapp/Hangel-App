@@ -1,0 +1,8 @@
+# Gerçek secret'lar ASLA commit edilmez.
+santral.env
+*.key
+*.pem
+*.crt
+
+# Let's Encrypt / runtime artefaktları (sunucuda üretilir)
+letsencrypt/
