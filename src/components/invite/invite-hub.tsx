@@ -760,11 +760,15 @@ export function InviteHub({
                 <section className="space-y-2.5">
                     <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Hızlı Davet Yolları</h2>
                     <input type="file" accept=".vcf,.csv,text/vcard,text/csv,text/plain" id="main-vcard-csv-upload" className="sr-only" onChange={handleFileImport} />
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                        <QuickAction icon={Smartphone} label="Telefon Rehberi" sub="Mobil / Chrome" onClick={handlePhoneConnect} />
-                        <QuickAction icon={Upload} label="vCard / CSV" sub="Tüm cihazlar" asLabel htmlFor="main-vcard-csv-upload" />
-                        <QuickAction icon={Mail} label="E-posta Kişileri" sub="Gmail / Outlook" onClick={() => setEmailProviderDialogOpen(true)} />
-                        <QuickAction icon={MessageSquare} label="WhatsApp" sub="Kopyala / paylaş" onClick={() => setWhatsappDialogOpen(true)} />
+                    {/* Kişi İÇE AKTARMAYA izin veren platformlar — alt alta. Instagram/
+                        LinkedIn kişi içe aktarmaya izin vermez (API kısıtı) → onlar yalnız
+                        aşağıdaki "paylaş" bölümünde. */}
+                    <div className="grid grid-cols-1 gap-2.5">
+                        <QuickAction icon={Smartphone} label="Telefon Rehberi" sub="iOS / Android / Chrome" onClick={handlePhoneConnect} />
+                        <QuickAction icon={Mail} label="Gmail Kişileri" sub="Google ile bağlan" onClick={() => handleEmailOAuth('google')} />
+                        <QuickAction icon={Mail} label="Outlook / Hotmail Kişileri" sub="Microsoft ile bağlan" onClick={() => handleEmailOAuth('microsoft')} />
+                        <QuickAction icon={Upload} label="vCard / CSV" sub="Tüm cihazlar (.vcf / .csv)" asLabel htmlFor="main-vcard-csv-upload" />
+                        <QuickAction icon={MessageSquare} label="WhatsApp ile paylaş" sub="Davet linkini gönder" onClick={() => setWhatsappDialogOpen(true)} />
                     </div>
                     <p className="px-1 text-[12px] text-muted-foreground leading-snug">
                         iPhone / Safari&apos;de rehberi bağlamak için <span className="font-semibold text-foreground">hangel mobil uygulamasını</span> kullanın ya da rehberinizi vCard / CSV olarak yükleyin.
