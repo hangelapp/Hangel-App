@@ -205,9 +205,9 @@ export default function AdsPage() {
     // Google Ads istatistikleri (son 30 gün) — bağlıyken çekilir.
     const [adsMetrics, setAdsMetrics] = useState<AdsCampaignMetric[]>([]);
 
-    // Serbest metin → AI reklam (Google) durumu
-    const [customText, setCustomText] = useState('');
-    const [customLoading, setCustomLoading] = useState(false);
+    // Serbest metin → AI reklam durumu (her platform kendi metni + yükleniyor durumu)
+    const [customTextByPlatform, setCustomTextByPlatform] = useState<Record<AdPlatform, string>>({ google: '', meta: '', tiktok: '' });
+    const [customLoadingPlatform, setCustomLoadingPlatform] = useState<AdPlatform | null>(null);
 
     // Meta (Facebook/Instagram) bağlantı durumu — Google ile birebir paralel
     const [metaConnection, setMetaConnection] = useState<MetaConnectionState>({ configured: false, connected: false });
@@ -762,9 +762,9 @@ export default function AdsPage() {
         }
     };
 
-    // Serbest metni AI ile Google reklamına dönüştür; dönen öneriyi listenin başına ekle.
-    const generateCustomGoogle = async () => {
-        const text = customText.trim();
+    // Serbest metni AI ile reklama dönüştür; dönen öneriyi o platformun listesinin başına ekle.
+    const generateCustom = async (platform: AdPlatform) => {
+        const text = (customTextByPlatform[platform] || '').trim();
         if (!text) {
             toast({ variant: 'destructive', title: 'Metin gerekli', description: 'Önce etkinliğini/kampanyanı kısaca anlat.' });
             return;
@@ -773,26 +773,26 @@ export default function AdsPage() {
             toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
             return;
         }
-        setCustomLoading(true);
+        setCustomLoadingPlatform(platform);
         try {
             const idToken = await user.getIdToken();
             const res = await fetch('/api/ngo-admin/ads/custom', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
-                body: JSON.stringify({ text, platform: 'google' }),
+                body: JSON.stringify({ text, platform }),
             });
             const data = (await res.json().catch(() => null)) as { proposal?: AdProposal; errorCode?: string; message?: string } | null;
             if (!res.ok || !data?.proposal) {
                 throw new Error(data?.message || 'Reklam oluşturulamadı.');
             }
             const proposal = data.proposal;
-            setProposalsByPlatform((prev) => ({ ...prev, google: [proposal, ...prev.google] }));
-            setCustomText('');
-            toast({ title: 'Reklam hazır', description: 'Yapay zeka önerini Google listenin başına ekledi.' });
+            setProposalsByPlatform((prev) => ({ ...prev, [platform]: [proposal, ...prev[platform]] }));
+            setCustomTextByPlatform((prev) => ({ ...prev, [platform]: '' }));
+            toast({ title: 'Reklam hazır', description: 'Yapay zeka önerini listenin başına ekledi.' });
         } catch (e) {
             toast({ variant: 'destructive', title: 'Oluşturulamadı', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
         } finally {
-            setCustomLoading(false);
+            setCustomLoadingPlatform(null);
         }
     };
 
@@ -943,28 +943,13 @@ export default function AdsPage() {
                     <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Google · Yapay Zeka Reklam Planı</h2>
 
                     {/* SERBEST METİN → AI REKLAM */}
-                    <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-3">
-                        <div className="flex items-start gap-3">
-                            <span className="h-9 w-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                <Wand2 className="h-5 w-5" />
-                            </span>
-                            <div className="space-y-0.5">
-                                <p className="text-[14px] font-semibold text-foreground">Kendi metninden reklam oluştur</p>
-                                <p className="text-[12px] text-muted-foreground leading-relaxed">Etkinliğini, eğitimini veya kampanyanı kısaca anlat; yapay zeka Google reklamına dönüştürsün.</p>
-                            </div>
-                        </div>
-                        <textarea
-                            value={customText}
-                            onChange={(e) => setCustomText(e.target.value)}
-                            placeholder="Etkinliğinizi/eğitiminizi/kampanyanızı kısaca anlatın; yapay zeka reklama dönüştürsün."
-                            rows={3}
-                            className="w-full rounded-2xl bg-muted border border-border/60 px-4 py-3 text-[14px] outline-none focus:ring-2 focus:ring-primary/40 resize-none"
-                        />
-                        <button onClick={() => void generateCustomGoogle()} disabled={customLoading || !customText.trim()}
-                            className="w-full h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
-                            {customLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Oluşturuluyor...</> : <><Sparkles className="h-[18px] w-[18px]" /> Yapay Zeka ile Reklam Oluştur</>}
-                        </button>
-                    </div>
+                    <CustomAdBlock
+                        platform="google"
+                        value={customTextByPlatform.google}
+                        onChange={(v) => setCustomTextByPlatform((p) => ({ ...p, google: v }))}
+                        onGenerate={() => void generateCustom('google')}
+                        loading={customLoadingPlatform === 'google'}
+                    />
 
                     <AiPlanBlock
                         platform="google"
@@ -1143,6 +1128,14 @@ export default function AdsPage() {
                 {/* META AI ÖNERİLER */}
                 <section className="space-y-2.5">
                     <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Meta · Yapay Zeka Reklam Planı</h2>
+                    {/* SERBEST METİN → AI REKLAM (Meta) */}
+                    <CustomAdBlock
+                        platform="meta"
+                        value={customTextByPlatform.meta}
+                        onChange={(v) => setCustomTextByPlatform((p) => ({ ...p, meta: v }))}
+                        onGenerate={() => void generateCustom('meta')}
+                        loading={customLoadingPlatform === 'meta'}
+                    />
                     <AiPlanBlock
                         platform="meta"
                         proposals={proposalsByPlatform.meta}
@@ -1479,6 +1472,51 @@ export default function AdsPage() {
                 </section>
                 </>)}
             </div>
+        </div>
+    );
+}
+
+// Serbest metin → AI reklam kutusu açıklaması (platforma göre).
+const CUSTOM_AD_COPY: Record<AdPlatform, string> = {
+    google: 'yapay zeka Google reklamına dönüştürsün',
+    meta: 'yapay zeka Facebook/Instagram reklamına dönüştürsün',
+    tiktok: 'yapay zeka TikTok videosuna dönüştürsün',
+};
+
+/**
+ * Serbest metin → AI reklam kutusu. STK yöneticisi etkinliğini/kampanyasını
+ * kısaca yazar; yapay zeka o platforma uygun TEK reklam önerisine çevirir.
+ * Üç platformda da (Google/Meta/TikTok) ortak kullanılır.
+ */
+function CustomAdBlock({ platform, value, onChange, onGenerate, loading }: {
+    platform: AdPlatform;
+    value: string;
+    onChange: (v: string) => void;
+    onGenerate: () => void;
+    loading: boolean;
+}) {
+    return (
+        <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-3">
+            <div className="flex items-start gap-3">
+                <span className="h-9 w-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Wand2 className="h-5 w-5" />
+                </span>
+                <div className="space-y-0.5">
+                    <p className="text-[14px] font-semibold text-foreground">Kendi metninden reklam oluştur</p>
+                    <p className="text-[12px] text-muted-foreground leading-relaxed">Etkinliğini, eğitimini veya kampanyanı kısaca anlat; {CUSTOM_AD_COPY[platform]}.</p>
+                </div>
+            </div>
+            <textarea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="Etkinliğinizi/eğitiminizi/kampanyanızı kısaca anlatın; yapay zeka reklama dönüştürsün."
+                rows={3}
+                className="w-full rounded-2xl bg-muted border border-border/60 px-4 py-3 text-[14px] outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+            />
+            <button onClick={onGenerate} disabled={loading || !value.trim()}
+                className="w-full h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
+                {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Oluşturuluyor...</> : <><Sparkles className="h-[18px] w-[18px]" /> Yapay Zeka ile Reklam Oluştur</>}
+            </button>
         </div>
     );
 }
