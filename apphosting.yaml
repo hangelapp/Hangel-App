@@ -62,6 +62,43 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  # Santral WebRTC geçidi (kendi sunucumuz — santral.hangel.org.tr). NEXT_PUBLIC:
+  # softphone credential'ları doğası gereği tarayıcıda; rotate edilebilir.
+  - variable: NEXT_PUBLIC_SANTRAL_WSS_URL
+    value: "wss://santral.hangel.org.tr/ws"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_SANTRAL_SIP_USER
+    value: "santral-web"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_SANTRAL_SIP_PASS
+    value: "334292ef9db814604a93f1cd04104452"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_SANTRAL_SIP_DOMAIN
+    value: "santral.hangel.org.tr"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_SANTRAL_TURN_URL
+    value: "turn:santral.hangel.org.tr:3478"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_SANTRAL_TURN_USER
+    value: "hangel"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_SANTRAL_TURN_PASS
+    value: "00963d890c67dc3667a1d4c379d95e96"
+    availability:
+      - BUILD
+      - RUNTIME
   # Google OAuth (Gmail kişi içe aktarma — /api/contacts/google/*)
   - variable: GOOGLE_CONTACTS_CLIENT_ID
     secret: GOOGLE_CONTACTS_CLIENT_ID
