@@ -73,14 +73,6 @@ function readStringField(item: LibraryItem, key: string): string | undefined {
   return typeof v === 'string' && v ? v : undefined;
 }
 
-/** Verinin content HTML'inin ilk <p> metnini düz metin olarak çıkarır. */
-function firstParagraphText(content: string | undefined): string {
-  if (!content) return '';
-  const match = content.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
-  const raw = match ? match[1] : content;
-  return raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
 export function extractYear(item: LibraryItem): number | null {
   const text = `${item.title} ${stripHtml(item.content || '')}`;
   const match = text.match(/\b(19[6-9]\d|20[0-2]\d)\b/);
@@ -425,7 +417,6 @@ export function SectionAccordion({
                 // <a> kaçınmak için satır Link değil; başlık ile kaynak linki ayrı tıklanır.
                 const hasCite = !!(item.source || item.sourceUrl);
                 if (hasCite) {
-                  const ozet = firstParagraphText(item.content);
                   return (
                     <div key={item.slug} className="border-b last:border-b-0 hover:bg-muted/50">
                       <Link
@@ -443,9 +434,6 @@ export function SectionAccordion({
                             {item.source}{item.year ? ` · ${item.year}` : ''}
                           </span>
                         </div>
-                      )}
-                      {ozet && (
-                        <p className="px-3 pb-2 text-[12px] text-muted-foreground line-clamp-2">{ozet}</p>
                       )}
                     </div>
                   );
