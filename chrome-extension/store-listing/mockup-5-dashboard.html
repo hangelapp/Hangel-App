@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="UTF-8"/><title>hangel — dashboard</title><style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{width:1280px;height:800px;background:linear-gradient(135deg,#fff8f5 0%,#ffe8de 100%);padding:40px 60px;overflow:hidden}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+.h-left{display:flex;align-items:center;gap:16px}
+.logo{width:48px;height:48px;background:#f34723;border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:22px}
+.h-title{font-size:22px;font-weight:700;color:#1a1a1a}
+.h-sub{font-size:13px;color:#666;margin-top:2px}
+.user-pill{background:white;border:1px solid rgba(243,71,35,0.2);padding:8px 16px;border-radius:24px;font-size:13px;color:#333;display:flex;align-items:center;gap:8px}
+.av{width:24px;height:24px;border-radius:50%;background:#f34723;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+.impact-card{background:linear-gradient(135deg,#f34723 0%,#d93a18 100%);color:white;border-radius:24px;padding:36px 40px;margin-bottom:28px;position:relative;overflow:hidden;box-shadow:0 20px 40px rgba(243,71,35,0.25)}
+.impact-card::before{content:"";position:absolute;top:-80px;right:-80px;width:280px;height:280px;background:radial-gradient(circle,rgba(255,255,255,0.15) 0%,transparent 70%);border-radius:50%}
+.impact-label{font-size:14px;opacity:0.9;margin-bottom:6px;font-weight:500}
+.impact-amount{font-size:64px;font-weight:800;line-height:1;margin-bottom:8px;letter-spacing:-2px}
+.impact-amount .currency{font-size:36px;opacity:0.8;vertical-align:top;margin-right:6px}
+.impact-meta{display:flex;gap:32px;margin-top:16px;opacity:0.95;font-size:13px}
+.impact-meta strong{font-size:16px;display:block;font-weight:700}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+.card{background:white;border-radius:16px;padding:20px 24px;box-shadow:0 4px 12px rgba(0,0,0,0.04)}
+.card-title{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.badge{font-size:11px;color:#f34723;background:rgba(243,71,35,0.1);padding:3px 8px;border-radius:8px}
+.history-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.04);font-size:13px}
+.history-row:last-child{border-bottom:none}
+.h-logo{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:13px;flex-shrink:0}
+.h-info{flex:1}
+.h-brand{font-weight:700;color:#1a1a1a}
+.h-target{font-size:11px;color:#666}
+.h-amount{color:#f34723;font-weight:700;font-size:14px}
+.h-date{font-size:11px;color:#999;text-align:right;min-width:60px}
+.ngo-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.04)}
+.ngo-row:last-child{border-bottom:none}
+.ngo-name{font-weight:700;font-size:13px;color:#1a1a1a}
+.ngo-pct{font-size:11px;color:#666}
+.bar-wrap{flex:1;background:rgba(243,71,35,0.1);border-radius:8px;height:6px;overflow:hidden;margin:0 8px}
+.bar{background:#f34723;height:100%}
+.ngo-amount{font-size:13px;color:#f34723;font-weight:700}
+</style></head><body>
+<div class="header"><div class="h-left"><div class="logo">h</div><div><div class="h-title">Bağış Panelin</div><div class="h-sub">hangel — alışverişin bağışa dönüştü</div></div></div><div class="user-pill"><div class="av">İ</div><span>İsmail Hilmi</span></div></div>
+<div class="impact-card"><div class="impact-label">Bu yıl yaptığın bağış</div><div class="impact-amount"><span class="currency">₺</span>1.234,50</div><div class="impact-meta"><div><strong>47</strong>Alışveriş</div><div><strong>2</strong>STK</div><div><strong>9</strong>Marka</div><div><strong>%5.4</strong>Ortalama oran</div></div></div>
+<div class="grid"><div class="card"><div class="card-title">Son alışverişler <span class="badge">Otomatik</span></div>
+<div class="history-row"><div class="h-logo" style="background:#f27a1a">t</div><div class="h-info"><div class="h-brand">Trendyol</div><div class="h-target">→ hangel + TEMA</div></div><div class="h-amount">+ ₺ 24,50</div><div class="h-date">Bugün</div></div>
+<div class="history-row"><div class="h-logo" style="background:#000">M</div><div class="h-info"><div class="h-brand">Modanisa</div><div class="h-target">→ hangel + TEMA</div></div><div class="h-amount">+ ₺ 52,80</div><div class="h-date">Dün</div></div>
+<div class="history-row"><div class="h-logo" style="background:#1428a0">S</div><div class="h-info"><div class="h-brand">Samsung</div><div class="h-target">→ hangel + TEMA</div></div><div class="h-amount">+ ₺ 142,00</div><div class="h-date">3 gün</div></div>
+<div class="history-row"><div class="h-logo" style="background:#c8102e">B</div><div class="h-info"><div class="h-brand">Beymen</div><div class="h-target">→ hangel + TEMA</div></div><div class="h-amount">+ ₺ 38,00</div><div class="h-date">5 gün</div></div>
+<div class="history-row"><div class="h-logo" style="background:#ff6900">PU</div><div class="h-info"><div class="h-brand">PUMA</div><div class="h-target">→ hangel + TEMA</div></div><div class="h-amount">+ ₺ 19,75</div><div class="h-date">1 hafta</div></div>
+</div>
+<div class="card"><div class="card-title">Seçili STK'larına dağılım</div>
+<div class="ngo-row"><div><div class="ngo-name">hangel</div><div class="ngo-pct">%50</div></div><div class="bar-wrap"><div class="bar" style="width:50%"></div></div><div class="ngo-amount">₺ 617,25</div></div>
+<div class="ngo-row"><div><div class="ngo-name">TEMA</div><div class="ngo-pct">%50</div></div><div class="bar-wrap"><div class="bar" style="width:50%"></div></div><div class="ngo-amount">₺ 617,25</div></div>
+<div style="margin-top:16px;padding:14px;background:#fff8f5;border-radius:12px;font-size:12px;line-height:1.5;color:#5c2010">🌱 <strong>TEMA Vakfı</strong> ile bu yıl <strong>12 fidan</strong>'a denk katkı yaptın. Devam!</div>
+</div></div>
+</body></html>

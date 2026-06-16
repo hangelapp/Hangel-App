@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="UTF-8"/><title>hangel — 2 STK seç</title><style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{width:1280px;height:800px;background:linear-gradient(135deg,#fff8f5 0%,#ffe8de 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px}
+.title{font-size:42px;font-weight:800;color:#f34723;margin-bottom:8px;text-align:center}
+.sub{font-size:18px;color:#5c2010;margin-bottom:32px;text-align:center}
+.selected-bar{background:white;border:2px solid #f34723;border-radius:16px;padding:18px 24px;margin-bottom:24px;width:100%;max-width:920px;display:flex;gap:20px;align-items:center;box-shadow:0 8px 20px rgba(243,71,35,0.15)}
+.selected-label{font-weight:700;color:#1a1a1a;font-size:15px}
+.chip{background:#f34723;color:white;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+.chip .x{opacity:0.7;font-size:16px}
+.split{margin-left:auto;font-size:13px;color:#666}
+.split strong{color:#f34723;font-size:16px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:920px;width:100%}
+.ngo-card{background:white;border:2px solid #f0e0d8;border-radius:14px;padding:16px}
+.ngo-card.selected{border-color:#f34723;background:linear-gradient(135deg,#fff 0%,#fff8f5 100%);box-shadow:0 4px 12px rgba(243,71,35,0.15)}
+.ngo-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.ngo-logo{width:48px;height:48px;background:linear-gradient(135deg,#f34723 0%,#d93a18 100%);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:16px}
+.ngo-logo.purple{background:linear-gradient(135deg,#7c3aed 0%,#5b21b6 100%)}
+.ngo-logo.blue{background:linear-gradient(135deg,#2563eb 0%,#1e40af 100%)}
+.ngo-logo.green{background:linear-gradient(135deg,#059669 0%,#047857 100%)}
+.ngo-logo.amber{background:linear-gradient(135deg,#d97706 0%,#b45309 100%)}
+.ngo-logo.pink{background:linear-gradient(135deg,#db2777 0%,#be185d 100%)}
+.ngo-name{font-weight:700;font-size:14px;color:#1a1a1a;line-height:1.2;flex:1}
+.ngo-cat{font-size:11px;color:#999;margin-top:2px}
+.ngo-desc{font-size:12px;color:#555;line-height:1.4;margin-bottom:10px;height:50px;overflow:hidden}
+.ngo-stats{display:flex;gap:12px;font-size:11px;color:#666}
+.ngo-stats strong{color:#f34723;font-size:12px}
+.checkmark{width:22px;height:22px;border-radius:50%;border:2px solid #ccc;margin-left:auto}
+.ngo-card.selected .checkmark{background:#f34723;border-color:#f34723;display:flex;align-items:center;justify-content:center;color:white;font-size:13px}
+</style></head><body>
+<div class="title">2 STK seç, bağışın akmaya başlasın</div>
+<div class="sub">Alışveriş komisyonu seçtiğin 2 STK arasında otomatik paylaşılır.</div>
+<div class="selected-bar"><div class="selected-label">Seçtiklerin:</div><div class="chip">hangel Sosyal Fayda Derneği<span class="x">×</span></div><div class="chip">TEMA Vakfı<span class="x">×</span></div><div class="split">Bölüşüm: <strong>%50</strong> · <strong>%50</strong></div></div>
+<div class="grid">
+<div class="ngo-card selected"><div class="ngo-head"><div class="ngo-logo">h</div><div style="flex:1"><div class="ngo-name">hangel Sosyal Fayda Derneği</div><div class="ngo-cat">Genel · Dijital Kamu</div></div><div class="checkmark">✓</div></div><div class="ngo-desc">Türkiye'nin sosyal fayda platformu. STK'ları teknolojiyle güçlendirir, bağış akışını şeffaflaştırır.</div><div class="ngo-stats"><span><strong>2.3K</strong> destekçi</span><span><strong>187</strong> proje</span></div></div>
+<div class="ngo-card selected"><div class="ngo-head"><div class="ngo-logo green">T</div><div style="flex:1"><div class="ngo-name">TEMA Vakfı</div><div class="ngo-cat">Çevre · Erozyon</div></div><div class="checkmark">✓</div></div><div class="ngo-desc">Türkiye Erozyonla Mücadele, Ağaçlandırma ve Doğal Varlıkları Koruma Vakfı. 1992'den beri.</div><div class="ngo-stats"><span><strong>180K</strong> destekçi</span><span><strong>1.2K</strong> proje</span></div></div>
+<div class="ngo-card"><div class="ngo-head"><div class="ngo-logo purple">K</div><div style="flex:1"><div class="ngo-name">KAÇUV</div><div class="ngo-cat">Sağlık · Çocuk</div></div><div class="checkmark"></div></div><div class="ngo-desc">Kanserli Çocuklara Umut Vakfı. Tedavi gören çocuklara ve ailelerine destek olur.</div><div class="ngo-stats"><span><strong>45K</strong> destekçi</span><span><strong>340</strong> proje</span></div></div>
+<div class="ngo-card"><div class="ngo-head"><div class="ngo-logo blue">A</div><div style="flex:1"><div class="ngo-name">AKUT Arama Kurtarma</div><div class="ngo-cat">Afet · Acil Müdahale</div></div><div class="checkmark"></div></div><div class="ngo-desc">Doğal afetlerde arama kurtarma operasyonları + ilkyardım eğitimi. Gönüllülük esaslı.</div><div class="ngo-stats"><span><strong>120K</strong> destekçi</span><span><strong>880</strong> proje</span></div></div>
+<div class="ngo-card"><div class="ngo-head"><div class="ngo-logo amber">M</div><div style="flex:1"><div class="ngo-name">Mavi Kalem</div><div class="ngo-cat">Eğitim · Mülteci</div></div><div class="checkmark"></div></div><div class="ngo-desc">Suriyeli ve afetzede çocuklara güvenli alan ve psikososyal destek sağlar.</div><div class="ngo-stats"><span><strong>32K</strong> destekçi</span><span><strong>210</strong> proje</span></div></div>
+<div class="ngo-card"><div class="ngo-head"><div class="ngo-logo pink">L</div><div style="flex:1"><div class="ngo-name">LÖSEV</div><div class="ngo-cat">Sağlık · Çocuk Onkoloji</div></div><div class="checkmark"></div></div><div class="ngo-desc">Lösemili Çocuklar Vakfı. Türkiye'nin en köklü çocuk sağlık vakıflarından.</div><div class="ngo-stats"><span><strong>250K</strong> destekçi</span><span><strong>2.1K</strong> proje</span></div></div>
+</div>
+</body></html>

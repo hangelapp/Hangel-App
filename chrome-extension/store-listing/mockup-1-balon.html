@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="UTF-8"/><title>hangel — Trendyol balon</title><style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{width:1280px;height:800px;background:#f5f5f5;position:relative;overflow:hidden}
+.chrome-bar{height:80px;background:#dee1e6;display:flex;align-items:center;padding:0 16px;gap:12px;border-bottom:1px solid #c5c8cc}
+.chrome-buttons{display:flex;gap:8px}
+.chrome-buttons span{width:12px;height:12px;border-radius:50%}
+.chrome-buttons span:nth-child(1){background:#ff605c}.chrome-buttons span:nth-child(2){background:#ffbd44}.chrome-buttons span:nth-child(3){background:#00ca4e}
+.chrome-tabs{background:#fff;border-radius:8px 8px 0 0;padding:10px 20px;font-size:13px;color:#333;margin-top:16px}
+.chrome-url{background:#fff;border-radius:18px;padding:8px 16px;font-size:13px;color:#5f6368;flex:1;max-width:600px}
+.chrome-icons{display:flex;gap:12px;align-items:center;margin-left:auto}
+.icon-circle{width:28px;height:28px;border-radius:50%;background:#f34723;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;box-shadow:0 2px 4px rgba(243,71,35,0.4)}
+.page{padding:24px 60px}
+.brand-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.brand-logo{width:48px;height:48px;background:#f27a1a;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:18px}
+.brand-name{font-size:22px;font-weight:700;color:#333}
+.search-bar{background:white;border:1px solid #e0e0e0;border-radius:8px;padding:12px 18px;font-size:14px;color:#999;margin-bottom:32px;max-width:600px}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1000px}
+.product{background:white;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.product-img{height:200px;background:linear-gradient(135deg,#e8e8e8 0%,#d0d0d0 100%)}
+.product-info{padding:12px}
+.product-brand{font-size:11px;color:#999;margin-bottom:4px}
+.product-name{font-size:13px;color:#333;margin-bottom:8px;height:32px;overflow:hidden}
+.product-price{font-size:16px;font-weight:700;color:#f27a1a}
+.hangel-toast{position:absolute;top:100px;right:24px;width:380px;z-index:9999;font-size:14px;color:#1a1a1a}
+.hangel-toast-inner{position:relative;background:linear-gradient(135deg,#fff8f5 0%,#ffffff 100%);border:1.5px solid #f34723;border-radius:16px;box-shadow:0 16px 40px rgba(243,71,35,0.25),0 6px 12px rgba(0,0,0,0.1);padding:16px 18px;overflow:hidden}
+.hangel-toast-inner::before{content:"";position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(243,71,35,0.12) 0%,transparent 70%);border-radius:50%}
+.hangel-close{position:absolute;top:6px;right:10px;background:transparent;border:none;font-size:22px;color:#999;cursor:pointer}
+.hangel-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.hangel-logo{width:44px;height:44px;border-radius:10px;background:#f34723;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:22px;box-shadow:0 2px 6px rgba(243,71,35,0.3)}
+.hangel-title{font-weight:700;font-size:14px;color:#f34723;margin-bottom:3px}
+.hangel-subtitle{font-size:13.5px;line-height:1.4;color:#1a1a1a}
+.hangel-rate{background:rgba(243,71,35,0.1);border-radius:10px;padding:10px 12px;font-size:13px;color:#5c2010;margin-bottom:14px;text-align:center}
+.hangel-rate strong{color:#f34723;font-size:15px}
+.hangel-actions{display:flex;gap:8px}
+.hangel-actions button{flex:1;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit}
+.hangel-btn-yes{background:linear-gradient(180deg,#f34723 0%,#d93a18 100%);color:#ffffff;box-shadow:0 3px 8px rgba(243,71,35,0.4)}
+.hangel-btn-later{background:#f0f0f0;color:#555}
+.hangel-btn-never{background:transparent;color:#999;font-weight:500;font-size:11px;max-width:90px}
+</style></head><body>
+<div class="chrome-bar"><div class="chrome-buttons"><span></span><span></span><span></span></div><div class="chrome-tabs">trendyol.com</div><div class="chrome-url">🔒 trendyol.com</div><div class="chrome-icons"><div class="icon-circle">h</div></div></div>
+<div class="page"><div class="brand-header"><div class="brand-logo">t</div><div class="brand-name">trendyol</div></div><div class="search-bar">🔍 Ne aramıştın?</div><div class="products"><div class="product"><div class="product-img"></div><div class="product-info"><div class="product-brand">Marka A</div><div class="product-name">Spor Ayakkabı</div><div class="product-price">₺ 1.299</div></div></div><div class="product"><div class="product-img"></div><div class="product-info"><div class="product-brand">Marka B</div><div class="product-name">Kazak</div><div class="product-price">₺ 549</div></div></div><div class="product"><div class="product-img"></div><div class="product-info"><div class="product-brand">Marka C</div><div class="product-name">Çanta</div><div class="product-price">₺ 879</div></div></div><div class="product"><div class="product-img"></div><div class="product-info"><div class="product-brand">Marka D</div><div class="product-name">Mont</div><div class="product-price">₺ 2.499</div></div></div></div></div>
+<div class="hangel-toast"><div class="hangel-toast-inner"><button class="hangel-close">×</button><div class="hangel-header"><div class="hangel-logo">h</div><div><div class="hangel-title">Hatırlatayım galiba :)</div><div class="hangel-subtitle"><strong>Trendyol</strong> hangel üzerinden bağış yapsın istermisin?</div></div></div><div class="hangel-rate">Bu alışverişin <strong>%5</strong>'i seçtiğin STK'lara bağış olur.</div><div class="hangel-actions"><button class="hangel-btn-yes">Yapsın</button><button class="hangel-btn-later">Sonra</button><button class="hangel-btn-never">Bir daha sorma</button></div></div></div>
+</body></html>
