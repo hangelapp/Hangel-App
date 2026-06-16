@@ -328,6 +328,8 @@ export interface UseSipPhoneConfig {
   password?: string | null;
   /** SIP domain (sip:user@DOMAIN). Yoksa hook pasif. */
   domain?: string | null;
+  /** WebRTC ICE sunucuları (STUN + TURN). NAT arkasında ses için TURN şart. */
+  iceServers?: RTCIceServer[] | null;
 }
 
 export interface UseSipPhoneApi {
@@ -369,7 +371,9 @@ function sanitizeNumber(input: string): string {
  * yan etki üretmez (mevcut panel mock akışı korunur).
  */
 export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
-  const { wssUrl, username, password, domain } = config;
+  const { wssUrl, username, password, domain, iceServers } = config;
+  // ICE sunucularını stabil bir anahtara çevir (effect dep'i diziye bağlı kalmasın).
+  const iceServersKey = useMemo(() => JSON.stringify(iceServers ?? []), [iceServers]);
 
   // GATE: tüm credential'lar dolu mu? Biri eksikse özellik pasif.
   const ready = Boolean(wssUrl && username && password && domain);
@@ -465,11 +469,17 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
           throw new Error('SIP URI üretilemedi.');
         }
 
+        const parsedIce: RTCIceServer[] = JSON.parse(iceServersKey);
         const uaOptions: UserAgentOptions = {
           uri,
           authorizationUsername: username,
           authorizationPassword: password,
           transportOptions: { server: wssUrl },
+          // WebRTC ICE: STUN + TURN. Geçit ve tarayıcı NAT arkasında olduğu için
+          // TURN olmadan ses akmaz. peerConnectionConfiguration tüm session'lara uygulanır.
+          sessionDescriptionHandlerFactoryOptions: parsedIce.length
+            ? { peerConnectionConfiguration: { iceServers: parsedIce } }
+            : undefined,
           delegate: {
             onInvite: (invitation: InvitationType) => {
               if (!mountedRef.current) {
@@ -531,7 +541,7 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
       void uaRef.current?.stop().catch(() => undefined);
       uaRef.current = null;
     };
-  }, [ready, wssUrl, username, password, domain, wireSession, stopTick]);
+  }, [ready, wssUrl, username, password, domain, iceServersKey, wireSession, stopTick]);
 
   const call = useCallback(
     async (number: string) => {
