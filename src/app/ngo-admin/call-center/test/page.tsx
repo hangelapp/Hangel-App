@@ -11,7 +11,7 @@
  */
 
 import { useState } from 'react';
-import { useSipPhone } from '@/lib/santral/sipjs-provider';
+import { useSipPhone } from '@/lib/santral/use-sip-phone';
 import { Phone, PhoneOff, Mic, MicOff, PhoneIncoming } from 'lucide-react';
 
 const WSS = process.env.NEXT_PUBLIC_SANTRAL_WSS_URL ?? '';

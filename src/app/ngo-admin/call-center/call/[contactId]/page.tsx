@@ -43,7 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { useSipPhone } from '@/lib/santral/sipjs-provider';
+import { useSipPhone } from '@/lib/santral/use-sip-phone';
 
 interface ContactDetail {
   id: string;
