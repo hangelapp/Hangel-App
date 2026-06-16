@@ -96,12 +96,15 @@ const computeStats = unstable_cache(
     // ─── Email/telefon coverage (vakıflar + dernekler) ────────────────
     // registryDernekler de import'ta ePosta/telefon1 tutar (import-registry.mjs);
     // dernek istatistikleri vakıf gibi email+telefon kapsama gösterir.
-    const [emailDolu, telDolu, kamuYarariCount, dernekEmail, dernekPhone] = await Promise.all([
+    const [emailDolu, telDolu, kamuYarariCount, dernekEmail, dernekPhone, dernekWebSite, vakifWebSite] = await Promise.all([
       db.collection('registryVakiflar').where('ePosta', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
       db.collection('registryVakiflar').where('telefon1', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
       db.collection('registryDernekler').where('isKamuYarari', '==', true).count().get().then((s) => s.data().count).catch(() => 0),
       db.collection('registryDernekler').where('ePosta', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
       db.collection('registryDernekler').where('telefon1', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
+      // Web sitesi: dernek açık verisinde tek mevcut iletişim alanı (~%8). Tam-kapsam count().
+      db.collection('registryDernekler').where('webSite', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
+      db.collection('registryVakiflar').where('webSite', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
     ]);
 
     // ─── Unsubscribed count (all 3 collections) ───────────────────────
@@ -258,8 +261,10 @@ const computeStats = unstable_cache(
         total: vakifTotalCount,
         email: emailDolu,
         phone: telDolu,
+        webSite: vakifWebSite,
         emailPct: vakifTotalCount ? Math.round((emailDolu / vakifTotalCount) * 100) : 0,
         phonePct: vakifTotalCount ? Math.round((telDolu / vakifTotalCount) * 100) : 0,
+        webSitePct: vakifTotalCount ? Math.round((vakifWebSite / vakifTotalCount) * 100) : 0,
         unsubscribed: unsubscribed.vakiflar,
         topCities: vakifTop,
       },
@@ -272,8 +277,10 @@ const computeStats = unstable_cache(
         total: dernekTotalCount,
         email: dernekEmail,
         phone: dernekPhone,
+        webSite: dernekWebSite,
         emailPct: dernekTotalCount ? Math.round((dernekEmail / dernekTotalCount) * 100) : 0,
         phonePct: dernekTotalCount ? Math.round((dernekPhone / dernekTotalCount) * 100) : 0,
+        webSitePct: dernekTotalCount ? Math.round((dernekWebSite / dernekTotalCount) * 100) : 0,
         unsubscribed: unsubscribed.dernekler,
         kamuYarari: kamuYarariCount,
         topCities: dernekTop,

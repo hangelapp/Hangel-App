@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   ChartBar, ChevronDown, ChevronUp, Users, Mail, Phone, Send, UserMinus,
-  TrendingUp, MapPin, Activity, Loader2, RefreshCw,
+  TrendingUp, MapPin, Activity, Loader2, RefreshCw, Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,8 +31,10 @@ interface CategoryDetail {
   sample?: number;
   email?: number;
   phone?: number;
+  webSite?: number;
   emailPct?: number;
   phonePct?: number;
+  webSitePct?: number;
   unsubscribed: number;
   kamuYarari?: number;
   topCities?: Array<{ city: string; count: number }>;
@@ -351,10 +353,12 @@ function CategoryDetailPanel({ cat }: { cat: CategoryDetail }) {
       {missingContact && (
         <Card className="border-amber-300 bg-amber-50/60">
           <CardContent className="p-3 text-[12px] text-amber-900 leading-relaxed">
-            <strong>ℹ Bilgi:</strong> Dernek kayıtlarında <em>e-posta</em> ve <em>telefon</em> alanları
-            henüz import edilmedi (T.C. Dernekler Dairesi açık veri setinde mevcut değil).
-            Kamu Yararı ve il dağılımı verisi tam çalışıyor. Email/telefon backfill
-            yapılınca bu uyarı kaybolur.
+            <strong>ℹ Bilgi:</strong> T.C. Dernekler Dairesi açık veri setinde <em>e-posta</em> ve
+            <em> telefon</em> alanları <strong>yer almaz</strong> — bu yüzden 0 görünür (eksik değil,
+            kaynak böyle). Derneklerin tek iletişim alanı <strong>web sitesi</strong>dir
+            {cat.webSite !== undefined ? ` (${formatN(cat.webSite)} dernek, %${cat.webSitePct})` : ''}.
+            İletişim için bu web sitelerinden e-posta/telefon kazınabilir (zenginleştirme).
+            Kamu yararı, web sitesi ve il dağılımı verisi tam ve doğrudur.
           </CardContent>
         </Card>
       )}
@@ -367,6 +371,9 @@ function CategoryDetailPanel({ cat }: { cat: CategoryDetail }) {
         {cat.phone !== undefined && (
           <KPI label="Telefon var" value={formatN(cat.phone)} icon={Phone} color="bg-blue-500" sub={`%${cat.phonePct} kapsama`} />
         )}
+        {cat.webSite !== undefined && (
+          <KPI label="Web sitesi var" value={formatN(cat.webSite)} icon={Globe} color="bg-indigo-500" sub={`%${cat.webSitePct ?? 0} kapsama`} />
+        )}
         {cat.kamuYarari !== undefined && (
           <KPI label="Kamu Yararı" value={formatN(cat.kamuYarari)} icon={Users} color="bg-emerald-700" />
         )}
@@ -374,13 +381,16 @@ function CategoryDetailPanel({ cat }: { cat: CategoryDetail }) {
       </div>
 
       {/* Kapsama barları */}
-      {hasContact && (
+      {(hasContact || cat.webSite !== undefined) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {cat.email !== undefined && (
             <CoverageCard label="E-posta Kapsama" value={cat.email} total={cat.total} pct={cat.emailPct ?? 0} color="bg-emerald-500" icon={Mail} />
           )}
           {cat.phone !== undefined && (
             <CoverageCard label="Telefon Kapsama" value={cat.phone} total={cat.total} pct={cat.phonePct ?? 0} color="bg-blue-500" icon={Phone} />
+          )}
+          {cat.webSite !== undefined && (
+            <CoverageCard label="Web Sitesi Kapsama" value={cat.webSite} total={cat.total} pct={cat.webSitePct ?? 0} color="bg-indigo-500" icon={Globe} />
           )}
         </div>
       )}
