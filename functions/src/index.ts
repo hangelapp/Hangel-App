@@ -148,3 +148,9 @@ export { onboardingNudgeCron } from './onboarding-nudge';
 // Eşleşenler için notifications doc yaz; onNotificationCreated push gönderir.
 // See ./disaster-geofence.ts
 export { onDisasterAlertCreated } from './disaster-geofence';
+
+// Sanal santral callback runner — every 1 minute.
+// santralScheduledCallbacks.status='pending' AND scheduledAt<=now → 'due'
+// + contact.priority=true → çağrı sırasında üst sıraya çıkar.
+// See ./santral-callback-runner.ts
+export { santralCallbackRunner } from './santral-callback-runner';

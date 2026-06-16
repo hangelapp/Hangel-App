@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/santral-callback-runner",
-      "schedule": "*/1 * * * *"
-    }
-  ]
-}
