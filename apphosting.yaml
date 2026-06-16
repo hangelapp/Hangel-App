@@ -94,13 +94,14 @@ env:
       - RUNTIME
 
   # Meta (Facebook/Instagram) Ads — STK reklam entegrasyonu (Faz 1).
-  # Secret Manager'da; App Review (ads_management) onayı gelince tam aktif.
+  # NOT: plaintext (Google Ads/Resend/PassKit ile aynı pragmatik desen).
+  # Kullanıcı onayladı (2026-06-16). TODO rotate + Secret Manager fast-follow.
   - variable: META_APP_ID
-    secret: META_APP_ID
+    value: "940901562258751"
     availability:
       - RUNTIME
   - variable: META_APP_SECRET
-    secret: META_APP_SECRET
+    value: "a548a331cc796199f0441d6294b657bf"
     availability:
       - RUNTIME
 
