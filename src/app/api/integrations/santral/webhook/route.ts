@@ -67,6 +67,24 @@ const VALID_EVENTS: readonly SantralWebhookEventType[] = [
 ];
 
 /**
+ * SIP.js (Faz 3) event mapping referansı — provider adapter `sipjs-provider.ts`
+ * `Session.stateChange` event'lerini aşağıdaki kanonik tiplere çevirip bu
+ * webhook'a POST eder (veya internal event bus'tan doğrudan callSessions
+ * doc'unu günceller — final implementasyon Faz 3'te karar verilir).
+ *
+ *   SessionState.Establishing  → 'call.started'
+ *   SessionState.Established   → 'call.answered'
+ *   SessionState.Terminated    → 'call.ended'   (status: completed/no-answer/busy/cancelled/failed)
+ *   (Recording sunucu tarafında oluşur)
+ *                              → 'recording.ready'
+ *
+ * Yani burada ek bir parsing branch'i gerekmiyor — SIP.js eventleri zaten
+ * VALID_EVENTS içine map'lenmiş halde gelir. Sadece kaynak header'da
+ * `x-santral-provider: sipjs-...` olması beklenir; HMAC secret yine
+ * santralProviders/{id}.webhookSecret üzerinden doğrulanır.
+ */
+
+/**
  * Constant-time HMAC karşılaştırma. Provider webhook secret + raw body ile
  * SHA-256 hesaplar, header'daki signature ile timing-safe compare yapar.
  */
