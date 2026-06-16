@@ -179,7 +179,7 @@ export function OutreachDashboard({ user }: Props) {
                 <CatPill active={activeCat === 'kulup'} onClick={() => setActiveCat('kulup')} label="Kulüp" count={stats.categories.kulup.total} />
                 <CatPill active={activeCat === 'ilMudurluk'} onClick={() => setActiveCat('ilMudurluk')} label="STİ İl Müdürlükleri" count={stats.categories.ilMudurluk.total} />
                 <CatPill active={activeCat === 'federasyon'} onClick={() => setActiveCat('federasyon')} label="Federasyonlar" count={stats.categories.federasyon.total} />
-                <CatPill active={activeCat === 'gencSporMudurluk'} onClick={() => setActiveCat('gencSporMudurluk')} label="Gençlik ve Spor İl Müdürlükleri" count={stats.categories.gencSporMudurluk.total} />
+                <CatPill active={activeCat === 'gencSporMudurluk'} onClick={() => setActiveCat('gencSporMudurluk')} label="Gençlik ve Spor İl ve İlçe Müdürlükleri" count={stats.categories.gencSporMudurluk.total} />
               </div>
 
               <CategoryDetailPanel cat={stats.categories[activeCat]} />

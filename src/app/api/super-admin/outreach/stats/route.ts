@@ -75,7 +75,7 @@ const computeStats = unstable_cache(
     ]);
 
     // ─── outreachContacts type breakdown ──────────────────────────────
-    const TYPES = ['Vakıf', 'Dernek', 'SivilToplumMüdürlüğü', 'Federasyon', 'SporKulübü', 'GencSporMudurlugu', 'MailHizmet', 'Diğer'] as const;
+    const TYPES = ['Vakıf', 'Dernek', 'SivilToplumMüdürlüğü', 'Federasyon', 'SporKulübü', 'GencSporMudurlugu', 'GencSporIlceMudurlugu', 'MailHizmet', 'Diğer'] as const;
     const byTypeArr = await Promise.all(
       TYPES.map((t) => db.collection('outreachContacts').where('type', '==', t).count().get().then((s) => ({ type: t, count: s.data().count })).catch(() => ({ type: t, count: 0 }))),
     );
@@ -199,9 +199,10 @@ const computeStats = unstable_cache(
     // Tek equality filtre + örneklem okuması → composite index gerekmez.
     // Sample ≤2000 doc; total ≤ sample ise kapsama oranları KESİN, total > sample
     // ise ÖRNEKLEME dayalı tahmindir (UI 'sample < total' ile bunu işaretler).
-    async function outreachTypeDetail(type: string, total: number) {
+    async function outreachTypeDetail(type: string | string[], total: number) {
+      const types = Array.isArray(type) ? type : [type];
       const snap = await db.collection('outreachContacts')
-        .where('type', '==', type).limit(2000).get().catch(() => null);
+        .where('type', 'in', types).limit(2000).get().catch(() => null);
       let email = 0, phone = 0, unsub = 0;
       const cc: Record<string, number> = {};
       if (snap) {
@@ -233,7 +234,7 @@ const computeStats = unstable_cache(
       outreachTypeDetail('Federasyon', byType.Federasyon || 0),
       outreachTypeDetail('SporKulübü', byType.SporKulübü || 0),
       outreachTypeDetail('SivilToplumMüdürlüğü', byType.SivilToplumMüdürlüğü || 0),
-      outreachTypeDetail('GencSporMudurlugu', byType.GencSporMudurlugu || 0),
+      outreachTypeDetail(['GencSporMudurlugu', 'GencSporIlceMudurlugu'], (byType.GencSporMudurlugu || 0) + (byType.GencSporIlceMudurlugu || 0)),
     ]);
 
     const vakifTotalCount = vakifTotal?.data().count ?? 0;
@@ -288,7 +289,7 @@ const computeStats = unstable_cache(
       kulup: { label: 'Spor Kulübü', ...kulupDetail },
       ilMudurluk: { label: 'STİ İl Müdürlükleri', ...ilMudurlukDetail },
       federasyon: { label: 'Federasyon', ...federasyonDetail, byCategory: federasyonByCategory },
-      gencSporMudurluk: { label: 'Gençlik ve Spor İl Müdürlükleri', ...gencSporMudurlukDetail },
+      gencSporMudurluk: { label: 'Gençlik ve Spor İl ve İlçe Müdürlükleri', ...gencSporMudurlukDetail },
     };
 
     // ─── Recent updates ───────────────────────────────────────────────

@@ -193,8 +193,7 @@ const CATEGORY_CARDS: Array<{
   { key: 'sivil-toplum', label: 'Sivil Toplum Müdürlükleri',      icon: Building2, color: 'bg-blue-500',   count: 81,      targetTab: 'outreach', typeFilter: 'SivilToplumMüdürlüğü' },
   { key: 'federasyonlar', label: 'Federasyonlar',                 icon: Landmark,  color: 'bg-emerald-500', count: 98,      targetTab: 'outreach', typeFilter: 'Federasyon' },
   { key: 'spor',         label: 'Spor Kulüpleri',                 icon: Trophy,    color: 'bg-orange-500', count: 5266,    targetTab: 'outreach', typeFilter: 'SporKulübü' },
-  { key: 'genc-spor-mudurluk', label: 'Gençlik ve Spor İl Müdürlükleri', icon: Server, color: 'bg-violet-500', count: 81, targetTab: 'outreach', typeFilter: 'GencSporMudurlugu' },
-  { key: 'genc-spor-ilce', label: 'Gençlik ve Spor İlçe Müdürlükleri', icon: Server, color: 'bg-violet-400', count: 0, targetTab: 'outreach', typeFilter: 'GencSporIlceMudurlugu' },
+  { key: 'genc-spor-mudurluk', label: 'Gençlik ve Spor İl ve İlçe Müdürlükleri', icon: Server, color: 'bg-violet-500', count: 81, targetTab: 'outreach', typeFilter: 'GencSporMudurlugu,GencSporIlceMudurlugu' },
 ];
 
 // Export sütunları — sekmeye göre. Excel (.xlsx) çıktısında kullanılır.
@@ -494,7 +493,7 @@ export default function OutreachHubPage() {
     const pQ = platformFilter;
     if (!ilQ && !ilceQ && !mahQ && !tQ && !fQ && !pQ) return rows;
     return rows.filter((r) => {
-      if (tQ && r.type !== tQ) return false;
+      if (tQ && !tQ.split(',').includes(r.type || '')) return false;
       if (fQ && (r.faaliyetAlani || '') !== fQ) return false;
       if (pQ && !(r.platforms || []).includes(pQ)) return false;
       const city = norm(r.city || ''), dist = norm(r.district || ''), addr = norm(r.address || '');
