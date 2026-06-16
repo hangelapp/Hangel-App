@@ -57,6 +57,8 @@ const ProposalSchema = z.object({
   videoConcept: z.string().optional().describe('15-30 sn video fikri.'),
   caption: z.string().optional().describe('Video açıklaması ~100 karakter.'),
   hashtags: z.array(z.string()).optional().describe('3-6 hashtag.'),
+  // Önerilen günlük bütçe (TL) — makul aralık 50–500 TL.
+  dailyBudgetTRY: z.number().optional().describe('Önerilen günlük reklam bütçesi (TL), makul aralık 50–500.'),
 });
 export type AdProposal = z.infer<typeof ProposalSchema>;
 
@@ -126,6 +128,7 @@ HER ÖNERİDE:
 - regions: İl belliyse o il + çevresi; değilse ["Türkiye"].
 - goal: tek cümle, sade — "ne işe yarar".
 - estReach: dostane tahmin, ör. "ayda ~1.000-2.000 kişiye ulaşır".
+- dailyBudgetTRY: önerilen GÜNLÜK bütçe (Türk Lirası), kampanyanın hedefine uygun makul bir sayı (50–500 TL aralığında).
 - Sadece bu alanları doldur; audience/primaryText/videoConcept/caption/hashtags alanlarını BOŞ bırak.
 
 Yalnızca verilen bilgiye dayan; uydurma istatistik verme. Türkçe yaz.`,
@@ -153,6 +156,7 @@ HER ÖNERİDE (Meta/Facebook/Instagram reklamı):
 - creativeConcept: Görsel veya video fikri, 1-2 cümle (ör. hangi sahne, hangi mesaj).
 - goal: tek cümle, sade — "ne işe yarar".
 - estReach: dostane tahmin, ör. "ayda ~5.000 kişiye ulaşır".
+- dailyBudgetTRY: önerilen GÜNLÜK bütçe (Türk Lirası), kampanyanın hedefine uygun makul bir sayı (50–500 TL aralığında).
 - Sadece bu alanları doldur; keywords/headlines/descriptions/regions/videoConcept/caption/hashtags alanlarını BOŞ bırak.
 
 Yalnızca verilen bilgiye dayan; uydurma istatistik verme. Türkçe yaz.`,
@@ -178,6 +182,7 @@ HER ÖNERİDE (TikTok kısa video reklamı):
 - hashtags: 3-6 adet ilgili hashtag (# işaretiyle), faaliyet alanına ve bağış/gönüllülük temasına uygun.
 - goal: tek cümle, sade — "ne işe yarar".
 - estReach: dostane tahmin, ör. "videoyla ~10.000 kişiye ulaşır".
+- dailyBudgetTRY: önerilen GÜNLÜK bütçe (Türk Lirası), kampanyanın hedefine uygun makul bir sayı (50–500 TL aralığında).
 - Sadece bu alanları doldur; keywords/headlines/descriptions/regions/audience/primaryText/creativeConcept alanlarını BOŞ bırak.
 
 Yalnızca verilen bilgiye dayan; uydurma istatistik verme. Türkçe yaz.`,
@@ -195,3 +200,92 @@ const planAdCampaignsFlow = ai.defineFlow(
     return output!;
   },
 );
+
+// ---------------------------------------------------------------------------
+// Serbest metin → tek reklam önerisi (Google Arama). STK kısa bir serbest metin
+// yazar ("X eğitimimiz var, Y etkinliğimiz var, reklamını vermek istiyoruz");
+// Gemini bunu Ad Grants uyumlu TEK bir öneriye çevirir. Çıktı, yukarıdaki
+// ProposalSchema ile birebir uyumludur (kind/title/goal/landing/keywords/
+// headlines/descriptions/dailyBudgetTRY).
+// ---------------------------------------------------------------------------
+
+const CustomAdInputSchema = z.object({
+  text: z.string().describe('STK yöneticisinin serbest metni — ne reklamı vermek istediği.'),
+  platform: z.enum(AD_PLATFORMS).default('google').describe('Reklam platformu (şimdilik google Arama).'),
+  ngoName: z.string().describe('Kuruluşun adı (boş olabilir).'),
+});
+export type CustomAdInput = z.infer<typeof CustomAdInputSchema>;
+
+// Serbest metin önerisi: tek bir ProposalSchema nesnesi.
+const CustomAdOutputSchema = z.object({
+  proposal: ProposalSchema.describe('Serbest metinden üretilen tek reklam önerisi.'),
+});
+export type CustomAdOutput = z.infer<typeof CustomAdOutputSchema>;
+
+const customAdPrompt = ai.definePrompt({
+  name: 'adCampaignCustomPrompt',
+  model: 'googleai/gemini-2.5-flash',
+  config: { maxOutputTokens: MAX_OUTPUT_TOKENS },
+  input: { schema: CustomAdInputSchema },
+  output: { schema: CustomAdOutputSchema },
+  prompt: `Sen "hangel Reklam Planlayıcı"sın — Türk sivil toplum kuruluşları (STK) için Google Ad Grants (ücretsiz Google Arama reklamı) kampanyaları kurgulayan uzman bir dijital pazarlamacısın.
+
+GÖREV: Aşağıdaki STK'nın serbest metnini, Google Arama reklamına uygun TEK bir öneriye çevir. STK bunu okuyacak — teknik jargon (CPC, CTR, dönüşüm) KULLANMA, sade ve cesaretlendirici Türkçe yaz.
+
+KURULUŞ ADI: {{{ngoName}}}
+
+STK'NIN SERBEST METNİ:
+"""
+{{{text}}}
+"""
+
+ÇIKTI — tek bir proposal nesnesi, ŞU alanlarla:
+- kind: Metnin amacına en uygun olanı seç — "search-donation" (bağış toplama), "search-awareness" (bilinirlik/destekçi), "search-beneficiary" (yararlanıcıya ulaşma), "hangel-donation" (hangel bağış sayfası) veya "hangel-volunteer" (hangel gönüllülük).
+- title: Önerinin kısa başlığı (TR).
+- goal: Bu kampanya ne işe yarar — jargon yok, sade tek cümle.
+- landing: "hangel-bagis" (bağış odaklıysa), "hangel-gonulluluk" (gönüllü çağrısıysa) veya "kurum-sitesi" (kurumun kendi sitesine yönlendirmek mantıklıysa).
+- keywords: faaliyete/metne uygun, niyet odaklı, HER BİRİ EN AZ 2 KELİME (Ad Grants tek kelimeyi yasaklar). 6-10 anahtar kelime.
+- headlines: EN AZ 3 adet, her biri ≤30 karakter, BENZERSİZ (birbirinin aynısı olmasın), vurucu Türkçe.
+- descriptions: EN AZ 2 adet, her biri ≤90 karakter, net çağrı içeren Türkçe.
+- dailyBudgetTRY: önerilen GÜNLÜK bütçe (Türk Lirası), makul bir sayı (50–500 TL aralığında).
+- estReach: dostane tahmin, ör. "ayda ~1.000-2.000 kişiye ulaşır".
+- audience/primaryText/headline/description/creativeConcept/videoConcept/caption/hashtags/regions alanlarını BOŞ bırak.
+
+Yalnızca verilen metne dayan; uydurma istatistik verme. Türkçe yaz.`,
+});
+
+const customAdFlow = ai.defineFlow(
+  {
+    name: 'customAdFlow',
+    inputSchema: CustomAdInputSchema,
+    outputSchema: CustomAdOutputSchema,
+  },
+  async (input) => {
+    const { output } = await customAdPrompt(input);
+    return output!;
+  },
+);
+
+/**
+ * Serbest metni Ad Grants uyumlu TEK reklam önerisine çevirir.
+ * Quota + auth guard'lı; yalnız sunucudan (/api/ngo-admin/ads/custom) çağrılır.
+ */
+export async function planCustomAdCampaign(
+  input: { text: string; platform?: AdPlatform; ngoName?: string },
+  idToken?: string,
+): Promise<CustomAdOutput> {
+  const platform: AdPlatform = AD_PLATFORMS.includes(input.platform as AdPlatform)
+    ? (input.platform as AdPlatform)
+    : 'google';
+  const safeInput: CustomAdInput = {
+    text: sanitizeUserInput(input.text, 1500),
+    platform,
+    ngoName: sanitizeUserInput(input.ngoName ?? '', 200),
+  };
+  const userId = await verifyAIFlowUserId(idToken);
+  if (userId) {
+    const { allowed } = await checkAndConsumeAIQuota(userId, 'ad-campaign-planner');
+    if (!allowed) throw new AIQuotaExceededError('ad-campaign-planner');
+  }
+  return customAdFlow(safeInput);
+}

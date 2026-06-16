@@ -373,12 +373,93 @@ export async function fetchCampaignMetrics(
   }
 }
 
+export interface CampaignMetricsRow {
+  campaignId: string;
+  resourceName: string;
+  name: string;
+  status: string;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  costMicros: number;
+}
+
+interface CampaignSearchStreamRow {
+  campaign?: {
+    id?: string | number;
+    resourceName?: string;
+    name?: string;
+    status?: string;
+  };
+  metrics?: {
+    impressions?: string | number;
+    clicks?: string | number;
+    ctr?: string | number;
+    costMicros?: string | number;
+  };
+}
+
+/**
+ * Fetch per-campaign last-30-day metrics for a customer via GAQL searchStream.
+ * Mirrors fetchCampaignMetrics (same adsHeaders, AbortSignal.timeout, login-customer-id
+ * resolution). Returns an empty array on any error (caller treats as "no data").
+ */
+export async function fetchCampaignMetricsByCampaign(
+  config: GoogleAdsConfig,
+  refreshToken: string,
+  customerId: string,
+  loginCustomerId?: string
+): Promise<CampaignMetricsRow[]> {
+  const accessToken = await refreshAccessToken(config, refreshToken);
+  if (!accessToken) return [];
+  const id = digitsOnly(customerId);
+  if (!id) return [];
+  const lcid = digitsOnly(loginCustomerId || customerId) || id;
+
+  const query =
+    'SELECT campaign.id, campaign.name, campaign.status, metrics.impressions, metrics.clicks, metrics.ctr, metrics.cost_micros FROM campaign DURING LAST_30_DAYS';
+
+  try {
+    const res = await fetch(`${ADS_API_BASE}/customers/${id}/googleAds:searchStream`, {
+      method: 'POST',
+      headers: adsHeaders(config, accessToken, lcid),
+      body: JSON.stringify({ query }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as Array<{ results?: CampaignSearchStreamRow[] }>;
+    const chunks = Array.isArray(data) ? data : [];
+
+    const out: CampaignMetricsRow[] = [];
+    for (const chunk of chunks) {
+      for (const row of chunk.results ?? []) {
+        const campaignId = digitsOnly(String(row.campaign?.id ?? ''));
+        if (!campaignId) continue;
+        out.push({
+          campaignId,
+          resourceName: typeof row.campaign?.resourceName === 'string' ? row.campaign.resourceName : '',
+          name: typeof row.campaign?.name === 'string' ? row.campaign.name : '',
+          status: typeof row.campaign?.status === 'string' ? row.campaign.status : '',
+          impressions: toNumber(row.metrics?.impressions),
+          clicks: toNumber(row.metrics?.clicks),
+          ctr: toNumber(row.metrics?.ctr),
+          costMicros: toNumber(row.metrics?.costMicros),
+        });
+      }
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 export interface AdPlanForCampaign {
   title?: string;
   landing?: string;
   keywords?: string[];
   headlines?: string[];
   descriptions?: string[];
+  dailyBudgetMicros?: string;
 }
 
 /** POST a single Google Ads REST mutate and return the parsed JSON, or throw. */
@@ -457,7 +538,7 @@ export async function createSearchCampaign(
     {
       create: {
         name: `hangel-budget-${stamp}`,
-        amountMicros: '1000000',
+        amountMicros: plan.dailyBudgetMicros || '1000000',
         deliveryMethod: 'STANDARD',
         explicitlyShared: false,
       },

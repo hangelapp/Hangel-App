@@ -58,6 +58,8 @@ interface AdProposal {
     videoConcept?: string;
     caption?: string;
     hashtags?: string[];
+    // AI'nın önerdiği günlük bütçe (₺) — kullanıcı kurmadan önce düzenleyebilir.
+    dailyBudgetTRY?: number;
 }
 
 const KIND_META: Record<ProposalKind, { label: string; icon: React.ElementType; tint: string }> = {
@@ -71,6 +73,12 @@ const LANDING_LABEL: Record<AdProposal['landing'], string> = {
     'kurum-sitesi': 'Açılış: kurum siteniz',
     'hangel-bagis': 'Açılış: hangel bağış sayfası',
     'hangel-gonulluluk': 'Açılış: hangel gönüllülük',
+};
+// Google Arama reklamında yeşil görünen URL — açılış sayfasına göre.
+const LANDING_DISPLAY_URL: Record<AdProposal['landing'], string> = {
+    'kurum-sitesi': 'hangel.org.tr',
+    'hangel-bagis': 'hangel.org.tr',
+    'hangel-gonulluluk': 'hangel.org.tr/gönüllülük',
 };
 
 type PlanStatus = 'submitted' | 'approved' | 'linked' | 'active' | 'rejected';
@@ -94,6 +102,23 @@ interface SavedPlan {
     title?: string;
     kind: ProposalKind;
     status: PlanStatus;
+    headlines?: string[];
+    descriptions?: string[];
+    landing?: AdProposal['landing'];
+    campaignResourceName?: string;
+    dailyBudget?: number;
+}
+
+// Google Ads metrik özeti (son 30 gün) — kampanya bazında.
+interface AdsCampaignMetric {
+    campaignId: string;
+    resourceName: string;
+    name: string;
+    status: string;
+    impressions: number;
+    clicks: number;
+    ctr: number;
+    costMicros: number;
 }
 
 interface ConnectionState {
@@ -177,6 +202,13 @@ export default function AdsPage() {
     // "Google Ads (Ad Grants) hesabın var mı?" dallanması (bağlanabilir ama henüz bağlı değilken)
     const [googleHasAccount, setGoogleHasAccount] = useState<'unknown' | 'yes' | 'no'>('unknown');
 
+    // Google Ads istatistikleri (son 30 gün) — bağlıyken çekilir.
+    const [adsMetrics, setAdsMetrics] = useState<AdsCampaignMetric[]>([]);
+
+    // Serbest metin → AI reklam (Google) durumu
+    const [customText, setCustomText] = useState('');
+    const [customLoading, setCustomLoading] = useState(false);
+
     // Meta (Facebook/Instagram) bağlantı durumu — Google ile birebir paralel
     const [metaConnection, setMetaConnection] = useState<MetaConnectionState>({ configured: false, connected: false });
     const [metaConnectionLoaded, setMetaConnectionLoaded] = useState(false);
@@ -208,7 +240,11 @@ export default function AdsPage() {
                 if (cancelled || !data?.plans) return;
                 const plans = data.plans
                     .filter((p) => p.kind in KIND_META)
-                    .map((p) => ({ id: p.id, title: p.title, kind: p.kind, status: p.status }));
+                    .map((p) => ({
+                        id: p.id, title: p.title, kind: p.kind, status: p.status,
+                        headlines: p.headlines, descriptions: p.descriptions, landing: p.landing,
+                        campaignResourceName: p.campaignResourceName, dailyBudget: p.dailyBudget,
+                    }));
                 setSavedPlans(plans);
                 setSelected((prev) => {
                     const next = new Set(prev);
@@ -252,6 +288,27 @@ export default function AdsPage() {
         })();
         return () => { cancelled = true; };
     }, [user, entityId, refreshConnection]);
+
+    // Google Ads istatistiklerini çek (bağlıyken; son 30 gün)
+    useEffect(() => {
+        if (!user || !entityId || !connection.connected) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const idToken = await user.getIdToken();
+                const res = await fetch('/api/ngo-admin/ads/metrics', {
+                    headers: { Authorization: `Bearer ${idToken}` },
+                });
+                if (!res.ok) return;
+                const data = (await res.json().catch(() => null)) as { campaigns?: AdsCampaignMetric[] } | null;
+                if (cancelled || !data?.campaigns) return;
+                setAdsMetrics(data.campaigns);
+            } catch {
+                /* sessizce yoksay; istatistik olmadan da sayfa çalışır */
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [user, entityId, connection.connected]);
 
     // Meta bağlantı durumunu çek (configured/connected/adAccountId)
     const refreshMetaConnection = useCallback(async () => {
@@ -675,7 +732,7 @@ export default function AdsPage() {
         }
     };
 
-    const chooseProposal = async (p: AdProposal, platform: AdPlatform) => {
+    const chooseProposal = async (p: AdProposal, platform: AdPlatform, dailyBudget?: number) => {
         if (!user) {
             toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
             return;
@@ -691,6 +748,7 @@ export default function AdsPage() {
                     kind: p.kind, title: p.title, goal: p.goal, landing: p.landing,
                     keywords: p.keywords, headlines: p.headlines, descriptions: p.descriptions,
                     regions: p.regions, estReach: p.estReach,
+                    dailyBudget: typeof dailyBudget === 'number' ? dailyBudget : p.dailyBudgetTRY,
                 }),
             });
             if (!res.ok) throw new Error((await res.json().catch(() => null))?.message || 'Kaydedilemedi');
@@ -701,6 +759,40 @@ export default function AdsPage() {
             });
         } catch (e) {
             toast({ variant: 'destructive', title: 'Kaydedilemedi', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
+        }
+    };
+
+    // Serbest metni AI ile Google reklamına dönüştür; dönen öneriyi listenin başına ekle.
+    const generateCustomGoogle = async () => {
+        const text = customText.trim();
+        if (!text) {
+            toast({ variant: 'destructive', title: 'Metin gerekli', description: 'Önce etkinliğini/kampanyanı kısaca anlat.' });
+            return;
+        }
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
+            return;
+        }
+        setCustomLoading(true);
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/custom', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ text, platform: 'google' }),
+            });
+            const data = (await res.json().catch(() => null)) as { proposal?: AdProposal; errorCode?: string; message?: string } | null;
+            if (!res.ok || !data?.proposal) {
+                throw new Error(data?.message || 'Reklam oluşturulamadı.');
+            }
+            const proposal = data.proposal;
+            setProposalsByPlatform((prev) => ({ ...prev, google: [proposal, ...prev.google] }));
+            setCustomText('');
+            toast({ title: 'Reklam hazır', description: 'Yapay zeka önerini Google listenin başına ekledi.' });
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Oluşturulamadı', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
+        } finally {
+            setCustomLoading(false);
         }
     };
 
@@ -849,12 +941,37 @@ export default function AdsPage() {
                 {/* GOOGLE AI ÖNERİLER */}
                 <section className="space-y-2.5">
                     <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Google · Yapay Zeka Reklam Planı</h2>
+
+                    {/* SERBEST METİN → AI REKLAM */}
+                    <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-3">
+                        <div className="flex items-start gap-3">
+                            <span className="h-9 w-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                <Wand2 className="h-5 w-5" />
+                            </span>
+                            <div className="space-y-0.5">
+                                <p className="text-[14px] font-semibold text-foreground">Kendi metninden reklam oluştur</p>
+                                <p className="text-[12px] text-muted-foreground leading-relaxed">Etkinliğini, eğitimini veya kampanyanı kısaca anlat; yapay zeka Google reklamına dönüştürsün.</p>
+                            </div>
+                        </div>
+                        <textarea
+                            value={customText}
+                            onChange={(e) => setCustomText(e.target.value)}
+                            placeholder="Etkinliğinizi/eğitiminizi/kampanyanızı kısaca anlatın; yapay zeka reklama dönüştürsün."
+                            rows={3}
+                            className="w-full rounded-2xl bg-muted border border-border/60 px-4 py-3 text-[14px] outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+                        />
+                        <button onClick={() => void generateCustomGoogle()} disabled={customLoading || !customText.trim()}
+                            className="w-full h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
+                            {customLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Oluşturuluyor...</> : <><Sparkles className="h-[18px] w-[18px]" /> Yapay Zeka ile Reklam Oluştur</>}
+                        </button>
+                    </div>
+
                     <AiPlanBlock
                         platform="google"
                         proposals={proposalsByPlatform.google}
                         loading={loadingPlatform === 'google'}
                         onGenerate={() => void generate('google')}
-                        onChoose={(p) => void chooseProposal(p, 'google')}
+                        onChoose={(p, budget) => void chooseProposal(p, 'google', budget)}
                         onCopy={(p) => void copyPlan(p)}
                         selected={selected}
                         savedStatusByKind={savedStatusByKind}
@@ -1008,6 +1125,12 @@ export default function AdsPage() {
                                         Henüz kurduğun kampanya yok. Yukarıdan bir reklam planı seç (&quot;Bunu Kur&quot;), sonra buradan tek dokunuşla yayınla.
                                     </p>
                                 )}
+
+                                {/* TOPLAM İSTATİSTİK ÖZETİ (son 30 gün) */}
+                                <MetricsSummary metrics={adsMetrics} />
+
+                                {/* YAYINDAKİ KAMPANYALAR + Google reklam önizlemesi + istatistik */}
+                                <ActiveCampaigns plans={savedPlans} metrics={adsMetrics} />
                             </div>
                         )}
                     </div>
@@ -1025,7 +1148,7 @@ export default function AdsPage() {
                         proposals={proposalsByPlatform.meta}
                         loading={loadingPlatform === 'meta'}
                         onGenerate={() => void generate('meta')}
-                        onChoose={(p) => void chooseProposal(p, 'meta')}
+                        onChoose={(p, budget) => void chooseProposal(p, 'meta', budget)}
                         selected={selected}
                         savedStatusByKind={savedStatusByKind}
                         savedPlanByKind={savedPlanByKind}
@@ -1196,7 +1319,7 @@ export default function AdsPage() {
                         proposals={proposalsByPlatform.tiktok}
                         loading={loadingPlatform === 'tiktok'}
                         onGenerate={() => void generate('tiktok')}
-                        onChoose={(p) => void chooseProposal(p, 'tiktok')}
+                        onChoose={(p, budget) => void chooseProposal(p, 'tiktok', budget)}
                         selected={selected}
                         savedStatusByKind={savedStatusByKind}
                         savedPlanByKind={savedPlanByKind}
@@ -1374,7 +1497,7 @@ function AiPlanBlock({
     proposals: AdProposal[];
     loading: boolean;
     onGenerate: () => void;
-    onChoose: (p: AdProposal) => void;
+    onChoose: (p: AdProposal, dailyBudget?: number) => void;
     onCopy?: (p: AdProposal) => void;
     selected: Set<ProposalKind>;
     savedStatusByKind: Map<ProposalKind, PlanStatus>;
@@ -1385,6 +1508,8 @@ function AiPlanBlock({
     entityName: string;
     faaliyetAlani: string;
 }) {
+    // Öneri kartı başına kullanıcı tarafından düzenlenen günlük bütçe (₺) — key: `${kind}-${i}`.
+    const [budgetEdits, setBudgetEdits] = useState<Record<string, string>>({});
     const platformLabel = platform === 'google' ? 'Google Arama' : platform === 'meta' ? 'Facebook/Instagram' : 'TikTok kısa video';
     const platformHint = platform === 'google'
         ? 'anahtar kelime, başlık ve açıklamalarla hazır Arama reklamları'
@@ -1424,6 +1549,11 @@ function AiPlanBlock({
                         const isSel = selected.has(p.kind);
                         const savedStatus = savedStatusByKind.get(p.kind);
                         const savedId = savedPlanByKind.get(p.kind)?.id;
+                        const budgetKey = `${p.kind}-${i}`;
+                        const defaultBudget = p.dailyBudgetTRY ?? 100;
+                        const budgetRaw = budgetEdits[budgetKey] ?? String(defaultBudget);
+                        const budgetNum = Number(budgetRaw);
+                        const budgetValid = Number.isFinite(budgetNum) && budgetNum > 0;
                         return (
                             <div key={`${p.kind}-${i}`} className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-3">
                                 <div className="flex items-start gap-3">
@@ -1519,6 +1649,19 @@ function AiPlanBlock({
                                     </div>
                                 )}
 
+                                {/* BÜTÇE — AI önerisi, kullanıcı düzenleyebilir */}
+                                <div className="flex items-center gap-2 rounded-xl bg-card border border-border/50 p-2.5">
+                                    <label htmlFor={`budget-${budgetKey}`} className="text-[12px] font-semibold text-foreground shrink-0">Günlük bütçe (₺)</label>
+                                    <input
+                                        id={`budget-${budgetKey}`}
+                                        type="number" min={1} inputMode="numeric"
+                                        value={budgetRaw}
+                                        onChange={(e) => setBudgetEdits((prev) => ({ ...prev, [budgetKey]: e.target.value }))}
+                                        className="h-9 w-24 rounded-xl bg-muted border border-border/60 px-3 text-[14px] text-right outline-none focus:ring-2 focus:ring-primary/40"
+                                    />
+                                    {p.dailyBudgetTRY != null && <span className="text-[11px] text-muted-foreground">AI önerisi: ₺{p.dailyBudgetTRY}</span>}
+                                </div>
+
                                 <div className="flex items-center justify-between gap-2 flex-wrap">
                                     <div className="text-[11px] text-muted-foreground">
                                         <span>{LANDING_LABEL[p.landing]}</span>
@@ -1547,7 +1690,7 @@ function AiPlanBlock({
                                                     : <>Yayınla <ChevronRight className="h-4 w-4" /></>}
                                             </button>
                                         ) : (
-                                            <button onClick={() => onChoose(p)}
+                                            <button onClick={() => onChoose(p, budgetValid ? budgetNum : undefined)}
                                                 className={cn('h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95',
                                                     isSel ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary text-primary-foreground')}>
                                                 {isSel ? <><Check className="h-4 w-4" /> Seçildi</> : <>Bunu Kur <ChevronRight className="h-4 w-4" /></>}
@@ -1563,6 +1706,141 @@ function AiPlanBlock({
                     </p>
                 </div>
             )}
+        </div>
+    );
+}
+
+// costMicros (1e6 = 1 birim) → ₺ string.
+function formatTRY(costMicros: number): string {
+    const value = costMicros / 1e6;
+    return `₺${value.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+}
+
+/**
+ * Gerçekçi Google Arama reklamı önizlemesi.
+ * "Reklam·" etiketi + yeşil görünen URL + mavi başlık (ilk 2-3 headline " | ")
+ * + gri açıklama (ilk 1-2).
+ */
+function GoogleAdPreview({ headlines, descriptions, landing }: {
+    headlines?: string[];
+    descriptions?: string[];
+    landing?: AdProposal['landing'];
+}) {
+    const displayUrl = landing ? LANDING_DISPLAY_URL[landing] : 'hangel.org.tr';
+    const title = (headlines ?? []).slice(0, 3).filter(Boolean).join(' | ');
+    const desc = (descriptions ?? []).slice(0, 2).filter(Boolean).join(' ');
+    if (!title && !desc) return null;
+    return (
+        <div className="rounded-xl bg-white border border-border/50 p-3">
+            <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold text-foreground">Reklam</span>
+                <span className="text-[11px] text-muted-foreground">·</span>
+                <span className="text-[12px] text-[#006621]">{displayUrl}</span>
+            </div>
+            {title && <p className="text-[16px] leading-snug text-[#1a0dab] mt-0.5">{title}</p>}
+            {desc && <p className="text-[12.5px] text-muted-foreground leading-relaxed mt-0.5">{desc}</p>}
+        </div>
+    );
+}
+
+// Toplam istatistik özeti kartı (son 30 gün) — tüm kampanyaların toplamı.
+function MetricsSummary({ metrics }: { metrics: AdsCampaignMetric[] }) {
+    if (metrics.length === 0) return null;
+    const totals = metrics.reduce(
+        (acc, m) => ({
+            impressions: acc.impressions + (m.impressions || 0),
+            clicks: acc.clicks + (m.clicks || 0),
+            costMicros: acc.costMicros + (m.costMicros || 0),
+        }),
+        { impressions: 0, clicks: 0, costMicros: 0 },
+    );
+    const ctr = totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0;
+    return (
+        <div className="rounded-2xl bg-primary/5 border border-primary/15 p-4 space-y-2">
+            <p className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">Toplam · son 30 gün</p>
+            <div className="grid grid-cols-4 gap-2 text-center">
+                <div>
+                    <p className="text-[16px] font-bold text-foreground">{totals.impressions.toLocaleString('tr-TR')}</p>
+                    <p className="text-[10px] text-muted-foreground">Gösterim</p>
+                </div>
+                <div>
+                    <p className="text-[16px] font-bold text-foreground">{totals.clicks.toLocaleString('tr-TR')}</p>
+                    <p className="text-[10px] text-muted-foreground">Tıklama</p>
+                </div>
+                <div>
+                    <p className="text-[16px] font-bold text-foreground">%{ctr.toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</p>
+                    <p className="text-[10px] text-muted-foreground">CTR</p>
+                </div>
+                <div>
+                    <p className="text-[16px] font-bold text-foreground">{formatTRY(totals.costMicros)}</p>
+                    <p className="text-[10px] text-muted-foreground">Harcama</p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Yayındaki kampanyalar (status === 'active') — her biri için gerçekçi Google
+ * Arama reklamı önizlemesi + campaignResourceName ile eşleşen istatistik.
+ */
+function ActiveCampaigns({ plans, metrics }: { plans: SavedPlan[]; metrics: AdsCampaignMetric[] }) {
+    const active = plans.filter((p) => p.status === 'active');
+    if (active.length === 0) return null;
+    return (
+        <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+                <p className="text-[13px] font-semibold text-foreground">Yayındaki Kampanyalar</p>
+                <a href={GOOGLE_ADS_URL} target="_blank" rel="noopener noreferrer"
+                    className="text-[12px] font-semibold text-primary inline-flex items-center gap-1">
+                    Google Ads&apos;te Aç <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+            </div>
+            {active.map((p) => {
+                const meta = KIND_META[p.kind] ?? KIND_META['search-awareness'];
+                const stat = p.campaignResourceName
+                    ? metrics.find((m) => m.resourceName === p.campaignResourceName)
+                    : undefined;
+                return (
+                    <div key={p.id} className="rounded-2xl border border-border/60 bg-muted/20 p-3.5 space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                            <p className="text-[14px] font-semibold text-foreground truncate">{p.title || meta.label}</p>
+                            <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 shrink-0">
+                                {STATUS_LABEL.active}
+                            </span>
+                        </div>
+
+                        <GoogleAdPreview headlines={p.headlines} descriptions={p.descriptions} landing={p.landing} />
+
+                        {p.dailyBudget != null && (
+                            <p className="text-[12px] text-muted-foreground">Günlük bütçe: ₺{p.dailyBudget}</p>
+                        )}
+
+                        {stat ? (
+                            <div className="grid grid-cols-4 gap-2 text-center pt-0.5">
+                                <div>
+                                    <p className="text-[14px] font-bold text-foreground">{stat.impressions.toLocaleString('tr-TR')}</p>
+                                    <p className="text-[10px] text-muted-foreground">Gösterim</p>
+                                </div>
+                                <div>
+                                    <p className="text-[14px] font-bold text-foreground">{stat.clicks.toLocaleString('tr-TR')}</p>
+                                    <p className="text-[10px] text-muted-foreground">Tıklama</p>
+                                </div>
+                                <div>
+                                    <p className="text-[14px] font-bold text-foreground">%{(stat.ctr * 100).toLocaleString('tr-TR', { maximumFractionDigits: 2 })}</p>
+                                    <p className="text-[10px] text-muted-foreground">CTR</p>
+                                </div>
+                                <div>
+                                    <p className="text-[14px] font-bold text-foreground">{formatTRY(stat.costMicros)}</p>
+                                    <p className="text-[10px] text-muted-foreground">Harcama</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-[11px] text-muted-foreground">Henüz veri yok (kampanya yeni / duraklatılmış).</p>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 }

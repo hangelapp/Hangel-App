@@ -192,6 +192,8 @@ export async function POST(req: NextRequest) {
     descriptions: Array.isArray(plan.descriptions)
       ? plan.descriptions.filter((d): d is string => typeof d === 'string')
       : undefined,
+    // Günlük bütçe (TL) → micros. Yoksa 1 TL'ye düşer (güvenli alt sınır).
+    dailyBudgetMicros: String(Math.round((typeof plan.dailyBudget === 'number' ? plan.dailyBudget : 1) * 1_000_000)),
   };
 
   let campaignResourceName: string;

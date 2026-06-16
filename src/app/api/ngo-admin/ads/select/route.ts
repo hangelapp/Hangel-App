@@ -46,6 +46,10 @@ export async function POST(req: NextRequest) {
     headlines: arr(body.headlines),
     descriptions: arr(body.descriptions),
     regions: arr(body.regions),
+    // Önerilen günlük bütçe (TL) — varsa kaydet.
+    ...(typeof body.dailyBudget === 'number' && Number.isFinite(body.dailyBudget)
+      ? { dailyBudget: body.dailyBudget }
+      : {}),
     // Meta alanları (Facebook/Instagram)
     audience: str(body.audience).slice(0, 500),
     primaryText: str(body.primaryText).slice(0, 500),
