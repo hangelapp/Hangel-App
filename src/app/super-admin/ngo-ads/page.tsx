@@ -21,6 +21,7 @@ import {
     TrendingUp, Sparkles, ShieldAlert, RefreshCw, ChevronDown,
     Check, X, Plug, Radio, Undo2, Target, Hash, Users,
     BarChart3, Eye, MousePointerClick, Percent, Wallet,
+    Building2, Pause, Play, Trash2, AlertTriangle,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -78,6 +79,35 @@ interface TiktokPerfMetric {
     spend: number;
 }
 
+/** hangel Ajans (MCC) — alt-hesap kampanyası. */
+interface AgencyCampaign {
+    campaignId: string;
+    resourceName: string;
+    name: string;
+    status: string;
+    impressions: number;
+    clicks: number;
+    ctr: number;
+    costMicros: number;
+}
+
+/** hangel Ajans (MCC) — MCC altındaki bir alt-hesap. */
+interface AgencyAccount {
+    customerId: string;
+    name: string;
+    ngoId: string | null;
+    campaigns: AgencyCampaign[];
+    totals: { impressions: number; clicks: number; ctr: number; costMicros: number };
+}
+
+/** GET /api/super-admin/ngo-ads/agency yanıtı. */
+interface AgencyResp {
+    configured: boolean;
+    connected: boolean;
+    mccCustomerId?: string;
+    accounts: AgencyAccount[];
+}
+
 /** Mevcut status'a göre sunulacak ilerletme aksiyonları. */
 const STATUS_ACTIONS: Record<string, Array<{ to: PlanStatus; label: string; icon: React.ElementType; tone: 'primary' | 'danger' | 'neutral' }>> = {
     submitted: [
@@ -129,6 +159,27 @@ function formatSpend(spend: number): string {
     return `${spend.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₺`;
 }
 
+/** Agency kampanya CTR oranı (0-1) → "%5,2". */
+function formatAgencyCtr(ctr: number): string {
+    return `%${(ctr * 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+/** Agency kampanya durumu → Türkçe etiket. */
+function campaignStatusLabel(status: string): string {
+    if (status === 'ENABLED') return 'Etkin';
+    if (status === 'PAUSED') return 'Duraklatıldı';
+    if (status === 'REMOVED') return 'Kaldırıldı';
+    return status;
+}
+
+/** Agency kampanya durumu → rozet rengi. */
+function campaignStatusTint(status: string): string {
+    if (status === 'ENABLED') return 'bg-emerald-500/10 text-emerald-600';
+    if (status === 'PAUSED') return 'bg-amber-500/10 text-amber-600';
+    if (status === 'REMOVED') return 'bg-zinc-500/10 text-zinc-500';
+    return 'bg-secondary text-muted-foreground';
+}
+
 /** Plan listesinden status sayımlarını yeniden hesapla. */
 function recomputeCounts(list: AdminPlan[]): Record<string, number> {
     const next: Record<string, number> = {};
@@ -156,6 +207,10 @@ export default function NgoAdsAdminPage() {
     const [tiktokConfigured, setTiktokConfigured] = useState(false);
     const [tiktokPerf, setTiktokPerf] = useState<TiktokPerfMetric[]>([]);
     const [tiktokLoading, setTiktokLoading] = useState(false);
+    const [agency, setAgency] = useState<AgencyResp | null>(null);
+    const [agencyLoading, setAgencyLoading] = useState(false);
+    const [agencyConnecting, setAgencyConnecting] = useState(false);
+    const [pendingCampaignId, setPendingCampaignId] = useState<string | null>(null);
 
     const fetchStats = useCallback(async () => {
         if (!user) return;
@@ -192,6 +247,108 @@ export default function NgoAdsAdminPage() {
     }, [user]);
 
     useEffect(() => { fetchStats(); }, [fetchStats]);
+
+    const fetchAgency = useCallback(async () => {
+        if (!user) return;
+        setAgencyLoading(true);
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch('/api/super-admin/ngo-ads/agency', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                const data = (await res.json()) as Partial<AgencyResp>;
+                setAgency({
+                    configured: !!data.configured,
+                    connected: !!data.connected,
+                    mccCustomerId: data.mccCustomerId,
+                    accounts: data.accounts ?? [],
+                });
+            } else {
+                setAgency({ configured: false, connected: false, accounts: [] });
+            }
+        } catch {
+            setAgency({ configured: false, connected: false, accounts: [] });
+        } finally {
+            setAgencyLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => { fetchAgency(); }, [fetchAgency]);
+
+    const connectAgency = useCallback(async () => {
+        if (!user || agencyConnecting) return;
+        setAgencyConnecting(true);
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch('/api/super-admin/ngo-ads/agency/start', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            });
+            if (!res.ok) {
+                const msg = (await res.json().catch(() => null))?.message || 'Bağlantı başlatılamadı';
+                throw new Error(msg);
+            }
+            const { authorizeUrl } = (await res.json()) as { authorizeUrl?: string };
+            if (!authorizeUrl) throw new Error('Yetkilendirme adresi alınamadı');
+
+            window.open(authorizeUrl, 'hangel-agency-oauth', 'width=520,height=680');
+
+            const onMessage = (event: MessageEvent) => {
+                if (event.origin !== window.location.origin) return;
+                const data = event.data as { type?: string; message?: string } | null;
+                if (!data || typeof data.type !== 'string') return;
+                if (data.type === 'hangel-agency-connected') {
+                    window.removeEventListener('message', onMessage);
+                    setAgencyConnecting(false);
+                    toast({ title: 'Bağlandı', description: 'hangel MCC hesabı bağlandı.' });
+                    fetchAgency();
+                } else if (data.type === 'hangel-agency-error') {
+                    window.removeEventListener('message', onMessage);
+                    setAgencyConnecting(false);
+                    toast({ variant: 'destructive', title: 'Bağlanamadı', description: data.message || 'Yetkilendirme başarısız' });
+                }
+            };
+            window.addEventListener('message', onMessage);
+        } catch (e) {
+            setAgencyConnecting(false);
+            toast({ variant: 'destructive', title: 'Bağlanamadı', description: e instanceof Error ? e.message : 'Hata' });
+        }
+    }, [user, agencyConnecting, toast, fetchAgency]);
+
+    const changeCampaignStatus = useCallback(async (
+        customerId: string,
+        campaignResourceName: string,
+        status: 'ENABLED' | 'PAUSED' | 'REMOVED',
+    ) => {
+        if (!user || pendingCampaignId) return;
+        setPendingCampaignId(campaignResourceName);
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch('/api/super-admin/ngo-ads/agency/campaign-status', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customerId, campaignResourceName, status }),
+            });
+            const data = (await res.json().catch(() => null)) as { ok?: boolean; status?: string; errorCode?: string; message?: string } | null;
+            if (!res.ok || !data?.ok) {
+                throw new Error(data?.message || data?.errorCode || 'Kampanya güncellenemedi');
+            }
+            const nextStatus = data.status || status;
+            setAgency((prev) => prev && ({
+                ...prev,
+                accounts: prev.accounts.map((acc) => acc.customerId !== customerId ? acc : {
+                    ...acc,
+                    campaigns: acc.campaigns.map((c) => c.resourceName === campaignResourceName ? { ...c, status: nextStatus } : c),
+                }),
+            }));
+            toast({ title: 'Güncellendi', description: campaignStatusLabel(nextStatus) });
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Güncellenemedi', description: e instanceof Error ? e.message : 'Hata' });
+        } finally {
+            setPendingCampaignId(null);
+        }
+    }, [user, pendingCampaignId, toast]);
 
     const fetchMetaPerf = useCallback(async () => {
         if (!user) return;
@@ -345,6 +502,17 @@ export default function NgoAdsAdminPage() {
                         <RefreshCw className={cn('h-4 w-4 text-muted-foreground', loading && 'animate-spin')} />
                     </button>
                 </div>
+
+                {/* hangel AJANS (MCC) */}
+                <AgencyPanel
+                    agency={agency}
+                    loading={agencyLoading}
+                    connecting={agencyConnecting}
+                    pendingCampaignId={pendingCampaignId}
+                    onConnect={connectAgency}
+                    onRefresh={fetchAgency}
+                    onChangeCampaignStatus={changeCampaignStatus}
+                />
 
                 {/* PLATFORM SEKMELERİ */}
                 <div className="inline-flex bg-secondary rounded-full p-1 gap-1">
@@ -619,6 +787,166 @@ export default function NgoAdsAdminPage() {
                     </>
                 )}
             </div>
+        </div>
+    );
+}
+
+function AgencyPanel({ agency, loading, connecting, pendingCampaignId, onConnect, onRefresh, onChangeCampaignStatus }: {
+    agency: AgencyResp | null;
+    loading: boolean;
+    connecting: boolean;
+    pendingCampaignId: string | null;
+    onConnect: () => void;
+    onRefresh: () => void;
+    onChangeCampaignStatus: (customerId: string, campaignResourceName: string, status: 'ENABLED' | 'PAUSED' | 'REMOVED') => void;
+}) {
+    return (
+        <section className="rounded-3xl bg-gradient-to-br from-primary/[0.07] to-[#ff7a55]/[0.05] border border-primary/20 shadow-sm p-4 space-y-3.5">
+            <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-[#ff7a55] shadow-[0_6px_16px_-6px_rgba(243,71,35,0.5)] shrink-0">
+                    <Building2 className="h-5 w-5 text-white" strokeWidth={1.8} />
+                </span>
+                <div className="min-w-0 flex-1">
+                    <h2 className="text-[16px] font-bold text-foreground leading-tight">hangel Ajans (MCC)</h2>
+                    <p className="text-[12px] text-muted-foreground">MCC altındaki tüm STK alt-hesaplarını ve kampanyalarını tek yerden yönet.</p>
+                </div>
+                {agency?.connected && (
+                    <button onClick={onRefresh} disabled={loading} className="h-8 px-3 rounded-full bg-card border border-border/60 inline-flex items-center gap-1.5 text-[12px] font-semibold text-foreground active:scale-95 transition disabled:opacity-50" title="Yenile">
+                        <RefreshCw className={cn('h-3.5 w-3.5 text-muted-foreground', loading && 'animate-spin')} />
+                        Yenile
+                    </button>
+                )}
+            </div>
+
+            {loading && !agency ? (
+                <div className="flex justify-center py-6"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+            ) : !agency ? null : !agency.configured ? (
+                <div className="flex items-start gap-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 p-3">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-[13px] text-amber-700 leading-relaxed">Google Ads yapılandırması bekleniyor.</p>
+                </div>
+            ) : !agency.connected ? (
+                <div className="space-y-2.5">
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">
+                        hangel MCC hesabını kendi Google OAuth&apos;u ile bağla; alt-hesaplar ve kampanyalar burada listelenir.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={onConnect}
+                        disabled={connecting}
+                        className="inline-flex items-center gap-2 rounded-full bg-primary text-white px-4 h-10 text-[13px] font-semibold shadow-sm active:scale-95 transition disabled:opacity-60 disabled:active:scale-100">
+                        {connecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plug className="h-4 w-4" />}
+                        hangel MCC hesabını bağla
+                    </button>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <span className="text-[13px] font-semibold text-foreground">
+                            MCC: <span className="tabular-nums">{agency.mccCustomerId || '—'}</span>
+                        </span>
+                        <span className="text-[12px] text-muted-foreground">· {agency.accounts.length} alt-hesap</span>
+                    </div>
+
+                    {agency.accounts.length === 0 ? (
+                        <p className="text-[13px] text-muted-foreground text-center py-4">MCC altında alt-hesap bulunamadı.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {agency.accounts.map((acc) => (
+                                <div key={acc.customerId} className="rounded-2xl bg-card border border-border/60 shadow-sm p-3.5 space-y-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-[14px] font-semibold text-foreground truncate">{acc.name}</p>
+                                            <p className="text-[11px] text-muted-foreground tabular-nums truncate">{acc.customerId}</p>
+                                        </div>
+                                        {acc.ngoId && (
+                                            <span className="text-[10px] rounded-full bg-primary/10 text-primary px-2 py-0.5 font-semibold shrink-0">hangel STK</span>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                        <PerfStat icon={Eye} label="Gösterim" value={formatN(acc.totals.impressions)} />
+                                        <PerfStat icon={MousePointerClick} label="Tıklama" value={formatN(acc.totals.clicks)} />
+                                        <PerfStat icon={Percent} label="CTR" value={formatAgencyCtr(acc.totals.ctr)} />
+                                        <PerfStat icon={Wallet} label="Harcama" value={formatCost(acc.totals.costMicros)} />
+                                    </div>
+
+                                    {acc.campaigns.length === 0 ? (
+                                        <p className="text-[12px] text-muted-foreground">Bu hesapta kampanya yok.</p>
+                                    ) : (
+                                        <div className="divide-y divide-border/50 rounded-xl border border-border/50 overflow-hidden">
+                                            {acc.campaigns.map((c) => (
+                                                <AgencyCampaignRow
+                                                    key={c.resourceName}
+                                                    campaign={c}
+                                                    pending={pendingCampaignId === c.resourceName}
+                                                    disabled={pendingCampaignId !== null}
+                                                    onChangeStatus={(status) => onChangeCampaignStatus(acc.customerId, c.resourceName, status)}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+        </section>
+    );
+}
+
+function AgencyCampaignRow({ campaign, pending, disabled, onChangeStatus }: {
+    campaign: AgencyCampaign;
+    pending: boolean;
+    disabled: boolean;
+    onChangeStatus: (status: 'ENABLED' | 'PAUSED' | 'REMOVED') => void;
+}) {
+    const removed = campaign.status === 'REMOVED';
+    const tint = campaignStatusTint(campaign.status);
+    return (
+        <div className={cn('px-3 py-2.5 space-y-2 bg-card', removed && 'opacity-50')}>
+            <div className="flex items-center gap-2">
+                <p className="text-[13px] font-medium text-foreground truncate min-w-0 flex-1">{campaign.name}</p>
+                <span className={cn('text-[10px] rounded-full px-2 py-0.5 font-semibold shrink-0', tint)}>{campaignStatusLabel(campaign.status)}</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <PerfStat icon={Eye} label="Gösterim" value={formatN(campaign.impressions)} />
+                <PerfStat icon={MousePointerClick} label="Tıklama" value={formatN(campaign.clicks)} />
+                <PerfStat icon={Percent} label="CTR" value={formatAgencyCtr(campaign.ctr)} />
+                <PerfStat icon={Wallet} label="Harcama" value={formatCost(campaign.costMicros)} />
+            </div>
+            {!removed && (
+                <div className="flex flex-wrap gap-2">
+                    {campaign.status === 'ENABLED' ? (
+                        <button
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => onChangeStatus('PAUSED')}
+                            className="inline-flex items-center gap-1.5 rounded-full px-3 h-7 text-[11px] font-semibold bg-amber-500/10 text-amber-600 transition active:scale-95 disabled:opacity-50 disabled:active:scale-100">
+                            {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Pause className="h-3 w-3" />}
+                            Duraklat
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => onChangeStatus('ENABLED')}
+                            className="inline-flex items-center gap-1.5 rounded-full px-3 h-7 text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 transition active:scale-95 disabled:opacity-50 disabled:active:scale-100">
+                            {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
+                            Etkinleştir
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => onChangeStatus('REMOVED')}
+                        className="inline-flex items-center gap-1.5 rounded-full px-3 h-7 text-[11px] font-semibold bg-rose-500/10 text-rose-600 transition active:scale-95 disabled:opacity-50 disabled:active:scale-100">
+                        {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                        Kaldır
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

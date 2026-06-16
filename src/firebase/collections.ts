@@ -128,6 +128,8 @@ export const COLLECTIONS = {
   // STK başına bağlı Google Ads hesabı (OAuth refresh token + customerId).
   // Doc id = ngoId. SADECE Admin SDK yazar/okur (client erişmez, refreshToken secret).
   adAccounts: 'adAccounts',
+  // hangel MCC ajans bağlantısı (TEK doc id 'mcc'): MCC sahibinin OAuth refresh token'ı.
+  adAgency: 'adAgency',
   // STK başına bağlı Meta (Facebook/Instagram) reklam hesabı (long-lived
   // accessToken + adAccountId). Doc id = ngoId. SADECE Admin SDK yazar/okur
   // (client erişmez, accessToken secret).
@@ -215,6 +217,14 @@ export const COLLECTIONS = {
   // sonradan volunteerScoring güncellense bile etki değeri sabit kalır.
   volunteerCompletions: 'volunteerCompletions',
 
+  // Çift yönlü değerlendirme kayıtları (gönüllü ↔ STK). Bir faaliyet
+  // tamamlanınca gönüllü STK'yı/faaliyeti, STK da gönüllüyü 10 soruda
+  // puanlar. Doc id deterministik: `${kind}_${refId}_${volunteerId}` (bkz.
+  // src/lib/evaluations.ts → evalDocId) → çift yön tek doc'ta birleşir.
+  // SADECE Admin SDK yazar (api/evaluations/*); client okur. STK
+  // değerlendirmesi bitince certificateUnlocked: true → sertifika görünür.
+  evaluations: 'evaluations',
+
   // Süper-admin kişisel panel ayarları (Bildirim Ayarları kart vs.).
   // Doc id = adminUid. Yalnızca super-admin kendi doc'unu okur/yazar.
   // Path: superAdminSettings/{adminUid} — alanlar: notifications.{eventKey}.{channel}: boolean.
@@ -225,6 +235,20 @@ export const COLLECTIONS = {
   // (drop-off) analizini görür. Pre-auth adımlar için anonim create açıktır;
   // okuma yalnızca super-admin. Bkz. src/lib/onboarding-analytics.ts.
   onboardingEvents: 'onboardingEvents',
+
+  // Sanal Santral — STK çağrı merkezi (KVKK: STK=Veri Sorumlusu, hangel=İşleyen).
+  // STK'nın CSV/Excel ile yüklediği arama listesi (kampanya bazlı).
+  // Doc: { ngoId, name, description, sourceFileName, totalContacts, importedAt, importedBy, status: 'active'|'archived' }
+  santralContactLists: 'santralContactLists',
+  // Çağrılacak kişiler. Multi-list — bir kişi birden fazla listede olabilir.
+  // Doc: { ngoId, listIds: string[], name, phone (E.164), email?, customFields, attempts, lastAttemptAt?, lastDisposition?, scheduledCallbackId?, createdAt }
+  santralContacts: 'santralContacts',
+  // Sub-collection under callSessions/{id}/notes/{noteId}
+  // Doc: { agentUid, agentName, text, timestamp }
+  santralCallNotes: 'notes',
+  // İleri tarihli arama planları. Cron her dakika "due olanları queue'ya at".
+  // Doc: { ngoId, contactId, contactName, scheduledAt: Timestamp, reason?, createdBy, status: 'pending'|'done'|'cancelled', createdAt }
+  santralScheduledCallbacks: 'santralScheduledCallbacks',
 
   // Outreach / Tanıtım kontak veritabanı. Sivil Toplum Müdürlükleri, kargo
   // şirketleri, mail hizmet sağlayıcıları, manuel eklenen STK/vakıf vd. için

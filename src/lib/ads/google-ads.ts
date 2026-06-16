@@ -666,3 +666,86 @@ export async function createSearchCampaign(
 
   return { campaignResourceName };
 }
+
+export interface ManagedAccount {
+  customerId: string;      // digit-only
+  descriptiveName: string; // boş olabilir
+  manager: boolean;
+}
+
+/**
+ * hangel MCC (config.loginCustomerId) altındaki TÜM ENABLED alt-hesapları
+ * descriptive_name ile listeler. Ajans panelinde STK alt-hesaplarını göstermek için.
+ * login-customer-id = MCC. Hata/boşta [] döner.
+ */
+export async function listManagedAccounts(
+  accessToken: string,
+  config: GoogleAdsConfig,
+  underCustomerId?: string  // default config.loginCustomerId
+): Promise<ManagedAccount[]> {
+  const mid = digitsOnly(underCustomerId || config.loginCustomerId);
+  if (!mid) return [];
+  const query =
+    'SELECT customer_client.id, customer_client.descriptive_name, customer_client.manager, customer_client.status ' +
+    "FROM customer_client WHERE customer_client.status = 'ENABLED'";
+  try {
+    const res = await fetch(`${ADS_API_BASE}/customers/${mid}/googleAds:searchStream`, {
+      method: 'POST',
+      headers: adsHeaders(config, accessToken, mid),
+      body: JSON.stringify({ query }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as Array<{
+      results?: Array<{
+        customerClient?: { id?: string | number; descriptiveName?: string; manager?: boolean };
+      }>;
+    }>;
+    const out: ManagedAccount[] = [];
+    for (const chunk of Array.isArray(data) ? data : []) {
+      for (const row of chunk.results ?? []) {
+        const customerId = digitsOnly(String(row.customerClient?.id ?? ''));
+        if (!customerId) continue;
+        out.push({
+          customerId,
+          descriptiveName:
+            typeof row.customerClient?.descriptiveName === 'string'
+              ? row.customerClient.descriptiveName
+              : '',
+          manager: row.customerClient?.manager === true,
+        });
+      }
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Bir kampanyanın durumunu MCC üzerinden değiştirir (duraklat/etkinleştir/kaldır).
+ * Ajans panelinden hangel ekibi kullanır. loginCustomerId = MCC bağlamı.
+ * Hata → throw (createSearchCampaign ile aynı 'ads_mutate_failed:...' deseni).
+ */
+export async function updateCampaignStatus(
+  config: GoogleAdsConfig,
+  refreshToken: string,
+  customerId: string,
+  loginCustomerId: string | undefined,
+  campaignResourceName: string,
+  status: 'ENABLED' | 'PAUSED' | 'REMOVED'
+): Promise<void> {
+  const accessToken = await refreshAccessToken(config, refreshToken);
+  if (!accessToken) throw new Error('ads_token_refresh_failed');
+  const id = digitsOnly(customerId);
+  if (!id) throw new Error('ads_invalid_customer');
+  const lcid = digitsOnly(loginCustomerId || customerId) || id;
+
+  // Google'da kampanya silme `remove` op'u ile yapılır (update ile DEĞİL).
+  const op =
+    status === 'REMOVED'
+      ? { remove: campaignResourceName }
+      : { updateMask: 'status', update: { resourceName: campaignResourceName, status } };
+
+  await mutate(config, accessToken, id, 'campaigns', [op], lcid);
+}
