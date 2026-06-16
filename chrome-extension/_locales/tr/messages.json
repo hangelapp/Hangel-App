@@ -1,0 +1,18 @@
+{
+  "appName": {
+    "message": "hangel — Alışverişin Bağışa Dönüşsün",
+    "description": "Uzantı adı"
+  },
+  "appShortName": {
+    "message": "hangel",
+    "description": "Kısa ad"
+  },
+  "appDescription": {
+    "message": "hangel kayıtlı markalarda otomatik hatırlatıcı: 'Yapsın' de, komisyon seçtiğin STK'lara bağış olarak gitsin.",
+    "description": "Uzantı açıklaması"
+  },
+  "actionTitle": {
+    "message": "hangel — Bağışa Dönüştür",
+    "description": "Toolbar ikonu tooltip"
+  }
+}

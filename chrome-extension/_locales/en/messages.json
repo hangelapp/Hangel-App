@@ -1,0 +1,18 @@
+{
+  "appName": {
+    "message": "hangel — Turn Shopping Into Donations",
+    "description": "Extension name"
+  },
+  "appShortName": {
+    "message": "hangel",
+    "description": "Short name"
+  },
+  "appDescription": {
+    "message": "Reminder on registered brands: tap 'Do It' and the commission goes as a donation to the NGOs you chose.",
+    "description": "Extension description"
+  },
+  "actionTitle": {
+    "message": "hangel — Turn Into Donation",
+    "description": "Toolbar icon tooltip"
+  }
+}
