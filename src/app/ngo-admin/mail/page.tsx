@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Mail, Loader2, Wallet, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Mail, Loader2, Wallet, AlertTriangle, Settings, Clock } from 'lucide-react';
 import { doc } from 'firebase/firestore';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -32,6 +32,30 @@ export default function MailManagementPage() {
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
+    // Kurulum durumu — 'active' değilse gönderim gate'lenir.
+    const [setupStatus, setSetupStatus] = useState<'not_started' | 'pending' | 'active' | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        async function loadSetup() {
+            if (!authUser) return;
+            try {
+                const token = await authUser.getIdToken();
+                const res = await fetch('/api/ngo-admin/messaging/setup', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) return;
+                const data = (await res.json()) as { setup?: { status?: 'not_started' | 'pending' | 'active' } };
+                if (!cancelled) setSetupStatus(data.setup?.status ?? 'not_started');
+            } catch {
+                // sessizce geç — gate uyarısı gösterilmez, form bozulmaz
+            }
+        }
+        loadSetup();
+        return () => { cancelled = true; };
+    }, [authUser]);
+
+    const setupActive = setupStatus === 'active';
 
     const walletRef = useMemoFirebase(
         () => (db && ngoId ? doc(db, COLLECTIONS.ngoMessagingWallets, ngoId) : null),
@@ -137,6 +161,27 @@ export default function MailManagementPage() {
                 </CardContent>
             </Card>
 
+            {setupStatus !== null && !setupActive && (
+                <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-300 bg-amber-50/60 text-amber-800">
+                    {setupStatus === 'pending' ? <Clock className="h-5 w-5 shrink-0 mt-0.5" /> : <Settings className="h-5 w-5 shrink-0 mt-0.5" />}
+                    <div className="flex-1 space-y-2">
+                        <p className="text-sm font-semibold">
+                            {setupStatus === 'pending' ? 'Kurulum onayı bekleniyor' : 'Mail göndermek için önce kurulumu tamamlayın'}
+                        </p>
+                        <p className="text-xs">
+                            {setupStatus === 'pending'
+                                ? 'Kurulum talebiniz sağlayıcıya iletildi. Aktivasyon tamamlanınca mail gönderebilirsiniz.'
+                                : 'Gönderen bilgileri ve gerekli belgeler için adım adım kurulum sihirbazını tamamlamanız gerekir.'}
+                        </p>
+                        {setupStatus !== 'pending' && (
+                            <Button variant="outline" size="sm" onClick={() => router.push('/ngo-admin/messaging/setup')}>
+                                Kuruluma Git
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <Card>
                 <CardHeader>
                     <CardTitle>Yeni Mail</CardTitle>
@@ -174,7 +219,7 @@ export default function MailManagementPage() {
                             <span>Yetersiz kota: {recipients.length} alıcı için {remaining.mail} mail yetmiyor. Kontör alın.</span>
                         </div>
                     )}
-                    <Button className="w-full" onClick={handleSend} disabled={isSending}>
+                    <Button className="w-full" onClick={handleSend} disabled={isSending || (setupStatus !== null && !setupActive)}>
                         {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}
                         Gönder
                     </Button>
