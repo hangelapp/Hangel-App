@@ -59,6 +59,28 @@ export function stripHtml(html: string): string {
   return (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
 }
 
+/**
+ * `LibraryItem` üzerinde henüz tip olarak tanımlı OLMAYAN ama Firestore/JSON
+ * verisinde gelebilen opsiyonel alanları (imdbRating, dub, university) `as any`
+ * kullanmadan, defansif bracket access ile okumak için yardımcılar.
+ */
+function readNumberField(item: LibraryItem, key: string): number | undefined {
+  const v = (item as unknown as Record<string, unknown>)[key];
+  return typeof v === 'number' ? v : undefined;
+}
+function readStringField(item: LibraryItem, key: string): string | undefined {
+  const v = (item as unknown as Record<string, unknown>)[key];
+  return typeof v === 'string' && v ? v : undefined;
+}
+
+/** Verinin content HTML'inin ilk <p> metnini düz metin olarak çıkarır. */
+function firstParagraphText(content: string | undefined): string {
+  if (!content) return '';
+  const match = content.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+  const raw = match ? match[1] : content;
+  return raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 export function extractYear(item: LibraryItem): number | null {
   const text = `${item.title} ${stripHtml(item.content || '')}`;
   const match = text.match(/\b(19[6-9]\d|20[0-2]\d)\b/);
@@ -403,6 +425,7 @@ export function SectionAccordion({
                 // <a> kaçınmak için satır Link değil; başlık ile kaynak linki ayrı tıklanır.
                 const hasCite = !!(item.source || item.sourceUrl);
                 if (hasCite) {
+                  const ozet = firstParagraphText(item.content);
                   return (
                     <div key={item.slug} className="border-b last:border-b-0 hover:bg-muted/50">
                       <Link
@@ -421,12 +444,22 @@ export function SectionAccordion({
                           </span>
                         </div>
                       )}
+                      {ozet && (
+                        <p className="px-3 pb-2 text-[12px] text-muted-foreground line-clamp-2">{ozet}</p>
+                      )}
                     </div>
                   );
                 }
                 // Filmler: kapaksız sade künye — başlık + puan + konu (yazar yok).
                 // Kapak + detaylı künye DETAY sayfasında.
                 if (section.slug === 'filmler') {
+                  // IMDb puanı: explicit imdbRating > genel rating.
+                  const imdbScore = readNumberField(item, 'imdbRating') ?? item.rating;
+                  // Türkçe dublaj: dub undefined → bilinmiyor (badge yok).
+                  const dubRaw = readStringField(item, 'dub');
+                  const hasDub = dubRaw !== undefined
+                    ? !/^(yok|no|false|0)$/i.test(dubRaw.trim())
+                    : undefined;
                   return (
                     <Link
                       href={`/library/${item.slug}`}
@@ -436,17 +469,51 @@ export function SectionAccordion({
                       <div className="flex items-start justify-between gap-2">
                         <span className="text-sm font-medium pr-2">{item.title}</span>
                         <div className="flex items-center gap-1 shrink-0">
-                          {typeof item.rating === 'number' && (
+                          {typeof imdbScore === 'number' && (
                             <Badge variant="secondary" className="gap-1 px-1.5 py-0.5">
                               <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                              <span className="text-[11px] font-bold tabular-nums">{item.rating.toFixed(1)}</span>
+                              <span className="text-[11px] font-bold tabular-nums">IMDb {imdbScore.toFixed(1)}</span>
                             </Badge>
                           )}
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         </div>
                       </div>
-                      {item.description && (
-                        <p className="mt-0.5 text-[12px] text-muted-foreground line-clamp-2 leading-snug">{item.description}</p>
+                      {item.genre && (
+                        <p className="mt-0.5 text-[12px] text-muted-foreground">{item.genre}</p>
+                      )}
+                      {hasDub !== undefined && (
+                        <Badge
+                          variant="secondary"
+                          className={
+                            hasDub
+                              ? 'mt-1 px-1.5 py-0.5 text-[11px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent'
+                              : 'mt-1 px-1.5 py-0.5 text-[11px] bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-transparent'
+                          }
+                        >
+                          {hasDub ? 'Türkçe dublaj var' : 'Türkçe dublaj yok'}
+                        </Badge>
+                      )}
+                    </Link>
+                  );
+                }
+                // Akademik makaleler: başlığın altında yazar · yıl · üniversite.
+                if (section.slug === 'akademik-makaleler') {
+                  const university = readStringField(item, 'university');
+                  const meta = [item.author, item.year ? String(item.year) : '', university]
+                    .filter(Boolean)
+                    .join(' · ');
+                  return (
+                    <Link
+                      href={`/library/${item.slug}`}
+                      key={item.slug}
+                      className="block px-3 py-2.5 border-b last:border-b-0 hover:bg-muted/50"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium pr-2">{item.title}</span>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                      </div>
+                      {meta && (
+                        <p className="mt-0.5 text-[12px] text-muted-foreground line-clamp-1">{meta}</p>
                       )}
                     </Link>
                   );

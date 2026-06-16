@@ -48,6 +48,12 @@ export interface LibraryItem {
   citation?: string;
   /** Akademik Makaleler: kaynağın kökeni ("Türkiye" / "Yurt dışı"). */
   origin?: string;
+  /** Akademik Makaleler: yazarın bağlı olduğu üniversite / kurum. */
+  university?: string;
+  /** Film: Türkçe dublaj / altyazı durumu ("var" / "yok" / "Türkçe"). */
+  dub?: string;
+  /** Film: IMDb puanı (10 üzerinden). */
+  imdbRating?: number;
 }
 
 /**
@@ -159,6 +165,53 @@ export function parseBookMetadata(item: LibraryItem): BookMetadata {
   };
 }
 
+/** Taksonomi: her sosyal hassasiyet nedeni için tetikleyici anahtar kelimeler.
+ *  Sıra önemlidir; eşleşmeler bu sırayla toplanır ve ilk 4'ü döndürülür. */
+const SOCIAL_SENSITIVITY_TAXONOMY: ReadonlyArray<readonly [string, readonly string[]]> = [
+  ['Eğitim', ['eğitim', 'öğretmen', 'okul', 'öğrenci', 'education', 'teach']],
+  ['Çevre ve Doğa', ['çevre', 'doğa', 'ekoloji', 'silent spring', 'environment', 'conservation']],
+  ['İklim Krizi', ['iklim', 'climate', 'uninhabitable', 'changes everything']],
+  ['Sağlık', ['sağlık', 'health', 'hasta', 'halk sağlığı', 'mortal', 'medical']],
+  ['Çocuk', ['çocuk', 'child', 'whole-brain']],
+  ['Gençlik', ['genç', 'youth', 'defining decade']],
+  ['Yaşlılık', ['yaşlı', 'ageing', 'being mortal']],
+  ['Engelli Hakları', ['engelli', 'disability', 'otizm', 'autism', 'neuro', 'reason i jump']],
+  ['Hayvan Hakları', ['hayvan', 'animal']],
+  ['Göç ve Mülteci', ['göç', 'mülteci', 'refugee', 'odyssey', 'migrat', 'kingsley']],
+  ['Kadın ve Toplumsal Cinsiyet', ['kadın', 'feminist', 'women', 'gender', 'half the sky']],
+  ['İnsan Hakları', ['insan hakları', 'human rights', 'rule of law', 'mandela', 'freedom']],
+  ['Yoksullukla Mücadele', ['yoksul', 'poverty', 'poor economics', 'pobreza']],
+  ['Afet ve İnsani Yardım', ['afet', 'disaster', 'deprem', 'insani yardım', 'kriz', 'humanitarian', 'healing']],
+  ['Sosyal Girişimcilik', ['sosyal girişim', 'social business', 'emprendimiento', 'mikro kredi', 'microcredit', 'yunus']],
+  ['Sivil Toplum ve Demokrasi', ['sivil toplum', 'stk', 'nonprofit', 'democracy', 'demokrasi', 'civil society']],
+  ['Liderlik ve Yönetim', ['liderlik', 'leadership', 'management', 'yönetim', 'strateji', 'strategy']],
+  ['Gönüllülük', ['gönüllü', 'volunteer', 'bowling alone', 'sosyal sermaye', 'social capital']],
+  ['Sosyal Etki', ['sosyal etki', 'impact', 'etki ölçümü', 'sroi', 'evaluation']],
+  ['Kültür ve Sanat', ['kültür', 'sanat', 'kültür-sanat']],
+  ['Irkçılık ve Ayrımcılık', ['ırkçılık', 'racism', 'about race', 'ayrımcılık', 'discrimination']],
+  ['Bağımlılıkla Mücadele', ['bağımlılık', 'addiction']],
+];
+
+/** Bir kütüphane item'ının kapsadığı sosyal hassasiyetleri (temiz neden adları) döndürür.
+ *  category/topic/title/content üzerinden anahtar kelime eşleşmesiyle; en çok 4, tekilleştirilmiş. */
+export function getSocialSensitivities(item: LibraryItem): string[] {
+  const haystack = [
+    item.category || '',
+    item.topic || '',
+    item.title || '',
+    stripTags(item.content || ''),
+  ].join(' ').toLocaleLowerCase('tr');
+
+  const matches: string[] = [];
+  for (const [reason, keywords] of SOCIAL_SENSITIVITY_TAXONOMY) {
+    if (matches.includes(reason)) continue;
+    if (keywords.some(kw => haystack.includes(kw))) {
+      matches.push(reason);
+    }
+  }
+  return matches.slice(0, 4);
+}
+
 export interface LibrarySection {
   slug: string;
   title: string;
@@ -192,7 +245,7 @@ export const librarySections: LibrarySection[] = [
         { slug: 'kitap-high-output-management', title: "High Output Management — Andrew Grove", content: "<p>Verimli organizasyon kurmanın temel prensiplerini sunar</p><ul><li><strong>Yazar:</strong> Andrew Grove</li><li><strong>Yayınevi:</strong> Vintage</li><li><strong>Kategori:</strong> Yönetim</li><li><strong>Dil:</strong> İngilizce</li></ul>" },
         { slug: 'kitap-mans-search-for-meaning', title: "Man's Search for Meaning — Viktor Frankl", content: "<p>İnsanların anlam arayışını güçlü bir şekilde anlatır</p><ul><li><strong>Yazar:</strong> Viktor Frankl</li><li><strong>Yayınevi:</strong> Beacon Press</li><li><strong>Kategori:</strong> Psikoloji</li><li><strong>Dil:</strong> Türkçe, İngilizce</li></ul>" },
         { slug: 'kitap-doing-good-better', title: "Doing Good Better — William MacAskill", content: "<p>Etkili yardım ve kaynak kullanımı yaklaşımını açıklar</p><ul><li><strong>Yazar:</strong> William MacAskill</li><li><strong>Yayınevi:</strong> Penguin</li><li><strong>Kategori:</strong> Toplumsal Etki</li><li><strong>Dil:</strong> İngilizce</li></ul>" },
-        { slug: 'kitap-sosyal-girisim-cilik-guncellenmis-versiyonu-ile-kapitalizm-2', title: "Sosyal Girişim-cilik / güncellenmiş versiyonu ile KAPİTALİZM 2.0 — İsmail Hilmi Adıgüzel", content: "<p>Kitap, sosyal girişimciliği “Kapitalizmin 2. versiyonu” olarak ele alıyor.</p><ul><li><strong>Yazar:</strong> İsmail Hilmi Adıgüzel</li><li><strong>Yayınevi:</strong> İki Kitap</li><li><strong>Kategori:</strong> Sosyal Girişimcilik</li><li><strong>Dil:</strong> Türkçe</li></ul>" },
+        { slug: 'kitap-sosyal-girisim-cilik-guncellenmis-versiyonu-ile-kapitalizm-2', title: "Sosyal Girişimcilik / güncellenmiş versiyonu ile KAPİTALİZM 2.0 — İsmail Hilmi Adıgüzel", content: "<p>Kitap, sosyal girişimciliği “Kapitalizmin 2. versiyonu” olarak ele alıyor.</p><ul><li><strong>Yazar:</strong> İsmail Hilmi Adıgüzel</li><li><strong>Yayınevi:</strong> İki Kitap</li><li><strong>Kategori:</strong> Sosyal Girişimcilik</li><li><strong>Dil:</strong> Türkçe</li></ul>" },
         { slug: 'kitap-liderlik-uzerine', title: "Liderlik Üzerine — Mustafa Acar", content: "<p>Liderlik kavramını yerel bağlamda ele alır</p><ul><li><strong>Yazar:</strong> Mustafa Acar</li><li><strong>Yayınevi:</strong> Liberte</li><li><strong>Kategori:</strong> Liderlik</li><li><strong>Dil:</strong> Türkçe</li></ul>" },
         { slug: 'kitap-yonetim-bilimi', title: "Yönetim Bilimi — İlker Parasız", content: "<p>Yönetimin temel prensiplerini açıklar</p><ul><li><strong>Yazar:</strong> İlker Parasız</li><li><strong>Yayınevi:</strong> Ezgi Kitabevi</li><li><strong>Kategori:</strong> Yönetim</li><li><strong>Dil:</strong> Türkçe</li></ul>" },
         { slug: 'kitap-sosyal-politika', title: "Sosyal Politika — İlhan Tekeli", content: "<p>Türkiye’de sosyal politikaların gelişimini anlatır</p><ul><li><strong>Yazar:</strong> İlhan Tekeli</li><li><strong>Yayınevi:</strong> Tarih Vakfı</li><li><strong>Kategori:</strong> Sosyal Politika</li><li><strong>Dil:</strong> Türkçe</li></ul>" },
@@ -473,20 +526,20 @@ export const librarySections: LibrarySection[] = [
         description: "Üniversiteler ve araştırma kurumları tarafından hazırlanan akademik çalışmalar.",
         icon: "GraduationCap",
         items: [
-        { slug: 'akademik-doing-good-better', title: "Doing Good Better — William MacAskill", content: "<p>Etkili yardımseverlik (effective altruism) çerçevesi; sınırlı kaynakların hangi müdahalelerde en yüksek etkiyi yarattığını veriye dayalı olarak ortaya koyar.</p><ul><li><strong>Yazar:</strong> William MacAskill</li><li><strong>Yayınevi:</strong> Penguin</li><li><strong>Konu:</strong> Etki Odaklı Yardım</li></ul>" },
+        { slug: 'akademik-doing-good-better', title: "Doing Good Better — William MacAskill", content: "<p>Etkili yardımseverlik (effective altruism) çerçevesi; sınırlı kaynakların hangi müdahalelerde en yüksek etkiyi yarattığını veriye dayalı olarak ortaya koyar.</p><ul><li><strong>Yazar:</strong> William MacAskill</li><li><strong>Yayınevi:</strong> Penguin</li><li><strong>Konu:</strong> Etki Odaklı Yardım</li></ul>", university: "University of Oxford" },
         { slug: 'akademik-lean-impact', title: "Lean Impact — Ann Mei Chang", content: "<p>Sosyal etki projelerinde yalın girişim yöntemlerinin uygulanışı; deneme, ölçme ve ölçeklendirme yaklaşımı.</p><ul><li><strong>Yazar:</strong> Ann Mei Chang</li><li><strong>Yayınevi:</strong> Wiley</li><li><strong>Konu:</strong> Etki Ölçümü</li></ul>" },
-        { slug: 'akademik-development-as-freedom', title: "Development as Freedom — Amartya Sen", content: "<p>Kalkınmanın yalnızca ekonomik büyüme değil; bireyin seçeneklerini genişleten özgürlüklerin toplamı olduğunu savunan temel metin.</p><ul><li><strong>Yazar:</strong> Amartya Sen</li><li><strong>Yayınevi:</strong> Oxford University Press</li><li><strong>Konu:</strong> Kalkınma İktisadı</li></ul>" },
-        { slug: 'akademik-poor-economics', title: "Poor Economics — Banerjee & Duflo", content: "<p>Rastgele kontrollü deneyler üzerinden yoksullukla mücadele politikalarının etkinliğini analiz eden, Nobel ödüllü çalışmanın bilimsel temeli.</p><ul><li><strong>Yazar:</strong> Abhijit V. Banerjee, Esther Duflo</li><li><strong>Yayınevi:</strong> PublicAffairs</li><li><strong>Konu:</strong> Kalkınma ve Yoksulluk</li></ul>" },
-        { slug: 'akademik-bowling-alone', title: "Bowling Alone — Robert D. Putnam", content: "<p>ABD'de sosyal sermayenin azalışını uzun dönemli verilerle belgeleyen; toplumsal bağların zayıflamasının sonuçlarını inceleyen klasik sosyoloji çalışması.</p><ul><li><strong>Yazar:</strong> Robert D. Putnam</li><li><strong>Yayınevi:</strong> Simon &amp; Schuster</li><li><strong>Konu:</strong> Sosyal Sermaye</li></ul>" },
-        { slug: 'akademik-making-democracy-work', title: "Making Democracy Work — Robert D. Putnam", content: "<p>İtalya bölgesel yönetimleri üzerinden sivil katılım ve kurumsal performans ilişkisini ampirik olarak inceleyen çalışma.</p><ul><li><strong>Yazar:</strong> Robert D. Putnam</li><li><strong>Yayınevi:</strong> Princeton University Press</li><li><strong>Konu:</strong> Katılımcı Demokrasi</li></ul>" },
+        { slug: 'akademik-development-as-freedom', title: "Development as Freedom — Amartya Sen", content: "<p>Kalkınmanın yalnızca ekonomik büyüme değil; bireyin seçeneklerini genişleten özgürlüklerin toplamı olduğunu savunan temel metin.</p><ul><li><strong>Yazar:</strong> Amartya Sen</li><li><strong>Yayınevi:</strong> Oxford University Press</li><li><strong>Konu:</strong> Kalkınma İktisadı</li></ul>", university: "Harvard University" },
+        { slug: 'akademik-poor-economics', title: "Poor Economics — Banerjee & Duflo", content: "<p>Rastgele kontrollü deneyler üzerinden yoksullukla mücadele politikalarının etkinliğini analiz eden, Nobel ödüllü çalışmanın bilimsel temeli.</p><ul><li><strong>Yazar:</strong> Abhijit V. Banerjee, Esther Duflo</li><li><strong>Yayınevi:</strong> PublicAffairs</li><li><strong>Konu:</strong> Kalkınma ve Yoksulluk</li></ul>", university: "MIT" },
+        { slug: 'akademik-bowling-alone', title: "Bowling Alone — Robert D. Putnam", content: "<p>ABD'de sosyal sermayenin azalışını uzun dönemli verilerle belgeleyen; toplumsal bağların zayıflamasının sonuçlarını inceleyen klasik sosyoloji çalışması.</p><ul><li><strong>Yazar:</strong> Robert D. Putnam</li><li><strong>Yayınevi:</strong> Simon &amp; Schuster</li><li><strong>Konu:</strong> Sosyal Sermaye</li></ul>", university: "Harvard University" },
+        { slug: 'akademik-making-democracy-work', title: "Making Democracy Work — Robert D. Putnam", content: "<p>İtalya bölgesel yönetimleri üzerinden sivil katılım ve kurumsal performans ilişkisini ampirik olarak inceleyen çalışma.</p><ul><li><strong>Yazar:</strong> Robert D. Putnam</li><li><strong>Yayınevi:</strong> Princeton University Press</li><li><strong>Konu:</strong> Katılımcı Demokrasi</li></ul>", university: "Harvard University" },
         { slug: 'akademik-nudge', title: "Nudge — Thaler & Sunstein", content: "<p>Davranışsal iktisadın kamu politikası tasarımına uygulanması; özgür iradeyi koruyarak daha iyi kararları mümkün kılan \"dürtme\" kavramı.</p><ul><li><strong>Yazar:</strong> Richard Thaler, Cass Sunstein</li><li><strong>Yayınevi:</strong> Penguin</li><li><strong>Konu:</strong> Davranışsal Politika</li></ul>" },
-        { slug: 'akademik-thinking-fast-and-slow', title: "Thinking, Fast and Slow — Daniel Kahneman", content: "<p>Sezgisel (Sistem 1) ve analitik (Sistem 2) düşünme süreçlerinin karar alma üzerindeki etkilerini inceleyen; Nobel ödüllü iktisatçının referans kitabı.</p><ul><li><strong>Yazar:</strong> Daniel Kahneman</li><li><strong>Yayınevi:</strong> Farrar, Straus and Giroux</li><li><strong>Konu:</strong> Bilişsel Bilim</li></ul>" },
+        { slug: 'akademik-thinking-fast-and-slow', title: "Thinking, Fast and Slow — Daniel Kahneman", content: "<p>Sezgisel (Sistem 1) ve analitik (Sistem 2) düşünme süreçlerinin karar alma üzerindeki etkilerini inceleyen; Nobel ödüllü iktisatçının referans kitabı.</p><ul><li><strong>Yazar:</strong> Daniel Kahneman</li><li><strong>Yayınevi:</strong> Farrar, Straus and Giroux</li><li><strong>Konu:</strong> Bilişsel Bilim</li></ul>", university: "Princeton University" },
         { slug: 'akademik-impact-measurement', title: "Impact Measurement and Evaluation — Marek Szarucki", content: "<p>Sosyal etkinin ölçülmesine yönelik metodolojileri; SROI, Theory of Change ve karma araştırma yöntemlerini ele alır.</p><ul><li><strong>Yazar:</strong> Marek Szarucki</li><li><strong>Yayınevi:</strong> Routledge</li><li><strong>Konu:</strong> Etki Ölçümü</li></ul>" },
         { slug: 'akademik-social-innovation-inc', title: "Social Innovation Inc. — Jason Saul", content: "<p>Sosyal inovasyonun iş dünyasıyla kesiştiği alanları; ölçeklenebilir sosyal değer üretiminin beş stratejisini inceler.</p><ul><li><strong>Yazar:</strong> Jason Saul</li><li><strong>Yayınevi:</strong> Jossey-Bass</li><li><strong>Konu:</strong> Sosyal İnovasyon</li></ul>" },
         { slug: 'akademik-sosyal-etki-yonetimi', title: "Sosyal Etki Yönetimi ve Ölçümü — Metin Genç", content: "<p>Türkiye bağlamında sosyal etkinin akademik düzeyde tanımlanması, ölçülmesi ve yönetimi üzerine bütüncül bir çalışma.</p><ul><li><strong>Yazar:</strong> Metin Genç</li><li><strong>Yayınevi:</strong> Nobel Akademik</li><li><strong>Konu:</strong> Sosyal Etki</li></ul>" },
         { slug: 'akademik-sivil-toplum-demokrasi', title: "Türkiye'de Sivil Toplum ve Demokrasi — Ruşen Çakır", content: "<p>Türkiye'de STK'ların demokratik süreçlere katkısını saha gözlemleri ve akademik analizle birlikte ele alır.</p><ul><li><strong>Yazar:</strong> Ruşen Çakır</li><li><strong>Yayınevi:</strong> Metis Yayınları</li><li><strong>Konu:</strong> Sivil Toplum Araştırmaları</li></ul>" },
-        { slug: 'akademik-kalkinma-iktisadi', title: "Kalkınma İktisadı — Ayşe Buğra", content: "<p>Türkiye'de refah devleti, yoksulluk ve sosyal politika arasındaki ilişkiyi yapısal bir çerçevede inceleyen akademik eser.</p><ul><li><strong>Yazar:</strong> Ayşe Buğra</li><li><strong>Yayınevi:</strong> İletişim Yayınları</li><li><strong>Konu:</strong> Kalkınma ve Sosyal Politika</li></ul>" },
-        { slug: 'akademik-turk-modernlesmesi', title: "Türk Modernleşmesi — Şerif Mardin", content: "<p>Türkiye'nin modernleşme sürecini merkez-çevre ilişkisi ve toplumsal gruplar üzerinden analiz eden ufuk açıcı çalışma.</p><ul><li><strong>Yazar:</strong> Şerif Mardin</li><li><strong>Yayınevi:</strong> İletişim Yayınları</li><li><strong>Konu:</strong> Siyaset Sosyolojisi</li></ul>" },
+        { slug: 'akademik-kalkinma-iktisadi', title: "Kalkınma İktisadı — Ayşe Buğra", content: "<p>Türkiye'de refah devleti, yoksulluk ve sosyal politika arasındaki ilişkiyi yapısal bir çerçevede inceleyen akademik eser.</p><ul><li><strong>Yazar:</strong> Ayşe Buğra</li><li><strong>Yayınevi:</strong> İletişim Yayınları</li><li><strong>Konu:</strong> Kalkınma ve Sosyal Politika</li></ul>", university: "Boğaziçi Üniversitesi" },
+        { slug: 'akademik-turk-modernlesmesi', title: "Türk Modernleşmesi — Şerif Mardin", content: "<p>Türkiye'nin modernleşme sürecini merkez-çevre ilişkisi ve toplumsal gruplar üzerinden analiz eden ufuk açıcı çalışma.</p><ul><li><strong>Yazar:</strong> Şerif Mardin</li><li><strong>Yayınevi:</strong> İletişim Yayınları</li><li><strong>Konu:</strong> Siyaset Sosyolojisi</li></ul>", university: "Sabancı Üniversitesi" },
         { slug: 'akademik-jossey-bass-nonprofit', title: "The Jossey-Bass Handbook of Nonprofit Leadership — David O. Renz", content: "<p>Kâr amacı gütmeyen kuruluşların yönetimi, stratejik planlaması ve yönetişimi üzerine referans niteliğinde akademik derleme.</p><ul><li><strong>Yazar:</strong> David O. Renz</li><li><strong>Yayınevi:</strong> Jossey-Bass</li><li><strong>Konu:</strong> STK Yönetişimi</li></ul>" },
         ...(hangelAcademicArticles as LibraryItem[]),
         ]

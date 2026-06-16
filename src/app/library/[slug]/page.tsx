@@ -1,6 +1,6 @@
 'use client';
 
-import { librarySections } from '@/lib/library';
+import { librarySections, getSocialSensitivities } from '@/lib/library';
 import type { LibrarySection, LibraryItem } from '@/lib/library';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -25,6 +25,26 @@ import { isAllowedImageHost } from '@/lib/image-host';
 // Bir içeriği ilk kez "okudum" işaretleyince verilen etki puanı (kötüye kullanım
 // engellemek için yalnızca daha önce ödüllenmemiş içeriklerde verilir).
 const LIBRARY_READ_POINTS = 5;
+
+// Sosyal hassasiyet etiketleri — kitap/film/veri/akademik detayında ortak rozet bloğu.
+// Boş liste gelirse hiçbir şey render etmez.
+function SocialSensitivities({ item }: { item: LibraryItem }) {
+  const tags = getSocialSensitivities(item);
+  if (!tags.length) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="text-[11px] font-medium text-muted-foreground">Sosyal hassasiyetler</span>
+      {tags.map(tag => (
+        <span
+          key={tag}
+          className="bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-[12px]"
+        >
+          {tag}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function LibraryItemPage() {
   const router = useRouter();
@@ -341,6 +361,8 @@ export default function LibraryItemPage() {
                   )}
                 </div>
 
+                <SocialSensitivities item={item} />
+
                 {bookMeta.shortDescription && (
                   <p className="text-sm text-muted-foreground leading-relaxed pt-1">
                     {bookMeta.shortDescription}
@@ -471,6 +493,15 @@ export default function LibraryItemPage() {
     // Title'dan yıl parantezini ayır (örn "Selma (2014)")
     const titleClean = item.title.replace(/\s*\(\d{4}\)\s*$/, '').trim();
 
+    // Türkçe dublaj: item.dub dolu ve 'yok'/'no' değilse "var". undefined ise gösterme.
+    const dubRaw = item.dub;
+    const hasDub = dubRaw !== undefined
+      ? !['yok', 'no'].includes(dubRaw.trim().toLowerCase())
+      : null;
+
+    // IMDb puanı: imdbRating öncelikli, yoksa rating.
+    const imdbScore = item.imdbRating ?? item.rating;
+
     return (
       <div className="relative min-h-[100dvh] animate-in fade-in-0">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent pointer-events-none" aria-hidden />
@@ -555,7 +586,19 @@ export default function LibraryItemPage() {
                       <Tag className="h-3 w-3" /> {filmCategory}
                     </Badge>
                   )}
+                  {typeof imdbScore === 'number' && imdbScore > 0 && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> IMDb {imdbScore.toFixed(1)}
+                    </Badge>
+                  )}
+                  {hasDub !== null && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Languages className="h-3 w-3" /> Türkçe dublaj {hasDub ? 'var' : 'yok'}
+                    </Badge>
+                  )}
                 </div>
+
+                <SocialSensitivities item={item} />
 
                 {filmDescription && (
                   <p className="text-sm text-muted-foreground leading-relaxed pt-1 line-clamp-4">
@@ -621,6 +664,9 @@ export default function LibraryItemPage() {
   }
 
   // ============= DEFAULT (templates / glossary / etc.) =============
+  // Akademik item tespiti — sözlük/şablon item'larını BOZMADAN sadece akademik
+  // makalelerde meta-rozet satırı gösterilsin.
+  const isAcademic = slug.startsWith('akademik') || Boolean(item.citation && item.origin);
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
       <div className="flex items-center justify-between mb-2">
@@ -665,6 +711,40 @@ export default function LibraryItemPage() {
           </div>
         )}
       </div>
+
+      {/* Akademik meta-rozet satırı — abstract (content) ÖNCESİNDE. Sadece akademik item'larda. */}
+      {isAcademic && (item.author || item.year || item.university || item.source || item.origin) && (
+        <div className="flex flex-wrap gap-1.5">
+          {item.author && (
+            <Badge variant="outline" className="gap-1 font-normal">
+              <UserIcon className="h-3 w-3" /> {item.author}
+            </Badge>
+          )}
+          {item.year && item.year > 0 && (
+            <Badge variant="outline" className="gap-1 font-normal">
+              <Calendar className="h-3 w-3" /> {item.year}
+            </Badge>
+          )}
+          {item.university && (
+            <Badge variant="outline" className="gap-1 font-normal">
+              <Building2 className="h-3 w-3" /> {item.university}
+            </Badge>
+          )}
+          {item.source && (
+            <Badge variant="outline" className="gap-1 font-normal">
+              <FileText className="h-3 w-3" /> {item.source}
+            </Badge>
+          )}
+          {item.origin && (
+            <Badge variant="outline" className="gap-1 font-normal">
+              <Globe2 className="h-3 w-3" /> {item.origin}
+            </Badge>
+          )}
+        </div>
+      )}
+
+      <SocialSensitivities item={item} />
+
       <article
         className="prose prose-sm sm:prose-base dark:prose-invert max-w-none space-y-4"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.content) }}
