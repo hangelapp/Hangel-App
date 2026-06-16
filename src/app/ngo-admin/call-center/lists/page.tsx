@@ -230,7 +230,7 @@ export default function CallCenterListsPage() {
 
         xhr.onload = () => {
           setUploadProgress(100);
-          let parsed: unknown = null;
+          let parsed: unknown;
           try {
             parsed = xhr.responseText ? JSON.parse(xhr.responseText) : null;
           } catch {

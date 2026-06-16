@@ -149,7 +149,7 @@ function parseBuffer(buffer: Buffer, fileName: string): { columns: string[]; row
 
   // CSV
   try {
-    const text = buffer.toString('utf-8').replace(/^﻿/, '');
+    const text = buffer.toString('utf-8').replace(/^\uFEFF/, '');
     const parsed = Papa.parse<Record<string, string>>(text, {
       header: true,
       skipEmptyLines: true,
