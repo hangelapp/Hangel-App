@@ -21,7 +21,15 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   useEffect(() => {
     const saved = localStorage.getItem('app-language') as Language;
     if (saved && translations[saved]) {
+      // Kullanıcının açık tercihi her zaman önce gelir.
       setLanguage(saved);
+    } else if (typeof navigator !== 'undefined' && navigator.language) {
+      // Kayıtlı tercih yoksa tarayıcı/cihaz dilini kullan (kullanıcının dili).
+      // 'en-US' → 'en'. Desteklenmiyorsa 'tr'de kalır.
+      const browser = navigator.language.split('-')[0] as Language;
+      if (browser && translations[browser]) {
+        setLanguage(browser);
+      }
     }
     setIsHydrated(true);
   }, []);

@@ -15,7 +15,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle } from 'lucide-react';
+import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -23,6 +23,7 @@ import { OnboardingWizard } from './_components/OnboardingWizard';
 import { CallDashboard } from './_components/CallDashboard';
 import { CallCenterSettings } from './_components/CallCenterSettings';
 import { CommunicationHub } from './_components/CommunicationHub';
+import { CallLists } from './_components/CallLists';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 export interface CallCenterExtension {
@@ -194,6 +195,10 @@ export default function NgoCallCenterPage() {
             <PhoneCall className="h-4 w-4" /> Çağrı Merkezi
             {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
           </TabsTrigger>
+          <TabsTrigger value="listeler" className="flex items-center gap-1.5">
+            <ListChecks className="h-4 w-4" /> Arama Listeleri
+            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
+          </TabsTrigger>
           <TabsTrigger value="iletisim" className="flex items-center gap-1.5">
             <MessageCircle className="h-4 w-4" /> İletişim Merkezi
             {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
@@ -264,7 +269,16 @@ export default function NgoCallCenterPage() {
           )}
         </TabsContent>
 
-        {/* Sekme 3 — İletişim Merkezi (WhatsApp'tan çağrıya akış; yalnızca onaylı STK) */}
+        {/* Sekme 3 — Arama Listeleri (yalnızca onaylı STK) */}
+        <TabsContent value="listeler" className="mt-4">
+          {isApproved && ccDoc ? (
+            <CallLists ngoId={ngoId} />
+          ) : (
+            <LockedNotice title="Arama Listeleri kilitli" status={status} />
+          )}
+        </TabsContent>
+
+        {/* Sekme 4 — İletişim Merkezi (WhatsApp'tan çağrıya akış; yalnızca onaylı STK) */}
         <TabsContent value="iletisim" className="mt-4">
           {isApproved && ccDoc ? (
             <CommunicationHub ccDoc={ccDoc} onGoToCallCenter={() => setTab('callcenter')} />
@@ -273,7 +287,7 @@ export default function NgoCallCenterPage() {
           )}
         </TabsContent>
 
-        {/* Sekme 4 — Ayarlar (yalnızca onaylı STK) */}
+        {/* Sekme 5 — Ayarlar (yalnızca onaylı STK) */}
         <TabsContent value="ayarlar" className="mt-4">
           {isApproved && ccDoc ? (
             <CallCenterSettings ngoId={ngoId} ccDoc={ccDoc} />

@@ -486,7 +486,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         '/yatirimci-iliskileri',
         '/careers',
         '/corporate',
-        '/feedback',
         '/accessibility',
         '/standards',
         '/sitemap',

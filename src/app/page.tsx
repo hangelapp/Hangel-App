@@ -593,16 +593,6 @@ export default function LoginPage() {
                         <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground max-w-4xl">{get('home.heroSubtitle', 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.')}</h2>
                         <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">{get('home.heroTitle', 'yok öyle yalnız başına mücadele etmek.')}</h1>
                         <p className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">{get('home.heroTagline', '#wearehangel')}</p>
-                        {/* Uygulama amacını açık anlatan statik paragraf (OAuth doğrulaması:
-                            "ana sayfa amacı" şartı + Google Ads scope gerekçesi). */}
-                        <p className="text-base md:text-lg text-foreground/70 mt-8 max-w-3xl leading-relaxed">
-                            hangel; sivil toplum kuruluşlarını (STK), gönüllüleri, öğrenci kulüplerini ve markaları
-                            tek bir platformda buluşturan bir sosyal etki platformudur. Kullanıcılar bağış yapar ve
-                            gönüllülük fırsatlarına başvurur; STK&apos;lar kampanya, etkinlik ve gönüllülük ilanlarını
-                            yönetir; markalar satışlarından STK&apos;lara katkı sağlar. STK&apos;lar ayrıca kendi
-                            Google Ads / Google Ad Grants reklam hesaplarını doğrudan hangel panelinden bağlayıp
-                            yönetebilir.
-                        </p>
                         <div className="mt-12">
                             <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
                                 <Link href="/login/selection?action=register">{get('home.heroCta', 'Hemen Katıl')}</Link>
@@ -827,6 +817,19 @@ export default function LoginPage() {
                             />
                         </div>
                     </div>
+                </section>
+                {/* Uygulama amacı — Google OAuth "ana sayfa amacı" şartı + Ads scope
+                    gerekçesi. Hero'dan alınıp sayfa sonuna sönük bölüm olarak indirildi
+                    (içerik kaldırılmadı; OAuth doğrulaması için sayfada kalmalı). */}
+                <section className="bg-white border-t border-black/5 px-6 py-10">
+                    <p className="mx-auto max-w-3xl text-center text-sm text-muted-foreground leading-relaxed">
+                        hangel; sivil toplum kuruluşlarını (STK), gönüllüleri, öğrenci kulüplerini ve markaları
+                        tek bir platformda buluşturan bir sosyal etki platformudur. Kullanıcılar bağış yapar ve
+                        gönüllülük fırsatlarına başvurur; STK&apos;lar kampanya, etkinlik ve gönüllülük ilanlarını
+                        yönetir; markalar satışlarından STK&apos;lara katkı sağlar. STK&apos;lar ayrıca kendi
+                        Google Ads / Google Ad Grants reklam hesaplarını doğrudan hangel panelinden bağlayıp
+                        yönetebilir.
+                    </p>
                 </section>
             </main>
             <PublicFooter currentPageLabel={t('landing.footerLabel')} />
