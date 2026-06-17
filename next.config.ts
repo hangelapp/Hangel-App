@@ -42,7 +42,8 @@ const nextConfig: NextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
+          // microphone=(self): WebRTC santral (call-center) tarayıcıdan mikrofon kullanır.
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=(self)' },
           // HSTS: 2 yıl + preload — HTTPS zorunlu (downgrade attack engeller)
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
         ],
