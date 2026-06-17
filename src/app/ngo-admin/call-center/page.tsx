@@ -12,16 +12,17 @@
  * görüntülenir (super-admin'e gösterilmez).
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings } from 'lucide-react';
+import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { OnboardingWizard } from './_components/OnboardingWizard';
 import { CallDashboard } from './_components/CallDashboard';
 import { CallCenterSettings } from './_components/CallCenterSettings';
+import { CommunicationHub } from './_components/CommunicationHub';
 
 const NGO_CALL_CENTER = 'ngoCallCenter';
 
@@ -85,6 +86,8 @@ function LockedNotice({ title, status }: { title: string; status?: string }) {
 export default function NgoCallCenterPage() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
+  // Kontrollü sekme — İletişim Merkezi hub'ı CTA'larından Çağrı Merkezi'ne geçebilsin.
+  const [tab, setTab] = useState<string | null>(null);
 
   const userRef = useMemoFirebase(
     () => (user ? doc(db, 'users', user.uid) : null),
@@ -157,7 +160,7 @@ export default function NgoCallCenterPage() {
         </p>
       </div>
 
-      <Tabs defaultValue={defaultTab} className="w-full">
+      <Tabs value={tab ?? defaultTab} onValueChange={setTab} className="w-full">
         <TabsList>
           <TabsTrigger value="basvuru" className="flex items-center gap-1.5">
             <FileText className="h-4 w-4" /> Başvuru
@@ -165,6 +168,10 @@ export default function NgoCallCenterPage() {
           </TabsTrigger>
           <TabsTrigger value="callcenter" className="flex items-center gap-1.5">
             <PhoneCall className="h-4 w-4" /> Çağrı Merkezi
+            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
+          </TabsTrigger>
+          <TabsTrigger value="iletisim" className="flex items-center gap-1.5">
+            <MessageCircle className="h-4 w-4" /> İletişim Merkezi
             {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
           </TabsTrigger>
           <TabsTrigger value="ayarlar" className="flex items-center gap-1.5">
@@ -233,7 +240,16 @@ export default function NgoCallCenterPage() {
           )}
         </TabsContent>
 
-        {/* Sekme 3 — Ayarlar (yalnızca onaylı STK) */}
+        {/* Sekme 3 — İletişim Merkezi (WhatsApp'tan çağrıya akış; yalnızca onaylı STK) */}
+        <TabsContent value="iletisim" className="mt-4">
+          {isApproved && ccDoc ? (
+            <CommunicationHub ccDoc={ccDoc} onGoToCallCenter={() => setTab('callcenter')} />
+          ) : (
+            <LockedNotice title="İletişim Merkezi kilitli" status={status} />
+          )}
+        </TabsContent>
+
+        {/* Sekme 4 — Ayarlar (yalnızca onaylı STK) */}
         <TabsContent value="ayarlar" className="mt-4">
           {isApproved && ccDoc ? (
             <CallCenterSettings ngoId={ngoId} ccDoc={ccDoc} />
