@@ -37,6 +37,8 @@ export interface CallCenterSettingsData {
   recordingEnabled?: boolean;
   kvkkAnnouncement?: boolean;
   callerIdNumber?: string;
+  inboundAgentUid?: string | null;
+  inboundAgentName?: string | null;
 }
 
 interface NgoCallCenterDoc {

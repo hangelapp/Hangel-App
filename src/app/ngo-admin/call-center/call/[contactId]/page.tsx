@@ -58,6 +58,7 @@ import { cn } from '@/lib/utils';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
 import { useSantralCredentials } from '@/lib/santral/use-credentials';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
+import { useUser } from '@/firebase';
 
 interface ContactDetail {
   id: string;
@@ -203,11 +204,19 @@ export default function ActiveCallPage() {
   const activeEntity = useActiveEntity();
   const activeNgoId = activeEntity.kind === 'ngo' ? activeEntity.id : null;
 
+  // Gelen-arama gate'i için current uid.
+  const { user } = useUser();
+  const selfUid = user?.uid ?? null;
+
   // --- WebRTC santral entegrasyonu ---------------------------------------
   // SIP/TURN credential'ları auth korumalı endpoint'ten gelir; tenant-özel
   // sipUsername fallback'i sunucuda çözülür (bundle'da YOK). Credential eksik/
   // yüklenirken useSipPhone pasif kalır ve panel mock akışına düşer.
   const { creds } = useSantralCredentials();
+
+  // Gelen arama callSessions id'sini sessionId state'ine yazmak için köprü ref —
+  // setSessionId aşağıda (hook'tan sonra) tanımlandığı için ref üzerinden bağlanır.
+  const applyInboundSessionRef = useRef<((id: string) => void) | null>(null);
 
   const sip = useSipPhone({
     wssUrl: creds?.wssUrl || null,
@@ -215,6 +224,27 @@ export default function ActiveCallPage() {
     password: creds?.sipPassword || null,
     domain: creds?.sipDomain || null,
     iceServers: creds?.iceServers,
+    // Bu sayfa ngoCallCenter doc'unu okumadığı için atanmış-kişi gate'i pasif
+    // (null) → "herkes çalar" varsayılanı korunur.
+    inboundAgentUid: null,
+    selfUid,
+    // Gelen arama çalınca callSessions doc'u oluştur; not/disposition bu
+    // gerçek session id'sine bağlansın (geçmiş/KPI dolsun).
+    onInbound: (callerNumber) => {
+      void messagingFetch<{ ok: boolean; callSessionId: string }>(
+        '/api/ngo-admin/calls/originate',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            contactPhone: callerNumber,
+            ngoId: activeNgoId ?? undefined,
+            direction: 'inbound',
+          }),
+        },
+      )
+        .then((res) => applyInboundSessionRef.current?.(res.callSessionId))
+        .catch(() => undefined);
+    },
   });
   // Gerçek arama yalnızca credential tam olduğunda aktif.
   const sipEnabled = sip.ready;
@@ -229,6 +259,9 @@ export default function ActiveCallPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // onInbound (yukarıda, hook config'inde) gelen arama session id'sini buradan yazar.
+  applyInboundSessionRef.current = (id: string) => setSessionId(id);
 
   // Notlar
   const [notes, setNotes] = useState<NoteRow[]>([]);

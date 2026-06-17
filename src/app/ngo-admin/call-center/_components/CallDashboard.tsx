@@ -29,7 +29,7 @@ import {
   Clock,
   Loader2,
 } from 'lucide-react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, orderBy, query, where, limit } from 'firebase/firestore';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
 import { useSantralCredentials } from '@/lib/santral/use-credentials';
@@ -92,6 +92,11 @@ interface NgoCallCenterDoc {
   providerId?: string;
   monthlyMinutesQuota?: number;
   currentMonthUsage?: number;
+  settings?: {
+    /** Gelen aramayı yalnızca bu kişinin tarayıcısı çalsın (boşsa herkes). */
+    inboundAgentUid?: string | null;
+    inboundAgentName?: string | null;
+  };
 }
 
 interface CallDashboardProps {
@@ -121,6 +126,8 @@ const STATUS_BADGE: Record<string, string> = {
 
 export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
   const db = useFirestore();
+  const { user } = useUser();
+  const selfUid = user?.uid ?? null;
 
   const [dialPhone, setDialPhone] = useState('');
   // Ülke kodu — kayıt ekranındaki gibi; Türkiye (+90) varsayılan.
@@ -139,6 +146,22 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
     password: creds?.sipPassword || null,
     domain: creds?.sipDomain || null,
     iceServers: creds?.iceServers,
+    // Gelen arama gate'i: atanmış kişi varsa yalnızca onun tarayıcısı çalar.
+    inboundAgentUid: ccDoc.settings?.inboundAgentUid ?? null,
+    selfUid,
+    // Gelen arama çalınca callSessions doc'u oluştur (geçmiş/KPI dolsun,
+    // not/disposition de bu session'a bağlanabilsin).
+    onInbound: (callerNumber) => {
+      void messagingFetch<{ ok: boolean; callSessionId: string }>(
+        '/api/ngo-admin/calls/originate',
+        {
+          method: 'POST',
+          body: JSON.stringify({ contactPhone: callerNumber, ngoId, direction: 'inbound' }),
+        },
+      )
+        .then((res) => setActiveSessionId(res.callSessionId))
+        .catch(() => undefined);
+    },
   });
 
   // Aktif çağrılar — STK kendi ngoId + ACTIVE_STATUSES.

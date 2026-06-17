@@ -66,6 +66,8 @@ interface CleanSettings {
   recordingEnabled?: boolean;
   kvkkAnnouncement?: boolean;
   callerIdNumber?: string;
+  inboundAgentUid?: string | null;
+  inboundAgentName?: string | null;
 }
 
 /** raw → temiz extension dizisi. Sadece bilinen alanları, normalize/clamp ederek geçirir. */
@@ -94,6 +96,13 @@ function normalizeSettings(raw: unknown): CleanSettings {
   if (s.recordingEnabled !== undefined) out.recordingEnabled = Boolean(s.recordingEnabled);
   if (s.kvkkAnnouncement !== undefined) out.kvkkAnnouncement = Boolean(s.kvkkAnnouncement);
   if (s.callerIdNumber !== undefined) out.callerIdNumber = String(s.callerIdNumber).slice(0, 32);
+  // Gelen aramayı alacak kişi — null kabul edilir ("herkes çalar"); string ise clamp.
+  if (s.inboundAgentUid !== undefined) {
+    out.inboundAgentUid = typeof s.inboundAgentUid === 'string' ? s.inboundAgentUid.slice(0, 128) : null;
+  }
+  if (s.inboundAgentName !== undefined) {
+    out.inboundAgentName = typeof s.inboundAgentName === 'string' ? s.inboundAgentName.slice(0, 120) : null;
+  }
   return out;
 }
 

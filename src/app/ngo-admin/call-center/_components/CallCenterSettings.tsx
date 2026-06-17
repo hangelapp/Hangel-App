@@ -10,13 +10,13 @@
  * Mevcut değerler ccDoc'tan (ngoCallCenter doc) gelir; useDoc aboneliği POST sonrası tazeler.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, Plus, Trash2, Hash, Phone, Mic, ShieldCheck } from 'lucide-react';
+import { Loader2, Save, Plus, Trash2, Hash, Phone, Mic, ShieldCheck, PhoneIncoming, CheckCircle2, X } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 
@@ -31,6 +31,16 @@ interface SettingsData {
   recordingEnabled?: boolean;
   kvkkAnnouncement?: boolean;
   callerIdNumber?: string;
+  inboundAgentUid?: string | null;
+  inboundAgentName?: string | null;
+}
+
+interface UserSearchRow {
+  uid: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
 }
 interface CcDocLite {
   callerIdNumber?: string;
@@ -59,6 +69,39 @@ export function CallCenterSettings({ ngoId, ccDoc }: { ngoId: string; ccDoc: CcD
   const [kvkkAnnouncement, setKvkkAnnouncement] = useState<boolean>(ccDoc.settings?.kvkkAnnouncement ?? true);
   const [callerIdNumber, setCallerIdNumber] = useState<string>(ccDoc.settings?.callerIdNumber ?? ccDoc.callerIdNumber ?? '');
   const [saving, setSaving] = useState(false);
+
+  // Gelen aramaları alan kişi — boş ise "herkes çalar" (varsayılan).
+  const [inboundAgentUid, setInboundAgentUid] = useState<string | null>(ccDoc.settings?.inboundAgentUid ?? null);
+  const [inboundAgentName, setInboundAgentName] = useState<string | null>(ccDoc.settings?.inboundAgentName ?? null);
+  const [agentQuery, setAgentQuery] = useState('');
+  const [agentResults, setAgentResults] = useState<UserSearchRow[]>([]);
+  const [agentSearchLoading, setAgentSearchLoading] = useState(false);
+
+  // STK kullanıcılarını ara — OnboardingWizard'daki desenle (telefon/isim/email).
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchUsers() {
+      if (!user || !agentQuery.trim()) {
+        setAgentResults([]);
+        return;
+      }
+      setAgentSearchLoading(true);
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch(
+          `/api/ngo-admin/users/list?q=${encodeURIComponent(agentQuery.trim())}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        if (!res.ok) return;
+        const data = (await res.json()) as { users: UserSearchRow[] };
+        if (!cancelled) setAgentResults(data.users);
+      } finally {
+        if (!cancelled) setAgentSearchLoading(false);
+      }
+    }
+    const t = setTimeout(fetchUsers, 300);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [user, agentQuery]);
 
   function updateExt(idx: number, patch: Partial<ExtensionRow>) {
     setExtensions((rows) => rows.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
@@ -92,7 +135,13 @@ export function CallCenterSettings({ ngoId, ccDoc }: { ngoId: string; ccDoc: CcD
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           extensions: cleanExt,
-          settings: { recordingEnabled, kvkkAnnouncement, callerIdNumber: callerIdNumber.trim() },
+          settings: {
+            recordingEnabled,
+            kvkkAnnouncement,
+            callerIdNumber: callerIdNumber.trim(),
+            inboundAgentUid: inboundAgentUid || null,
+            inboundAgentName: inboundAgentName || null,
+          },
         }),
       });
       const data = await res.json();
@@ -188,6 +237,73 @@ export function CallCenterSettings({ ngoId, ccDoc }: { ngoId: string; ccDoc: CcD
               className="max-w-xs font-mono"
             />
             <p className="text-[11px] text-muted-foreground">Dışarı aramalarda karşı tarafta görünecek numara.</p>
+          </div>
+
+          {/* Gelen aramaları alan kişi — boş bırakılırsa herkes çalar. */}
+          <div className="space-y-1.5">
+            <Label htmlFor="inbound-agent" className="flex items-center gap-1.5">
+              <PhoneIncoming className="h-4 w-4 text-muted-foreground" /> Gelen Aramaları Alan Kişi
+            </Label>
+            {inboundAgentUid ? (
+              <div className="flex items-center justify-between rounded-md border bg-emerald-50/50 border-emerald-200 px-3 py-2 text-sm">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  {inboundAgentName || inboundAgentUid}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => { setInboundAgentUid(null); setInboundAgentName(null); }}
+                  aria-label="Atamayı kaldır"
+                  className="h-7 w-7 text-muted-foreground hover:text-rose-600"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Input
+                  id="inbound-agent"
+                  value={agentQuery}
+                  onChange={(e) => setAgentQuery(e.target.value)}
+                  placeholder="Telefon veya isimle ara — 05XX… / Ad Soyad"
+                  autoComplete="off"
+                  className="max-w-md"
+                />
+                {agentSearchLoading && (
+                  <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Kullanıcılar aranıyor…
+                  </p>
+                )}
+                {agentResults.length > 0 && (
+                  <div className="max-h-48 max-w-md overflow-y-auto rounded-md border bg-background divide-y">
+                    {agentResults.map((u) => (
+                      <button
+                        key={u.uid}
+                        type="button"
+                        onClick={() => {
+                          setInboundAgentUid(u.uid);
+                          setInboundAgentName(u.name);
+                          setAgentQuery('');
+                          setAgentResults([]);
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-muted/40 transition-colors"
+                      >
+                        <p className="text-sm font-semibold">{u.name}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">
+                          {u.phone || 'telefon kayıtlı değil'} {u.email && `· ${u.email}`}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+            <p className="text-[11px] text-muted-foreground">
+              Gelen aramalar yalnızca seçilen kişinin tarayıcısında çalar. Boş bırakılırsa
+              santral paneli açık olan <strong>herkesin</strong> tarayıcısı çalar (varsayılan).
+            </p>
           </div>
 
           <label className="flex items-start gap-2.5 cursor-pointer text-sm">

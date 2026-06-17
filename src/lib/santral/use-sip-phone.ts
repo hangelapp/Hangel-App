@@ -37,6 +37,19 @@ export interface UseSipPhoneConfig {
   domain?: string | null;
   /** WebRTC ICE sunucuları (STUN + TURN). NAT arkasında ses için TURN şart. */
   iceServers?: RTCIceServer[] | null;
+  /**
+   * Gelen aramayı alacak kişinin uid'i. Doluysa yalnızca bu kişinin tarayıcısı
+   * çalar; diğer tarayıcılar gelen INVITE'ı reddeder. Boş/null ise "herkes çalar"
+   * (eski varsayılan davranış korunur).
+   */
+  inboundAgentUid?: string | null;
+  /** Şu anki kullanıcının uid'i (atanmış kişi gate'i için karşılaştırılır). */
+  selfUid?: string | null;
+  /**
+   * Gelen arama ÇALMAYA başladığında (state 'incoming' olmadan hemen önce)
+   * çağrılır. callSessions doc'u oluşturmak için kullanılır.
+   */
+  onInbound?: (callerNumber: string) => void;
 }
 
 export interface UseSipPhoneApi {
@@ -78,7 +91,7 @@ function sanitizeNumber(input: string): string {
  * yan etki üretmez (mevcut panel mock akışı korunur).
  */
 export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
-  const { wssUrl, username, password, domain, iceServers } = config;
+  const { wssUrl, username, password, domain, iceServers, inboundAgentUid, selfUid, onInbound } = config;
   // ICE sunucularını stabil bir anahtara çevir (effect dep'i diziye bağlı kalmasın).
   const iceServersKey = useMemo(() => JSON.stringify(iceServers ?? []), [iceServers]);
 
@@ -97,6 +110,14 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Strict-mode / hızlı unmount koruması — async init bitince hâlâ mount'ta mıyız?
   const mountedRef = useRef(true);
+  // Gelen-arama gate'i live ref'lerden okunur: registration effect'i yeniden
+  // KURMADAN güncel değerlere ulaşır (outbound/registration mantığı korunur).
+  const inboundAgentUidRef = useRef<string | null | undefined>(inboundAgentUid);
+  const selfUidRef = useRef<string | null | undefined>(selfUid);
+  const onInboundRef = useRef<typeof onInbound>(onInbound);
+  inboundAgentUidRef.current = inboundAgentUid;
+  selfUidRef.current = selfUid;
+  onInboundRef.current = onInbound;
 
   const stopTick = useCallback(() => {
     if (tickRef.current) {
@@ -193,6 +214,15 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
                 void invitation.reject().catch(() => undefined);
                 return;
               }
+              const callerNumber = invitation.remoteIdentity?.uri?.user ?? '';
+              // GATE: atanmış kişi varsa ve ben o değilsem reddet — bu tarayıcı
+              // çalmasın. inboundAgentUid boşsa "herkes çalar" (eski davranış).
+              const assigned = inboundAgentUidRef.current;
+              const me = selfUidRef.current;
+              if (assigned && me && me !== assigned) {
+                void invitation.reject().catch(() => undefined);
+                return;
+              }
               wireSession(invitation);
               const display =
                 invitation.remoteIdentity?.displayName ||
@@ -200,6 +230,8 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
                 'Bilinmeyen';
               setRemoteIdentity(display);
               setState('incoming');
+              // Gelen arama bu tarayıcıda çalıyor → callSessions doc'u oluştur.
+              onInboundRef.current?.(callerNumber);
             },
           },
         };
