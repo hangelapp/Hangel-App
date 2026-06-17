@@ -35,6 +35,12 @@ env:
     secret: OAUTH_STATE_SECRET
     availability:
       - RUNTIME
+  # STK Workspace toplu mail — per-STK SMTP App Password'ları AES-256-GCM ile
+  # şifreleyen master anahtar (Secret Manager, App Hosting'e grant verildi).
+  - variable: MAIL_CRED_ENC_KEY
+    secret: MAIL_CRED_ENC_KEY
+    availability:
+      - RUNTIME
   # WhatsApp Cloud API (Meta Business)
   - variable: WHATSAPP_ACCESS_TOKEN
     secret: WHATSAPP_ACCESS_TOKEN
