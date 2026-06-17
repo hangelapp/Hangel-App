@@ -315,7 +315,7 @@ export default function SendHangelPage() {
   const [failedCount, setFailedCount] = useState(0);
 
   const recipients = useMemo<string[]>(() => {
-    let raw: string[] = [];
+    let raw: string[];
     if (recipientTab === 'manual') {
       raw = manualText
         .split(/\r?\n|,|;/)
