@@ -125,7 +125,8 @@ export async function POST(req: NextRequest) {
       expiresAt: Date.now() + OTP_TTL_MS,
     });
 
-    const sendResult = await getSmsProvider().send({
+    const provider = getSmsProvider();
+    const sendResult = await provider.send({
       to: fullPhone,
       body: `hangel çağrı merkezi yetkilendirme kodunuz: ${otp}. Kod 10 dakika geçerlidir.`,
       senderId: process.env.NETGSM_HEADER || 'hangel',
@@ -141,7 +142,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ ok: true, masked: maskPhone(fullPhone) });
+    // SMS sağlayıcı mock iken (NETGSM env yok) gerçek SMS gitmez; test edilebilmesi
+    // için kodu yanıtta döndürürüz. NETGSM env tanımlanınca driver 'netgsm' olur ve
+    // devCode OTOMATİK kapanır — gerçek kullanıcıya kod sızmaz.
+    const devCode = provider.driver === 'mock' ? otp : undefined;
+
+    return NextResponse.json({ ok: true, masked: maskPhone(fullPhone), ...(devCode ? { devCode } : {}) });
   } catch (e) {
     console.error('[santral-contact-otp/send] internal error', e);
     return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'Sunucu hatası.' }, { status: 500 });
