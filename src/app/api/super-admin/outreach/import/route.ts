@@ -34,7 +34,7 @@ export const runtime = 'nodejs';
 
 const MAX_ROWS = 5000;
 const BATCH_SIZE = 450;
-const VALID_TYPES = ['Vakıf', 'Dernek', 'SivilToplumMüdürlüğü', 'Federasyon', 'SporKulübü', 'MailHizmet', 'Diğer'];
+const VALID_TYPES = ['Vakıf', 'Dernek', 'SivilToplumMüdürlüğü', 'Federasyon', 'SporKulübü', 'GençlikSporMüdürlüğü', 'MailHizmet', 'Diğer'];
 
 async function isSuperAdmin(req: NextRequest): Promise<{ ok: boolean; uid?: string }> {
   const authHeader = req.headers.get('authorization') || '';

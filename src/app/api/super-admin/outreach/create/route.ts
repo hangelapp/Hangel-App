@@ -29,7 +29,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const VALID_TYPES = ['Vakıf', 'Dernek', 'SivilToplumMüdürlüğü', 'Federasyon', 'SporKulübü', 'MailHizmet', 'Diğer'];
+const VALID_TYPES = ['Vakıf', 'Dernek', 'SivilToplumMüdürlüğü', 'Federasyon', 'SporKulübü', 'GençlikSporMüdürlüğü', 'MailHizmet', 'Diğer'];
 
 interface Body {
   name?: string;
