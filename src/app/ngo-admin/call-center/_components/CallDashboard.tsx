@@ -34,6 +34,8 @@ import { collection, orderBy, query, where, limit } from 'firebase/firestore';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
 import { useSantralCredentials } from '@/lib/santral/use-credentials';
 import { messagingFetch } from '@/lib/messaging/client';
+import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
+import { canonicalPhone } from '@/lib/phone-normalize';
 
 const CALL_SESSIONS = 'callSessions';
 const ACTIVE_STATUSES = ['ringing', 'in-progress'] as const;
@@ -121,6 +123,9 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
   const db = useFirestore();
 
   const [dialPhone, setDialPhone] = useState('');
+  // Ülke kodu — kayıt ekranındaki gibi; Türkiye (+90) varsayılan.
+  const [dialCountryIso, setDialCountryIso] = useState('TR');
+  const dialCode = COUNTRY_PHONE_CODES.find((c) => c.iso === dialCountryIso)?.code ?? '+90';
   // Originate API'sinden dönen son callSessions doc id'si (geçmiş/KPI için
   // canlı query zaten bu doc'u yakalar; burada ileride referans için tutulur).
   const [, setActiveSessionId] = useState<string | null>(null);
@@ -194,8 +199,11 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
   const sipBusy = sip.state === 'calling' || sip.state === 'in-call' || sip.state === 'incoming';
 
   async function handleDial() {
-    const num = dialPhone.trim();
-    if (!num) return;
+    if (!dialPhone.trim()) return;
+    // Ülke kodu + numarayı E.164'e normalize et (kayıt ekranıyla aynı mantık).
+    const national = canonicalPhone(dialPhone, dialCode);
+    if (!national) return;
+    const full = `${dialCode}${national}`;
     // Önce callSessions doc'unu oluştur (contactId YOK — ham numara araması),
     // böylece geçmiş/KPI dolar. Başarısızsa yine de aramayı başlat.
     try {
@@ -203,14 +211,14 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
         '/api/ngo-admin/calls/originate',
         {
           method: 'POST',
-          body: JSON.stringify({ contactPhone: num, ngoId }),
+          body: JSON.stringify({ contactPhone: full, ngoId }),
         },
       );
       setActiveSessionId(res.callSessionId);
     } catch {
       setActiveSessionId(null);
     }
-    void sip.call(num).catch(() => undefined);
+    void sip.call(full).catch(() => undefined);
   }
 
   return (
@@ -332,19 +340,41 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
                 </div>
               )}
 
-              {/* Numara + Ara — hat boştayken. */}
+              {/* Numara + Ara — hat boştayken. Ülke kodu seçilebilir (Türkiye varsayılan). */}
               <div className="flex flex-col gap-3 md:flex-row md:items-end">
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="dial-phone">Telefon (+90...)</Label>
-                  <Input
-                    id="dial-phone"
-                    type="tel"
-                    inputMode="tel"
-                    value={dialPhone}
-                    onChange={(e) => setDialPhone(e.target.value)}
-                    placeholder="+905551112233"
+                <div className="space-y-2">
+                  <Label htmlFor="dial-country">Ülke</Label>
+                  <select
+                    id="dial-country"
+                    value={dialCountryIso}
+                    onChange={(e) => setDialCountryIso(e.target.value)}
                     disabled={!sipIdle}
-                  />
+                    className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm md:w-48"
+                  >
+                    {COUNTRY_PHONE_CODES.map((c) => (
+                      <option key={c.iso} value={c.iso}>
+                        {c.flag} {c.country} ({c.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Label htmlFor="dial-phone">Telefon</Label>
+                  <div className="flex">
+                    <span className="inline-flex items-center rounded-l-md border border-r-0 border-input bg-muted px-3 text-sm text-muted-foreground tabular-nums">
+                      {dialCode}
+                    </span>
+                    <Input
+                      id="dial-phone"
+                      type="tel"
+                      inputMode="tel"
+                      value={dialPhone}
+                      onChange={(e) => setDialPhone(e.target.value)}
+                      placeholder="5XX XXX XX XX"
+                      disabled={!sipIdle}
+                      className="rounded-l-none"
+                    />
+                  </div>
                 </div>
                 <Button
                   onClick={() => void handleDial()}

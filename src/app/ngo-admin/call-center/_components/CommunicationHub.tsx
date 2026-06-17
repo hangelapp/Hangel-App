@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
   ShieldCheck, MessageCircle, Upload, Send, PhoneIncoming, Headphones,
@@ -27,6 +28,20 @@ import {
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+
+// 10 hazır WhatsApp mesaj şablonu — STK seçer, {{ad}} yer tutucusunu ve metni düzenleyebilir.
+const WA_TEMPLATES: Array<{ id: string; title: string; body: string }> = [
+  { id: 'event-invite', title: 'Etkinlik Daveti', body: 'Merhaba {{ad}}, [etkinlik adı] etkinliğimize [tarih] [saat]\'te sizi bekliyoruz. Katılmak ister misiniz?' },
+  { id: 'donation-thanks', title: 'Bağış Teşekkürü', body: 'Sevgili {{ad}}, yaptığınız bağış için teşekkür ederiz 🧡 Desteğinizle [proje] hayata geçiyor.' },
+  { id: 'volunteer-call', title: 'Gönüllü Çağrısı', body: 'Merhaba {{ad}}, [şehir] bölgesinde gönüllülerimize ihtiyacımız var. Katkıda bulunmak ister misiniz?' },
+  { id: 'donation-call', title: 'Bağış Çağrısı', body: 'Merhaba {{ad}}, [kampanya] kampanyamıza desteğinizi bekliyoruz. Küçük bir katkı büyük fark yaratır.' },
+  { id: 'survey', title: 'Anket / Geri Bildirim', body: 'Merhaba {{ad}}, kısa anketimize katılarak görüşlerinizi paylaşır mısınız? Yalnızca 2 dakika sürer.' },
+  { id: 'training', title: 'Eğitim Duyurusu', body: 'Merhaba {{ad}}, [konu] hakkında ücretsiz eğitimimiz [tarih] tarihinde. Kayıt için bu mesajı yanıtlayın.' },
+  { id: 'campaign', title: 'Kampanya Duyurusu', body: 'Merhaba {{ad}}, yeni [kampanya] kampanyamız başladı! Detaylar ve katılım için bize ulaşın.' },
+  { id: 'membership', title: 'Üyelik Yenileme', body: 'Merhaba {{ad}}, üyeliğinizin yenilenme zamanı geldi. Desteğinizi sürdürmek ister misiniz?' },
+  { id: 'urgent-aid', title: 'Acil Yardım Çağrısı', body: 'Merhaba {{ad}}, [bölge] için acil yardım kampanyamız başladı. Desteğiniz hayat kurtarır 🧡' },
+  { id: 'info', title: 'Bilgilendirme', body: 'Merhaba {{ad}}, [konu] hakkında sizi bilgilendirmek isteriz. Sorularınız için bu mesajı yanıtlayabilirsiniz.' },
+];
 
 export function CommunicationHub({
   ccDoc,
@@ -47,6 +62,10 @@ export function CommunicationHub({
   const [verified, setVerified] = useState(false);
   const [err, setErr] = useState('');
   const [masked, setMasked] = useState('');
+
+  // Faz 4 — şablon seçimi + düzenleme
+  const [tplId, setTplId] = useState<string>('');
+  const [tplBody, setTplBody] = useState<string>('');
 
   async function sendOtp() {
     if (!user || !phone.trim()) return;
@@ -158,19 +177,65 @@ export function CommunicationHub({
         </Link>
       </StepCard>
 
-      {/* FAZ 4 — Şablon + hedef + gönder */}
-      <StepCard n={4} icon={Send} title="Şablon seç, hedefle, gönder">
+      {/* FAZ 4 — Şablon seç + düzenle + gönder */}
+      <StepCard n={4} icon={Send} title="Şablon seç, düzenle, gönder">
         <p className="text-sm text-muted-foreground">
-          Onaylı WhatsApp şablonu seç (örn. &quot;Etkinlik daveti&quot;), kitleyi daralt (örn. &quot;Adana ili gönüllüleri&quot;) ve gönder.
+          Hazır şablonlardan birini seç, metni dilediğin gibi düzenle. <span className="font-mono">{'{{ad}}'}</span> kişinin adıyla otomatik değişir.
         </p>
-        <div className="mt-2 rounded-md bg-muted/40 border p-2.5 text-xs text-muted-foreground italic">
-          📱 Yeşilay: &quot;Merhaba Ali, yarın saat 14:00 Adana etkinliğimize bekliyoruz. Katılacak mısın?&quot; → 350 kişiye gider
+
+        {/* 10 şablon */}
+        <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+          {WA_TEMPLATES.map((t) => {
+            const active = tplId === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => { setTplId(t.id); setTplBody(t.body); }}
+                className={cn(
+                  'rounded-md border px-2.5 py-2 text-left text-xs transition hover:bg-muted/40',
+                  active ? 'border-emerald-500 bg-emerald-50/50 font-semibold' : 'border-border',
+                )}
+              >
+                {active && <CheckCircle2 className="inline h-3 w-3 mr-1 text-emerald-600" />}
+                {t.title}
+              </button>
+            );
+          })}
         </div>
+
+        {/* Seçilen şablonu düzenle + önizleme */}
+        {tplId && (
+          <div className="mt-3 space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">Mesaj metni (düzenlenebilir)</label>
+            <Textarea
+              value={tplBody}
+              onChange={(e) => setTplBody(e.target.value)}
+              rows={4}
+              className="text-sm"
+              maxLength={1024}
+            />
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{tplBody.length}/1024 karakter</span>
+              <button type="button" onClick={() => { const t = WA_TEMPLATES.find((x) => x.id === tplId); if (t) setTplBody(t.body); }} className="hover:underline">
+                Şablona sıfırla
+              </button>
+            </div>
+            <div className="rounded-md bg-emerald-50/40 border border-emerald-200 p-2.5 text-xs">
+              <span className="font-semibold">Önizleme: </span>
+              <span className="text-muted-foreground italic">
+                📱 {tplBody.replace(/\{\{\s*ad\s*\}\}/gi, 'Ali')}
+              </span>
+            </div>
+          </div>
+        )}
+
         <Link href="/ngo-admin/call-center/lists" className="inline-flex">
-          <Button variant="outline" size="sm" className="mt-2">
-            Listeden WhatsApp gönderimi <ChevronRight className="h-4 w-4 ml-1" />
+          <Button variant="outline" size="sm" className="mt-3" disabled={!tplBody.trim()}>
+            Listeye git ve bu mesajı gönder <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </Link>
+        {!tplId && <p className="text-[11px] text-muted-foreground mt-1.5">Önce bir şablon seç.</p>}
       </StepCard>
 
       {/* FAZ 5 — Cevaplar → çağrı sırası */}

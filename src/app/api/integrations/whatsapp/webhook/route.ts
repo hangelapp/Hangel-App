@@ -24,6 +24,7 @@ import crypto from 'crypto';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, type Firestore } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { getWhatsAppProvider } from '@/lib/whatsapp/index';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,6 +36,103 @@ const CONVERSATION_WINDOW_MS = 24 * 60 * 60 * 1000;
 const POSITIVE_REPLY_KEYWORDS = new Set([
   '1', 'evet', 'tamam', 'olur', 'kabul', 'katılırım', 'katilirim', 'gelirim', 'isterim', 'ok',
 ]);
+
+/**
+ * "Hayır" niyeti taşıyan ifadeler — tam kelime eşleşmesi yapılmaz, mesaj
+ * metninin içinde geçmesi yeterli (substring). tr küçük harfe çevrilmiş metinde
+ * aranır. Bu eşleşince kişiden müsait saat istenir (callback akışı).
+ */
+const NEGATIVE_REPLY_SUBSTRINGS = [
+  'hayır', 'hayir', 'olmaz', 'istemiyorum', 'uygun değil', 'yok', 'katılamam', 'gelemem', 'no',
+];
+
+function isNegativeReply(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t) return false;
+  return NEGATIVE_REPLY_SUBSTRINGS.some((kw) => t.includes(kw));
+}
+
+/**
+ * Serbest metinden best-effort randevu zamanı çıkar. Asla throw etmez.
+ *  - HH:MM (veya H.MM / HH veya "saat 14") → bugün/yarın o saat (geçmişse +1 gün)
+ *  - "yarın" → ertesi gün (saat yakalandıysa o saat, yoksa şu anki saat)
+ *  - "bugün" → bugün (geçmiş saatse yine bugün bırakılır, operatör reason'dan görür)
+ *  - hafta günü (pazartesi..pazar) → o güne ilerle
+ * Hiçbiri eşleşmezse fallback: şu andan +24 saat.
+ * Ham metin reason'da saklanır; bu fonksiyon yalnızca kabaca bir Date üretir.
+ */
+const WEEKDAYS_TR = ['pazar', 'pazartesi', 'salı', 'çarşamba', 'perşembe', 'cuma', 'cumartesi'];
+
+function parseCallbackTime(raw: string, now: Date = new Date()): Date {
+  const text = raw.toLowerCase();
+  const result = new Date(now.getTime());
+
+  // 1) Saat: "14:30", "14.30", "saat 14", "9da" gibi → ilk makul saati al.
+  let hour: number | null = null;
+  let minute = 0;
+  const hm = text.match(/(\d{1,2})[:.](\d{2})/);
+  if (hm) {
+    const h = Number(hm[1]);
+    const m = Number(hm[2]);
+    if (h >= 0 && h <= 23 && m >= 0 && m <= 59) { hour = h; minute = m; }
+  } else {
+    const hOnly = text.match(/(?:saat\s*)?\b(\d{1,2})\b/);
+    if (hOnly) {
+      const h = Number(hOnly[1]);
+      if (h >= 0 && h <= 23) { hour = h; minute = 0; }
+    }
+  }
+
+  // 2) Gün ipucu: yarın / bugün / hafta günü.
+  let dayOffset: number | null = null;
+  if (text.includes('yarın') || text.includes('yarin')) {
+    dayOffset = 1;
+  } else if (text.includes('bugün') || text.includes('bugun')) {
+    dayOffset = 0;
+  } else {
+    for (let i = 0; i < WEEKDAYS_TR.length; i += 1) {
+      if (text.includes(WEEKDAYS_TR[i])) {
+        const diff = (i - now.getDay() + 7) % 7;
+        dayOffset = diff === 0 ? 7 : diff; // bugünün günü söylendiyse haftaya
+        break;
+      }
+    }
+  }
+
+  // Hiçbir sinyal yoksa → fallback +24 saat.
+  if (hour === null && dayOffset === null) {
+    return new Date(now.getTime() + 24 * 3600 * 1000);
+  }
+
+  if (dayOffset !== null) {
+    result.setDate(result.getDate() + dayOffset);
+  }
+  if (hour !== null) {
+    result.setHours(hour, minute, 0, 0);
+    // Sadece saat verildi ve geçmişte kaldıysa yarına kaydır.
+    if (dayOffset === null && result.getTime() <= now.getTime()) {
+      result.setDate(result.getDate() + 1);
+    }
+  }
+  return result;
+}
+
+/**
+ * Webhook içinden serbest-metin WhatsApp yanıtı gönder (24s müşteri-hizmeti
+ * penceresi içinde serbest metin serbest). Token apphosting env fallback'ten
+ * gelir (whatsapp-send route ile aynı kaynak). Hata fırlatmaz — false döner.
+ */
+async function sendWhatsAppText(metaPhoneNumberId: string, to: string, body: string): Promise<boolean> {
+  const accessToken = (process.env.WHATSAPP_DEFAULT_TOKEN ?? process.env.META_WA_ACCESS_TOKEN ?? '').trim();
+  if (!accessToken || !metaPhoneNumberId || !to || !body) return false;
+  try {
+    await getWhatsAppProvider({ accessToken, phoneNumberId: metaPhoneNumberId }).sendText({ to, body });
+    return true;
+  } catch (err) {
+    console.error('[wa-webhook] sendText failed', err instanceof Error ? err.message : 'unknown');
+    return false;
+  }
+}
 
 interface MetaWebhookEnvelope {
   object?: string;
@@ -146,6 +244,7 @@ async function applyInboundMessage(
   db: Firestore,
   tenant: { ngoId: string },
   msg: NonNullable<NonNullable<NonNullable<MetaWebhookEnvelope['entry']>[number]['changes']>[number]['value']>['messages'] extends Array<infer M> | undefined ? M : never,
+  metaPhoneNumberId: string,
   contactNameHint?: string,
 ): Promise<void> {
   const fromRaw = typeof msg.from === 'string' ? msg.from : '';
@@ -227,6 +326,61 @@ async function applyInboundMessage(
     } catch (err) {
       console.error('[wa-webhook] priority flag set failed', err instanceof Error ? err.message : 'unknown');
     }
+    return; // pozitif yanıt callback durum makinesini tetiklemez
+  }
+
+  // "Hayır → müsait saat → randevu" durum makinesi.
+  // Yalnızca bilinen kişiden gelen serbest metin/buton yanıtlarında çalışır.
+  if (!contact || (type !== 'text' && type !== 'button-reply')) return;
+
+  const contactRef = db.collection(COLLECTIONS.santralContacts).doc(contact.id);
+  let awaitingCallbackTime: boolean;
+  try {
+    const snap = await contactRef.get();
+    awaitingCallbackTime = snap.exists && snap.get('awaitingCallbackTime') === true;
+  } catch (err) {
+    console.error('[wa-webhook] contact awaiting flag read failed', err instanceof Error ? err.message : 'unknown');
+    return;
+  }
+
+  if (awaitingCallbackTime) {
+    // 1) Bu mesaj "müsait saat" → randevu (callback) oluştur.
+    const scheduledAt = parseCallbackTime(body);
+    try {
+      await db.collection(COLLECTIONS.santralScheduledCallbacks).add({
+        ngoId: tenant.ngoId,
+        contactId: contact.id,
+        contactName: contact.name ?? null,
+        scheduledAt,
+        status: 'pending',
+        reason: `WhatsApp talebi — müsait saat: ${body}`,
+        source: 'whatsapp-no-callback',
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    } catch (err) {
+      console.error('[wa-webhook] callback create failed', err instanceof Error ? err.message : 'unknown');
+    }
+    try {
+      await contactRef.set({ awaitingCallbackTime: FieldValue.delete(), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    } catch (err) {
+      console.error('[wa-webhook] awaiting flag clear failed', err instanceof Error ? err.message : 'unknown');
+    }
+    await sendWhatsAppText(metaPhoneNumberId, phone, 'Teşekkürler 🧡 Belirttiğiniz saate not aldık, sizi arayacağız.');
+    return;
+  }
+
+  // 2) Negatif yanıt → müsait saat sor, kişiyi "awaiting" durumuna al.
+  if (isNegativeReply(body)) {
+    try {
+      await contactRef.set({
+        awaitingCallbackTime: true,
+        lastWhatsAppResponse: 'no',
+        updatedAt: FieldValue.serverTimestamp(),
+      }, { merge: true });
+    } catch (err) {
+      console.error('[wa-webhook] awaiting flag set failed', err instanceof Error ? err.message : 'unknown');
+    }
+    await sendWhatsAppText(metaPhoneNumberId, phone, 'Anladık 🧡 Size uygun bir gün/saat söyler misiniz? O saatte sizi arayalım.');
   }
 }
 
@@ -358,7 +512,7 @@ export async function POST(req: NextRequest) {
       if (Array.isArray(value.messages)) {
         const contactNameHint = value.contacts?.[0]?.profile?.name;
         for (const msg of value.messages) {
-          try { await applyInboundMessage(db, tenant, msg, contactNameHint); }
+          try { await applyInboundMessage(db, tenant, msg, metaPhoneId, contactNameHint); }
           catch (err) { console.error('[wa-webhook] inbound apply failed', err instanceof Error ? err.message : 'unknown'); }
         }
       }
