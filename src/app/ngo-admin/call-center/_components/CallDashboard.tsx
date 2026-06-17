@@ -33,6 +33,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query, where, limit } from 'firebase/firestore';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
 import { useSantralCredentials } from '@/lib/santral/use-credentials';
+import { messagingFetch } from '@/lib/messaging/client';
 
 const CALL_SESSIONS = 'callSessions';
 const ACTIVE_STATUSES = ['ringing', 'in-progress'] as const;
@@ -120,6 +121,9 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
   const db = useFirestore();
 
   const [dialPhone, setDialPhone] = useState('');
+  // Originate API'sinden dönen son callSessions doc id'si (geçmiş/KPI için
+  // canlı query zaten bu doc'u yakalar; burada ileride referans için tutulur).
+  const [, setActiveSessionId] = useState<string | null>(null);
 
   // GERÇEK WebRTC çevirici — SIP/TURN credential'ları auth korumalı endpoint'ten
   // gelir (tenant-özel sipUsername fallback'i sunucuda çözülür; bundle'da YOK).
@@ -189,9 +193,23 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
   const sipIdle = sip.state === 'registered' || sip.state === 'ended';
   const sipBusy = sip.state === 'calling' || sip.state === 'in-call' || sip.state === 'incoming';
 
-  function handleDial() {
+  async function handleDial() {
     const num = dialPhone.trim();
     if (!num) return;
+    // Önce callSessions doc'unu oluştur (contactId YOK — ham numara araması),
+    // böylece geçmiş/KPI dolar. Başarısızsa yine de aramayı başlat.
+    try {
+      const res = await messagingFetch<{ ok: boolean; callSessionId: string }>(
+        '/api/ngo-admin/calls/originate',
+        {
+          method: 'POST',
+          body: JSON.stringify({ contactPhone: num, ngoId }),
+        },
+      );
+      setActiveSessionId(res.callSessionId);
+    } catch {
+      setActiveSessionId(null);
+    }
     void sip.call(num).catch(() => undefined);
   }
 
@@ -329,7 +347,7 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
                   />
                 </div>
                 <Button
-                  onClick={handleDial}
+                  onClick={() => void handleDial()}
                   disabled={!sipIdle || !dialPhone.trim()}
                   className="text-white"
                   style={{ backgroundColor: '#f34723' }}

@@ -103,6 +103,31 @@ service cloud.firestore {
       }
     }
 
+    // Çağrı oturumları — dashboard KPI/geçmiş client'tan okur (doc'ta ngoId alanı var).
+    // Okuma: super-admin/sahip her STK; ngo-admin yalnız kendi ngoId'sini. Yazma: Admin SDK.
+    match /callSessions/{sessionId} {
+      allow read: if isSuperAdmin()
+        || (isSignedIn() && request.auth.token.email == 'ismailhilmi@hangel.org')
+        || (isSignedIn()
+            && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId);
+      allow write: if false;
+      match /{sub=**} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+    }
+
+    // Santral paket listesi + numara havuzu — onboarding wizard client'tan okur (hassas değil).
+    match /santralPackages/{pkgId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+    match /santralNumberPool/{numId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
     // STK'lar, Markalar, Gönderiler, Gönüllülük, Etkinlikler ve Kütüphane - Giriş yapanlar okuyabilir ve listeleyebilir
     // PDF-15: Bazı kayıtlarda adminUserId boş; kullanıcı users/{uid}.managedNgoId üzerinden
     // eşleştiriliyor. managedNgoId fallback inline pattern (storage.rules ile uyumlu).

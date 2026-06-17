@@ -123,14 +123,16 @@ export async function GET(req: NextRequest) {
         phone?: string;
         name?: string;
         attempts?: number;
-        lastWhatsAppResponse?: string;
+        priority?: boolean;
+        lastPositiveReplyAt?: unknown;
         lastWhatsAppSentAt?: unknown;
       };
       phone = c.phone ?? '';
       attempts = typeof c.attempts === 'number' ? c.attempts : 0;
       if (!contactName) contactName = c.name ?? '';
-      if (c.lastWhatsAppResponse === 'yes' || c.lastWhatsAppResponse === 'no') {
-        waResponse = c.lastWhatsAppResponse;
+      // Webhook olumlu cevapta priority=true + lastPositiveReplyAt yazar.
+      if (c.priority === true || c.lastPositiveReplyAt != null) {
+        waResponse = 'yes';
       }
       if (!waResponse && c.lastWhatsAppSentAt instanceof Timestamp) {
         waPending = c.lastWhatsAppSentAt.toMillis() < oneDayAgo.toMillis();
@@ -170,14 +172,13 @@ export async function GET(req: NextRequest) {
       const d = doc.data() as {
         name?: string;
         phone?: string;
-        lastWhatsAppResponse?: string;
+        priority?: boolean;
+        lastPositiveReplyAt?: unknown;
         lastWhatsAppSentAt?: unknown;
       };
       if (!d.phone) continue;
-      const waResponse =
-        d.lastWhatsAppResponse === 'yes' || d.lastWhatsAppResponse === 'no'
-          ? d.lastWhatsAppResponse
-          : null;
+      const waResponse: 'yes' | 'no' | null =
+        d.priority === true || d.lastPositiveReplyAt != null ? 'yes' : null;
       const waPending =
         !waResponse &&
         d.lastWhatsAppSentAt instanceof Timestamp &&
@@ -200,6 +201,7 @@ export async function GET(req: NextRequest) {
   // 3) Retry'lar — lastDisposition no-answer|busy, attempts < 3.
   const retryItems: QueueItem[] = [];
   if (remainingAfterNew > 0) {
+    // NOT: composite index gerekiyor (ngoId,lastDisposition,attempts)
     const retrySnap = await db
       .collection(COLLECTIONS.santralContacts)
       .where('ngoId', '==', ctx.ngoId)
@@ -215,14 +217,13 @@ export async function GET(req: NextRequest) {
         phone?: string;
         attempts?: number;
         lastDisposition?: string;
-        lastWhatsAppResponse?: string;
+        priority?: boolean;
+        lastPositiveReplyAt?: unknown;
         lastWhatsAppSentAt?: unknown;
       };
       if (!d.phone) continue;
-      const waResponse =
-        d.lastWhatsAppResponse === 'yes' || d.lastWhatsAppResponse === 'no'
-          ? d.lastWhatsAppResponse
-          : null;
+      const waResponse: 'yes' | 'no' | null =
+        d.priority === true || d.lastPositiveReplyAt != null ? 'yes' : null;
       const waPending =
         !waResponse &&
         d.lastWhatsAppSentAt instanceof Timestamp &&
@@ -241,7 +242,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // WA cevap verenler önce sıralanır (kalan sıra korunur).
+  // Olumlu cevap verenler (priority=true) önce sıralanır (kalan sıra korunur).
   const combined = [...callbackItems, ...newItems, ...retryItems];
   combined.sort((a, b) => {
     const aYes = a.whatsAppResponse === 'yes' ? 1 : 0;
@@ -250,20 +251,22 @@ export async function GET(req: NextRequest) {
   });
   const queue = combined.slice(0, MAX_QUEUE);
 
-  // WA cevap bekleyen sayısı — tenant geneli aggregate (queue dışı da sayar).
+  // WA gönderilmiş kişi sayısı — tenant geneli aggregate (queue dışı da sayar).
+  // Tek alanlı eşitsizlik (lastWhatsAppSentAt != null) → composite index gerekmez,
+  // FAILED_PRECONDITION fırlatmaz. (Eski sorgu yok-alan lastWhatsAppResponse'a
+  // bakıyordu ve iki-alanlı index istiyordu; o yüzden hep 0 dönüyordu.)
   // try hem de catch atadığı için başlangıç değeri vermiyoruz (no-useless-assignment).
   let whatsAppPendingTotal: number;
   try {
     const pendingAgg = await db
       .collection(COLLECTIONS.santralContacts)
       .where('ngoId', '==', ctx.ngoId)
-      .where('lastWhatsAppSentAt', '<', oneDayAgo)
-      .where('lastWhatsAppResponse', '==', null)
+      .where('lastWhatsAppSentAt', '!=', null)
       .count()
       .get();
     whatsAppPendingTotal = pendingAgg.data().count;
   } catch {
-    // count agg desteklenmezse 0 dön.
+    // count agg desteklenmez / index yoksa 0 dön.
     whatsAppPendingTotal = 0;
   }
 

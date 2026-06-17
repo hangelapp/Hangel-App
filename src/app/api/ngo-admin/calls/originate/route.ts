@@ -12,9 +12,14 @@
  * (provider callback'i ile ileride doldurulur).
  *
  * Body:
- *   - contactPhone: string  (E.164 normalize, +90... beklenir)
- *   - contactId:    string  (CRM contact doc id)
- *   - notes?:       string  (opsiyonel)
+ *   - contactPhone: string   (E.164 normalize, +90... beklenir)
+ *   - contactId?:   string   (CRM contact doc id — opsiyonel; ham numara
+ *                             aramasında verilmeyebilir, o zaman session
+ *                             yalnızca calledNumber ile oluşur)
+ *   - ngoId?:       string   (opsiyonel hedef STK; yalnızca owner/super-admin
+ *                             ya da kendi managedNgoId'si ise dikkate alınır)
+ *   - direction?:   'inbound' | 'outbound'  (default 'outbound')
+ *   - notes?:       string   (opsiyonel)
  *
  * Yanıt: { ok, callSessionId, status, providerCallId? }
  */
@@ -34,13 +39,17 @@ const CONCURRENT_LIMIT = 2;
 interface OriginateBody {
   contactPhone?: unknown;
   contactId?: unknown;
+  ngoId?: unknown;
+  direction?: unknown;
   notes?: unknown;
 }
 
 interface AgentContext {
   uid: string;
-  ngoId: string;
+  /** Caller'ın kendi yönettiği STK (users/{uid}.managedNgoId). */
+  managedNgoId: string;
   role?: string;
+  email?: string;
 }
 
 interface ProviderOriginateResult {
@@ -64,13 +73,13 @@ async function authorize(req: NextRequest): Promise<AgentContext | null> {
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
   if (!idToken) return null;
   try {
-    const decoded = await getAdminAuth().verifyIdToken(idToken) as { uid: string; role?: string };
+    const decoded = await getAdminAuth().verifyIdToken(idToken) as { uid: string; role?: string; email?: string };
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
     const d = snap.data() as { role?: string; managedNgoId?: string };
     if (!d?.managedNgoId) return null;
     if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
-    return { uid: decoded.uid, ngoId: d.managedNgoId, role: d.role };
+    return { uid: decoded.uid, managedNgoId: d.managedNgoId, role: d.role, email: decoded.email };
   } catch {
     return null;
   }
@@ -126,11 +135,13 @@ export async function POST(req: NextRequest) {
   }
 
   const rawPhone = typeof body.contactPhone === 'string' ? body.contactPhone : '';
-  const contactId = typeof body.contactId === 'string' ? body.contactId.trim() : '';
+  // contactId OPSİYONEL — dashboard'dan ham numara aramasında verilmeyebilir.
+  const contactId = typeof body.contactId === 'string' && body.contactId.trim() ? body.contactId.trim() : null;
   const notes = typeof body.notes === 'string' ? body.notes.slice(0, 2000) : '';
-  if (!rawPhone || !contactId) {
+  const direction = body.direction === 'inbound' ? 'inbound' : 'outbound';
+  if (!rawPhone) {
     return NextResponse.json(
-      { errorCode: 'BAD_INPUT', message: 'contactPhone ve contactId zorunlu.' },
+      { errorCode: 'BAD_INPUT', message: 'contactPhone zorunlu.' },
       { status: 400 },
     );
   }
@@ -139,10 +150,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ errorCode: 'BAD_PHONE', message: 'Telefon numarası geçersiz.' }, { status: 400 });
   }
 
+  // Hedef STK çözümü: body.ngoId yalnızca owner/super-admin ya da caller'ın
+  // kendi managedNgoId'si ise kabul edilir; aksi halde caller'ın managedNgoId'si.
+  const requestedNgoId = typeof body.ngoId === 'string' && body.ngoId.trim() ? body.ngoId.trim() : '';
+  const isOwner = ctx.role === 'super-admin' || ctx.email === 'ismailhilmi@hangel.org';
+  const targetNgoId =
+    requestedNgoId && (isOwner || ctx.managedNgoId === requestedNgoId)
+      ? requestedNgoId
+      : ctx.managedNgoId;
+  if (!targetNgoId) {
+    return NextResponse.json(
+      { errorCode: 'NO_TARGET_NGO', message: 'Hedef STK çözülemedi.' },
+      { status: 400 },
+    );
+  }
+
   const db = getAdminFirestore();
 
   // STK call-center tenant durumu — aktif değilse RED.
-  const ccSnap = await db.collection(NGO_CALL_CENTER).doc(ctx.ngoId).get();
+  const ccSnap = await db.collection(NGO_CALL_CENTER).doc(targetNgoId).get();
   if (!ccSnap.exists) {
     return NextResponse.json(
       { errorCode: 'NOT_ONBOARDED', message: 'Çağrı merkezi başvurunuz bulunmuyor.' },
@@ -172,7 +198,7 @@ export async function POST(req: NextRequest) {
   // Concurrent limit — bu STK'nın ringing/in-progress oturumları say.
   const activeSnap = await db
     .collection(CALL_SESSIONS)
-    .where('ngoId', '==', ctx.ngoId)
+    .where('ngoId', '==', targetNgoId)
     .where('status', 'in', ['ringing', 'in-progress'])
     .get();
   if (activeSnap.size >= CONCURRENT_LIMIT) {
@@ -191,8 +217,8 @@ export async function POST(req: NextRequest) {
 
   await sessionRef.set({
     agentUid: ctx.uid,
-    ngoId: ctx.ngoId,
-    contactId,
+    ngoId: targetNgoId,
+    contactId: contactId ?? null,
     calledNumber: toNumber,
     callerNumber: ccData.callerIdNumber,
     startedAt: FieldValue.serverTimestamp(),
@@ -201,7 +227,7 @@ export async function POST(req: NextRequest) {
     outcome: null,
     recordingStorageUrl: null,
     status: 'ringing',
-    direction: 'outbound',
+    direction,
     notes: notes || null,
     providerId: ccData.providerId ?? null,
     providerCallId: null,
@@ -215,7 +241,7 @@ export async function POST(req: NextRequest) {
     providerResult = await adapter.originate({
       fromNumber: ccData.callerIdNumber,
       toNumber,
-      ngoId: ctx.ngoId,
+      ngoId: targetNgoId,
       agentUid: ctx.uid,
       callSessionId: sessionRef.id,
     });
@@ -239,8 +265,8 @@ export async function POST(req: NextRequest) {
     timestamp: FieldValue.serverTimestamp(),
     ipAddress: ip,
     details: {
-      ngoId: ctx.ngoId,
-      contactId,
+      ngoId: targetNgoId,
+      contactId: contactId ?? null,
       calledNumber: toNumber,
       callerNumber: ccData.callerIdNumber,
       providerId: ccData.providerId ?? null,

@@ -57,6 +57,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
 import { useSantralCredentials } from '@/lib/santral/use-credentials';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 interface ContactDetail {
   id: string;
@@ -196,6 +197,11 @@ export default function ActiveCallPage() {
   const params = useParams<{ contactId: string }>();
   const contactId = params?.contactId ?? '';
   const { toast } = useToast();
+
+  // Aktif kurum — STK ise originate'e hedef ngoId olarak gönderilir
+  // (super-admin başka STK'ya bakıyorsa doğru tenant'ta session açılsın).
+  const activeEntity = useActiveEntity();
+  const activeNgoId = activeEntity.kind === 'ngo' ? activeEntity.id : null;
 
   // --- WebRTC santral entegrasyonu ---------------------------------------
   // SIP/TURN credential'ları auth korumalı endpoint'ten gelir; tenant-özel
@@ -421,10 +427,8 @@ export default function ActiveCallPage() {
     }
   }, []);
 
-  function handleStartCall() {
+  async function handleStartCall() {
     if (!contact) return;
-    const sid = `${sipEnabled ? 'call' : 'mock'}-${contactId}-${Date.now()}`;
-    setSessionId(sid);
     setSeconds(0);
     setNotes([]);
     setDisposition('');
@@ -432,11 +436,31 @@ export default function ActiveCallPage() {
     // GERÇEK arama: env + credential tam → SIP.js ile geçide bağlan.
     if (sipEnabled) {
       setCallState('ringing');
+      // Önce callSessions doc'unu originate API'sinden oluştur ki not/disposition
+      // gerçek session id'sine yazılsın (dashboard geçmiş/KPI dolsun).
+      try {
+        const res = await messagingFetch<{ ok: boolean; callSessionId: string }>(
+          '/api/ngo-admin/calls/originate',
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              contactPhone: contact.phone,
+              contactId,
+              ...(activeNgoId ? { ngoId: activeNgoId } : {}),
+            }),
+          },
+        );
+        setSessionId(res.callSessionId);
+      } catch {
+        // Originate başarısızsa not/disposition pasif kalır; arama yine başlasın.
+        setSessionId(null);
+      }
       void sip.call(contact.phone).catch(() => undefined);
       return;
     }
 
     // GATE kapalı (env/credential yok) → mevcut mock akışı korunur.
+    setSessionId(`mock-${contactId}-${Date.now()}`);
     setCallState('ringing');
     setTimeout(() => {
       setCallState((cur) => (cur === 'ringing' ? 'in-progress' : cur));
@@ -743,7 +767,7 @@ export default function ActiveCallPage() {
               {callState === 'idle' && (
                 <>
                   <Button
-                    onClick={handleStartCall}
+                    onClick={() => void handleStartCall()}
                     size="lg"
                     className="bg-emerald-600 hover:bg-emerald-700 text-white h-24 w-24 rounded-full text-base flex flex-col items-center justify-center gap-1"
                   >
@@ -816,7 +840,7 @@ export default function ActiveCallPage() {
             )}
 
             {callState === 'ended' && (
-              <Button onClick={handleStartCall} variant="outline" className="w-full">
+              <Button onClick={() => void handleStartCall()} variant="outline" className="w-full">
                 <Phone className="h-4 w-4 mr-2" /> Tekrar Ara
               </Button>
             )}
