@@ -56,6 +56,103 @@
         { "fieldPath": "il", "order": "ASCENDING" },
         { "fieldPath": "nameLower", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "santralContactLists",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "importedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "santralContacts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "santralContacts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "lastDisposition", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "santralContacts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "listIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "santralContacts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "listIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "lastDisposition", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "santralContacts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "attempts", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "santralScheduledCallbacks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "scheduledAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "santralScheduledCallbacks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "scheduledAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "callSessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "contactId", "order": "ASCENDING" },
+        { "fieldPath": "startedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "callSessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "recordingStorageUrl", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "callSessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "disposition", "order": "ASCENDING" },
+        { "fieldPath": "recordingStorageUrl", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
