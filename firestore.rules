@@ -1093,6 +1093,39 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // WhatsApp Business (WABA) — multi-tenant.
+    // Read: STK kendi ngoId'sinin docları + super-admin. Write: yalnızca
+    // Admin SDK (api/whatsapp/* + webhook). Client doğrudan yazamaz çünkü
+    // accessToken/wamid + Meta API ile koordinasyon gerekiyor.
+    match /wabaPhoneNumbers/{id} {
+      allow read: if isSignedIn() && (
+        resource.data.ngoId == request.auth.token.managedNgoId ||
+        isSuperAdmin()
+      );
+      allow write: if false;
+    }
+    match /wabaTemplates/{id} {
+      allow read: if isSignedIn() && (
+        resource.data.ngoId == request.auth.token.managedNgoId ||
+        isSuperAdmin()
+      );
+      allow write: if false;
+    }
+    match /wabaConversations/{id} {
+      allow read: if isSignedIn() && (
+        resource.data.ngoId == request.auth.token.managedNgoId ||
+        isSuperAdmin()
+      );
+      allow write: if false;
+      match /messages/{msgId} {
+        allow read: if isSignedIn() && (
+          get(/databases/$(database)/documents/wabaConversations/$(id)).data.ngoId == request.auth.token.managedNgoId ||
+          isSuperAdmin()
+        );
+        allow write: if false;
+      }
+    }
+
     // Global Yazma Erişimi (Sadece Super Admin)
     match /{allPaths=**} {
       allow write: if isSuperAdmin();

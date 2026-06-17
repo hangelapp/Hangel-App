@@ -250,6 +250,17 @@ export const COLLECTIONS = {
   // Doc: { ngoId, contactId, contactName, scheduledAt: Timestamp, reason?, createdBy, status: 'pending'|'done'|'cancelled', createdAt }
   santralScheduledCallbacks: 'santralScheduledCallbacks',
 
+  // WhatsApp Business — multi-tenant her STK kendi WABA hesabı + numarası
+  wabaPhoneNumbers: 'wabaPhoneNumbers',
+  // STK'nın Meta'ya onayda olan/onaylı şablonları. Doc: ngoId, name, category,
+  // language, bodyText, status (draft|pending|approved|rejected), wabaTemplateId
+  wabaTemplates: 'wabaTemplates',
+  // Bir kişi ile olan konuşma threadi. Doc id = `${ngoId}__${contactPhone}`
+  // Sub: messages — direction, type, body, status, timestamp
+  wabaConversations: 'wabaConversations',
+  // Sub-collection adı (messages) sabiti
+  wabaMessages: 'messages',
+
   // Outreach / Tanıtım kontak veritabanı. Sivil Toplum Müdürlükleri, kargo
   // şirketleri, mail hizmet sağlayıcıları, manuel eklenen STK/vakıf vd. için
   // outreach kayıtları. registryDernekler + registryVakiflar zaten resmi

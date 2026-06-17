@@ -24,6 +24,18 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import {
   ArrowLeft,
   Phone,
   PhoneOff,
@@ -37,6 +49,8 @@ import {
   Mic,
   MicOff,
   PhoneIncoming,
+  MessageCircle,
+  Send,
 } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
 import { useToast } from '@/hooks/use-toast';
@@ -75,6 +89,36 @@ interface NoteRow {
   agentName: string | null;
   text: string;
   timestamp: number | null;
+}
+
+interface WhatsAppMessage {
+  id: string;
+  direction: 'inbound' | 'outbound';
+  type: string;
+  body: string | null;
+  templateName: string | null;
+  mediaUrl: string | null;
+  status: string | null;
+  failureReason: string | null;
+  timestamp: string | null;
+}
+
+interface WhatsAppHistoryResponse {
+  conversation: {
+    id: string;
+    lastMessageAt: string | null;
+    conversationWindowExpiresAt: string | null;
+  } | null;
+  messages: WhatsAppMessage[];
+}
+
+interface WhatsAppTemplateRow {
+  id: string;
+  name: string;
+  language: string;
+  bodyText: string;
+  variables: string[];
+  status: string;
 }
 
 type CallState = 'idle' | 'ringing' | 'in-progress' | 'ended';
@@ -129,6 +173,25 @@ function formatNoteTime(ms: number | null): string {
   }
 }
 
+function formatWhatsAppTime(iso: string | null): string {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleString('tr-TR', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return '';
+  }
+}
+
+function extractTemplateVariableNames(body: string): string[] {
+  const matches = body.match(/\{\{([^}]+)\}\}/g) ?? [];
+  return matches.map((m) => m.replace(/[{}]/g, '').trim()).filter(Boolean);
+}
+
 export default function ActiveCallPage() {
   const params = useParams<{ contactId: string }>();
   const contactId = params?.contactId ?? '';
@@ -176,6 +239,17 @@ export default function ActiveCallPage() {
   const [callbackReason, setCallbackReason] = useState('');
   const [savingCallback, setSavingCallback] = useState(false);
 
+  // WhatsApp entegrasyonu
+  const [waLoading, setWaLoading] = useState(false);
+  const [waMessages, setWaMessages] = useState<WhatsAppMessage[]>([]);
+  const [waError, setWaError] = useState<string | null>(null);
+  const [waTemplates, setWaTemplates] = useState<WhatsAppTemplateRow[]>([]);
+  const [waTemplatesLoading, setWaTemplatesLoading] = useState(false);
+  const [waSelectedTemplateId, setWaSelectedTemplateId] = useState<string>('');
+  const [waVariableValues, setWaVariableValues] = useState<Record<string, string>>({});
+  const [waSending, setWaSending] = useState(false);
+  const [waTab, setWaTab] = useState<'history' | 'send'>('history');
+
   const loadContact = useCallback(async () => {
     if (!contactId) return;
     setLoading(true);
@@ -198,6 +272,103 @@ export default function ActiveCallPage() {
   useEffect(() => {
     void loadContact();
   }, [loadContact]);
+
+  const loadWhatsAppHistory = useCallback(async () => {
+    if (!contactId) return;
+    setWaLoading(true);
+    setWaError(null);
+    try {
+      const res = await messagingFetch<WhatsAppHistoryResponse>(
+        `/api/ngo-admin/call-center/contacts/${contactId}/whatsapp-history`,
+        { method: 'GET' },
+      );
+      // En eski üstte gösterilsin diye ters çevir (API desc döner).
+      setWaMessages([...(res.messages ?? [])].reverse());
+    } catch (err) {
+      setWaError(err instanceof Error ? err.message : 'Geçmiş alınamadı.');
+      setWaMessages([]);
+    } finally {
+      setWaLoading(false);
+    }
+  }, [contactId]);
+
+  const loadWhatsAppTemplates = useCallback(async () => {
+    setWaTemplatesLoading(true);
+    try {
+      const res = await messagingFetch<{ templates: WhatsAppTemplateRow[] }>(
+        `/api/ngo-admin/whatsapp-business/templates?status=approved`,
+        { method: 'GET' },
+      );
+      setWaTemplates(res.templates ?? []);
+    } catch {
+      setWaTemplates([]);
+    } finally {
+      setWaTemplatesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadWhatsAppHistory();
+    void loadWhatsAppTemplates();
+  }, [loadWhatsAppHistory, loadWhatsAppTemplates]);
+
+  // Şablon değişince kişi adını otomatik doldur (varsa).
+  const selectedWaTemplate = useMemo(
+    () => waTemplates.find((t) => t.id === waSelectedTemplateId) ?? null,
+    [waTemplates, waSelectedTemplateId],
+  );
+
+  useEffect(() => {
+    if (!selectedWaTemplate) {
+      setWaVariableValues({});
+      return;
+    }
+    // Şablon tanımındaki variables boşsa body içinden {{...}} çek.
+    const declared = selectedWaTemplate.variables.length
+      ? selectedWaTemplate.variables
+      : extractTemplateVariableNames(selectedWaTemplate.bodyText);
+    const next: Record<string, string> = {};
+    for (const name of declared) {
+      const lower = name.toLowerCase();
+      if (
+        (lower.includes('ad') || lower.includes('isim') || lower === 'name') &&
+        contact?.name
+      ) {
+        next[name] = contact.name;
+      } else {
+        next[name] = '';
+      }
+    }
+    setWaVariableValues(next);
+  }, [selectedWaTemplate, contact?.name]);
+
+  async function handleSendWhatsApp() {
+    if (!waSelectedTemplateId) {
+      toast({ variant: 'destructive', title: 'Şablon seçin' });
+      return;
+    }
+    setWaSending(true);
+    try {
+      await messagingFetch(
+        `/api/ngo-admin/call-center/contacts/${contactId}/whatsapp-send`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            templateId: waSelectedTemplateId,
+            variables: waVariableValues,
+          }),
+        },
+      );
+      toast({ title: 'WhatsApp mesajı gönderildi' });
+      setWaTab('history');
+      await loadWhatsAppHistory();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Gönderim başarısız.';
+      toast({ variant: 'destructive', title: 'Gönderilemedi', description: msg });
+    } finally {
+      setWaSending(false);
+    }
+  }
 
   // Saniye sayacı — mock modda in-progress boyunca işler. SIP modda süre
   // gerçek session'dan (sip.durationSeconds) gelir, bu sayaç çalışmaz.
@@ -830,6 +1001,187 @@ export default function ActiveCallPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* WhatsApp İletişim — accordion altta, tüm genişlik */}
+      <Accordion type="single" collapsible defaultValue="whatsapp">
+        <AccordionItem value="whatsapp" className="border rounded-lg bg-white">
+          <AccordionTrigger className="px-4 hover:no-underline">
+            <span className="flex items-center gap-2 text-base font-semibold">
+              <MessageCircle className="h-5 w-5 text-emerald-600" />
+              WhatsApp İletişim
+              {waMessages.length > 0 && (
+                <span className="text-xs font-normal text-muted-foreground">
+                  ({waMessages.length} mesaj)
+                </span>
+              )}
+            </span>
+          </AccordionTrigger>
+          <AccordionContent className="px-4 pb-4">
+            <Tabs value={waTab} onValueChange={(v) => setWaTab(v as 'history' | 'send')}>
+              <TabsList className="grid w-full grid-cols-2 max-w-md">
+                <TabsTrigger value="history">Geçmiş Mesajlar</TabsTrigger>
+                <TabsTrigger value="send">Şablon Gönder</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="history" className="mt-4">
+                {waLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : waError ? (
+                  <div className="text-sm text-rose-600 py-4">{waError}</div>
+                ) : waMessages.length === 0 ? (
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    Bu kişiyle henüz WhatsApp yazışması yok.
+                  </div>
+                ) : (
+                  <div className="bg-[#e5ddd5] rounded-md p-4 max-h-96 overflow-y-auto space-y-2">
+                    {waMessages.map((msg) => {
+                      const isOutbound = msg.direction === 'outbound';
+                      const bodyText =
+                        msg.body ??
+                        (msg.templateName ? `[Şablon: ${msg.templateName}]` : '—');
+                      return (
+                        <div
+                          key={msg.id}
+                          className={cn(
+                            'flex',
+                            isOutbound ? 'justify-end' : 'justify-start',
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              'max-w-[75%] rounded-lg px-3 py-2 text-sm shadow-sm',
+                              isOutbound
+                                ? 'bg-emerald-100 text-emerald-950 rounded-tr-none'
+                                : 'bg-white text-slate-900 rounded-tl-none',
+                            )}
+                          >
+                            <div className="whitespace-pre-wrap break-words">
+                              {bodyText}
+                            </div>
+                            <div
+                              className={cn(
+                                'text-[10px] mt-1 flex items-center gap-1.5 justify-end',
+                                isOutbound ? 'text-emerald-700/80' : 'text-slate-500',
+                              )}
+                            >
+                              <span>{formatWhatsAppTime(msg.timestamp)}</span>
+                              {isOutbound && msg.status && (
+                                <span className="opacity-80">
+                                  · {msg.status === 'read'
+                                    ? 'okundu'
+                                    : msg.status === 'delivered'
+                                    ? 'iletildi'
+                                    : msg.status === 'failed'
+                                    ? 'başarısız'
+                                    : 'gönderildi'}
+                                </span>
+                              )}
+                            </div>
+                            {msg.status === 'failed' && msg.failureReason && (
+                              <div className="text-[10px] text-rose-600 mt-1">
+                                {msg.failureReason}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="send" className="mt-4 space-y-4">
+                {waTemplatesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : waTemplates.length === 0 ? (
+                  <div className="text-sm text-muted-foreground border rounded p-4">
+                    Henüz Meta onayından geçmiş şablon yok.{' '}
+                    <Link
+                      href="/ngo-admin/whatsapp-business/templates"
+                      className="text-emerald-700 underline"
+                    >
+                      Şablon oluştur
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="wa-template" className="text-sm font-semibold">
+                        Şablon
+                      </Label>
+                      <select
+                        id="wa-template"
+                        value={waSelectedTemplateId}
+                        onChange={(e) => setWaSelectedTemplateId(e.target.value)}
+                        className="w-full h-10 px-3 rounded-md border bg-white text-sm"
+                      >
+                        <option value="">Şablon seçin…</option>
+                        {waTemplates.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name} ({t.language})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedWaTemplate && (
+                      <>
+                        <div className="rounded-md border bg-slate-50 p-3 text-xs whitespace-pre-wrap">
+                          {selectedWaTemplate.bodyText}
+                        </div>
+
+                        {Object.keys(waVariableValues).length > 0 && (
+                          <div className="space-y-2">
+                            <Label className="text-sm font-semibold">Değişkenler</Label>
+                            {Object.keys(waVariableValues).map((varName) => (
+                              <div key={varName} className="space-y-1">
+                                <Label
+                                  htmlFor={`wa-var-${varName}`}
+                                  className="text-xs text-muted-foreground"
+                                >
+                                  {varName}
+                                </Label>
+                                <Input
+                                  id={`wa-var-${varName}`}
+                                  value={waVariableValues[varName] ?? ''}
+                                  onChange={(e) =>
+                                    setWaVariableValues((prev) => ({
+                                      ...prev,
+                                      [varName]: e.target.value,
+                                    }))
+                                  }
+                                  placeholder={`{{${varName}}}`}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <Button
+                          onClick={handleSendWhatsApp}
+                          disabled={waSending || !waSelectedTemplateId}
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          {waSending ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4 mr-2" />
+                          )}
+                          Gönder
+                        </Button>
+                      </>
+                    )}
+                  </>
+                )}
+              </TabsContent>
+            </Tabs>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 }

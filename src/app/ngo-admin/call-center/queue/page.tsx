@@ -15,7 +15,15 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, UserPlus, RotateCcw, Target, Loader2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Clock,
+  UserPlus,
+  RotateCcw,
+  Target,
+  Loader2,
+  MessageCircle,
+} from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,6 +41,8 @@ interface QueueItem {
   scheduledAt?: string;
   reason?: string;
   callbackId?: string;
+  whatsAppResponse?: 'yes' | 'no' | null;
+  whatsAppPending?: boolean;
 }
 
 interface QueueStats {
@@ -40,6 +50,8 @@ interface QueueStats {
   newContacts: number;
   retries: number;
   total: number;
+  whatsAppResponders?: number;
+  whatsAppPending?: number;
 }
 
 interface QueueResponse {
@@ -104,6 +116,8 @@ export default function CallCenterQueuePage() {
     newContacts: 0,
     retries: 0,
     total: 0,
+    whatsAppResponders: 0,
+    whatsAppPending: 0,
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -117,7 +131,14 @@ export default function CallCenterQueuePage() {
         const data = await messagingFetch<QueueResponse>('/api/ngo-admin/call-center/queue');
         setQueue(data.queue ?? []);
         setStats(
-          data.stats ?? { callbacksDue: 0, newContacts: 0, retries: 0, total: 0 },
+          data.stats ?? {
+            callbacksDue: 0,
+            newContacts: 0,
+            retries: 0,
+            total: 0,
+            whatsAppResponders: 0,
+            whatsAppPending: 0,
+          },
         );
         setErrorMessage(null);
       } catch (err) {
@@ -171,10 +192,15 @@ export default function CallCenterQueuePage() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <KpiCard label="Bekleyen Callback" value={stats.callbacksDue} tone="rose" />
         <KpiCard label="Yeni Kişi" value={stats.newContacts} tone="blue" />
         <KpiCard label="Tekrar Aranacak" value={stats.retries} tone="amber" />
+        <KpiCard
+          label="WA Cevap Bekliyor"
+          value={stats.whatsAppPending ?? 0}
+          tone="emerald"
+        />
         <KpiCard label="Toplam" value={stats.total} tone="slate" />
       </div>
 
@@ -216,7 +242,7 @@ export default function CallCenterQueuePage() {
 interface KpiCardProps {
   label: string;
   value: number;
-  tone: 'rose' | 'blue' | 'amber' | 'slate';
+  tone: 'rose' | 'blue' | 'amber' | 'slate' | 'emerald';
 }
 
 const KPI_TONE: Record<KpiCardProps['tone'], string> = {
@@ -224,6 +250,7 @@ const KPI_TONE: Record<KpiCardProps['tone'], string> = {
   blue: 'border-blue-200 bg-blue-50/40 text-blue-900',
   amber: 'border-amber-200 bg-amber-50/40 text-amber-900',
   slate: 'border-slate-200 bg-slate-50/40 text-slate-900',
+  emerald: 'border-emerald-200 bg-emerald-50/40 text-emerald-900',
 };
 
 function KpiCard({ label, value, tone }: KpiCardProps) {
@@ -261,7 +288,25 @@ function QueueItemCard({ item }: QueueItemCardProps) {
         </div>
 
         <div className="flex-1 min-w-[200px] space-y-1">
-          <div className="font-medium text-sm">{item.contactName || 'İsimsiz'}</div>
+          <div className="font-medium text-sm flex items-center gap-2 flex-wrap">
+            <span>{item.contactName || 'İsimsiz'}</span>
+            {item.whatsAppResponse === 'yes' && (
+              <Badge
+                variant="outline"
+                className="bg-emerald-100 text-emerald-800 border-emerald-200"
+              >
+                <MessageCircle className="h-3 w-3 mr-1" /> WA Cevap Verdi
+              </Badge>
+            )}
+            {item.whatsAppPending && (
+              <Badge
+                variant="outline"
+                className="bg-amber-50 text-amber-800 border-amber-200"
+              >
+                <MessageCircle className="h-3 w-3 mr-1" /> WA Cevap Bekliyor
+              </Badge>
+            )}
+          </div>
           <div className="text-xs text-muted-foreground tabular-nums">{item.phone}</div>
           {item.type === 'callback' && (
             <div className="text-xs text-rose-700 space-x-2">

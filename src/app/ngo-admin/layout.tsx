@@ -145,6 +145,7 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: MessageSquare, beta: true },
       { href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: Mail, beta: true },
       { href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: PhoneCall, beta: true },
+      { href: '/ngo-admin/whatsapp-business', label: 'WhatsApp İş', icon: MessageCircle, beta: true },
       { href: '/ngo-admin/call-center/lists', label: 'Arama Listeleri', icon: List, beta: true },
       { href: '/ngo-admin/call-center/contacts', label: 'Kişi Rehberi', icon: Contact, beta: true },
       { href: '/ngo-admin/call-center/queue', label: 'Arama Sırası', icon: Clock, beta: true },

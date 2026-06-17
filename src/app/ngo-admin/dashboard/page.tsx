@@ -89,6 +89,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Inbox,
   Send,
   Wallet,
+  // WhatsApp İş kart ikonu: lucide'da WhatsApp glyph yok, MessageCircle ile alias.
+  WhatsappBusiness: MessageCircle,
 };
 import { useSearchParams } from 'next/navigation';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -119,6 +121,7 @@ const iconColorMap: { [key: string]: string } = {
   'calendar': 'bg-rose-500',
   'calculator': 'bg-emerald-500',
   'message-circle': 'bg-sky-500',
+  'whatsapp-business': 'bg-emerald-500',
   'shopping-cart': 'bg-violet-500',
   'video': 'bg-blue-600',
   'palette': 'bg-pink-500',
@@ -252,6 +255,7 @@ const buildNavGroups = (t: (key: string) => string): { title: string; items: Nav
             { id: 'sms', href: '/ngo-admin/sms', label: t('ngo_admin_dashboard.itemSms'), icon: 'message-square', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'mail', href: '/ngo-admin/mail', label: t('ngo_admin_dashboard.itemMail'), icon: 'mail', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'call-center', href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: 'phone-call', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
+            { id: 'whatsapp-business', href: '/ngo-admin/whatsapp-business', label: 'WhatsApp İş', icon: 'whatsapp-business', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'call-center-lists', href: '/ngo-admin/call-center/lists', label: 'Arama Listeleri', icon: 'list', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'messaging-packages', href: '/ngo-admin/messaging-packages', label: 'Kontör Paketleri', icon: 'wallet', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'dm', href: '/ngo-admin/dm', label: t('ngo_admin_dashboard.itemDm'), icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], beta: true },
