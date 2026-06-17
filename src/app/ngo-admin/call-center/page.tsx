@@ -12,7 +12,7 @@
  * görüntülenir (super-admin'e gösterilmez).
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle } from 'lucide-react';
@@ -24,8 +24,6 @@ import { CallDashboard } from './_components/CallDashboard';
 import { CallCenterSettings } from './_components/CallCenterSettings';
 import { CommunicationHub } from './_components/CommunicationHub';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
-
-const NGO_CALL_CENTER = 'ngoCallCenter';
 
 export interface CallCenterExtension {
   ext: string;
@@ -100,11 +98,31 @@ export default function NgoCallCenterPage() {
   const { id: activeEntityId, kind: activeEntityKind, isLoading: entityLoading } = useActiveEntity();
   const ngoId = (activeEntityKind === 'ngo' ? activeEntityId : null) ?? userDoc?.managedNgoId ?? null;
 
-  const ccRef = useMemoFirebase(
-    () => (ngoId ? doc(db, NGO_CALL_CENTER, ngoId) : null),
-    [db, ngoId],
-  );
-  const { data: ccDoc, isLoading: ccLoading } = useDoc<NgoCallCenterDoc>(ccRef);
+  // ngoCallCenter durumu — client Firestore read rule'una takıldığı için server
+  // API'sinden (Admin SDK) okunur; rules deploy gerekmeden sekme gating'i çalışır.
+  const [ccDoc, setCcDoc] = useState<NgoCallCenterDoc | null>(null);
+  const [ccLoading, setCcLoading] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    async function loadStatus() {
+      if (!user || !ngoId) { if (!cancelled) setCcLoading(false); return; }
+      if (!cancelled) setCcLoading(true);
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch(`/api/ngo-admin/call-center/status?ngoId=${encodeURIComponent(ngoId)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (!cancelled) setCcDoc(res.ok && data.ok ? (data.callCenter ?? null) : null);
+      } catch {
+        if (!cancelled) setCcDoc(null);
+      } finally {
+        if (!cancelled) setCcLoading(false);
+      }
+    }
+    void loadStatus();
+    return () => { cancelled = true; };
+  }, [user, ngoId]);
 
   // STK profil doc'u — onboarding'de Kurum Tipi (kilitli) + Kütük No (otomatik) için.
   const ngoRef = useMemoFirebase(
