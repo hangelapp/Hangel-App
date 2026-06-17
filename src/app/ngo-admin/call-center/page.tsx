@@ -15,13 +15,29 @@
 import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, PhoneCall, Clock, ArrowLeft } from 'lucide-react';
+import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { OnboardingWizard } from './_components/OnboardingWizard';
 import { CallDashboard } from './_components/CallDashboard';
+import { CallCenterSettings } from './_components/CallCenterSettings';
 
 const NGO_CALL_CENTER = 'ngoCallCenter';
+
+export interface CallCenterExtension {
+  ext: string;
+  label: string;
+  assignedToUid?: string | null;
+  assignedToName?: string | null;
+  assignedToPhone?: string | null;
+}
+
+export interface CallCenterSettingsData {
+  recordingEnabled?: boolean;
+  kvkkAnnouncement?: boolean;
+  callerIdNumber?: string;
+}
 
 interface NgoCallCenterDoc {
   status?: 'pending' | 'active' | 'suspended' | 'rejected';
@@ -30,6 +46,8 @@ interface NgoCallCenterDoc {
   providerId?: string;
   monthlyMinutesQuota?: number;
   currentMonthUsage?: number;
+  extensions?: CallCenterExtension[];
+  settings?: CallCenterSettingsData;
 }
 
 interface UserDocLite {
@@ -41,6 +59,27 @@ interface NgoDocLite {
   name?: string;
   type?: 'Dernek' | 'Vakıf' | 'Spor Kulübü' | 'Özel İzinli';
   kutukNo?: string;
+}
+
+// Onaylı değilken kilit kartı — Çağrı Merkezi + Ayarlar sekmeleri için.
+function LockedNotice({ title, status }: { title: string; status?: string }) {
+  return (
+    <Card className="border-dashed">
+      <CardHeader className="flex flex-row items-center gap-2">
+        <Lock className="h-5 w-5 text-muted-foreground" />
+        <CardTitle className="text-base">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="text-sm text-muted-foreground space-y-2">
+        <p>
+          {status === 'pending'
+            ? 'Başvurunuz inceleniyor. Onaylandığında bu bölüm açılır.'
+            : status === 'rejected'
+              ? 'Başvurunuz reddedildi. Lütfen destek ile iletişime geçin.'
+              : 'Bu bölümü kullanmak için önce "Başvuru" sekmesinden çağrı merkezi başvurunuzu tamamlayın ve onay alın.'}
+        </p>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function NgoCallCenterPage() {
@@ -101,76 +140,9 @@ export default function NgoCallCenterPage() {
   }
 
   const status = ccDoc?.status;
+  const isApproved = status === 'active' || status === 'suspended';
+  const defaultTab = isApproved ? 'callcenter' : 'basvuru';
 
-  // Hiç kayıt yok → onboarding wizard.
-  if (!ccDoc) {
-    return (
-      <div className="container mx-auto p-4 md:p-6 max-w-3xl space-y-4">
-        <Link href="/ngo-admin" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Yönetim Paneli
-        </Link>
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold font-headline flex items-center gap-2">
-            <PhoneCall className="h-6 w-6 text-emerald-600" /> Çağrı Merkezi Başvurusu
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            STK'nız için sanal santral hizmetini birkaç adımda başlatın.
-          </p>
-        </div>
-        <OnboardingWizard
-          ngoId={ngoId}
-          ngoName={ngoDoc?.name}
-          ngoType={ngoDoc?.type}
-          ngoKutukNo={ngoDoc?.kutukNo}
-        />
-      </div>
-    );
-  }
-
-  if (status === 'pending') {
-    return (
-      <div className="container mx-auto p-4 md:p-6 max-w-2xl space-y-4">
-        <Link href="/ngo-admin" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Yönetim Paneli
-        </Link>
-        <Card className="border-amber-300 bg-amber-50/40">
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Clock className="h-5 w-5 text-amber-600" />
-            <CardTitle className="text-base">Başvurunuz inceleniyor</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p>
-              Başvurunuz alındı ve PBX sağlayıcı firmaya iletildi. Aktivasyon
-              tamamlandığında bu sayfa otomatik olarak çağrı paneline dönüşecek.
-            </p>
-            <ul className="text-muted-foreground text-xs space-y-1 list-disc ml-5">
-              <li>Caller ID numarası: {ccDoc.callerIdNumber ?? '—'}</li>
-              <li>Paket: {ccDoc.packageId ?? '—'}</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (status === 'rejected') {
-    return (
-      <div className="container mx-auto p-4 md:p-6 max-w-2xl space-y-4">
-        <Card className="border-rose-300 bg-rose-50/40">
-          <CardHeader>
-            <CardTitle className="text-base">Başvurunuz reddedildi</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm">
-              hangel ekibi başvurunuzu reddetti. Lütfen destek ile iletişime geçin.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // active veya suspended → dashboard'a düş.
   return (
     <div className="container mx-auto p-4 md:p-6 max-w-6xl space-y-4">
       <Link href="/ngo-admin" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
@@ -181,10 +153,95 @@ export default function NgoCallCenterPage() {
           <PhoneCall className="h-6 w-6 text-emerald-600" /> Çağrı Merkezi
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Aktif görüşmeler, kotalar ve geçmiş kayıtlarınız.
+          STK'nız için sanal santral — başvuru, çağrı paneli ve ayarlar.
         </p>
       </div>
-      <CallDashboard ngoId={ngoId} ccDoc={ccDoc} />
+
+      <Tabs defaultValue={defaultTab} className="w-full">
+        <TabsList>
+          <TabsTrigger value="basvuru" className="flex items-center gap-1.5">
+            <FileText className="h-4 w-4" /> Başvuru
+            {isApproved && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />}
+          </TabsTrigger>
+          <TabsTrigger value="callcenter" className="flex items-center gap-1.5">
+            <PhoneCall className="h-4 w-4" /> Çağrı Merkezi
+            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
+          </TabsTrigger>
+          <TabsTrigger value="ayarlar" className="flex items-center gap-1.5">
+            <Settings className="h-4 w-4" /> Ayarlar
+            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Sekme 1 — Başvuru */}
+        <TabsContent value="basvuru" className="mt-4">
+          <div className="max-w-3xl space-y-4">
+            {!ccDoc && (
+              <OnboardingWizard
+                ngoId={ngoId}
+                ngoName={ngoDoc?.name}
+                ngoType={ngoDoc?.type}
+                ngoKutukNo={ngoDoc?.kutukNo}
+              />
+            )}
+            {status === 'pending' && (
+              <Card className="border-amber-300 bg-amber-50/40">
+                <CardHeader className="flex flex-row items-center gap-2">
+                  <Clock className="h-5 w-5 text-amber-600" />
+                  <CardTitle className="text-base">Başvurunuz inceleniyor</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <p>Başvurunuz alındı ve PBX sağlayıcı firmaya iletildi. Onaylandığında Çağrı Merkezi ve Ayarlar sekmeleri açılır.</p>
+                  <ul className="text-muted-foreground text-xs space-y-1 list-disc ml-5">
+                    <li>Caller ID numarası: {ccDoc?.callerIdNumber ?? '—'}</li>
+                    <li>Paket: {ccDoc?.packageId ?? '—'}</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+            {status === 'rejected' && (
+              <Card className="border-rose-300 bg-rose-50/40">
+                <CardHeader><CardTitle className="text-base">Başvurunuz reddedildi</CardTitle></CardHeader>
+                <CardContent><p className="text-sm">hangel ekibi başvurunuzu reddetti. Lütfen destek ile iletişime geçin.</p></CardContent>
+              </Card>
+            )}
+            {isApproved && (
+              <Card className="border-emerald-300 bg-emerald-50/40">
+                <CardHeader className="flex flex-row items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                  <CardTitle className="text-base">Başvurunuz onaylandı 🧡</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <p>Çağrı merkeziniz aktif. "Çağrı Merkezi" sekmesinden arama yapabilir, "Ayarlar"dan dahili numaraları yönetebilirsiniz.</p>
+                  <ul className="text-muted-foreground text-xs space-y-1 list-disc ml-5">
+                    <li>Caller ID numarası: {ccDoc?.callerIdNumber ?? '—'}</li>
+                    <li>Paket: {ccDoc?.packageId ?? '—'}</li>
+                    <li>Durum: {status === 'suspended' ? 'Askıda' : 'Aktif'}</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Sekme 2 — Çağrı Merkezi (yalnızca onaylı STK) */}
+        <TabsContent value="callcenter" className="mt-4">
+          {isApproved && ccDoc ? (
+            <CallDashboard ngoId={ngoId} ccDoc={ccDoc} />
+          ) : (
+            <LockedNotice title="Çağrı Merkezi kilitli" status={status} />
+          )}
+        </TabsContent>
+
+        {/* Sekme 3 — Ayarlar (yalnızca onaylı STK) */}
+        <TabsContent value="ayarlar" className="mt-4">
+          {isApproved && ccDoc ? (
+            <CallCenterSettings ngoId={ngoId} ccDoc={ccDoc} />
+          ) : (
+            <LockedNotice title="Ayarlar kilitli" status={status} />
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
