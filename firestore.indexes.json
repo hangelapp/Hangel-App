@@ -179,6 +179,16 @@
         { "fieldPath": "lastDisposition", "order": "ASCENDING" },
         { "fieldPath": "attempts", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "callSessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ngoId", "order": "ASCENDING" },
+        { "fieldPath": "direction", "order": "ASCENDING" },
+        { "fieldPath": "callerNumber", "order": "ASCENDING" },
+        { "fieldPath": "startedAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -23,6 +23,7 @@ import {
   Phone,
   PhoneOff,
   PhoneIncoming,
+  PhoneMissed,
   Mic,
   MicOff,
   Activity,
@@ -82,6 +83,8 @@ interface CallSessionRow {
   recordingStorageUrl?: string | null;
   status?: string;
   direction?: 'inbound' | 'outbound';
+  /** Sunucu (Asterisk geçidi) tarafından "cevapsız" işaretlenen gelen arama. */
+  missed?: boolean;
   notes?: string;
 }
 
@@ -211,6 +214,17 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
     return { todayCount, avg };
   }, [history]);
 
+  // Cevapsız aramalar — mevcut history'den türet (YENİ sorgu/index YOK).
+  // Atanmış kişi offline iken Asterisk geçidi bunları sunucuda 'no-answer' /
+  // missed:true olarak loglar; kişi online olunca burada görür.
+  const missed = useMemo(
+    () =>
+      (history ?? []).filter(
+        (c) => c.direction === 'inbound' && (c.status === 'no-answer' || c.missed === true),
+      ),
+    [history],
+  );
+
   const monthlyQuota = ccDoc.monthlyMinutesQuota ?? 0;
   const usage = ccDoc.currentMonthUsage ?? 0;
   const remainingMinutes = Math.max(0, monthlyQuota - usage);
@@ -293,6 +307,51 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Cevapsız Aramalar — siz çevrimdışıyken geçidin loglandığı gelen aramalar. */}
+      <Card className={missed.length > 0 ? 'border-rose-200' : undefined}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <PhoneMissed className="h-4 w-4 text-rose-600" /> Cevapsız Aramalar
+            <Badge
+              className={
+                missed.length > 0
+                  ? 'bg-rose-100 text-rose-800 border-rose-200'
+                  : 'bg-zinc-100 text-zinc-700 border-zinc-200'
+              }
+            >
+              {missed.length}
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {missed.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-1">Cevapsız arama yok.</p>
+          ) : (
+            <div className="space-y-2">
+              {missed.slice(0, 5).map((c) => (
+                <div
+                  key={c.id}
+                  className="flex items-center justify-between rounded-md border border-rose-100 bg-rose-50/60 p-2.5"
+                >
+                  <div className="flex items-center gap-2">
+                    <PhoneMissed className="h-4 w-4 text-rose-600 shrink-0" />
+                    <span className="font-mono text-sm">{c.callerNumber ?? 'Bilinmeyen'}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {formatTime(c.startedAt)}
+                  </span>
+                </div>
+              ))}
+              {missed.length > 5 && (
+                <p className="text-xs text-muted-foreground">
+                  +{missed.length - 5} cevapsız arama daha (geçmişte)
+                </p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Çevirici — GERÇEK tarayıcı WebRTC araması (santral geçidi). */}
       <Card>
