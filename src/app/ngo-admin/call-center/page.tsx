@@ -37,6 +37,12 @@ interface UserDocLite {
   role?: string;
 }
 
+interface NgoDocLite {
+  name?: string;
+  type?: 'Dernek' | 'Vakıf' | 'Spor Kulübü' | 'Özel İzinli';
+  kutukNo?: string;
+}
+
 export default function NgoCallCenterPage() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
@@ -53,6 +59,13 @@ export default function NgoCallCenterPage() {
     [db, ngoId],
   );
   const { data: ccDoc, isLoading: ccLoading } = useDoc<NgoCallCenterDoc>(ccRef);
+
+  // STK profil doc'u — onboarding'de Kurum Tipi (kilitli) + Kütük No (otomatik) için.
+  const ngoRef = useMemoFirebase(
+    () => (ngoId ? doc(db, 'ngos', ngoId) : null),
+    [db, ngoId],
+  );
+  const { data: ngoDoc } = useDoc<NgoDocLite>(ngoRef);
 
   if (isUserLoading || userDocLoading || (ngoId && ccLoading)) {
     return (
@@ -104,7 +117,12 @@ export default function NgoCallCenterPage() {
             STK'nız için sanal santral hizmetini birkaç adımda başlatın.
           </p>
         </div>
-        <OnboardingWizard ngoId={ngoId} />
+        <OnboardingWizard
+          ngoId={ngoId}
+          ngoName={ngoDoc?.name}
+          ngoType={ngoDoc?.type}
+          ngoKutukNo={ngoDoc?.kutukNo}
+        />
       </div>
     );
   }

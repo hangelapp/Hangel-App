@@ -19,9 +19,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, CheckCircle2, FileText, Phone, Package, ShieldCheck, AlertCircle, ExternalLink, RefreshCw } from 'lucide-react';
+import { Loader2, CheckCircle2, FileText, Phone, Package, ShieldCheck, AlertCircle, ExternalLink, RefreshCw, Search, Gavel, FileSignature, AtSign, KeyRound, Lock } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/hooks/use-toast';
 import { messagingFetch } from '@/lib/messaging/client';
 import { cn } from '@/lib/utils';
@@ -62,7 +63,26 @@ interface NumberPoolRow {
 
 interface OnboardingWizardProps {
   ngoId: string;
+  ngoName?: string;
+  /** STK profilindeki kayıtlı kurum tipi — onboarding'de KİLİTLİ gösterilir. */
+  ngoType?: 'Dernek' | 'Vakıf' | 'Spor Kulübü' | 'Özel İzinli';
+  /** STK profilindeki kütük/tescil no — onboarding'e otomatik gelir. */
+  ngoKutukNo?: string;
 }
+
+// STK profilindeki `type` alanını wizard'ın CompanyType birliğine eşler.
+function mapNgoType(t: OnboardingWizardProps['ngoType']): CompanyType {
+  switch (t) {
+    case 'Dernek': return 'Dernek';
+    case 'Vakıf': return 'Vakıf';
+    case 'Spor Kulübü': return 'SporKulübü';
+    case 'Özel İzinli': return 'Diğer';
+    default: return 'Dernek';
+  }
+}
+
+// KEP adresi format kontrolü — KEP alan adları .kep.tr ile biter (hs01.kep.tr, hs03.kep.tr, ...).
+const KEP_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.kep\.tr$/;
 
 const STEPS = [
   { key: 'package', label: 'Paket', icon: Package },
@@ -117,18 +137,68 @@ ve sorumlulukları düzenler.
 Bu sözleşmeyi onaylayarak yukarıdaki şartları kabul ettiğinizi beyan edersiniz.
 `;
 
-export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
+const SERVICE_PROTOCOL_MARKDOWN = `
+**Çağrı Merkezi Hizmet Protokolü**
+
+hangel, STK'lara çağrı merkezi (sanal santral) için **3. parti yazılım hizmeti**
+sağlar. hangel bir operatör veya dakika satıcısı **değildir**.
+
+1. **Hat sahipliği.** STK, aramada kullanılacak telefon hattını/numarasını kendi
+   adına lisanslı bir operatörden temin eder. hangel yalnızca tarayıcı üzerinden
+   bu hatta bağlanan yazılım arayüzünü sunar.
+
+2. **Kullanım.** Hizmet yalnızca STK'nın yasal faaliyetleri (gönüllü, bağışçı,
+   faydalanıcı iletişimi) için kullanılır. İzinsiz pazarlama, spam ve İYS'ye
+   aykırı arama yasaktır; sorumluluk STK'ya aittir.
+
+3. **Kayıt ve gizlilik.** Görüşme kayıtlarına yalnızca STK erişir. hangel
+   süper-yöneticileri yalnızca meta-veri (süre, durum) görür.
+
+4. **Erişilebilirlik.** Hizmet "olduğu gibi" sunulur; operatör/altyapı kaynaklı
+   kesintilerden hangel sorumlu tutulamaz. Planlı bakımlar önceden duyurulur.
+
+5. **Fesih.** STK hizmeti dilediği an durdurabilir; hat STK'nın kendi
+   operatöründe kalır.
+
+Bu protokolü onaylayarak hangel'in 3. parti yazılım sağlayıcı rolünü kabul edersiniz.
+`;
+
+export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: OnboardingWizardProps) {
   const { toast } = useToast();
   const db = useFirestore();
+
+  // Kurum tipi STK profilinden gelir ve KİLİTLİDİR (değiştirilemez).
+  const lockedCompanyType = mapNgoType(ngoType);
+  // Kütük/tescil no biliniyorsa otomatik gelir; bilinmiyorsa elle girilir.
+  const kutukKnown = !!(ngoKutukNo && ngoKutukNo.trim());
 
   const [stepIdx, setStepIdx] = useState(0);
   const [packageId, setPackageId] = useState<string>('');
   const [documentLabels, setDocumentLabels] = useState<string>('');
   const [selectedNumberId, setSelectedNumberId] = useState<string>('');
   const [dpaAccepted, setDpaAccepted] = useState(false);
-  const [companyType, setCompanyType] = useState<CompanyType>('Dernek');
-  const [companyTaxId, setCompanyTaxId] = useState<string>('');
+  const companyType = lockedCompanyType;
+  const [companyTaxId, setCompanyTaxId] = useState<string>(ngoKutukNo?.trim() || '');
   const [contactPerson, setContactPerson] = useState<string>('');
+  // KEP adresi (kurumsal kayıtlı e-posta) — format sorgusu
+  const [kepAddress, setKepAddress] = useState<string>('');
+  const [kepChecked, setKepChecked] = useState(false);
+  // Belge yüklemeleri (Storage: ngos/{ngoId}/santral/...)
+  const [boardDecisionUrl, setBoardDecisionUrl] = useState<string>('');
+  const [boardUploading, setBoardUploading] = useState(false);
+  const [signatureUrl, setSignatureUrl] = useState<string>('');
+  const [signatureUploading, setSignatureUploading] = useState(false);
+  // İletişim sorumlusu telefon yetkilendirme (OTP)
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [otpMasked, setOtpMasked] = useState('');
+  const [contactPhoneVerified, setContactPhoneVerified] = useState(false);
+  // Onaylar (bu sayfada verilir)
+  const [serviceProtocolAccepted, setServiceProtocolAccepted] = useState(false);
+  const [kvkkConsentAccepted, setKvkkConsentAccepted] = useState(false);
   // İletişim sorumlusu user search — STK kayıtlı kullanıcılarından
   const [contactUid, setContactUid] = useState<string>('');
   const [contactPhone, setContactPhone] = useState<string>('');
@@ -208,6 +278,97 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
   );
   const { data: availableNumbers, isLoading: numbersLoading } = useCollection<NumberPoolRow>(numbersQuery);
 
+  // Belge yükleme — Storage ngos/{ngoId}/santral/{kind}-... (rules: managedNgoId yazabilir)
+  async function uploadDoc(file: File, kind: 'board-decision' | 'signature-circular'): Promise<string> {
+    const storage = getStorage();
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-60);
+    const path = `ngos/${ngoId}/santral/${kind}-${Date.now()}-${safeName}`;
+    const r = storageRef(storage, path);
+    await uploadBytes(r, file);
+    return getDownloadURL(r);
+  }
+
+  async function handleBoardUpload(file: File | undefined) {
+    if (!file) return;
+    setBoardUploading(true);
+    try {
+      const url = await uploadDoc(file, 'board-decision');
+      setBoardDecisionUrl(url);
+      toast({ title: 'Yönetim kurulu kararı yüklendi' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Yükleme başarısız', description: 'Dosya yüklenemedi, tekrar deneyin.' });
+    } finally {
+      setBoardUploading(false);
+    }
+  }
+
+  async function handleSignatureUpload(file: File | undefined) {
+    if (!file) return;
+    setSignatureUploading(true);
+    try {
+      const url = await uploadDoc(file, 'signature-circular');
+      setSignatureUrl(url);
+      toast({ title: 'İmza sirküsü yüklendi' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Yükleme başarısız', description: 'Dosya yüklenemedi, tekrar deneyin.' });
+    } finally {
+      setSignatureUploading(false);
+    }
+  }
+
+  // İletişim sorumlusu telefonuna OTP gönder
+  async function sendContactOtp() {
+    if (!authedUser || !contactPhone) return;
+    setOtpSending(true);
+    setOtpError('');
+    try {
+      const token = await authedUser.getIdToken();
+      const res = await fetch('/api/ngo-admin/call-center/contact-otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ phone: contactPhone, contactName: contactPerson }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setOtpError(data.message || 'Kod gönderilemedi.');
+        return;
+      }
+      setOtpSent(true);
+      setOtpMasked(data.masked || '');
+      toast({ title: 'Doğrulama kodu gönderildi', description: data.masked ? `${data.masked} numarasına SMS yollandı.` : undefined });
+    } catch {
+      setOtpError('Kod gönderilemedi, tekrar deneyin.');
+    } finally {
+      setOtpSending(false);
+    }
+  }
+
+  // OTP doğrula → contactPhoneVerified
+  async function verifyContactOtp() {
+    if (!authedUser || !contactPhone || otpCode.trim().length !== 6) return;
+    setOtpVerifying(true);
+    setOtpError('');
+    try {
+      const token = await authedUser.getIdToken();
+      const res = await fetch('/api/ngo-admin/call-center/contact-otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ phone: contactPhone, code: otpCode.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.verified) {
+        setOtpError(data.message || 'Kod hatalı.');
+        return;
+      }
+      setContactPhoneVerified(true);
+      toast({ title: 'İletişim sorumlusu doğrulandı 🧡' });
+    } catch {
+      setOtpError('Doğrulama başarısız, tekrar deneyin.');
+    } finally {
+      setOtpVerifying(false);
+    }
+  }
+
   function next() {
     if (stepIdx < STEPS.length - 1) setStepIdx(stepIdx + 1);
   }
@@ -217,7 +378,18 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
 
   function canAdvance(): boolean {
     if (stepIdx === 0) return !!packageId;
-    if (stepIdx === 1) return true; // belgeler şu an opsiyonel placeholder
+    if (stepIdx === 1) {
+      // Belgeler + yetkilendirme + onaylar
+      return (
+        !!companyTaxId.trim() &&
+        !!contactUid &&
+        contactPhoneVerified &&
+        !!boardDecisionUrl &&
+        !!signatureUrl &&
+        serviceProtocolAccepted &&
+        kvkkConsentAccepted
+      );
+    }
     if (stepIdx === 2) return !!selectedNumberId;
     if (stepIdx === 3) return dpaAccepted;
     return false;
@@ -249,9 +421,16 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
             companyType,
             formData: {
               companyTaxId: companyTaxId || null,
+              kutukAuto: kutukKnown,
+              kepAddress: kepAddress.trim() || null,
               contactPerson: contactPerson || null,
               contactUid: contactUid || null,
               contactPhone: contactPhone || null,
+              contactPhoneVerified,
+              boardDecisionUrl: boardDecisionUrl || null,
+              signatureCircularUrl: signatureUrl || null,
+              serviceProtocolAccepted,
+              kvkkConsentAccepted,
               archivedDocsFresh: archivedFresh,
               archivedDocsStale: archivedStale,
             },
@@ -344,38 +523,98 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
           </div>
         )}
 
-        {/* Adım 2 — Belgeler placeholder */}
+        {/* Adım 2 — Belgeler + yetkilendirme + onaylar */}
         {stepIdx === 1 && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Sağlayıcı firma tüzük, faaliyet belgesi ve vergi levhası talep edebilir. Bu sürümde belge
-              yüklemesi placeholder'dır — dosya isimlerini virgülle ayırarak girebilirsiniz.
+              Sağlayıcı firma tüzük, faaliyet belgesi ve yönetim kurulu kararı talep eder.
+              Kurum tipi ve kütük numarası STK profilinizden otomatik gelir.
             </p>
-            <div className="space-y-2">
-              <Label htmlFor="companyType">Kurum Tipi</Label>
-              <select
-                id="companyType"
-                value={companyType}
-                onChange={(e) => setCompanyType(e.target.value as CompanyType)}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-              >
-                {COMPANY_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
+
+            {/* Kurum Tipi — STK profilinden, KİLİTLİ */}
+            <div className="space-y-1.5">
+              <Label>Kurum Tipi</Label>
+              <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                <span className="font-medium">
+                  {COMPANY_TYPES.find((t) => t.value === companyType)?.label ?? companyType}
+                  {ngoName && <span className="text-muted-foreground font-normal"> · {ngoName}</span>}
+                </span>
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <Lock className="h-3 w-3" /> Profilden
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                STK profilinizde kayıtlı kurum tipi. Değiştirmek için STK profil bilgilerini güncelleyin.
+              </p>
             </div>
-            <div className="space-y-2">
+
+            {/* Kütük / Tescil No — otomatik */}
+            <div className="space-y-1.5">
               <Label htmlFor="taxId">
                 {companyType === 'Diğer' ? 'Vergi Numarası' : 'Kütük / Tescil Numarası'}
               </Label>
-              <Input
-                id="taxId"
-                value={companyTaxId}
-                onChange={(e) => setCompanyTaxId(e.target.value)}
-                placeholder={COMPANY_TYPES.find((t) => t.value === companyType)?.numberPlaceholder || ''}
-              />
+              {kutukKnown ? (
+                <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                  <span className="font-mono font-medium">{companyTaxId}</span>
+                  <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Profilden alındı
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <Input
+                    id="taxId"
+                    value={companyTaxId}
+                    onChange={(e) => setCompanyTaxId(e.target.value)}
+                    placeholder={COMPANY_TYPES.find((t) => t.value === companyType)?.numberPlaceholder || ''}
+                  />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {COMPANY_TYPES.find((t) => t.value === companyType)?.numberHint}
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* KEP adresi sorgusu */}
+            <div className="space-y-1.5">
+              <Label htmlFor="kep">KEP Adresi (Kayıtlı Elektronik Posta)</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="kep"
+                    value={kepAddress}
+                    onChange={(e) => { setKepAddress(e.target.value); setKepChecked(false); }}
+                    placeholder="kurum@hs03.kep.tr"
+                    className="pl-9"
+                    autoComplete="off"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setKepChecked(true)}
+                  disabled={!kepAddress.trim()}
+                >
+                  <Search className="h-4 w-4 mr-1.5" /> Sorgula
+                </Button>
+              </div>
+              {kepChecked && (
+                KEP_REGEX.test(kepAddress.trim()) ? (
+                  <p className="flex items-center gap-1.5 text-[11px] text-emerald-700">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Geçerli KEP formatı (.kep.tr).
+                  </p>
+                ) : (
+                  <p className="flex items-center gap-1.5 text-[11px] text-rose-700">
+                    <AlertCircle className="h-3.5 w-3.5" /> Geçersiz format — KEP adresi <span className="font-mono">@…kep.tr</span> ile biter.
+                  </p>
+                )
+              )}
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                {COMPANY_TYPES.find((t) => t.value === companyType)?.numberHint}
+                KEP adresinizi PTT KEP rehberinden doğrulayabilirsiniz:{' '}
+                <a href="https://kep.gov.tr/sorgula" target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline inline-flex items-center gap-0.5">
+                  kep.gov.tr/sorgula <ExternalLink className="h-3 w-3" />
+                </a>
               </p>
             </div>
             <div className="space-y-2">
@@ -410,6 +649,12 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
                           setContactUid(u.uid);
                           setContactPerson(u.name);
                           setContactPhone(u.phone);
+                          // Yeni kişi seçilince telefon doğrulamasını sıfırla
+                          setContactPhoneVerified(false);
+                          setOtpSent(false);
+                          setOtpCode('');
+                          setOtpError('');
+                          setOtpMasked('');
                         }}
                         className={cn(
                           'w-full text-left px-3 py-2 hover:bg-muted/40 transition-colors',
@@ -432,15 +677,159 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
                 </div>
               )}
               {contactUid && (
-                <div className="rounded-md bg-emerald-50/50 border border-emerald-200 p-2 text-xs">
-                  <p className="font-semibold">Seçili: {contactPerson}</p>
-                  {contactPhone && <p className="text-muted-foreground">📞 {contactPhone}</p>}
+                <div className="rounded-md bg-emerald-50/50 border border-emerald-200 p-3 text-xs space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="font-semibold">Seçili: {contactPerson}</p>
+                      {contactPhone && <p className="text-muted-foreground">📞 {contactPhone}</p>}
+                    </div>
+                    {contactPhoneVerified && (
+                      <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-300 text-[10px]">
+                        <CheckCircle2 className="h-3 w-3 mr-1" /> Telefon doğrulandı
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Telefonla yetkilendirme */}
+                  {!contactPhoneVerified && (
+                    <div className="space-y-2 border-t border-emerald-200 pt-2.5">
+                      {!contactPhone ? (
+                        <p className="flex items-center gap-1.5 text-amber-700">
+                          <AlertCircle className="h-3.5 w-3.5" />
+                          Bu kişinin kayıtlı telefonu yok — yetkilendirme için telefonlu bir kullanıcı seçin.
+                        </p>
+                      ) : !otpSent ? (
+                        <>
+                          <p className="text-muted-foreground">
+                            İletişim sorumlusunu yetkilendirmek için telefonuna SMS doğrulama kodu gönderilecek.
+                          </p>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={sendContactOtp}
+                            disabled={otpSending}
+                          >
+                            {otpSending ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Phone className="h-3.5 w-3.5 mr-1.5" />}
+                            Doğrulama kodu gönder
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-muted-foreground">
+                            {otpMasked || contactPhone} numarasına gelen 6 haneli kodu girin.
+                          </p>
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                value={otpCode}
+                                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                placeholder="● ● ● ● ● ●"
+                                inputMode="numeric"
+                                className="pl-9 tracking-[0.3em] font-mono"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={verifyContactOtp}
+                              disabled={otpVerifying || otpCode.trim().length !== 6}
+                            >
+                              {otpVerifying ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : null}
+                              Doğrula
+                            </Button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={sendContactOtp}
+                            disabled={otpSending}
+                            className="text-[11px] text-emerald-700 hover:underline disabled:opacity-50"
+                          >
+                            Kodu tekrar gönder
+                          </button>
+                        </>
+                      )}
+                      {otpError && <p className="text-rose-700">{otpError}</p>}
+                    </div>
+                  )}
                 </div>
               )}
               <p className="text-[11px] text-muted-foreground leading-relaxed">
                 STK'nın kayıtlı kullanıcıları arasından seç. Seçilen kişi sağlayıcı firma ile
-                iletişimde resmi temsilci olur; telefonu varsa firma onay için arayacak.
+                iletişimde resmi temsilci olur ve telefonuyla yetkilendirilir.
               </p>
+            </div>
+
+            {/* Yönetim Kurulu Kararı yükleme */}
+            <div className="space-y-1.5">
+              <Label>Yönetim Kurulu Kararı</Label>
+              <label className={cn(
+                'flex items-center gap-3 rounded-md border border-dashed px-3 py-3 text-sm cursor-pointer transition hover:bg-muted/30',
+                boardDecisionUrl ? 'border-emerald-300 bg-emerald-50/30' : 'border-border',
+              )}>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={(e) => handleBoardUpload(e.target.files?.[0])}
+                  disabled={boardUploading}
+                />
+                {boardUploading ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground shrink-0" />
+                ) : boardDecisionUrl ? (
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                ) : (
+                  <Gavel className="h-5 w-5 text-muted-foreground shrink-0" />
+                )}
+                <span className="min-w-0 flex-1">
+                  {boardDecisionUrl ? (
+                    <span className="text-emerald-700 font-medium">Yüklendi — değiştirmek için tıklayın</span>
+                  ) : (
+                    <>Çağrı merkezi hizmeti için yönetim kurulu kararı fotoğrafı/PDF — <span className="text-muted-foreground">yüklemek için tıklayın</span></>
+                  )}
+                </span>
+                {boardDecisionUrl && (
+                  <a href={boardDecisionUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-muted-foreground hover:text-foreground shrink-0">
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                )}
+              </label>
+            </div>
+
+            {/* İmza Sirküsü yükleme */}
+            <div className="space-y-1.5">
+              <Label>İmza Sirküleri (İletişim Sorumlusu)</Label>
+              <label className={cn(
+                'flex items-center gap-3 rounded-md border border-dashed px-3 py-3 text-sm cursor-pointer transition hover:bg-muted/30',
+                signatureUrl ? 'border-emerald-300 bg-emerald-50/30' : 'border-border',
+              )}>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={(e) => handleSignatureUpload(e.target.files?.[0])}
+                  disabled={signatureUploading}
+                />
+                {signatureUploading ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground shrink-0" />
+                ) : signatureUrl ? (
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                ) : (
+                  <FileSignature className="h-5 w-5 text-muted-foreground shrink-0" />
+                )}
+                <span className="min-w-0 flex-1">
+                  {signatureUrl ? (
+                    <span className="text-emerald-700 font-medium">Yüklendi — değiştirmek için tıklayın</span>
+                  ) : (
+                    <>İletişim sorumlusunun imza yetkisini gösteren imza sirküleri — <span className="text-muted-foreground">yüklemek için tıklayın</span></>
+                  )}
+                </span>
+                {signatureUrl && (
+                  <a href={signatureUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-muted-foreground hover:text-foreground shrink-0">
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                )}
+              </label>
             </div>
             <div className="space-y-2">
               <Label>Belgeler</Label>
@@ -526,6 +915,45 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
                   </a>
                 </>
               )}
+            </div>
+
+            {/* Çağrı Merkezi Hizmet Protokolü */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-600" /> Çağrı Merkezi Hizmet Protokolü</Label>
+              <div className="max-h-40 overflow-y-auto rounded-md border bg-muted/30 p-3 text-xs whitespace-pre-wrap leading-relaxed">
+                {SERVICE_PROTOCOL_MARKDOWN.trim()}
+              </div>
+              <label className="flex items-start gap-2.5 cursor-pointer text-xs">
+                <Checkbox
+                  checked={serviceProtocolAccepted}
+                  onCheckedChange={(v) => setServiceProtocolAccepted(v === true)}
+                  aria-label="Hizmet protokolü onayı"
+                />
+                <span>
+                  Çağrı Merkezi Hizmet Protokolü'nü okudum ve kabul ediyorum. hangel'in 3. parti
+                  yazılım sağlayıcı rolünü, hattın STK'ya ait olduğunu kabul ederim.
+                </span>
+              </label>
+            </div>
+
+            {/* KVKK Aydınlatma & Açık Rıza */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-600" /> KVKK Aydınlatma ve Açık Rıza</Label>
+              <label className="flex items-start gap-2.5 cursor-pointer text-xs">
+                <Checkbox
+                  checked={kvkkConsentAccepted}
+                  onCheckedChange={(v) => setKvkkConsentAccepted(v === true)}
+                  aria-label="KVKK açık rıza onayı"
+                />
+                <span>
+                  6698 sayılı KVKK kapsamında, çağrı merkezi üzerinden işlenen kişisel verilerin
+                  STK (Veri Sorumlusu) talimatıyla işlendiğini, aradığım kişilere görüşmenin kayıt
+                  altına alındığını duyurma yükümlülüğümü ve aydınlatma metnini kabul ediyorum.
+                </span>
+              </label>
+              <p className="text-[11px] text-muted-foreground">
+                Veri İşleyen Sözleşmesi'nin (DPA) tam metni son adımda onaylanır.
+              </p>
             </div>
           </div>
         )}
