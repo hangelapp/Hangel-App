@@ -159,7 +159,9 @@ function BookCard({ enriched }: { enriched: EnrichedBook }) {
       <div className="flex-1 min-w-0 flex flex-col gap-2">
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold leading-tight line-clamp-2">{meta.title}</h3>
+            <Link href={`/library/${item.slug}`} className="block group">
+              <h3 className="text-base font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">{meta.title}</h3>
+            </Link>
             {meta.author && (
               <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{meta.author}</p>
             )}

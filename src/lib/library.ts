@@ -113,8 +113,9 @@ function hashSlug(slug: string): number {
 
 export function parseBookMetadata(item: LibraryItem): BookMetadata {
   const content = item.content || '';
-  // Title'dan yazar ayır: "Foo — Bar" formatı.
-  const titleParts = item.title.split(/\s+—\s+|\s+-\s+/);
+  // Title'dan yazar ayır: "Foo — Bar" formatı. Tüm tire türlerini (— – -)
+  // boşlukla çevrili ayraç olarak yakala; "Jossey-Bass" gibi bitişik tireler korunur.
+  const titleParts = item.title.split(/\s+[—–-]\s+/);
   const titleOnly = titleParts[0]?.trim() || item.title;
   const authorFromTitle = titleParts.length > 1 ? titleParts.slice(1).join(' — ').trim() : '';
 

@@ -372,6 +372,35 @@ export default function LibraryItemPage() {
             </div>
           </Card>
 
+          {/* Künye — kitabın tam bibliyografik bilgisi + hangel kitlesi için bağlam */}
+          <Card className="glass-surface rounded-3xl p-5 sm:p-6">
+            <h2 className="text-lg font-semibold mb-3">Künye</h2>
+            <p className="text-sm sm:text-base text-foreground/90 leading-relaxed">
+              {[bookMeta.author, bookMeta.title].filter(Boolean).join('. ')}
+              {bookMeta.publisher ? `. ${bookMeta.publisher}` : ''}
+              {bookMeta.year > 0 ? `, ${bookMeta.year}` : ''}.
+            </p>
+            <dl className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 text-sm">
+              {bookMeta.author && (<div><dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Yazar</dt><dd className="font-medium">{bookMeta.author}</dd></div>)}
+              {bookMeta.publisher && (<div><dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Yayınevi</dt><dd className="font-medium">{bookMeta.publisher}</dd></div>)}
+              {bookMeta.year > 0 && (<div><dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Yıl</dt><dd className="font-medium">{bookMeta.year}</dd></div>)}
+              {bookMeta.pages > 0 && (<div><dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Sayfa</dt><dd className="font-medium">{bookMeta.pages}</dd></div>)}
+              {bookMeta.language && (<div><dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Dil</dt><dd className="font-medium">{bookMeta.language}</dd></div>)}
+              {bookMeta.category && (<div><dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Kategori</dt><dd className="font-medium">{bookMeta.category}</dd></div>)}
+              {bookMeta.topic && bookMeta.topic !== bookMeta.category && (<div><dt className="text-[11px] uppercase tracking-wide text-muted-foreground">Konu</dt><dd className="font-medium">{bookMeta.topic}</dd></div>)}
+            </dl>
+            {/* hangel kitlesi için bağlam */}
+            <div className="mt-4 pt-4 border-t flex items-start gap-2.5">
+              <BookOpen className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
+                <span className="font-semibold text-foreground">hangel kütüphanesinde:</span>{' '}
+                {bookMeta.category
+                  ? `${bookMeta.category} alanında; sivil toplum kuruluşları, gönüllüler ve sosyal etki çalışanları için seçildi.`
+                  : 'Sivil toplum, gönüllülük ve sosyal etki alanında çalışanlar için seçildi.'}
+              </p>
+            </div>
+          </Card>
+
           {/* Synopsis */}
           {bookMeta.synopsis && bookMeta.synopsis !== bookMeta.shortDescription && (
             <Card className="glass-surface rounded-3xl p-5 sm:p-6">
