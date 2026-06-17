@@ -14,6 +14,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 import type { CanonicalErrorCode, JobStatus, SendResult, WhatsAppConversationCategory, WhatsAppTemplateComponent } from '../types';
 import { getSmsProvider } from '../providers/sms';
 import { getEmailProvider } from '../providers/email';
+import { getEmailProviderForNgo } from '../providers/email/ngo-provider';
 import { getWhatsAppProvider } from '../providers/whatsapp';
 import { takeToken, getEffectiveRate } from './rateLimiter';
 import { isTerminal, MAX_ATTEMPTS, nextAttemptAt } from './retry';
@@ -54,6 +55,10 @@ interface JobDoc {
   nextAttemptAt: Timestamp;
   leasedUntil?: Timestamp;
   walletCostPerRecipient?: number; // KDV dahil birim maliyet (TRY)
+  // STK Workspace Toplu Mail: bu job STK'nın kendi Workspace SMTP'sinden gider
+  mailWorkspace?: boolean;
+  // Kampanya bazlı rate override (ör. Workspace mail için perMinute=1)
+  rateConfig?: { perSecond: number; perMinute: number };
 }
 
 export interface WorkerTickResult {
@@ -117,8 +122,13 @@ export async function workerTick(opts: { batch?: number; workerId?: string } = {
     const { ref: jobRef, job } = leased;
 
     const baseCfg = rateConfigForDriver(job.driver);
-    const cfg = await getEffectiveRate(baseCfg, job.ngoId);
-    const tokenOk = await takeToken(job.driver, cfg, 4000);
+    const cfg = job.rateConfig
+      ? await getEffectiveRate(job.rateConfig, job.ngoId)
+      : await getEffectiveRate(baseCfg, job.ngoId);
+    // Workspace mail job'larında bucket anahtarı ngo-scoped olur → bir STK'nın
+    // 1/dk limiti başka STK'yı etkilemez (per-STK izolasyon).
+    const bucketKey = job.mailWorkspace && job.ngoId ? `email_ws:${job.ngoId}` : job.driver;
+    const tokenOk = await takeToken(bucketKey, cfg, 4000);
     if (!tokenOk) {
       // Rate limit doluysa pending'e geri al, biraz ileri ittir
       await jobRef.update({
@@ -188,9 +198,29 @@ async function dispatch(job: JobDoc): Promise<SendResult> {
     }
   }
 
+  const subject = render(job.payload.subject ?? '', vars);
+
+  if (job.mailWorkspace === true) {
+    // STK Workspace Toplu Mail: per-STK SMTP; fromEmail/fromName mailAccounts'tan zorlanır.
+    const ngoProv = job.ngoId ? await getEmailProviderForNgo(job.ngoId) : null;
+    if (!ngoProv) {
+      return { ok: false, errorCode: 'provider_4xx', errorMessage: 'workspace_not_connected' };
+    }
+    return ngoProv.provider.send({
+      to: job.to,
+      subject,
+      html,
+      fromEmail: ngoProv.fromEmail,
+      fromName: ngoProv.fromName,
+      replyTo: job.payload.replyTo ?? undefined,
+      unsubscribeUrl,
+      useCase: job.useCase,
+    });
+  }
+
   return getEmailProvider().send({
     to: job.to,
-    subject: render(job.payload.subject ?? '', vars),
+    subject,
     html,
     fromEmail: job.payload.fromEmail ?? process.env.DEFAULT_FROM_EMAIL ?? 'noreply@hangel.org',
     fromName: job.payload.fromName ?? process.env.DEFAULT_FROM_NAME ?? 'Hangel',

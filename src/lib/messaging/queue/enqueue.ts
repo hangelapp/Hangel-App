@@ -64,6 +64,10 @@ interface CampaignDoc {
     conversationCategory: WhatsAppConversationCategory;
     wabaPhoneNumberId: string;
   };
+  // STK Workspace Toplu Mail: kampanya STK'nın kendi Workspace SMTP'sinden gider
+  mailWorkspace?: boolean;
+  // Kampanya bazlı rate override (ör. Workspace mail için perMinute=1)
+  rateConfig?: { perSecond: number; perMinute: number };
 }
 
 export async function enqueueCampaign(campaignId: string): Promise<EnqueueResult> {
@@ -155,6 +159,8 @@ export async function enqueueCampaign(campaignId: string): Promise<EnqueueResult
         maxAttempts: 5,
         nextAttemptAt: now,
         walletCostPerRecipient: camp.cost?.perRecipientWithVat ?? 0,
+        mailWorkspace: camp.mailWorkspace ?? false,
+        rateConfig: camp.rateConfig ?? null,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       });

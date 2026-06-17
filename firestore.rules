@@ -139,7 +139,11 @@ service cloud.firestore {
       // VEYA: NGO admin (adminUserId match VEYA managedNgoId fallback) kendi STK'sını tam günceller
       allow update: if isSuperAdmin()
         || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount'])
-        || (isSignedIn() && (
+        || (isSignedIn()
+          // Gate (featureFlags) yalnız super-admin/Admin SDK ile yazılır; STK kendi
+          // gate'ini (örn. bulkMailEnabled) client'tan AÇAMAZ.
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['featureFlags'])
+          && (
           resource.data.adminUserId == request.auth.uid
           || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
               && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == ngoId)
@@ -611,6 +615,20 @@ service cloud.firestore {
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == ngoId)
       );
+      allow write: if false;
+    }
+
+    // STK Workspace Toplu Mail — per-STK SMTP credential (yalnız Admin SDK).
+    // adAccounts/metaAccounts deseninin birebir aynısı, AMA explicit default-deny
+    // + super-admin read teşhis amaçlı eklenir: smtpPasswordEnc (şifreli App
+    // Password) CLIENT'a ASLA dönmemeli. STK admin bile SMTP credential'ı
+    // client'tan okuyamaz/yazamaz; bağlama API'leri (connect/disconnect) Admin
+    // SDK ile yazar (rules bypass). featureFlags.bulkMailEnabled gate'i ngos doc'u
+    // üzerinde tutulur ve yalnız super-admin Admin SDK ile set edilir (ngos update
+    // rule client ngo-admin'e kendi doc'unu güncelletse de gate yazımı Admin SDK
+    // üzerinden yapılır).
+    match /mailAccounts/{ngoId} {
+      allow read: if isSuperAdmin();
       allow write: if false;
     }
 

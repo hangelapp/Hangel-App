@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,11 +9,27 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Loader2, Wallet, AlertTriangle, Settings, Clock } from 'lucide-react';
-import { doc } from 'firebase/firestore';
-import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, doc, orderBy, query, where } from 'firebase/firestore';
+import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { normalizeQuota, quotaRemaining, type NgoQuota } from '@/lib/messaging-quota';
+import { Lock, Link2, Send, CheckCircle2 } from 'lucide-react';
+
+/** Workspace SMTP bağlantı durumu — credential/secret ASLA dönmez. */
+interface MailConnection {
+    configured: boolean;
+    gateOpen: boolean;
+    connected: boolean;
+    fromEmail?: string;
+}
+
+interface WorkspaceSegmentRow {
+    id: string;
+    name?: string;
+    channel?: string;
+    ngoId?: string;
+}
 
 /** Virgül / satır / boşluk ile ayrılmış alıcıları temizleyip benzersiz listeye çevirir. */
 function parseRecipients(raw: string): string[] {
@@ -35,6 +51,21 @@ export default function MailManagementPage() {
     // Kurulum durumu — 'active' değilse gönderim gate'lenir.
     const [setupStatus, setSetupStatus] = useState<'not_started' | 'pending' | 'active' | null>(null);
 
+    // Workspace toplu mail — bağlantı durumu + kimlik formu + gönderim formu.
+    const [connection, setConnection] = useState<MailConnection | null>(null);
+    const [wsFromEmail, setWsFromEmail] = useState('');
+    const [wsFromName, setWsFromName] = useState('');
+    const [wsSmtpHost, setWsSmtpHost] = useState('smtp.gmail.com');
+    const [wsSmtpPort, setWsSmtpPort] = useState('587');
+    const [wsSmtpUser, setWsSmtpUser] = useState('');
+    const [wsSmtpPassword, setWsSmtpPassword] = useState('');
+    const [wsConnecting, setWsConnecting] = useState(false);
+    const [wsDisconnecting, setWsDisconnecting] = useState(false);
+    const [wsSubject, setWsSubject] = useState('');
+    const [wsMessage, setWsMessage] = useState('');
+    const [wsSegmentId, setWsSegmentId] = useState('__all');
+    const [wsSending, setWsSending] = useState(false);
+
     useEffect(() => {
         let cancelled = false;
         async function loadSetup() {
@@ -55,7 +86,163 @@ export default function MailManagementPage() {
         return () => { cancelled = true; };
     }, [authUser]);
 
+    const refreshConnection = useCallback(async () => {
+        if (!authUser) return;
+        try {
+            const token = await authUser.getIdToken();
+            const res = await fetch('/api/ngo-admin/mail/connection', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) return;
+            const data = (await res.json()) as MailConnection;
+            setConnection({
+                configured: !!data.configured,
+                gateOpen: !!data.gateOpen,
+                connected: !!data.connected,
+                fromEmail: typeof data.fromEmail === 'string' ? data.fromEmail : undefined,
+            });
+        } catch {
+            // sessizce geç — Workspace bloğu gizli kalır, mevcut form bozulmaz
+        }
+    }, [authUser]);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            await refreshConnection();
+            if (cancelled) return;
+        })();
+        return () => { cancelled = true; };
+    }, [refreshConnection]);
+
     const setupActive = setupStatus === 'active';
+
+    // Workspace gönderim — NGO-scoped alıcı segmentleri.
+    const wsSegmentsQuery = useMemoFirebase(
+        () =>
+            db && ngoId
+                ? query(
+                      collection(db, COLLECTIONS.ngoRecipientSegments),
+                      where('ngoId', '==', ngoId),
+                      orderBy('updatedAt', 'desc'),
+                  )
+                : null,
+        [db, ngoId],
+    );
+    const { data: wsSegments } = useCollection<WorkspaceSegmentRow>(wsSegmentsQuery);
+    const wsMailSegments = useMemo(
+        () => (wsSegments ?? []).filter((s) => !s.channel || s.channel === 'email' || s.channel === 'both'),
+        [wsSegments],
+    );
+
+    const handleWsConnect = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!wsFromEmail.trim() || !wsSmtpHost.trim() || !wsSmtpUser.trim() || !wsSmtpPassword.trim()) {
+            toast({ variant: 'destructive', title: 'Tüm bağlantı alanlarını doldurun' });
+            return;
+        }
+        setWsConnecting(true);
+        try {
+            const token = await authUser?.getIdToken();
+            const res = await fetch('/api/ngo-admin/mail/connect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                    fromEmail: wsFromEmail.trim(),
+                    fromName: wsFromName.trim(),
+                    smtpHost: wsSmtpHost.trim(),
+                    smtpPort: Number(wsSmtpPort) || 587,
+                    smtpUser: wsSmtpUser.trim(),
+                    smtpPassword: wsSmtpPassword,
+                }),
+            });
+            if (!res.ok) {
+                toast({ variant: 'destructive', title: 'Bağlanamadı', description: 'Bilgileri kontrol edip tekrar deneyin.' });
+                return;
+            }
+            setWsSmtpPassword('');
+            await refreshConnection();
+            toast({ title: 'Workspace bağlandı', description: 'Artık Workspace üzerinden toplu mail gönderebilirsiniz.' });
+        } catch {
+            toast({ variant: 'destructive', title: 'Bağlanamadı', description: 'Bağlantı hatası.' });
+        } finally {
+            setWsConnecting(false);
+        }
+    };
+
+    const handleWsDisconnect = async () => {
+        setWsDisconnecting(true);
+        try {
+            const token = await authUser?.getIdToken();
+            const res = await fetch('/api/ngo-admin/mail/disconnect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) {
+                toast({ variant: 'destructive', title: 'Bağlantı kaldırılamadı' });
+                return;
+            }
+            await refreshConnection();
+            toast({ title: 'Bağlantı kaldırıldı' });
+        } catch {
+            toast({ variant: 'destructive', title: 'Bağlantı kaldırılamadı', description: 'Bağlantı hatası.' });
+        } finally {
+            setWsDisconnecting(false);
+        }
+    };
+
+    const handleWsSend = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!ngoId) {
+            toast({ variant: 'destructive', title: 'Aktif kurum bulunamadı' });
+            return;
+        }
+        if (!wsSubject.trim()) {
+            toast({ variant: 'destructive', title: 'Konu boş olamaz' });
+            return;
+        }
+        if (!wsMessage.trim()) {
+            toast({ variant: 'destructive', title: 'Mesaj metni boş olamaz' });
+            return;
+        }
+        setWsSending(true);
+        try {
+            const token = await authUser?.getIdToken();
+            const res = await fetch('/api/ngo-admin/mail/campaign', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                    name: wsSubject.trim(),
+                    subject: wsSubject.trim(),
+                    body: wsMessage.trim(),
+                    spec: {
+                        channel: 'email',
+                        useCase: 'marketing',
+                        segmentIds: wsSegmentId !== '__all' ? [wsSegmentId] : undefined,
+                    },
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                if (res.status === 409 && data?.errorCode === 'NOT_CONNECTED') {
+                    toast({ variant: 'destructive', title: 'Workspace bağlı değil', description: 'Önce Workspace hesabınızı bağlayın.' });
+                    await refreshConnection();
+                } else if (res.status === 402) {
+                    toast({ variant: 'destructive', title: 'Yetersiz bakiye', description: 'Daha fazla kontör satın alın.' });
+                } else {
+                    toast({ variant: 'destructive', title: 'Gönderim başarısız', description: typeof data?.message === 'string' ? data.message : undefined });
+                }
+                return;
+            }
+            toast({ title: 'Workspace toplu mail kuyruğa alındı', description: `${data.queued ?? ''} alıcı kuyruğa eklendi.` });
+            setWsSubject('');
+            setWsMessage('');
+        } catch {
+            toast({ variant: 'destructive', title: 'Gönderim başarısız', description: 'Bağlantı hatası.' });
+        } finally {
+            setWsSending(false);
+        }
+    };
 
     const walletRef = useMemoFirebase(
         () => (db && ngoId ? doc(db, COLLECTIONS.ngoMessagingWallets, ngoId) : null),
@@ -160,6 +347,124 @@ export default function MailManagementPage() {
                     </Button>
                 </CardContent>
             </Card>
+
+            {connection?.gateOpen === false && (
+                <Card className="border-muted bg-muted/30">
+                    <CardContent className="p-4 flex items-start gap-3">
+                        <div className="h-10 w-10 shrink-0 rounded-xl bg-muted flex items-center justify-center">
+                            <Lock className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm font-semibold">Workspace Toplu Mail</p>
+                            <p className="text-xs text-muted-foreground">
+                                Bu özellik kurumunuz için henüz açılmadı.
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {connection?.gateOpen === true && !connection.connected && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Link2 className="h-5 w-5 text-primary" />
+                            Workspace Hesabını Bağla
+                        </CardTitle>
+                        <CardDescription>
+                            Kurumunuzun Google Workspace adresinden toplu mail gönderin. Şifre olarak Google App Password kullanın.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form className="space-y-4" onSubmit={handleWsConnect}>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label>Gönderen E-posta</Label>
+                                    <Input value={wsFromEmail} onChange={(e) => setWsFromEmail(e.target.value)} placeholder="info@kurumunuz.org" type="email" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Görünen Ad</Label>
+                                    <Input value={wsFromName} onChange={(e) => setWsFromName(e.target.value)} placeholder="Kurumunuzun Adı" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>SMTP Sunucu</Label>
+                                    <Input value={wsSmtpHost} onChange={(e) => setWsSmtpHost(e.target.value)} placeholder="smtp.gmail.com" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>SMTP Port</Label>
+                                    <Input value={wsSmtpPort} onChange={(e) => setWsSmtpPort(e.target.value)} placeholder="587" inputMode="numeric" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>SMTP Kullanıcı</Label>
+                                    <Input value={wsSmtpUser} onChange={(e) => setWsSmtpUser(e.target.value)} placeholder="info@kurumunuz.org" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>App Password</Label>
+                                    <Input value={wsSmtpPassword} onChange={(e) => setWsSmtpPassword(e.target.value)} placeholder="Google App Password" type="password" autoComplete="new-password" />
+                                </div>
+                            </div>
+                            <Button type="submit" className="w-full" disabled={wsConnecting}>
+                                {wsConnecting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Link2 className="mr-2 h-4 w-4" />}
+                                Bağla
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            )}
+
+            {connection?.gateOpen === true && connection.connected && (
+                <Card className="border-primary/30">
+                    <CardHeader>
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                            <CardTitle className="flex items-center gap-2">
+                                <Send className="h-5 w-5 text-primary" />
+                                Workspace Toplu Mail Gönder
+                            </CardTitle>
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                                    <CheckCircle2 className="h-3.5 w-3.5" />
+                                    Bağlı {connection.fromEmail ?? ''}
+                                </span>
+                                <Button variant="outline" size="sm" onClick={handleWsDisconnect} disabled={wsDisconnecting}>
+                                    {wsDisconnecting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Bağlantıyı Kaldır'}
+                                </Button>
+                            </div>
+                        </div>
+                        <CardDescription>
+                            Kurumunuzun Workspace adresinden topluluğunuza mail gönderin. Gönderim hızı dakikada 1 maildir.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form className="space-y-4" onSubmit={handleWsSend}>
+                            <div className="space-y-2">
+                                <Label>Alıcı Kaynağı</Label>
+                                <select
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    value={wsSegmentId}
+                                    onChange={(e) => setWsSegmentId(e.target.value)}
+                                >
+                                    <option value="__all">Tüm topluluk üyeleri</option>
+                                    {wsMailSegments.map((s) => (
+                                        <option key={s.id} value={s.id}>{s.name ?? s.id}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Konu</Label>
+                                <Input value={wsSubject} onChange={(e) => setWsSubject(e.target.value)} placeholder="E-posta konusu" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Mesaj</Label>
+                                <Textarea rows={8} value={wsMessage} onChange={(e) => setWsMessage(e.target.value)} placeholder="Mesajınızı yazın..." />
+                            </div>
+                            <Button type="submit" className="w-full" disabled={wsSending}>
+                                {wsSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                                Workspace Toplu Mail Gönder
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            )}
 
             {setupStatus !== null && !setupActive && (
                 <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-300 bg-amber-50/60 text-amber-800">

@@ -20,6 +20,7 @@ import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import type { NGO } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
 import TransparencyEditor from '@/components/super-admin/transparency-editor';
+import { MailFeatureToggle } from './_components/MailFeatureToggle';
 
 const MEMBERSHIP_OPTIONS = [
     'Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool',
@@ -791,6 +792,17 @@ export default function NgoEditPage() {
 
             {/* Şeffaflık Endeksi — STK adına belge/bilgi yükle, puan otomatik hesaplanır */}
             <TransparencyEditor ngoId={id} ownerUid={ownerUid} ngoName={ngo.name} />
+
+            {/* Özellik Yetkileri — süper-admin'in bu STK'ya açtığı özellikler */}
+            <Card className="rounded-2xl">
+                <CardHeader><CardTitle className="text-base">Özellik Yetkileri</CardTitle></CardHeader>
+                <CardContent>
+                    <MailFeatureToggle
+                        ngoId={id}
+                        initialEnabled={Boolean((ngo as NGO & { featureFlags?: { bulkMailEnabled?: boolean } }).featureFlags?.bulkMailEnabled)}
+                    />
+                </CardContent>
+            </Card>
 
             <div className="flex justify-end gap-3 pt-2">
                 <Button variant="outline" className="rounded-xl" onClick={() => router.back()}>İptal</Button>

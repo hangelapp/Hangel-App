@@ -128,6 +128,9 @@ export const COLLECTIONS = {
   // STK başına bağlı Google Ads hesabı (OAuth refresh token + customerId).
   // Doc id = ngoId. SADECE Admin SDK yazar/okur (client erişmez, refreshToken secret).
   adAccounts: 'adAccounts',
+  // STK başına bağlı Workspace SMTP hesabı (fromEmail + şifreli App Password).
+  // Doc id = ngoId. SADECE Admin SDK yazar/okur (client erişmez, smtpPasswordEnc secret).
+  mailAccounts: 'mailAccounts',
   // hangel MCC ajans bağlantısı (TEK doc id 'mcc'): MCC sahibinin OAuth refresh token'ı.
   adAgency: 'adAgency',
   // STK başına bağlı Meta (Facebook/Instagram) reklam hesabı (long-lived
