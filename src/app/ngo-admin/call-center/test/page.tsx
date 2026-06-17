@@ -12,20 +12,8 @@
 
 import { useState } from 'react';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
+import { useSantralCredentials } from '@/lib/santral/use-credentials';
 import { Phone, PhoneOff, Mic, MicOff, PhoneIncoming } from 'lucide-react';
-
-const WSS = process.env.NEXT_PUBLIC_SANTRAL_WSS_URL ?? '';
-const SIP_USER = process.env.NEXT_PUBLIC_SANTRAL_SIP_USER ?? '';
-const SIP_PASS = process.env.NEXT_PUBLIC_SANTRAL_SIP_PASS ?? '';
-const SIP_DOMAIN = process.env.NEXT_PUBLIC_SANTRAL_SIP_DOMAIN ?? '';
-const TURN_URL = process.env.NEXT_PUBLIC_SANTRAL_TURN_URL ?? '';
-const TURN_USER = process.env.NEXT_PUBLIC_SANTRAL_TURN_USER ?? '';
-const TURN_PASS = process.env.NEXT_PUBLIC_SANTRAL_TURN_PASS ?? '';
-
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: 'stun:stun.l.google.com:19302' },
-  ...(TURN_URL ? [{ urls: TURN_URL, username: TURN_USER, credential: TURN_PASS }] : []),
-];
 
 const STATE_LABEL: Record<string, string> = {
   unconfigured: 'Yapılandırılmadı',
@@ -57,12 +45,14 @@ function fmt(sec: number): string {
 
 export default function SantralTestPage() {
   const [number, setNumber] = useState('');
+  // SIP/TURN credential'ları auth korumalı endpoint'ten gelir (bundle'da YOK).
+  const { creds, loading } = useSantralCredentials();
   const sip = useSipPhone({
-    wssUrl: WSS || null,
-    username: SIP_USER || null,
-    password: SIP_PASS || null,
-    domain: SIP_DOMAIN || null,
-    iceServers: ICE_SERVERS,
+    wssUrl: creds?.wssUrl || null,
+    username: creds?.sipUsername || null,
+    password: creds?.sipPassword || null,
+    domain: creds?.sipDomain || null,
+    iceServers: creds?.iceServers,
   });
 
   const idle = sip.state === 'registered' || sip.state === 'ended';
@@ -77,7 +67,11 @@ export default function SantralTestPage() {
         </p>
       </div>
 
-      {!sip.ready ? (
+      {loading ? (
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">
+          Santral yapılandırması yükleniyor…
+        </div>
+      ) : !sip.ready ? (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
           Santral yapılandırması bulunamadı (WSS/SIP env eksik). Deploy + env girilince
           bu sayfa otomatik kaydolur.

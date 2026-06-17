@@ -538,6 +538,24 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
               Kurum tipi ve kütük numarası STK profilinizden otomatik gelir.
             </p>
 
+            {/* Profil eksikse uyar — tip/kütük otomatik gelemiyor */}
+            {(!ngoType || !kutukKnown) && (
+              <div className="flex items-start gap-2.5 rounded-md border border-amber-300 bg-amber-50/60 p-3 text-xs text-amber-900">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold">STK profiliniz eksik.</p>
+                  <p>
+                    {!ngoType && 'Kurum tipi profilinizde kayıtlı değil (varsayılan: Dernek). '}
+                    {!kutukKnown && 'Kütük/tescil numaranız profilinizde yok, aşağıdan elle girin. '}
+                    Profilinizi tamamlarsanız bu alanlar otomatik dolar.
+                  </p>
+                  <a href="/ngo-admin/manage-profile" className="inline-flex items-center gap-1 font-medium text-amber-800 hover:underline">
+                    Profili tamamla <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+            )}
+
             {/* Kurum Tipi — STK profilinden, KİLİTLİ */}
             <div className="space-y-1.5">
               <Label>Kurum Tipi</Label>

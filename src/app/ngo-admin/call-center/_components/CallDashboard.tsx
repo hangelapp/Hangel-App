@@ -32,29 +32,10 @@ import {
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query, where, limit } from 'firebase/firestore';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
+import { useSantralCredentials } from '@/lib/santral/use-credentials';
 
 const CALL_SESSIONS = 'callSessions';
 const ACTIVE_STATUSES = ['ringing', 'in-progress'] as const;
-
-/**
- * GATE: WebRTC santral geçidi WSS URL'i + tarayıcı SIP endpoint env fallback'i.
- * ngoCallCenter doc'unda credential varsa o öncelikli; yoksa bu env ile tek-kiracı
- * çalışır. Hiçbiri yoksa useSipPhone pasif kalır (ready=false) ve dialer KIRILMAZ.
- */
-const SANTRAL_WSS_URL = process.env.NEXT_PUBLIC_SANTRAL_WSS_URL ?? '';
-const SANTRAL_SIP_USER = process.env.NEXT_PUBLIC_SANTRAL_SIP_USER ?? '';
-const SANTRAL_SIP_PASS = process.env.NEXT_PUBLIC_SANTRAL_SIP_PASS ?? '';
-const SANTRAL_SIP_DOMAIN = process.env.NEXT_PUBLIC_SANTRAL_SIP_DOMAIN ?? '';
-const SANTRAL_TURN_URL = process.env.NEXT_PUBLIC_SANTRAL_TURN_URL ?? '';
-const SANTRAL_TURN_USER = process.env.NEXT_PUBLIC_SANTRAL_TURN_USER ?? '';
-const SANTRAL_TURN_PASS = process.env.NEXT_PUBLIC_SANTRAL_TURN_PASS ?? '';
-// WebRTC ICE: public STUN + kendi TURN'ümüz. NAT arkasında ses için TURN şart.
-const SANTRAL_ICE_SERVERS: RTCIceServer[] = [
-  { urls: 'stun:stun.l.google.com:19302' },
-  ...(SANTRAL_TURN_URL
-    ? [{ urls: SANTRAL_TURN_URL, username: SANTRAL_TURN_USER, credential: SANTRAL_TURN_PASS }]
-    : []),
-];
 
 const SIP_STATE_LABEL: Record<string, string> = {
   unconfigured: 'Yapılandırılmadı',
@@ -108,11 +89,6 @@ interface NgoCallCenterDoc {
   providerId?: string;
   monthlyMinutesQuota?: number;
   currentMonthUsage?: number;
-  // WebRTC geçidinin TARAYICI SIP endpoint credential'ları (operatör trunk şifresi
-  // DEĞİL). Doluysa env fallback'ine göre öncelikli.
-  sipUsername?: string;
-  sipPassword?: string;
-  sipDomain?: string;
 }
 
 interface CallDashboardProps {
@@ -145,13 +121,15 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
 
   const [dialPhone, setDialPhone] = useState('');
 
-  // GERÇEK WebRTC çevirici — ngoCallCenter doc credential'ı öncelikli, yoksa env.
+  // GERÇEK WebRTC çevirici — SIP/TURN credential'ları auth korumalı endpoint'ten
+  // gelir (tenant-özel sipUsername fallback'i sunucuda çözülür; bundle'da YOK).
+  const { creds, loading: credsLoading } = useSantralCredentials();
   const sip = useSipPhone({
-    wssUrl: SANTRAL_WSS_URL || null,
-    username: (ccDoc.sipUsername || SANTRAL_SIP_USER) || null,
-    password: (ccDoc.sipPassword || SANTRAL_SIP_PASS) || null,
-    domain: (ccDoc.sipDomain || SANTRAL_SIP_DOMAIN) || null,
-    iceServers: SANTRAL_ICE_SERVERS,
+    wssUrl: creds?.wssUrl || null,
+    username: creds?.sipUsername || null,
+    password: creds?.sipPassword || null,
+    domain: creds?.sipDomain || null,
+    iceServers: creds?.iceServers,
   });
 
   // Aktif çağrılar — STK kendi ngoId + ACTIVE_STATUSES.
@@ -278,8 +256,12 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
           {/* Remote ses — karşı tarafın sesi buradan çalar. */}
           <audio ref={sip.remoteAudioRef} autoPlay className="hidden" />
 
-          {!sip.ready ? (
-            /* GATE: env/credential yok → dialer pasif, panel kırılmaz. */
+          {credsLoading ? (
+            <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700">
+              Santral yapılandırması yükleniyor…
+            </div>
+          ) : !sip.ready ? (
+            /* GATE: credential yok → dialer pasif, panel kırılmaz. */
             <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
               Santral henüz hazır değil (WSS/SIP yapılandırması eksik). Geçit bağlanınca
               tarayıcıdan gerçek arama yapabilirsiniz.

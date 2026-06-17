@@ -41,9 +41,8 @@ import {
 import { messagingFetch } from '@/lib/messaging/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
+import { useSantralCredentials } from '@/lib/santral/use-credentials';
 
 interface ContactDetail {
   id: string;
@@ -79,42 +78,6 @@ interface NoteRow {
 }
 
 type CallState = 'idle' | 'ringing' | 'in-progress' | 'ended';
-
-/** users/{uid} — managedNgoId çekmek için minimal shape. */
-interface UserDocLite {
-  managedNgoId?: string;
-}
-
-/**
- * ngoCallCenter/{ngoId} — WebRTC geçidinin TARAYICI endpoint credential'ları.
- * Bu, operatör trunk şifresi DEĞİL; geçidin (Asterisk) browser SIP endpoint'i.
- */
-interface NgoCallCenterSipDoc {
-  sipUsername?: string;
-  sipPassword?: string;
-  sipDomain?: string;
-}
-
-/**
- * GATE: WebRTC santral geçidi WSS URL'i. Env yoksa gerçek arama PASİF kalır;
- * panel mevcut mock davranışına düşer.
- */
-const SANTRAL_WSS_URL = process.env.NEXT_PUBLIC_SANTRAL_WSS_URL ?? '';
-// Geçidin tarayıcı SIP endpoint'i + TURN — tek geçit, env'den (ngoCallCenter doc'u
-// varsa o öncelikli; yoksa bu env fallback ile tek-kiracı çalışır).
-const SANTRAL_SIP_USER = process.env.NEXT_PUBLIC_SANTRAL_SIP_USER ?? '';
-const SANTRAL_SIP_PASS = process.env.NEXT_PUBLIC_SANTRAL_SIP_PASS ?? '';
-const SANTRAL_SIP_DOMAIN = process.env.NEXT_PUBLIC_SANTRAL_SIP_DOMAIN ?? '';
-const SANTRAL_TURN_URL = process.env.NEXT_PUBLIC_SANTRAL_TURN_URL ?? '';
-const SANTRAL_TURN_USER = process.env.NEXT_PUBLIC_SANTRAL_TURN_USER ?? '';
-const SANTRAL_TURN_PASS = process.env.NEXT_PUBLIC_SANTRAL_TURN_PASS ?? '';
-// WebRTC ICE: public STUN + kendi TURN'ümüz. NAT arkasında ses için TURN şart.
-const SANTRAL_ICE_SERVERS: RTCIceServer[] = [
-  { urls: 'stun:stun.l.google.com:19302' },
-  ...(SANTRAL_TURN_URL
-    ? [{ urls: SANTRAL_TURN_URL, username: SANTRAL_TURN_USER, credential: SANTRAL_TURN_PASS }]
-    : []),
-];
 
 const DISPOSITIONS: { value: string; label: string }[] = [
   { value: 'answered', label: 'Görüşüldü' },
@@ -172,32 +135,19 @@ export default function ActiveCallPage() {
   const { toast } = useToast();
 
   // --- WebRTC santral entegrasyonu ---------------------------------------
-  // ngoId → users/{uid}.managedNgoId, sonra ngoCallCenter/{ngoId}'den geçidin
-  // tarayıcı SIP endpoint credential'ları okunur. Env (WSS) veya credential
-  // eksikse useSipPhone pasif kalır ve panel mock akışına düşer.
-  const db = useFirestore();
-  const { user } = useUser();
-  const userRef = useMemoFirebase(
-    () => (user ? doc(db, 'users', user.uid) : null),
-    [db, user],
-  );
-  const { data: userDoc } = useDoc<UserDocLite>(userRef);
-  const ngoId = userDoc?.managedNgoId ?? null;
-
-  const ccRef = useMemoFirebase(
-    () => (ngoId ? doc(db, 'ngoCallCenter', ngoId) : null),
-    [db, ngoId],
-  );
-  const { data: ccSipDoc } = useDoc<NgoCallCenterSipDoc>(ccRef);
+  // SIP/TURN credential'ları auth korumalı endpoint'ten gelir; tenant-özel
+  // sipUsername fallback'i sunucuda çözülür (bundle'da YOK). Credential eksik/
+  // yüklenirken useSipPhone pasif kalır ve panel mock akışına düşer.
+  const { creds } = useSantralCredentials();
 
   const sip = useSipPhone({
-    wssUrl: SANTRAL_WSS_URL || null,
-    username: (ccSipDoc?.sipUsername || SANTRAL_SIP_USER) || null,
-    password: (ccSipDoc?.sipPassword || SANTRAL_SIP_PASS) || null,
-    domain: (ccSipDoc?.sipDomain || SANTRAL_SIP_DOMAIN) || null,
-    iceServers: SANTRAL_ICE_SERVERS,
+    wssUrl: creds?.wssUrl || null,
+    username: creds?.sipUsername || null,
+    password: creds?.sipPassword || null,
+    domain: creds?.sipDomain || null,
+    iceServers: creds?.iceServers,
   });
-  // Gerçek arama yalnızca env + credential tam olduğunda aktif.
+  // Gerçek arama yalnızca credential tam olduğunda aktif.
   const sipEnabled = sip.ready;
 
   const [loading, setLoading] = useState(true);
