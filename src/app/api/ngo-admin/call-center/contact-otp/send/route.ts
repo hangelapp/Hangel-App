@@ -21,6 +21,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { canonicalPhone } from '@/lib/phone-normalize';
 import { getSmsProvider } from '@/lib/messaging/providers/sms';
+import { sendWhatsAppOtp } from '@/lib/whatsapp';
 import crypto from 'crypto';
 
 export const runtime = 'nodejs';
@@ -125,29 +126,41 @@ export async function POST(req: NextRequest) {
       expiresAt: Date.now() + OTP_TTL_MS,
     });
 
+    // Teslim kanalı: NETGSM varsa SMS; yoksa Meta WhatsApp (prod'da configli);
+    // ikisi de yoksa test için kodu ekrana döndür.
     const provider = getSmsProvider();
-    const sendResult = await provider.send({
-      to: fullPhone,
-      body: `hangel çağrı merkezi yetkilendirme kodunuz: ${otp}. Kod 10 dakika geçerlidir.`,
-      senderId: process.env.NETGSM_HEADER || 'hangel',
-      useCase: 'transactional',
-    });
+    let channel: 'sms' | 'whatsapp' | 'screen' = 'sms';
+    let devCode: string | undefined;
 
-    if (!sendResult.ok) {
-      const masked = fullPhone.slice(0, -4).replace(/\d/g, '*') + fullPhone.slice(-4);
-      console.error('[santral-contact-otp/send] sms failed', { phone: masked, errorCode: sendResult.errorCode });
-      return NextResponse.json(
-        { errorCode: 'SMS_SEND_FAILED', message: 'Kod gönderilemedi. Lütfen tekrar deneyin.' },
-        { status: 503 },
-      );
+    if (provider.driver !== 'mock') {
+      const sendResult = await provider.send({
+        to: fullPhone,
+        body: `hangel çağrı merkezi yetkilendirme kodunuz: ${otp}. Kod 10 dakika geçerlidir.`,
+        senderId: process.env.NETGSM_HEADER || 'hangel',
+        useCase: 'transactional',
+      });
+      if (!sendResult.ok) {
+        const masked = fullPhone.slice(0, -4).replace(/\d/g, '*') + fullPhone.slice(-4);
+        console.error('[santral-contact-otp/send] sms failed', { phone: masked, errorCode: sendResult.errorCode });
+        return NextResponse.json(
+          { errorCode: 'SMS_SEND_FAILED', message: 'Kod gönderilemedi. Lütfen tekrar deneyin.' },
+          { status: 503 },
+        );
+      }
+    } else {
+      // SMS sağlayıcı mock → gerçek teslim için WhatsApp dene.
+      const wa = await sendWhatsAppOtp(fullPhone, otp, 'tr');
+      if (wa.ok) {
+        channel = 'whatsapp';
+      } else {
+        // Ne SMS ne WhatsApp teslim edilebildi → test için kodu yanıtta göster.
+        channel = 'screen';
+        devCode = otp;
+        console.warn('[santral-contact-otp/send] sms+whatsapp teslim edilemedi, kod ekranda', { errorCode: wa.errorCode });
+      }
     }
 
-    // SMS sağlayıcı mock iken (NETGSM env yok) gerçek SMS gitmez; test edilebilmesi
-    // için kodu yanıtta döndürürüz. NETGSM env tanımlanınca driver 'netgsm' olur ve
-    // devCode OTOMATİK kapanır — gerçek kullanıcıya kod sızmaz.
-    const devCode = provider.driver === 'mock' ? otp : undefined;
-
-    return NextResponse.json({ ok: true, masked: maskPhone(fullPhone), ...(devCode ? { devCode } : {}) });
+    return NextResponse.json({ ok: true, channel, masked: maskPhone(fullPhone), ...(devCode ? { devCode } : {}) });
   } catch (e) {
     console.error('[santral-contact-otp/send] internal error', e);
     return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'Sunucu hatası.' }, { status: 500 });

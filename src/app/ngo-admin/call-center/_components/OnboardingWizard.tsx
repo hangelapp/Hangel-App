@@ -333,13 +333,14 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
       }
       setOtpSent(true);
       setOtpMasked(data.masked || '');
-      // Mock SMS modu: kod yanıtta gelir, test için otomatik doldur.
+      // Teslim edilemediyse (ne SMS ne WhatsApp) kod yanıtta gelir, test için otomatik doldur.
       if (data.devCode) setOtpCode(String(data.devCode));
+      const chan = data.channel === 'whatsapp' ? 'WhatsApp' : data.channel === 'sms' ? 'SMS' : '';
       toast({
         title: 'Doğrulama kodu gönderildi',
         description: data.devCode
-          ? `Test modu (SMS mock) — kod: ${data.devCode}`
-          : data.masked ? `${data.masked} numarasına SMS yollandı.` : undefined,
+          ? `Test modu — kod: ${data.devCode}`
+          : data.masked ? `${data.masked} numarasına ${chan} ile gönderildi.` : undefined,
       });
     } catch {
       setOtpError('Kod gönderilemedi, tekrar deneyin.');
