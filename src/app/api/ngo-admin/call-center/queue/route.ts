@@ -43,6 +43,8 @@ interface QueueItem {
   scheduledAt?: string;
   reason?: string;
   callbackId?: string;
+  whatsAppResponse?: 'yes' | 'no' | null;
+  whatsAppPending?: boolean;
 }
 
 interface CallerContext {
@@ -85,6 +87,7 @@ export async function GET(req: NextRequest) {
 
   const db = getAdminFirestore();
   const now = Timestamp.now();
+  const oneDayAgo = Timestamp.fromMillis(now.toMillis() - 24 * 3600 * 1000);
 
   // 1) DUE callback'ler — scheduledAt <= now, status=pending.
   const callbacksSnap = await db
@@ -112,12 +115,26 @@ export async function GET(req: NextRequest) {
     let phone = '';
     let attempts = 0;
     let contactName = d.contactName ?? '';
+    let waResponse: 'yes' | 'no' | null = null;
+    let waPending = false;
     const contactSnap = await db.collection(COLLECTIONS.santralContacts).doc(d.contactId).get();
     if (contactSnap.exists) {
-      const c = contactSnap.data() as { phone?: string; name?: string; attempts?: number };
+      const c = contactSnap.data() as {
+        phone?: string;
+        name?: string;
+        attempts?: number;
+        lastWhatsAppResponse?: string;
+        lastWhatsAppSentAt?: unknown;
+      };
       phone = c.phone ?? '';
       attempts = typeof c.attempts === 'number' ? c.attempts : 0;
       if (!contactName) contactName = c.name ?? '';
+      if (c.lastWhatsAppResponse === 'yes' || c.lastWhatsAppResponse === 'no') {
+        waResponse = c.lastWhatsAppResponse;
+      }
+      if (!waResponse && c.lastWhatsAppSentAt instanceof Timestamp) {
+        waPending = c.lastWhatsAppSentAt.toMillis() < oneDayAgo.toMillis();
+      }
     }
     if (!phone) continue;
 
@@ -131,6 +148,8 @@ export async function GET(req: NextRequest) {
       callbackId: doc.id,
       scheduledAt: toIsoOrUndefined(d.scheduledAt),
       reason: d.reason,
+      whatsAppResponse: waResponse,
+      whatsAppPending: waPending,
     });
   }
 
@@ -148,8 +167,21 @@ export async function GET(req: NextRequest) {
 
     for (const doc of newSnap.docs) {
       if (callbackContactIds.has(doc.id)) continue;
-      const d = doc.data() as { name?: string; phone?: string };
+      const d = doc.data() as {
+        name?: string;
+        phone?: string;
+        lastWhatsAppResponse?: string;
+        lastWhatsAppSentAt?: unknown;
+      };
       if (!d.phone) continue;
+      const waResponse =
+        d.lastWhatsAppResponse === 'yes' || d.lastWhatsAppResponse === 'no'
+          ? d.lastWhatsAppResponse
+          : null;
+      const waPending =
+        !waResponse &&
+        d.lastWhatsAppSentAt instanceof Timestamp &&
+        d.lastWhatsAppSentAt.toMillis() < oneDayAgo.toMillis();
       newItems.push({
         type: 'new',
         priority: 'normal',
@@ -157,6 +189,8 @@ export async function GET(req: NextRequest) {
         contactName: d.name ?? '',
         phone: d.phone,
         attempts: 0,
+        whatsAppResponse: waResponse,
+        whatsAppPending: waPending,
       });
     }
   }
@@ -181,8 +215,18 @@ export async function GET(req: NextRequest) {
         phone?: string;
         attempts?: number;
         lastDisposition?: string;
+        lastWhatsAppResponse?: string;
+        lastWhatsAppSentAt?: unknown;
       };
       if (!d.phone) continue;
+      const waResponse =
+        d.lastWhatsAppResponse === 'yes' || d.lastWhatsAppResponse === 'no'
+          ? d.lastWhatsAppResponse
+          : null;
+      const waPending =
+        !waResponse &&
+        d.lastWhatsAppSentAt instanceof Timestamp &&
+        d.lastWhatsAppSentAt.toMillis() < oneDayAgo.toMillis();
       retryItems.push({
         type: 'retry',
         priority: 'low',
@@ -191,11 +235,41 @@ export async function GET(req: NextRequest) {
         phone: d.phone,
         attempts: typeof d.attempts === 'number' ? d.attempts : 0,
         lastDisposition: d.lastDisposition,
+        whatsAppResponse: waResponse,
+        whatsAppPending: waPending,
       });
     }
   }
 
-  const queue = [...callbackItems, ...newItems, ...retryItems].slice(0, MAX_QUEUE);
+  // WA cevap verenler önce sıralanır (kalan sıra korunur).
+  const combined = [...callbackItems, ...newItems, ...retryItems];
+  combined.sort((a, b) => {
+    const aYes = a.whatsAppResponse === 'yes' ? 1 : 0;
+    const bYes = b.whatsAppResponse === 'yes' ? 1 : 0;
+    return bYes - aYes;
+  });
+  const queue = combined.slice(0, MAX_QUEUE);
+
+  // WA cevap bekleyen sayısı — tenant geneli aggregate (queue dışı da sayar).
+  // eslint-disable-next-line no-useless-assignment
+  let whatsAppPendingTotal = 0;
+  try {
+    const pendingAgg = await db
+      .collection(COLLECTIONS.santralContacts)
+      .where('ngoId', '==', ctx.ngoId)
+      .where('lastWhatsAppSentAt', '<', oneDayAgo)
+      .where('lastWhatsAppResponse', '==', null)
+      .count()
+      .get();
+    whatsAppPendingTotal = pendingAgg.data().count;
+  } catch {
+    // count agg desteklenmezse 0 dön.
+    whatsAppPendingTotal = 0;
+  }
+
+  const whatsAppRespondersInQueue = queue.filter(
+    (q) => q.whatsAppResponse === 'yes',
+  ).length;
 
   return NextResponse.json({
     queue,
@@ -204,6 +278,8 @@ export async function GET(req: NextRequest) {
       newContacts: newItems.length,
       retries: retryItems.length,
       total: queue.length,
+      whatsAppResponders: whatsAppRespondersInQueue,
+      whatsAppPending: whatsAppPendingTotal,
     },
   });
 }

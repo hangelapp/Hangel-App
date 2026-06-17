@@ -156,10 +156,12 @@ async function applyInboundMessage(
   const tsMs = typeof msg.timestamp === 'string' ? Number(msg.timestamp) * 1000 : Date.now();
   const ts = new Date(Number.isFinite(tsMs) ? tsMs : Date.now());
 
-  // Mesaj body + type normalize
+  // Mesaj body + type normalize — initial değerler else branch'te kullanılır
+  /* eslint-disable no-useless-assignment */
   let body = '';
   let type: 'text' | 'image' | 'document' | 'button-reply' = 'text';
   let mediaUrl: string | null = null;
+  /* eslint-enable no-useless-assignment */
 
   if (msg.type === 'text' && msg.text?.body) {
     body = msg.text.body;
@@ -339,6 +341,7 @@ export async function POST(req: NextRequest) {
       const metaPhoneId = value.metadata?.phone_number_id;
       if (!metaPhoneId) continue;
 
+      // eslint-disable-next-line no-useless-assignment
       let tenant: { ngoId: string } | null = null;
       try { tenant = await resolveTenantByMetaPhoneId(db, metaPhoneId); }
       catch (err) {

@@ -211,7 +211,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   // Phone number id resolve: body veya aktif tek numara
+  // eslint-disable-next-line no-useless-assignment
   let wabaPhoneNumberId = typeof body.wabaPhoneNumberId === 'string' ? body.wabaPhoneNumberId.trim() : '';
+  // eslint-disable-next-line no-useless-assignment
   let metaPhoneId = '';
   if (wabaPhoneNumberId) {
     const phoneSnap = await db.collection(COLLECTIONS.wabaPhoneNumbers).doc(wabaPhoneNumberId).get();
