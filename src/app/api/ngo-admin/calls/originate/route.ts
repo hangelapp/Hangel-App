@@ -196,12 +196,18 @@ export async function POST(req: NextRequest) {
   }
 
   // Concurrent limit — bu STK'nın ringing/in-progress oturumları say.
-  const activeSnap = await db
+  // TEK eşitlik sorgusu (composite index GEREKMEZ) + status'u client-side say;
+  // böylece index deploy edilmese bile originate 500 atmaz, oturum kaydı oluşur.
+  const ngoSnap = await db
     .collection(CALL_SESSIONS)
     .where('ngoId', '==', targetNgoId)
-    .where('status', 'in', ['ringing', 'in-progress'])
+    .limit(500)
     .get();
-  if (activeSnap.size >= CONCURRENT_LIMIT) {
+  const activeCount = ngoSnap.docs.filter((d) => {
+    const s = (d.data() as { status?: string }).status;
+    return s === 'ringing' || s === 'in-progress';
+  }).length;
+  if (activeCount >= CONCURRENT_LIMIT) {
     return NextResponse.json(
       {
         errorCode: 'CONCURRENT_LIMIT',

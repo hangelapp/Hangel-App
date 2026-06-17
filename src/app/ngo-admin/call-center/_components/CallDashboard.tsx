@@ -12,7 +12,7 @@
  * gösterilmez (super-admin route'unda recordingStorageUrl alanı düşürülür).
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +31,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, orderBy, query, where, limit } from 'firebase/firestore';
+import { collection, query, where, limit } from 'firebase/firestore';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
 import { useSantralCredentials } from '@/lib/santral/use-credentials';
 import { messagingFetch } from '@/lib/messaging/client';
@@ -125,6 +125,19 @@ const STATUS_BADGE: Record<string, string> = {
   'in-progress': 'bg-violet-100 text-violet-800 border-violet-200',
   completed: 'bg-emerald-100 text-emerald-800 border-emerald-200',
   failed: 'bg-rose-100 text-rose-800 border-rose-200',
+  'no-answer': 'bg-zinc-100 text-zinc-700 border-zinc-200',
+  busy: 'bg-orange-100 text-orange-800 border-orange-200',
+  cancelled: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  ringing: 'Çalıyor',
+  'in-progress': 'Görüşmede',
+  completed: 'Tamamlandı',
+  failed: 'Başarısız',
+  'no-answer': 'Cevapsız',
+  busy: 'Meşgul',
+  cancelled: 'İptal',
 };
 
 export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
@@ -136,9 +149,9 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
   // Ülke kodu — kayıt ekranındaki gibi; Türkiye (+90) varsayılan.
   const [dialCountryIso, setDialCountryIso] = useState('TR');
   const dialCode = COUNTRY_PHONE_CODES.find((c) => c.iso === dialCountryIso)?.code ?? '+90';
-  // Originate API'sinden dönen son callSessions doc id'si (geçmiş/KPI için
-  // canlı query zaten bu doc'u yakalar; burada ileride referans için tutulur).
-  const [, setActiveSessionId] = useState<string | null>(null);
+  // Originate API'sinden dönen son callSessions doc id'si — arama bitince
+  // süre/durum (completed) bu doc'a yazılır (geçmiş anlamlı görünsün).
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   // GERÇEK WebRTC çevirici — SIP/TURN credential'ları auth korumalı endpoint'ten
   // gelir (tenant-özel sipUsername fallback'i sunucuda çözülür; bundle'da YOK).
@@ -167,36 +180,35 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
     },
   });
 
-  // Aktif çağrılar — STK kendi ngoId + ACTIVE_STATUSES.
-  const activeQuery = useMemoFirebase(
-    () =>
-      query(
-        collection(db, CALL_SESSIONS),
-        where('ngoId', '==', ngoId),
-        where('status', 'in', [...ACTIVE_STATUSES]),
-        orderBy('startedAt', 'desc'),
-        limit(20),
-      ),
+  // TÜM oturumlar — TEK eşitlik sorgusu (composite index GEREKMEZ; index deploy'una
+  // bağlı değil, her zaman çalışır). Geçmiş/aktif/cevapsız/KPI bundan client-side türetilir.
+  const allQuery = useMemoFirebase(
+    () => query(collection(db, CALL_SESSIONS), where('ngoId', '==', ngoId), limit(200)),
     [db, ngoId],
   );
-  const { data: activeCalls, isLoading: activeLoading } = useCollection<CallSessionRow>(activeQuery);
+  const { data: allSessions, isLoading: sessionsLoading } = useCollection<CallSessionRow>(allQuery);
+  const startedMs = (c: CallSessionRow) => c.startedAt?.toDate?.()?.getTime?.() ?? 0;
 
-  // Geçmiş çağrılar — sadece bu STK.
-  const historyQuery = useMemoFirebase(
-    () =>
-      query(
-        collection(db, CALL_SESSIONS),
-        where('ngoId', '==', ngoId),
-        orderBy('startedAt', 'desc'),
-        limit(50),
-      ),
-    [db, ngoId],
+  // Geçmiş — startedAt'e göre en yeni 50 (client-side sıralama).
+  const history = useMemo(
+    () => [...(allSessions ?? [])].sort((a, b) => startedMs(b) - startedMs(a)).slice(0, 50),
+    [allSessions],
   );
-  const { data: history, isLoading: historyLoading } = useCollection<CallSessionRow>(historyQuery);
+  const historyLoading = sessionsLoading;
 
-  // KPI hesapları — geçmiş üzerinden client-side (50 doc).
+  // Aktif çağrılar — ringing/in-progress.
+  const activeCalls = useMemo(
+    () =>
+      (allSessions ?? [])
+        .filter((c) => ACTIVE_STATUSES.includes(c.status as (typeof ACTIVE_STATUSES)[number]))
+        .sort((a, b) => startedMs(b) - startedMs(a)),
+    [allSessions],
+  );
+  const activeLoading = sessionsLoading;
+
+  // KPI — bugünkü çağrı sayısı + ortalama süre.
   const stats = useMemo(() => {
-    const list = history ?? [];
+    const list = allSessions ?? [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     let todayCount = 0;
@@ -212,18 +224,34 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
     }
     const avg = durCount > 0 ? Math.round(totalDur / durCount) : 0;
     return { todayCount, avg };
-  }, [history]);
+  }, [allSessions]);
 
-  // Cevapsız aramalar — mevcut history'den türet (YENİ sorgu/index YOK).
-  // Atanmış kişi offline iken Asterisk geçidi bunları sunucuda 'no-answer' /
-  // missed:true olarak loglar; kişi online olunca burada görür.
+  // Cevapsız aramalar — inbound + no-answer/missed (gateway offline'da loglar).
   const missed = useMemo(
     () =>
-      (history ?? []).filter(
-        (c) => c.direction === 'inbound' && (c.status === 'no-answer' || c.missed === true),
-      ),
-    [history],
+      (allSessions ?? [])
+        .filter((c) => c.direction === 'inbound' && (c.status === 'no-answer' || c.missed === true))
+        .sort((a, b) => startedMs(b) - startedMs(a)),
+    [allSessions],
   );
+
+  // Arama bitince (sip 'ended'/'failed') oturumu tamamla: süre + durum yaz —
+  // böylece Görüşme Geçmişi 'ringing 0:00' yerine gerçek süre/sonuç gösterir.
+  const prevSipStateRef = useRef<string>('');
+  useEffect(() => {
+    const prev = prevSipStateRef.current;
+    prevSipStateRef.current = sip.state;
+    if (prev !== sip.state && (sip.state === 'ended' || sip.state === 'failed') && activeSessionId) {
+      const sid = activeSessionId;
+      const dur = sip.durationSeconds ?? 0;
+      const finalStatus = sip.state === 'failed' ? 'failed' : 'completed';
+      setActiveSessionId(null);
+      void messagingFetch(`/api/ngo-admin/call-center/sessions/${sid}/end`, {
+        method: 'POST',
+        body: JSON.stringify({ duration: dur, status: finalStatus }),
+      }).catch(() => undefined);
+    }
+  }, [sip.state, sip.durationSeconds, activeSessionId]);
 
   const monthlyQuota = ccDoc.monthlyMinutesQuota ?? 0;
   const usage = ccDoc.currentMonthUsage ?? 0;
@@ -549,42 +577,56 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
               <table className="w-full text-sm">
                 <thead className="text-xs text-muted-foreground border-b">
                   <tr>
-                    <th className="text-left py-2 px-2">Tarih</th>
-                    <th className="text-left py-2 px-2">Aranan</th>
+                    <th className="text-left py-2 px-2 whitespace-nowrap">Tarih / Saat</th>
                     <th className="text-left py-2 px-2">Yön</th>
+                    <th className="text-left py-2 px-2">Numara</th>
                     <th className="text-left py-2 px-2">Süre</th>
                     <th className="text-left py-2 px-2">Durum</th>
+                    <th className="text-left py-2 px-2">Sonuç</th>
                     <th className="text-left py-2 px-2">Kayıt</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {history.map((c) => (
-                    <tr key={c.id} className="border-b last:border-0">
-                      <td className="py-2 px-2 whitespace-nowrap">{formatTime(c.startedAt)}</td>
-                      <td className="py-2 px-2 font-mono">{c.calledNumber ?? '—'}</td>
-                      <td className="py-2 px-2">{c.direction ?? '—'}</td>
-                      <td className="py-2 px-2">{formatDuration(c.duration)}</td>
-                      <td className="py-2 px-2">
-                        <Badge className={STATUS_BADGE[c.status ?? ''] ?? ''} variant="outline">
-                          {c.status ?? '—'}
-                        </Badge>
-                      </td>
-                      <td className="py-2 px-2">
-                        {c.recordingStorageUrl ? (
-                          <a
-                            href={c.recordingStorageUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-emerald-700 hover:underline"
-                          >
-                            <Mic className="h-3 w-3" /> Dinle
-                          </a>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {history.map((c) => {
+                    const inbound = c.direction === 'inbound';
+                    const number = (inbound ? c.callerNumber : c.calledNumber) ?? c.calledNumber ?? c.callerNumber ?? '—';
+                    return (
+                      <tr key={c.id} className="border-b last:border-0 hover:bg-muted/30">
+                        <td className="py-2 px-2 whitespace-nowrap">{formatTime(c.startedAt)}</td>
+                        <td className="py-2 px-2 whitespace-nowrap">
+                          {inbound ? (
+                            <span className="inline-flex items-center gap-1 text-violet-700"><PhoneIncoming className="h-3.5 w-3.5" /> Gelen</span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-emerald-700"><Phone className="h-3.5 w-3.5" /> Giden</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 font-mono whitespace-nowrap">{number}</td>
+                        <td className="py-2 px-2 tabular-nums">{formatDuration(c.duration)}</td>
+                        <td className="py-2 px-2">
+                          <Badge className={STATUS_BADGE[c.status ?? ''] ?? ''} variant="outline">
+                            {STATUS_LABEL[c.status ?? ''] ?? c.status ?? '—'}
+                          </Badge>
+                        </td>
+                        <td className="py-2 px-2 text-xs text-muted-foreground max-w-[160px] truncate" title={c.outcome ?? c.notes ?? ''}>
+                          {c.outcome ?? c.notes ?? '—'}
+                        </td>
+                        <td className="py-2 px-2">
+                          {c.recordingStorageUrl ? (
+                            <a
+                              href={c.recordingStorageUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-emerald-700 hover:underline"
+                            >
+                              <Mic className="h-3 w-3" /> Dinle
+                            </a>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
