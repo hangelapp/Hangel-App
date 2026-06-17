@@ -84,6 +84,25 @@ service cloud.firestore {
       }
     }
 
+    // Çağrı merkezi (sanal santral) durumu — panel client'tan status/Caller ID okur.
+    // Okuma: super-admin VEYA STK'sını yöneten ngo-admin (managedNgoId == ngoId).
+    // Yazma: yalnızca Admin SDK (onboard/settings/activate route'ları) — client'a kapalı.
+    function canReadCallCenter(ngoId) {
+      return isSuperAdmin()
+        || (isSignedIn() && request.auth.token.email == 'ismailhilmi@hangel.org')
+        || (isSignedIn()
+            && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == ngoId);
+    }
+    match /ngoCallCenter/{ngoId} {
+      allow read: if canReadCallCenter(ngoId);
+      allow write: if false;
+      match /{sub=**} {
+        allow read: if canReadCallCenter(ngoId);
+        allow write: if false;
+      }
+    }
+
     // STK'lar, Markalar, Gönderiler, Gönüllülük, Etkinlikler ve Kütüphane - Giriş yapanlar okuyabilir ve listeleyebilir
     // PDF-15: Bazı kayıtlarda adminUserId boş; kullanıcı users/{uid}.managedNgoId üzerinden
     // eşleştiriliyor. managedNgoId fallback inline pattern (storage.rules ile uyumlu).
