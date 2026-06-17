@@ -1,6 +1,7 @@
 import type { SmsProvider } from '../../types';
 import { MockSmsProvider } from './mock';
 import { NetgsmSmsProvider } from './netgsm';
+import { PasifikSmsProvider } from './pasifik';
 
 let cached: SmsProvider | null = null;
 
@@ -24,6 +25,18 @@ export function getSmsProvider(): SmsProvider {
         iysFilter: process.env.NETGSM_IYS_FILTER,
         appKey: process.env.NETGSM_APP_KEY,
       });
+      return cached;
+    }
+    case 'pasifik': {
+      const username = process.env.PASIFIK_USERNAME;
+      const password = process.env.PASIFIK_PASSWORD;
+      const from = process.env.PASIFIK_FROM;
+      if (!username || !password || !from) {
+        console.warn('[messaging] Pasifik env eksik, mock kullanılıyor');
+        cached = new MockSmsProvider();
+        return cached;
+      }
+      cached = new PasifikSmsProvider({ username, password, from });
       return cached;
     }
     case 'iletimerkezi':

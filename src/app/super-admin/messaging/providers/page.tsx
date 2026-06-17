@@ -26,7 +26,7 @@ const ENV_VARS = [
     section: 'SMS Provider',
     icon: MessageSquare,
     keys: [
-      { key: 'SMS_DRIVER', desc: '`mock` | `netgsm` | `iletimerkezi`' },
+      { key: 'SMS_DRIVER', desc: '`mock` | `netgsm` | `iletimerkezi` | `pasifik`' },
       { key: 'NETGSM_USERNAME', desc: 'Netgsm hesap kullanıcı adı' },
       { key: 'NETGSM_PASSWORD', desc: 'Netgsm hesap şifresi' },
       { key: 'NETGSM_HEADER', desc: 'Onaylı alphanumeric başlık (sender ID)' },
@@ -34,6 +34,10 @@ const ENV_VARS = [
       { key: 'NETGSM_APP_KEY', desc: 'Netgsm app key (opsiyonel)' },
       { key: 'RATE_NETGSM_PER_SEC', desc: 'Saniyede max gönderim (default 5)' },
       { key: 'RATE_NETGSM_PER_MIN', desc: 'Dakikada max gönderim (default 60)' },
+      { key: 'PASIFIK_USERNAME', desc: 'Pasifik Telekom hesap kullanıcı adı (panel.pasifiktelekom.com.tr)' },
+      { key: 'PASIFIK_PASSWORD', desc: 'Pasifik Telekom hesap şifresi' },
+      { key: 'PASIFIK_FROM', desc: 'Onaylı sender ID (3-11 alphanumeric, örn. HANGEL)' },
+      { key: 'PASIFIK_DEFAULT_ALPHABET', desc: 'Türkçe için varsayılan: TurkishSingleShift' },
     ],
   },
   {
