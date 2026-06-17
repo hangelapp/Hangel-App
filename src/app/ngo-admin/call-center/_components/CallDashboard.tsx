@@ -18,15 +18,71 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { PhoneCall, Phone, Mic, Activity, Clock, Loader2 } from 'lucide-react';
+import {
+  PhoneCall,
+  Phone,
+  PhoneOff,
+  PhoneIncoming,
+  Mic,
+  MicOff,
+  Activity,
+  Clock,
+  Loader2,
+} from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query, where, limit } from 'firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
-import { messagingFetch } from '@/lib/messaging/client';
+import { useSipPhone } from '@/lib/santral/use-sip-phone';
 
 const CALL_SESSIONS = 'callSessions';
 const ACTIVE_STATUSES = ['ringing', 'in-progress'] as const;
+
+/**
+ * GATE: WebRTC santral geçidi WSS URL'i + tarayıcı SIP endpoint env fallback'i.
+ * ngoCallCenter doc'unda credential varsa o öncelikli; yoksa bu env ile tek-kiracı
+ * çalışır. Hiçbiri yoksa useSipPhone pasif kalır (ready=false) ve dialer KIRILMAZ.
+ */
+const SANTRAL_WSS_URL = process.env.NEXT_PUBLIC_SANTRAL_WSS_URL ?? '';
+const SANTRAL_SIP_USER = process.env.NEXT_PUBLIC_SANTRAL_SIP_USER ?? '';
+const SANTRAL_SIP_PASS = process.env.NEXT_PUBLIC_SANTRAL_SIP_PASS ?? '';
+const SANTRAL_SIP_DOMAIN = process.env.NEXT_PUBLIC_SANTRAL_SIP_DOMAIN ?? '';
+const SANTRAL_TURN_URL = process.env.NEXT_PUBLIC_SANTRAL_TURN_URL ?? '';
+const SANTRAL_TURN_USER = process.env.NEXT_PUBLIC_SANTRAL_TURN_USER ?? '';
+const SANTRAL_TURN_PASS = process.env.NEXT_PUBLIC_SANTRAL_TURN_PASS ?? '';
+// WebRTC ICE: public STUN + kendi TURN'ümüz. NAT arkasında ses için TURN şart.
+const SANTRAL_ICE_SERVERS: RTCIceServer[] = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  ...(SANTRAL_TURN_URL
+    ? [{ urls: SANTRAL_TURN_URL, username: SANTRAL_TURN_USER, credential: SANTRAL_TURN_PASS }]
+    : []),
+];
+
+const SIP_STATE_LABEL: Record<string, string> = {
+  unconfigured: 'Yapılandırılmadı',
+  connecting: 'Bağlanıyor…',
+  registered: 'Hazır',
+  calling: 'Aranıyor…',
+  incoming: 'Gelen arama',
+  'in-call': 'Görüşme',
+  ended: 'Görüşme bitti',
+  failed: 'Hata',
+};
+
+const SIP_STATE_BADGE: Record<string, string> = {
+  registered: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  'in-call': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  calling: 'bg-amber-100 text-amber-800 border-amber-200',
+  incoming: 'bg-amber-100 text-amber-800 border-amber-200',
+  connecting: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+  ended: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+  failed: 'bg-rose-100 text-rose-800 border-rose-200',
+  unconfigured: 'bg-rose-100 text-rose-800 border-rose-200',
+};
+
+function formatSipDuration(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
 
 interface CallSessionRow {
   id: string;
@@ -52,6 +108,11 @@ interface NgoCallCenterDoc {
   providerId?: string;
   monthlyMinutesQuota?: number;
   currentMonthUsage?: number;
+  // WebRTC geçidinin TARAYICI SIP endpoint credential'ları (operatör trunk şifresi
+  // DEĞİL). Doluysa env fallback'ine göre öncelikli.
+  sipUsername?: string;
+  sipPassword?: string;
+  sipDomain?: string;
 }
 
 interface CallDashboardProps {
@@ -81,12 +142,17 @@ const STATUS_BADGE: Record<string, string> = {
 
 export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
   const db = useFirestore();
-  const { toast } = useToast();
 
   const [dialPhone, setDialPhone] = useState('');
-  const [dialContactId, setDialContactId] = useState('');
-  const [dialNotes, setDialNotes] = useState('');
-  const [dialing, setDialing] = useState(false);
+
+  // GERÇEK WebRTC çevirici — ngoCallCenter doc credential'ı öncelikli, yoksa env.
+  const sip = useSipPhone({
+    wssUrl: SANTRAL_WSS_URL || null,
+    username: (ccDoc.sipUsername || SANTRAL_SIP_USER) || null,
+    password: (ccDoc.sipPassword || SANTRAL_SIP_PASS) || null,
+    domain: (ccDoc.sipDomain || SANTRAL_SIP_DOMAIN) || null,
+    iceServers: SANTRAL_ICE_SERVERS,
+  });
 
   // Aktif çağrılar — STK kendi ngoId + ACTIVE_STATUSES.
   const activeQuery = useMemoFirebase(
@@ -139,36 +205,16 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
   const usage = ccDoc.currentMonthUsage ?? 0;
   const remainingMinutes = Math.max(0, monthlyQuota - usage);
   const activeCount = activeCalls?.length ?? 0;
-  const concurrentFull = activeCount >= 2;
 
-  async function handleOriginate() {
-    if (!dialPhone || !dialContactId) {
-      toast({ variant: 'destructive', title: 'Eksik bilgi', description: 'Telefon ve kontak id gerekli.' });
-      return;
-    }
-    setDialing(true);
-    try {
-      const result = await messagingFetch<{ ok: boolean; callSessionId: string; status: string }>(
-        '/api/ngo-admin/calls/originate',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            contactPhone: dialPhone,
-            contactId: dialContactId,
-            notes: dialNotes || undefined,
-          }),
-        },
-      );
-      toast({ title: 'Arama başlatıldı', description: `Oturum: ${result.callSessionId}` });
-      setDialPhone('');
-      setDialContactId('');
-      setDialNotes('');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      toast({ variant: 'destructive', title: 'Arama başlatılamadı', description: msg });
-    } finally {
-      setDialing(false);
-    }
+  // WebRTC tek hattır: hat boştaysa (registered/ended) yeni arama başlatılabilir,
+  // aktif çağrı varken (calling/in-call/incoming) yeni arama kilitli.
+  const sipIdle = sip.state === 'registered' || sip.state === 'ended';
+  const sipBusy = sip.state === 'calling' || sip.state === 'in-call' || sip.state === 'incoming';
+
+  function handleDial() {
+    const num = dialPhone.trim();
+    if (!num) return;
+    void sip.call(num).catch(() => undefined);
   }
 
   return (
@@ -221,53 +267,126 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
         </Card>
       </div>
 
-      {/* Dial Pad */}
+      {/* Çevirici — GERÇEK tarayıcı WebRTC araması (santral geçidi). */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Phone className="h-4 w-4 text-emerald-600" /> Yeni Arama
+            <Phone className="h-4 w-4" style={{ color: '#f34723' }} /> Yeni Arama
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="dial-phone">Telefon (+90...)</Label>
-            <Input
-              id="dial-phone"
-              value={dialPhone}
-              onChange={(e) => setDialPhone(e.target.value)}
-              placeholder="+905551112233"
-              disabled={dialing || concurrentFull}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="dial-contact">Kontak ID</Label>
-            <Input
-              id="dial-contact"
-              value={dialContactId}
-              onChange={(e) => setDialContactId(e.target.value)}
-              placeholder="CRM contact doc id"
-              disabled={dialing || concurrentFull}
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="dial-notes">Notlar (opsiyonel)</Label>
-            <Textarea
-              id="dial-notes"
-              value={dialNotes}
-              onChange={(e) => setDialNotes(e.target.value)}
-              rows={2}
-              disabled={dialing || concurrentFull}
-            />
-          </div>
-          <div className="md:col-span-2 flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Caller ID: <span className="font-mono">{ccDoc.callerIdNumber ?? '—'}</span>
-            </p>
-            <Button onClick={handleOriginate} disabled={dialing || concurrentFull}>
-              {dialing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {concurrentFull ? 'Eş zamanlı limit dolu' : 'Aramayı Başlat'}
-            </Button>
-          </div>
+        <CardContent className="space-y-3">
+          {/* Remote ses — karşı tarafın sesi buradan çalar. */}
+          <audio ref={sip.remoteAudioRef} autoPlay className="hidden" />
+
+          {!sip.ready ? (
+            /* GATE: env/credential yok → dialer pasif, panel kırılmaz. */
+            <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+              Santral henüz hazır değil (WSS/SIP yapılandırması eksik). Geçit bağlanınca
+              tarayıcıdan gerçek arama yapabilirsiniz.
+            </div>
+          ) : (
+            <>
+              {/* Durum rozeti + süre. */}
+              <div className="flex items-center gap-2">
+                <Badge className={SIP_STATE_BADGE[sip.state] ?? ''}>
+                  {SIP_STATE_LABEL[sip.state] ?? sip.state}
+                </Badge>
+                {(sip.state === 'calling' || sip.state === 'in-call') && (
+                  <span className="text-sm tabular-nums text-muted-foreground">
+                    {formatSipDuration(sip.durationSeconds)}
+                  </span>
+                )}
+                {sip.remoteIdentity && (
+                  <span className="text-sm font-medium">{sip.remoteIdentity}</span>
+                )}
+              </div>
+
+              {sip.error && (
+                <p className="rounded-md bg-rose-50 p-2 text-xs text-rose-700">{sip.error}</p>
+              )}
+
+              {/* Gelen arama bandı. */}
+              {sip.state === 'incoming' && (
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-emerald-800">
+                    <PhoneIncoming className="h-4 w-4 animate-pulse" />
+                    Gelen arama: {sip.remoteIdentity ?? 'Bilinmeyen'}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => void sip.answer().catch(() => undefined)}
+                      size="sm"
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <Phone className="h-4 w-4 mr-1" /> Cevapla
+                    </Button>
+                    <Button
+                      onClick={() => void sip.hangup().catch(() => undefined)}
+                      size="sm"
+                      variant="destructive"
+                      className="flex-1"
+                    >
+                      <PhoneOff className="h-4 w-4 mr-1" /> Reddet
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Numara + Ara — hat boştayken. */}
+              <div className="flex flex-col gap-3 md:flex-row md:items-end">
+                <div className="flex-1 space-y-2">
+                  <Label htmlFor="dial-phone">Telefon (+90...)</Label>
+                  <Input
+                    id="dial-phone"
+                    type="tel"
+                    inputMode="tel"
+                    value={dialPhone}
+                    onChange={(e) => setDialPhone(e.target.value)}
+                    placeholder="+905551112233"
+                    disabled={!sipIdle}
+                  />
+                </div>
+                <Button
+                  onClick={handleDial}
+                  disabled={!sipIdle || !dialPhone.trim()}
+                  className="text-white"
+                  style={{ backgroundColor: '#f34723' }}
+                >
+                  <Phone className="h-4 w-4 mr-1" /> Ara
+                </Button>
+              </div>
+
+              {/* Aktif çağrı kontrolleri — sustur / kapat. */}
+              {sipBusy && (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={sip.mute}
+                    disabled={sip.state !== 'in-call'}
+                    variant={sip.muted ? 'secondary' : 'outline'}
+                    className="flex-1"
+                  >
+                    {sip.muted ? (
+                      <><MicOff className="h-4 w-4 mr-2" /> Sesi aç</>
+                    ) : (
+                      <><Mic className="h-4 w-4 mr-2" /> Sustur</>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => void sip.hangup().catch(() => undefined)}
+                    variant="destructive"
+                    className="flex-1"
+                  >
+                    <PhoneOff className="h-4 w-4 mr-2" /> Kapat
+                  </Button>
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground">
+                Caller ID: <span className="font-mono">{ccDoc.callerIdNumber ?? '—'}</span>
+                {' · '}Kulaklığını tak, mikrofon iznini ver.
+              </p>
+            </>
+          )}
         </CardContent>
       </Card>
 
