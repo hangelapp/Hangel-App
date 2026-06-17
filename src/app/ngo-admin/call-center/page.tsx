@@ -23,6 +23,7 @@ import { OnboardingWizard } from './_components/OnboardingWizard';
 import { CallDashboard } from './_components/CallDashboard';
 import { CallCenterSettings } from './_components/CallCenterSettings';
 import { CommunicationHub } from './_components/CommunicationHub';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 const NGO_CALL_CENTER = 'ngoCallCenter';
 
@@ -94,7 +95,10 @@ export default function NgoCallCenterPage() {
     [db, user],
   );
   const { data: userDoc, isLoading: userDocLoading } = useDoc<UserDocLite>(userRef);
-  const ngoId = userDoc?.managedNgoId ?? null;
+  // Aktif entity (üst switcher: ?id=&type=STK). Super-admin başka STK'ya bakınca
+  // doğru ngoId buradan gelir; düz ngo-admin'de managedNgoId'ye düşer.
+  const { id: activeEntityId, kind: activeEntityKind, isLoading: entityLoading } = useActiveEntity();
+  const ngoId = (activeEntityKind === 'ngo' ? activeEntityId : null) ?? userDoc?.managedNgoId ?? null;
 
   const ccRef = useMemoFirebase(
     () => (ngoId ? doc(db, NGO_CALL_CENTER, ngoId) : null),
@@ -109,7 +113,7 @@ export default function NgoCallCenterPage() {
   );
   const { data: ngoDoc } = useDoc<NgoDocLite>(ngoRef);
 
-  if (isUserLoading || userDocLoading || (ngoId && ccLoading)) {
+  if (isUserLoading || userDocLoading || entityLoading || (ngoId && ccLoading)) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

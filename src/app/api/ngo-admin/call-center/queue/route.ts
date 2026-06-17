@@ -251,8 +251,8 @@ export async function GET(req: NextRequest) {
   const queue = combined.slice(0, MAX_QUEUE);
 
   // WA cevap bekleyen sayısı — tenant geneli aggregate (queue dışı da sayar).
-  // eslint-disable-next-line no-useless-assignment
-  let whatsAppPendingTotal = 0;
+  // try hem de catch atadığı için başlangıç değeri vermiyoruz (no-useless-assignment).
+  let whatsAppPendingTotal: number;
   try {
     const pendingAgg = await db
       .collection(COLLECTIONS.santralContacts)
