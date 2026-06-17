@@ -502,7 +502,7 @@ export default function LoginPage() {
             title: t('landing.discovery.library.title'),
             description: t('landing.discovery.library.description'),
             href: "/library",
-            imageUrl: "/discovery/library.png",
+            imageUrl: "/discovery/library-pergamon.png",
             imageHint: "open book dissolving into coral light particles, minimal",
             linkText: t('landing.discovery.library.linkText'),
             linkText2: t('landing.discovery.library.linkText2'),
