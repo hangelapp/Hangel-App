@@ -86,9 +86,8 @@ const KEP_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.kep\.tr$/;
 
 const STEPS = [
   { key: 'package', label: 'Paket', icon: Package },
-  { key: 'documents', label: 'Belgeler', icon: FileText },
+  { key: 'documents', label: 'Belgeler & Onaylar', icon: FileText },
   { key: 'caller-id', label: 'Numara', icon: Phone },
-  { key: 'dpa', label: 'KVKK Onayı', icon: ShieldCheck },
 ] as const;
 
 // Fallback paket listesi — santralPackages koleksiyonu boşken kullanıcıya
@@ -176,7 +175,6 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
   const [packageId, setPackageId] = useState<string>('');
   const [documentLabels, setDocumentLabels] = useState<string>('');
   const [selectedNumberId, setSelectedNumberId] = useState<string>('');
-  const [dpaAccepted, setDpaAccepted] = useState(false);
   const companyType = lockedCompanyType;
   const [companyTaxId, setCompanyTaxId] = useState<string>(ngoKutukNo?.trim() || '');
   const [contactPerson, setContactPerson] = useState<string>('');
@@ -398,13 +396,14 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
       );
     }
     if (stepIdx === 2) return !!selectedNumberId;
-    if (stepIdx === 3) return dpaAccepted;
     return false;
   }
 
   async function handleSubmit() {
-    if (!dpaAccepted) {
-      toast({ variant: 'destructive', title: 'KVKK onayı gerekli', description: 'Devam etmek için DPA sözleşmesini onaylayın.' });
+    // KVKK onayı artık Belgeler adımında veriliyor (ayrı adım kaldırıldı).
+    if (!kvkkConsentAccepted || !serviceProtocolAccepted) {
+      toast({ variant: 'destructive', title: 'Onaylar gerekli', description: 'Belgeler adımında hizmet protokolü ve KVKK rızasını onaylayın.' });
+      setStepIdx(1);
       return;
     }
     setSubmitting(true);
@@ -424,7 +423,7 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
             packageId,
             documentsRefs,
             requestedCallerIdNumber: selectedNumberId,
-            dpaAccepted,
+            dpaAccepted: kvkkConsentAccepted,
             companyType,
             formData: {
               companyTaxId: companyTaxId || null,
@@ -643,64 +642,79 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact">İletişim Sorumlusu</Label>
-              <Input
-                id="contact-search"
-                value={userSearchQuery}
-                onChange={(e) => setUserSearchQuery(e.target.value)}
-                placeholder="İsim, e-posta veya telefonla ara..."
-                autoComplete="off"
-              />
+              <Label htmlFor="contact-search">İletişim Sorumlusu (Genel Yönetici)</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="contact-search"
+                  type="tel"
+                  inputMode="tel"
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  placeholder="Genel yönetici telefon numarası — 05XX XXX XX XX"
+                  className="pl-9"
+                  autoComplete="off"
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                İletişim sorumlusu STK'nın <strong>genel yönetici</strong> rolündeki kişisi olmalıdır.
+                Telefon numarasını yazarak bulun ve seçin.
+              </p>
               {userSearchLoading && (
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                  <Loader2 className="h-3 w-3 animate-spin" /> Kullanıcılar yükleniyor...
+                  <Loader2 className="h-3 w-3 animate-spin" /> Genel yöneticiler aranıyor...
                 </p>
               )}
-              {!userSearchLoading && userResults.length === 0 && (
-                <p className="text-[11px] text-muted-foreground">
-                  Bu sorguya uyan kullanıcı yok. Üst kullanıcı arama kutusuna isim/e-posta yaz veya
-                  STK'ya yeni kullanıcı ekleyip tekrar dene.
-                </p>
-              )}
-              {userResults.length > 0 && (
-                <div className="max-h-48 overflow-y-auto rounded-md border bg-background divide-y">
-                  {userResults.map((u) => {
-                    const selected = contactUid === u.uid;
-                    return (
-                      <button
-                        key={u.uid}
-                        type="button"
-                        onClick={() => {
-                          setContactUid(u.uid);
-                          setContactPerson(u.name);
-                          setContactPhone(u.phone);
-                          // Yeni kişi seçilince telefon doğrulamasını sıfırla
-                          setContactPhoneVerified(false);
-                          setOtpSent(false);
-                          setOtpCode('');
-                          setOtpError('');
-                          setOtpMasked('');
-                        }}
-                        className={cn(
-                          'w-full text-left px-3 py-2 hover:bg-muted/40 transition-colors',
-                          selected && 'bg-emerald-50/40 border-l-2 border-emerald-500',
-                        )}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-semibold">{u.name}</p>
-                          {u.role === 'ngo-admin' && (
-                            <Badge variant="outline" className="text-[9px] shrink-0">Yönetici</Badge>
+              {(() => {
+                const managers = userResults.filter((u) => u.role === 'ngo-admin');
+                if (!userSearchLoading && userSearchQuery.trim() && managers.length === 0) {
+                  return (
+                    <p className="text-[11px] text-amber-700">
+                      Bu numarayla genel yönetici bulunamadı. Kişi STK'da <strong>genel yönetici</strong> değilse{' '}
+                      <a href="/ngo-admin/users" className="font-medium text-emerald-700 hover:underline">Yetkili Yönetimi</a>'nden
+                      yönetici yapın, sonra tekrar deneyin.
+                    </p>
+                  );
+                }
+                if (managers.length === 0) return null;
+                return (
+                  <div className="max-h-48 overflow-y-auto rounded-md border bg-background divide-y">
+                    {managers.map((u) => {
+                      const selected = contactUid === u.uid;
+                      return (
+                        <button
+                          key={u.uid}
+                          type="button"
+                          onClick={() => {
+                            setContactUid(u.uid);
+                            setContactPerson(u.name);
+                            setContactPhone(u.phone);
+                            // Yeni kişi seçilince telefon doğrulamasını sıfırla
+                            setContactPhoneVerified(false);
+                            setOtpSent(false);
+                            setOtpCode('');
+                            setOtpError('');
+                            setOtpMasked('');
+                          }}
+                          className={cn(
+                            'w-full text-left px-3 py-2 hover:bg-muted/40 transition-colors',
+                            selected && 'bg-emerald-50/40 border-l-2 border-emerald-500',
                           )}
-                          {selected && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground truncate">
-                          {u.email || '—'} {u.phone && `· ${u.phone}`}
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-semibold">{u.name}</p>
+                            <Badge variant="outline" className="text-[9px] shrink-0 bg-emerald-50 text-emerald-700 border-emerald-300">Genel Yönetici</Badge>
+                            {selected && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground truncate">
+                            {u.phone || 'telefon kayıtlı değil'} {u.email && `· ${u.email}`}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
               {contactUid && (
                 <div className="rounded-md bg-emerald-50/50 border border-emerald-200 p-3 text-xs space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
@@ -780,8 +794,8 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
                 </div>
               )}
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                STK'nın kayıtlı kullanıcıları arasından seç. Seçilen kişi sağlayıcı firma ile
-                iletişimde resmi temsilci olur ve telefonuyla yetkilendirilir.
+                Seçilen genel yönetici, sağlayıcı firma ile iletişimde STK'nın resmi temsilcisi
+                olur ve telefonuyla (SMS doğrulama) yetkilendirilir.
               </p>
             </div>
 
@@ -961,24 +975,29 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
               </label>
             </div>
 
-            {/* KVKK Aydınlatma & Açık Rıza */}
+            {/* KVKK Aydınlatma & Açık Rıza + Veri İşleyen Sözleşmesi (DPA) */}
             <div className="space-y-2">
-              <Label className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-600" /> KVKK Aydınlatma ve Açık Rıza</Label>
+              <Label className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-600" /> KVKK Aydınlatma, Açık Rıza ve Veri İşleyen Sözleşmesi</Label>
+              <details className="rounded-md border bg-muted/30 text-xs">
+                <summary className="cursor-pointer select-none px-3 py-2 font-medium">Veri İşleyen Sözleşmesi (DPA) — tam metni gör</summary>
+                <div className="max-h-56 overflow-y-auto whitespace-pre-wrap leading-relaxed px-3 pb-3 border-t">
+                  {DPA_MARKDOWN.trim()}
+                </div>
+              </details>
               <label className="flex items-start gap-2.5 cursor-pointer text-xs">
                 <Checkbox
                   checked={kvkkConsentAccepted}
                   onCheckedChange={(v) => setKvkkConsentAccepted(v === true)}
-                  aria-label="KVKK açık rıza onayı"
+                  aria-label="KVKK ve DPA onayı"
                 />
                 <span>
                   6698 sayılı KVKK kapsamında, çağrı merkezi üzerinden işlenen kişisel verilerin
                   STK (Veri Sorumlusu) talimatıyla işlendiğini, aradığım kişilere görüşmenin kayıt
-                  altına alındığını duyurma yükümlülüğümü ve aydınlatma metnini kabul ediyorum.
+                  altına alındığını duyurma yükümlülüğümü kabul ediyorum. Yukarıdaki <strong>Veri İşleyen
+                  Sözleşmesi'ni (DPA)</strong> okudum; STK olarak Veri Sorumlusu sıfatımı, hangel'in
+                  Veri İşleyen sıfatını kabul ediyorum.
                 </span>
               </label>
-              <p className="text-[11px] text-muted-foreground">
-                Veri İşleyen Sözleşmesi'nin (DPA) tam metni son adımda onaylanır.
-              </p>
             </div>
           </div>
         )}
@@ -1020,26 +1039,6 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
                 })}
               </div>
             )}
-          </div>
-        )}
-
-        {/* Adım 4 — DPA */}
-        {stepIdx === 3 && (
-          <div className="space-y-3">
-            <div className="max-h-80 overflow-y-auto rounded-md border bg-muted/30 p-4 text-sm whitespace-pre-wrap leading-relaxed">
-              {DPA_MARKDOWN.trim()}
-            </div>
-            <label className="flex items-start gap-3 cursor-pointer text-sm">
-              <Checkbox
-                checked={dpaAccepted}
-                onCheckedChange={(v) => setDpaAccepted(v === true)}
-                aria-label="KVKK Veri İşleyen Sözleşmesi onayı"
-              />
-              <span>
-                Yukarıdaki KVKK Veri İşleyen Sözleşmesi'ni okudum, anladım ve kabul ediyorum.
-                STK olarak Veri Sorumlusu sıfatımı, hangel'in Veri İşleyen sıfatını kabul ediyorum.
-              </span>
-            </label>
           </div>
         )}
 
