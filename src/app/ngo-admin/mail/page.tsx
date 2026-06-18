@@ -378,29 +378,41 @@ export default function MailManagementPage() {
                     <CardContent>
                         <form className="space-y-4" onSubmit={handleWsConnect}>
                             <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label>Gönderen E-posta</Label>
                                     <Input value={wsFromEmail} onChange={(e) => setWsFromEmail(e.target.value)} placeholder="info@kurumunuz.org" type="email" />
+                                    <p className="text-xs text-muted-foreground">Kurumunuzun Google Workspace e-posta adresi — mailler bu adresten gönderilir.</p>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label>Görünen Ad</Label>
                                     <Input value={wsFromName} onChange={(e) => setWsFromName(e.target.value)} placeholder="Kurumunuzun Adı" />
+                                    <p className="text-xs text-muted-foreground">Alıcıların gelen kutusunda gördüğü gönderen adı (ör. kurumunuzun adı).</p>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label>SMTP Sunucu</Label>
                                     <Input value={wsSmtpHost} onChange={(e) => setWsSmtpHost(e.target.value)} placeholder="smtp.gmail.com" />
+                                    <p className="text-xs text-muted-foreground">Google Workspace için her zaman <span className="font-medium">smtp.gmail.com</span> — değiştirmeyin.</p>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label>SMTP Port</Label>
                                     <Input value={wsSmtpPort} onChange={(e) => setWsSmtpPort(e.target.value)} placeholder="587" inputMode="numeric" />
+                                    <p className="text-xs text-muted-foreground"><span className="font-medium">587</span> (TLS, önerilir). Alternatif: 465 (SSL).</p>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label>SMTP Kullanıcı</Label>
                                     <Input value={wsSmtpUser} onChange={(e) => setWsSmtpUser(e.target.value)} placeholder="info@kurumunuz.org" />
+                                    <p className="text-xs text-muted-foreground">Genelde gönderen e-posta ile aynı adresi yazın.</p>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     <Label>App Password</Label>
-                                    <Input value={wsSmtpPassword} onChange={(e) => setWsSmtpPassword(e.target.value)} placeholder="Google App Password" type="password" autoComplete="new-password" />
+                                    <Input value={wsSmtpPassword} onChange={(e) => setWsSmtpPassword(e.target.value)} placeholder="16 haneli Google App Password" type="password" autoComplete="new-password" />
+                                    <p className="text-xs text-muted-foreground">
+                                        Google hesap şifreniz DEĞİL. Önce hesabınızda <span className="font-medium">2 Adımlı Doğrulama</span>ʼyı açın, sonra{' '}
+                                        <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline underline-offset-2">
+                                            myaccount.google.com/apppasswords
+                                        </a>{' '}
+                                        adresinden bir uygulama şifresi üretip (16 hane) buraya yapıştırın.
+                                    </p>
                                 </div>
                             </div>
                             <Button type="submit" className="w-full" disabled={wsConnecting}>
