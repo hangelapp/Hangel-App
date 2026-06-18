@@ -57,7 +57,6 @@ export default function MailManagementPage() {
     const [wsFromName, setWsFromName] = useState('');
     const [wsSmtpHost, setWsSmtpHost] = useState('smtp.gmail.com');
     const [wsSmtpPort, setWsSmtpPort] = useState('587');
-    const [wsSmtpUser, setWsSmtpUser] = useState('');
     const [wsSmtpPassword, setWsSmtpPassword] = useState('');
     const [wsConnecting, setWsConnecting] = useState(false);
     const [wsDisconnecting, setWsDisconnecting] = useState(false);
@@ -137,7 +136,7 @@ export default function MailManagementPage() {
 
     const handleWsConnect = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!wsFromEmail.trim() || !wsSmtpHost.trim() || !wsSmtpUser.trim() || !wsSmtpPassword.trim()) {
+        if (!wsFromEmail.trim() || !wsSmtpHost.trim() || !wsSmtpPassword.trim()) {
             toast({ variant: 'destructive', title: 'Tüm bağlantı alanlarını doldurun' });
             return;
         }
@@ -152,7 +151,7 @@ export default function MailManagementPage() {
                     fromName: wsFromName.trim(),
                     smtpHost: wsSmtpHost.trim(),
                     smtpPort: Number(wsSmtpPort) || 587,
-                    smtpUser: wsSmtpUser.trim(),
+                    smtpUser: wsFromEmail.trim(),
                     smtpPassword: wsSmtpPassword,
                 }),
             });
@@ -397,11 +396,6 @@ export default function MailManagementPage() {
                                     <Label>SMTP Port</Label>
                                     <Input value={wsSmtpPort} onChange={(e) => setWsSmtpPort(e.target.value)} placeholder="587" inputMode="numeric" />
                                     <p className="text-xs text-muted-foreground"><span className="font-medium">587</span> (TLS, önerilir). Alternatif: 465 (SSL).</p>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label>SMTP Kullanıcı</Label>
-                                    <Input value={wsSmtpUser} onChange={(e) => setWsSmtpUser(e.target.value)} placeholder="info@kurumunuz.org" />
-                                    <p className="text-xs text-muted-foreground">Genelde gönderen e-posta ile aynı adresi yazın.</p>
                                 </div>
                                 <div className="space-y-1.5">
                                     <Label>App Password</Label>
