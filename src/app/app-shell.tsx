@@ -511,6 +511,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         '/imece',
         '/social-impact',
         '/tanitim',
+        '/gelir-modeli-konferanslari/sunum',
         '/p',
         '/emergency/about',
     ];
