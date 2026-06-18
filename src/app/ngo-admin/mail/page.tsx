@@ -14,7 +14,7 @@ import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { normalizeQuota, quotaRemaining, type NgoQuota } from '@/lib/messaging-quota';
-import { Lock, Link2, Send, CheckCircle2 } from 'lucide-react';
+import { Lock, Link2, Send, CheckCircle2, Users, X } from 'lucide-react';
 
 /** Workspace SMTP bağlantı durumu — credential/secret ASLA dönmez. */
 interface MailConnection {
@@ -33,9 +33,12 @@ interface WorkspaceSegmentRow {
 
 /** Virgül / satır / boşluk ile ayrılmış alıcıları temizleyip benzersiz listeye çevirir. */
 function parseRecipients(raw: string): string[] {
-    const parts = raw.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
+    const parts = raw.split(/[\n,;\s]+/).map((s) => s.trim()).filter(Boolean);
     return Array.from(new Set(parts));
 }
+
+/** Görüntüleme/ekleme için basit e-posta süzgeci (backend isValidEmail ile kesin doğrular). */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function MailManagementPage() {
     const { toast } = useToast();
@@ -64,6 +67,10 @@ export default function MailManagementPage() {
     const [wsMessage, setWsMessage] = useState('');
     const [wsSegmentId, setWsSegmentId] = useState('__all');
     const [wsSending, setWsSending] = useState(false);
+    // Yüklenen alıcı listesi (data) — ekle/çıkar/görüntüle, Workspace gönderiminde kaynak.
+    const [wsList, setWsList] = useState<string[]>([]);
+    const [wsListPaste, setWsListPaste] = useState('');
+    const [wsSingleEmail, setWsSingleEmail] = useState('');
 
     useEffect(() => {
         let cancelled = false;
@@ -204,6 +211,10 @@ export default function MailManagementPage() {
             toast({ variant: 'destructive', title: 'Mesaj metni boş olamaz' });
             return;
         }
+        if (wsSegmentId === '__list' && wsList.length === 0) {
+            toast({ variant: 'destructive', title: 'Yüklenen liste boş', description: 'Önce alıcı ekleyin veya başka kaynak seçin.' });
+            return;
+        }
         setWsSending(true);
         try {
             const token = await authUser?.getIdToken();
@@ -217,7 +228,8 @@ export default function MailManagementPage() {
                     spec: {
                         channel: 'email',
                         useCase: 'marketing',
-                        segmentIds: wsSegmentId !== '__all' ? [wsSegmentId] : undefined,
+                        segmentIds: (wsSegmentId !== '__all' && wsSegmentId !== '__list') ? [wsSegmentId] : undefined,
+                        inlineRecipients: wsSegmentId === '__list' ? wsList.map((email) => ({ email })) : undefined,
                     },
                 }),
             });
@@ -242,6 +254,44 @@ export default function MailManagementPage() {
             setWsSending(false);
         }
     };
+
+    // ── Yüklenen alıcı listesi (data) yönetimi ──
+    const addEmailsToList = useCallback((raw: string): number => {
+        const emails = parseRecipients(raw).filter((s) => EMAIL_RE.test(s));
+        if (emails.length === 0) return 0;
+        setWsList((prev) => Array.from(new Set([...prev, ...emails])));
+        setWsSegmentId('__list');
+        return emails.length;
+    }, []);
+
+    const handleWsFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const f = e.target.files?.[0];
+        e.target.value = '';
+        if (!f) return;
+        try {
+            const text = await f.text();
+            const n = addEmailsToList(text);
+            if (n === 0) toast({ variant: 'destructive', title: 'Dosyada geçerli e-posta bulunamadı' });
+            else toast({ title: 'Liste yüklendi', description: `${n} e-posta işlendi.` });
+        } catch {
+            toast({ variant: 'destructive', title: 'Dosya okunamadı' });
+        }
+    };
+
+    const handleAddPaste = () => {
+        const n = addEmailsToList(wsListPaste);
+        if (n === 0) { toast({ variant: 'destructive', title: 'Geçerli e-posta bulunamadı' }); return; }
+        setWsListPaste('');
+        toast({ title: `${n} e-posta işlendi` });
+    };
+
+    const handleAddSingle = () => {
+        if (addEmailsToList(wsSingleEmail) === 0) { toast({ variant: 'destructive', title: 'Geçerli e-posta girin' }); return; }
+        setWsSingleEmail('');
+    };
+
+    const removeFromList = (email: string) => setWsList((prev) => prev.filter((x) => x !== email));
+    const clearList = () => { setWsList([]); setWsSegmentId('__all'); };
 
     const walletRef = useMemoFirebase(
         () => (db && ngoId ? doc(db, COLLECTIONS.ngoMessagingWallets, ngoId) : null),
@@ -419,6 +469,76 @@ export default function MailManagementPage() {
             )}
 
             {connection?.gateOpen === true && connection.connected && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Users className="h-5 w-5 text-primary" />
+                            Alıcı Listesi (Data)
+                        </CardTitle>
+                        <CardDescription>
+                            Toplu mail göndereceğiniz kişileri yükleyin, ekleyin/çıkarın. Yalnızca izinli (opt-in) kişilerinizi ekleyin 🧡
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="space-y-1.5">
+                                <Label>Dosyadan yükle (CSV / TXT)</Label>
+                                <Input type="file" accept=".csv,.txt" onChange={handleWsFile} />
+                                <p className="text-xs text-muted-foreground">Her satırda ya da virgülle ayrılmış e-postalar.</p>
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label>Tek e-posta ekle</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={wsSingleEmail}
+                                        onChange={(e) => setWsSingleEmail(e.target.value)}
+                                        placeholder="ornek@eposta.com"
+                                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSingle(); } }}
+                                    />
+                                    <Button type="button" variant="outline" onClick={handleAddSingle}>Ekle</Button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label>Veya listeyi yapıştır</Label>
+                            <Textarea
+                                rows={3}
+                                value={wsListPaste}
+                                onChange={(e) => setWsListPaste(e.target.value)}
+                                placeholder="ornek@eposta.com, ornek2@eposta.com..."
+                            />
+                            <Button type="button" variant="outline" size="sm" onClick={handleAddPaste}>Listeye Ekle</Button>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label>Yüklenen alıcılar <span className="font-normal text-muted-foreground">({wsList.length})</span></Label>
+                                {wsList.length > 0 && (
+                                    <Button type="button" variant="ghost" size="sm" className="h-7 text-destructive" onClick={clearList}>Tümünü Temizle</Button>
+                                )}
+                            </div>
+                            {wsList.length === 0 ? (
+                                <p className="rounded-lg border border-dashed py-3 text-center text-xs text-muted-foreground">Henüz alıcı eklenmedi.</p>
+                            ) : (
+                                <div className="max-h-56 divide-y overflow-y-auto rounded-lg border">
+                                    {wsList.map((email) => (
+                                        <div key={email} className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm">
+                                            <span className="truncate">{email}</span>
+                                            <button type="button" onClick={() => removeFromList(email)} aria-label="Çıkar" className="shrink-0 text-muted-foreground hover:text-destructive">
+                                                <X className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {wsList.length > 0 && (
+                                <p className="text-xs text-muted-foreground">Bu listeye göndermek için aşağıda <span className="font-medium">“Yüklenen liste”</span> kaynağı otomatik seçildi.</p>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {connection?.gateOpen === true && connection.connected && (
                 <Card className="border-primary/30">
                     <CardHeader>
                         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -450,6 +570,7 @@ export default function MailManagementPage() {
                                     onChange={(e) => setWsSegmentId(e.target.value)}
                                 >
                                     <option value="__all">Tüm topluluk üyeleri</option>
+                                    <option value="__list" disabled={wsList.length === 0}>Yüklenen liste ({wsList.length} alıcı)</option>
                                     {wsMailSegments.map((s) => (
                                         <option key={s.id} value={s.id}>{s.name ?? s.id}</option>
                                     ))}

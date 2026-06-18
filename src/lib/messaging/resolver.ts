@@ -66,7 +66,7 @@ interface RawCandidate {
   user?: UserDoc;
   channelAddress?: string;
   varsOverride?: Record<string, string>;
-  source: 'filter' | 'segment' | 'manual' | 'csv';
+  source: 'filter' | 'segment' | 'manual' | 'csv' | 'inline';
 }
 
 const SAMPLE_SIZE = 10;
@@ -222,6 +222,8 @@ export async function resolveRecipients(spec: RecipientSourceSpec): Promise<Reso
   let fromSegments = 0;
   let manual = 0;
   let csv = 0;
+  // Inline (yüklenen ham liste) adresleri — consent filtresinde geçirilecek.
+  const inlineAddrs = new Set<string>();
 
   const scopedNgoId = spec.scopedNgoId;
 
@@ -278,7 +280,24 @@ export async function resolveRecipients(spec: RecipientSourceSpec): Promise<Reso
     }
   }
 
-  // 5. Address derive + invalid filter
+  // 5. Inline — STK'nın panelden yüklediği ham e-posta listesi (kendi opt-in
+  // kişileri). userId yok; KVKK sorumluluğu STK'da, unsubscribe footer eklenir.
+  if (spec.inlineRecipients && spec.inlineRecipients.length > 0) {
+    for (const r of spec.inlineRecipients) {
+      const email = normalizeEmail(r.email);
+      if (!email || !isValidEmail(email)) continue;
+      candidates.push({
+        userId: null,
+        channelAddress: email,
+        varsOverride: r.name ? { ad: r.name.split(' ')[0] ?? '', tam_ad: r.name } : undefined,
+        source: 'inline',
+      });
+      inlineAddrs.add(email);
+      manual += 1;
+    }
+  }
+
+  // 6. Address derive + invalid filter
   const beforeDedupe = candidates.length;
   let invalidAddress = 0;
   const byAddress = new Map<string, ResolvedRecipient>();
@@ -309,6 +328,11 @@ export async function resolveRecipients(spec: RecipientSourceSpec): Promise<Reso
     final = allResolved.filter((r) => {
       if (r.userId && allowed.has(r.userId)) {
         r.consent = { marketing: true, source: 'userMarketingConsent', iysQueried: false };
+        return true;
+      }
+      // Inline yüklenen liste — STK kendi opt-in listesini beyan eder; geçer.
+      if (inlineAddrs.has(r.channelAddress)) {
+        r.consent = { marketing: true, source: 'inlineUploaded', iysQueried: false };
         return true;
       }
       // CSV/manuel ki userId yoksa marketing'de düşürülür (KVKK)

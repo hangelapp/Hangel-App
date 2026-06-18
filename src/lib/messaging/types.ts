@@ -127,6 +127,10 @@ export interface RecipientSourceSpec {
   segmentIds?: string[];
   manualUserIds?: string[];
   csvUploadId?: string;
+  /** Workspace toplu mail: STK panelden yüklediği ham e-posta listesi (kendi opt-in
+   *  kişileri). userId'siz olduğu için marketing consent filtresini geçer; KVKK
+   *  sorumluluğu STK'da, unsubscribe footer gönderimde eklenir. */
+  inlineRecipients?: Array<{ email: string; name?: string }>;
   /** NGO admin gönderiminde server tarafında zorla doldurulur — client'tan tampered değer kabul edilmez */
   scopedNgoId?: string;
 }
