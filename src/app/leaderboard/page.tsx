@@ -47,6 +47,8 @@ import {
 
 const PAGE_SIZE = 7;
 const MAX_LIST = 50;
+// Liderlik tablosu, topluluk bu üye sayısına ulaşınca OTOMATİK açılır; altında gizli.
+const LEADERBOARD_MIN_USERS = 1000;
 
 const METRICS: ReadonlyArray<{
   key: MetricKey;
@@ -197,6 +199,32 @@ export default function LeaderboardPage() {
   const { data: allUsers, isLoading } = useCollection<LeaderboardUser>(usersRef);
 
   const activeMetric = METRICS.find((m) => m.key === metric) ?? METRICS[0];
+
+  // GATE: liderlik tablosu 1000 üyeye ulaşınca OTOMATİK açılır; altında gizli kalır.
+  // allUsers zaten yüklü → ekstra sorgu yok. Yükleme bitmeden gate'i tetikleme.
+  const userCount = allUsers?.length ?? 0;
+  if (!isLoading && userCount < LEADERBOARD_MIN_USERS) {
+    return (
+      <div className="mx-auto w-full max-w-3xl space-y-5 p-4 pb-32 sm:p-6">
+        <LeaderboardHero />
+        <div className="rounded-3xl border border-border/60 bg-card p-8 text-center space-y-4 shadow-sm">
+          <span className="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10">
+            <Sparkles className="h-8 w-8 text-primary" />
+          </span>
+          <h2 className="text-xl font-bold">Liderlik Tablosu yakında açılıyor</h2>
+          <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+            Liderlik tablosu, hangel topluluğu <span className="font-semibold text-foreground">1.000 üyeye</span> ulaştığında otomatik olarak açılacak. Arkadaşlarını davet et, açıldığında ilk sıralarda yerini al!
+          </p>
+          <div className="mx-auto max-w-xs space-y-1.5 pt-1">
+            <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, (userCount / LEADERBOARD_MIN_USERS) * 100)}%` }} />
+            </div>
+            <p className="text-[12px] font-semibold tabular-nums text-muted-foreground">{userCount.toLocaleString('tr-TR')} / 1.000 üye</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5 p-4 pb-32 sm:p-6">
