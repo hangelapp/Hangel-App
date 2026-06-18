@@ -26,7 +26,7 @@ import {
 } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
-type TargetGroup = 'all' | 'all-ngos' | 'all-clubs' | 'all-brands' | 'all-ngo-admins';
+type TargetGroup = 'all' | 'all-ngos' | 'all-clubs' | 'all-brands' | 'all-ngo-admins' | 'single-user';
 
 interface CommsUser {
     id: string;
@@ -91,6 +91,7 @@ const TARGET_LABELS: Record<TargetGroup, string> = {
     'all-clubs': 'Tüm Kulüp Adminleri',
     'all-brands': 'Tüm Marka Adminleri',
     'all-ngo-admins': 'Tüm Kuruluş Adminleri (STK + Marka + Kulüp)',
+    'single-user': 'Tek Kullanıcı (ara & seç)',
 };
 
 const DM_TARGET_LABELS: Record<string, string> = {
@@ -407,6 +408,9 @@ export default function CommunicationsPage() {
 
     // Broadcast state
     const [target, setTarget] = useState<TargetGroup | ''>('');
+    // "Tek Kullanıcı" hedefi için seçili kullanıcı + arama metni.
+    const [singleUserId, setSingleUserId] = useState('');
+    const [singleUserSearch, setSingleUserSearch] = useState('');
     const [bcTitle, setBcTitle] = useState('');
     const [bcBody, setBcBody] = useState('');
     const [bcSending, setBcSending] = useState(false);
@@ -526,10 +530,22 @@ export default function CommunicationsPage() {
                 return allUsers.filter(u =>
                     u.role === 'ngo-admin' || u.managedNgoId || u.managedClubId || u.managedBrandId,
                 );
+            case 'single-user':
+                return singleUserId ? allUsers.filter(u => u.id === singleUserId) : [];
             default:
                 return [];
         }
-    }, [allUsers, target]);
+    }, [allUsers, target, singleUserId]);
+
+    // "Tek Kullanıcı" araması — isim/e-posta/telefon/@kullanıcı eşleşmesi (ilk 25).
+    const singleUserMatches = useMemo(() => {
+        if (target !== 'single-user' || singleUserSearch.trim().length < 2 || !allUsers) return [];
+        const q = singleUserSearch.toLowerCase();
+        return allUsers.filter(u =>
+            [u.name, u.username, u.personalInfo?.email, u.personalInfo?.phone]
+                .filter(Boolean).some(f => String(f).toLowerCase().includes(q)),
+        ).slice(0, 25);
+    }, [target, singleUserSearch, allUsers]);
 
     // DM için arama sonuçları
     const filteredEntities = useMemo(() => {
@@ -809,7 +825,38 @@ export default function CommunicationsPage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {target && (
+                                    {target === 'single-user' && (
+                                        <div className="space-y-1.5 rounded-xl border border-border/60 p-2">
+                                            <Input
+                                                placeholder="İsim, e-posta, telefon veya @kullanıcı ara..."
+                                                value={singleUserSearch}
+                                                onChange={e => { setSingleUserSearch(e.target.value); setSingleUserId(''); }}
+                                            />
+                                            {singleUserSearch.trim().length >= 2 && !singleUserId && (
+                                                <div className="max-h-52 space-y-0.5 overflow-y-auto">
+                                                    {singleUserMatches.map(u => (
+                                                        <button
+                                                            key={u.id}
+                                                            type="button"
+                                                            onClick={() => { setSingleUserId(u.id); setSingleUserSearch(u.name || u.personalInfo?.email || u.id); }}
+                                                            className="flex w-full flex-col rounded-lg px-2 py-1.5 text-left text-sm hover:bg-muted"
+                                                        >
+                                                            <span className="font-medium">{u.name || 'İsimsiz kullanıcı'}</span>
+                                                            <span className="text-xs text-muted-foreground">{u.personalInfo?.email || u.personalInfo?.phone || u.username || u.id}</span>
+                                                        </button>
+                                                    ))}
+                                                    {singleUserMatches.length === 0 && <p className="px-2 py-1.5 text-xs text-muted-foreground">Eşleşen kullanıcı yok.</p>}
+                                                </div>
+                                            )}
+                                            {singleUserId && (
+                                                <p className="flex items-center gap-1.5 px-1 text-xs text-emerald-600">
+                                                    ✓ Seçildi: <strong>{(allUsers || []).find(u => u.id === singleUserId)?.name || singleUserId}</strong>
+                                                    <button type="button" onClick={() => { setSingleUserId(''); setSingleUserSearch(''); }} className="ml-1 text-muted-foreground underline">değiştir</button>
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                    {target && target !== 'single-user' && (
                                         <p className="text-xs text-muted-foreground">
                                             {usersLoading
                                                 ? 'Eşleşen kullanıcı sayısı hesaplanıyor...'
