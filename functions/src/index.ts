@@ -154,3 +154,8 @@ export { onDisasterAlertCreated } from './disaster-geofence';
 // + contact.priority=true → çağrı sırasında üst sıraya çıkar.
 // See ./santral-callback-runner.ts
 export { santralCallbackRunner } from './santral-callback-runner';
+
+// Messaging worker tick — every 1 minute. Mail/SMS kuyruğunu işler (App Hosting
+// worker endpoint'lerini x-messaging-key ile tetikler). Bu olmadan kuyruktaki
+// toplu mailler GÖNDERİLMEZ. See ./messaging-worker.ts
+export { messagingWorkerTick } from './messaging-worker';
