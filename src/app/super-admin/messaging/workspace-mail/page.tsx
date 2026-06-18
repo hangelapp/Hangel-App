@@ -297,54 +297,56 @@ export default function PlatformWorkspaceMailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2 rounded-xl bg-muted/60 p-1">
-                <button type="button" onClick={() => { setSource('outreach'); setPreview(null); }} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${source === 'outreach' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}>Outreach</button>
-                <button type="button" onClick={() => { setSource('vakif'); setPreview(null); }} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${source === 'vakif' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}>Vakıflar</button>
-                <button type="button" onClick={() => { setSource('dernek'); setPreview(null); }} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${source === 'dernek' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}>Dernekler</button>
+                <button type="button" onClick={() => { if (source === 'inline') setSource('outreach'); setPreview(null); }} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${source !== 'inline' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}>Veritabanı</button>
                 <button type="button" onClick={() => { setSource('inline'); setPreview(null); }} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${source === 'inline' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}>Yüklenen Liste</button>
               </div>
 
-              {source === 'outreach' ? (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label>Tür</Label>
-                    <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={filterType} onChange={(e) => { setFilterType(e.target.value); setPreview(null); }}>
-                      {facetTypes.length === 0 ? (
-                        <option value={filterType}>{typeLabel(filterType)}</option>
-                      ) : (
-                        facetTypes.map((t) => <option key={t.type} value={t.type}>{typeLabel(t.type)} ({t.withEmail} e-postalı)</option>)
-                      )}
-                    </select>
-                    <p className="text-xs text-muted-foreground">Yalnız e-postası olan kayıtlar listelenir (boş türler görünmez).</p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Şehir (opsiyonel)</Label>
-                    <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={filterCity} onChange={(e) => { setFilterCity(e.target.value); setPreview(null); }}>
-                      <option value="">Tümü</option>
-                      {allProvinces.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                </div>
-              ) : source === 'vakif' ? (
-                <div className="space-y-1.5 sm:max-w-xs">
-                  <Label>Şehir (opsiyonel)</Label>
-                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={filterCity} onChange={(e) => { setFilterCity(e.target.value); setPreview(null); }}>
-                    <option value="">Tümü</option>
-                    {allProvinces.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  <p className="text-xs text-muted-foreground">Vakıf kayıt veritabanından (~6.700 vakıf) e-postası olanlara gönderilir.</p>
-                </div>
-              ) : source === 'dernek' ? (
+              {source !== 'inline' ? (
                 <div className="space-y-2">
-                  <div className="space-y-1.5 sm:max-w-xs">
-                    <Label>Şehir (opsiyonel)</Label>
-                    <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={filterCity} onChange={(e) => { setFilterCity(e.target.value); setPreview(null); }}>
-                      <option value="">Tümü</option>
-                      {allProvinces.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label>Tür</Label>
+                      {/* Outreach türleri + Vakıflar + Dernekler tek dropdown'da. Seçim source'u belirler. */}
+                      <select
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={source === 'vakif' ? '__vakif__' : source === 'dernek' ? '__dernek__' : filterType}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setPreview(null);
+                          if (v === '__vakif__') setSource('vakif');
+                          else if (v === '__dernek__') setSource('dernek');
+                          else { setSource('outreach'); setFilterType(v); }
+                        }}
+                      >
+                        {facetTypes.length === 0 && source === 'outreach' ? (
+                          <option value={filterType}>{typeLabel(filterType)}</option>
+                        ) : (
+                          facetTypes.map((t) => <option key={t.type} value={t.type}>{typeLabel(t.type)} ({t.withEmail} e-postalı)</option>)
+                        )}
+                        <option value="__vakif__">Vakıflar (vakıf veritabanı)</option>
+                        <option value="__dernek__">Dernekler (dernek kütüğü)</option>
+                      </select>
+                      <p className="text-xs text-muted-foreground">
+                        {source === 'vakif'
+                          ? 'Vakıf kayıt veritabanından (~6.700 vakıf) e-postası olanlara gönderilir.'
+                          : source === 'dernek'
+                            ? 'Resmi dernek kütüğünden e-postası olan kayıtlara gönderilir.'
+                            : 'Yalnız e-postası olan kayıtlar listelenir (boş türler görünmez).'}
+                      </p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Şehir (opsiyonel)</Label>
+                      <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={filterCity} onChange={(e) => { setFilterCity(e.target.value); setPreview(null); }}>
+                        <option value="">Tümü</option>
+                        {allProvinces.map((c) => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
                   </div>
-                  <p className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
-                    ⚠️ Resmi dernek kütüğünde (100.967 kayıt) e-posta adresi yok denecek kadar az. &quot;Kaç alıcı?&quot; çoğunlukla 0 döner — derneklere mail için web sitelerinden e-posta toplamak gerekir.
-                  </p>
+                  {source === 'dernek' && (
+                    <p className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
+                      ⚠️ Resmi dernek kütüğünde (100.967 kayıt) e-posta adresi yok denecek kadar az. &quot;Kaç alıcı?&quot; çoğunlukla 0 döner — derneklere mail için web sitelerinden e-posta toplamak gerekir.
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
