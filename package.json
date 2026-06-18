@@ -91,6 +91,7 @@
     "isomorphic-dompurify": "^3.13.0",
     "jsonwebtoken": "^9.0.3",
     "jspdf": "^4.2.1",
+    "jsqr": "^1.4.0",
     "jwks-rsa": "^4.0.1",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",

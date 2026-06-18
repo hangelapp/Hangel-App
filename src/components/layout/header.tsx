@@ -2,10 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Siren, Bell, Globe, Search,
+  Menu, Siren, Bell, Globe, Search, QrCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/layout/user-nav';
+import { QrScanDialog } from '@/components/auth/qr-scan-dialog';
 import { usePathname } from 'next/navigation';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -25,6 +26,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   // Liquid Glass: adaptive blur — sayfa scroll edildikçe glass katmanı kalınlaşır.
   // Why: iOS 26 header pattern'i (sayfa üstünde flat, scroll'da prominent).
   const [isScrolled, setIsScrolled] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   useEffect(() => {
     const handler = () => setIsScrolled(window.scrollY > 8);
     handler();
@@ -115,6 +117,14 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
               </Button>
             )}
 
+            {/* QR Okut — giriş yapmış kullanıcı, başka cihazdaki giriş QR'ını okutup
+                o cihazı giriş yaptırır (WhatsApp tarzı). */}
+            {user && (
+              <Button variant="ghost" size="icon" aria-label="QR Okut" title="QR Okut" onClick={() => setScanOpen(true)}>
+                <QrCode className="h-5 w-5" />
+              </Button>
+            )}
+
             {isUserLoading ? (
                 <div className="w-9 h-9 rounded-full bg-muted animate-pulse ml-1" />
             ) : user ? (
@@ -126,6 +136,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
             )}
           </div>
         </div>
+        {user && <QrScanDialog open={scanOpen} onOpenChange={setScanOpen} />}
       </header>
   );
 }
