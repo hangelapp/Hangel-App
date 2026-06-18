@@ -1189,6 +1189,22 @@ service cloud.firestore {
       }
     }
 
+    // Tanıtım Araçları (pazarlama materyalleri) — super-admin yönetir + onay akışı.
+    // status: 'taslak' (yalnız super-admin) | 'yayinda' (onaylı). publicListed =
+    // (status=='yayinda' && isPublic) — yazarken türetilir.
+    //   • super-admin: hepsini okur (taslak dahil)
+    //   • giriş yapmış org-admin: 'yayinda' olanları okur (panel client tarafında
+    //     targetKinds'e göre filtreler) → query: where('status','==','yayinda')
+    //   • kimliksiz konferans ziyaretçisi: yalnız publicListed==true → /tanitim
+    //     query: where('publicListed','==',true) (kompozit index gerekmez)
+    // Yazma: yalnız super-admin (aşağıdaki global kural da kapsar; açıkça yazıyoruz).
+    match /marketingAssets/{assetId} {
+      allow read, list: if isSuperAdmin()
+        || (resource != null && resource.data.publicListed == true)
+        || (isSignedIn() && resource != null && resource.data.status == 'yayinda');
+      allow write: if isSuperAdmin();
+    }
+
     // Global Yazma Erişimi (Sadece Super Admin)
     match /{allPaths=**} {
       allow write: if isSuperAdmin();

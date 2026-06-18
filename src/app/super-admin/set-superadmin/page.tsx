@@ -24,6 +24,7 @@ const SUPER_ADMIN_PAGES: { slug: string; label: string }[] = [
   { slug: 'association-content', label: 'Dernek Web Sitesi Yönetimi' },
   { slug: 'contracts', label: 'Sözleşmeler ve Politikalar' },
   { slug: 'pages', label: 'İçerik Sayfaları (Basın/Etkinlik vb.)' },
+  { slug: 'marketing-kit', label: 'Tanıtım Araçları' },
   { slug: 'applications', label: 'Başvuru Yönetimi' },
   { slug: 'users', label: 'Kullanıcı Yönetimi' },
   { slug: 'ngos', label: 'STK Yönetimi' },

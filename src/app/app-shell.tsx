@@ -510,6 +510,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         '/auth/action',
         '/imece',
         '/social-impact',
+        '/tanitim',
         '/p',
         '/emergency/about',
     ];

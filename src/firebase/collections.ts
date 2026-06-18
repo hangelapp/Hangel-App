@@ -276,6 +276,14 @@ export const COLLECTIONS = {
   // source (manual/csv/imported), addedBy (adminUid), createdAt, updatedAt.
   outreachContacts: 'outreachContacts',
 
+  // Tanıtım Araçları (pazarlama materyalleri) — super-admin yönetir + onay akışı
+  // (status: 'taslak' | 'yayinda'). Onaylanınca STK/marka/kulüp panellerinde
+  // targetKinds'e göre görünür; isPublic+yayinda olanlar (publicListed) kimliksiz
+  // /tanitim konferans sayfasında listelenir. Doc şeması: src/lib/marketing-kit.ts
+  // MarketingAsset (title, description, category, fileUrl, storagePath, fileName,
+  // targetKinds[], isPublic, publicListed, status, createdBy, createdAt).
+  marketingAssets: 'marketingAssets',
+
   // Internal / dev only
   _devOutbox: '_devOutbox',
 } as const;

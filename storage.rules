@@ -81,6 +81,15 @@ service firebase.storage {
         isManagedEntity('Ngo', ngoId);
     }
 
+    // Tanıtım Araçları (pazarlama materyalleri) — super-admin yükler; herkes indirir.
+    // Public read: org-admin'ler ve konferans katılımcıları login olmadan erişebilsin
+    // (URL'ler timestamp'li, tahmin edilemez). Firestore tarafı publicListed/status
+    // ile gerçek görünürlüğü yönetir; burada dosya indirme açıktır.
+    match /marketing-assets/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
     // Varsayılan: kimliği doğrulanmış kullanıcı okuyabilir, sadece super-admin yazabilir
     match /{allPaths=**} {
       allow read: if request.auth != null;

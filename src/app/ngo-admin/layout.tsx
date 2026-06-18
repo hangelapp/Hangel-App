@@ -31,6 +31,7 @@ import {
   MessageSquare,
   Mail,
   Megaphone,
+  Presentation,
   Video,
   Palette,
   CreditCard,
@@ -101,6 +102,7 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: UserCog },
       { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: QrCode },
       { href: '/ngo-admin/community-invite', label: 'Topluluğunu Davet Et', icon: Users },
+      { href: '/ngo-admin/marketing-kit', label: 'Tanıtım Araçları', icon: Presentation },
       { href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: Megaphone, scope: 'ads', beta: true },
     ],
   },
@@ -181,6 +183,7 @@ const BRAND_MENU: MenuGroup[] = [
       { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: UserCog },
       { href: '/ngo-admin/qr', label: 'Marka Profil QR Kodu', icon: QrCode },
       { href: '/ngo-admin/community-invite', label: 'Topluluğunu Davet Et', icon: Users },
+      { href: '/ngo-admin/marketing-kit', label: 'Tanıtım Araçları', icon: Presentation },
     ],
   },
   {
@@ -219,6 +222,7 @@ const CLUB_MENU: MenuGroup[] = [
       { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: UserCog },
       { href: '/ngo-admin/qr', label: 'Kulüp Profil QR Kodu', icon: QrCode },
       { href: '/ngo-admin/community-invite', label: 'Topluluğunu Davet Et', icon: Users },
+      { href: '/ngo-admin/marketing-kit', label: 'Tanıtım Araçları', icon: Presentation },
     ],
   },
   {
