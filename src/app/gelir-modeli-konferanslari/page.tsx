@@ -239,9 +239,14 @@ export default function IncomeModelConferencePage() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-white pt-28 pb-16">
         <div className="mx-auto max-w-3xl px-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary">
+          <Link
+            href="/gelir-modeli-konferanslari/sunum"
+            className="group inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary transition hover:bg-primary/20 active:scale-95"
+            title="Konferans sunumunu aç"
+          >
             <TrendingUp className="h-3.5 w-3.5" /> Ücretsiz Eğitim Konferansı · Sertifikalı
-          </span>
+            <span className="ml-0.5 inline-flex items-center gap-1 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] uppercase tracking-wide group-hover:bg-primary/30">▶ Sunum</span>
+          </Link>
           <p className="mt-6 text-lg font-medium text-muted-foreground">Sivil Toplum Kuruluşlarında</p>
           <h1 className="mt-1 text-4xl sm:text-6xl font-black tracking-tighter text-[#1d1d1f] leading-[1.05]">
             Gelir Modeli Oluşturma<br />ve Sürdürülebilirlik
