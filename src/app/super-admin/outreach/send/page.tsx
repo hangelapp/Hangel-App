@@ -27,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
-import { ArrowLeft, Mail, MessageSquare, Send, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, Mail, MessageSquare, MessageCircle, Send, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
 const VARIABLES_HELP = '{{name}} — kuruluş adı için kullanılabilir.';
 
@@ -38,7 +38,8 @@ export default function OutreachSendPage() {
 
   const source = (sp.get('source') || 'registryVakiflar') as
     'registryVakiflar' | 'registryDernekler' | 'outreachContacts';
-  const channel = (sp.get('channel') || 'email') as 'email' | 'sms';
+  const channel = (sp.get('channel') || 'email') as 'email' | 'sms' | 'whatsapp';
+  const channelLabel = channel === 'email' ? 'Email' : channel === 'whatsapp' ? 'WhatsApp' : 'SMS';
   const idsParam = sp.get('ids') || '';
   const ids = useMemo(() => idsParam.split(',').filter(Boolean), [idsParam]);
 
@@ -69,7 +70,7 @@ export default function OutreachSendPage() {
     }
 
     const confirmed = window.confirm(
-      `${ids.length} kontağa ${channel === 'email' ? 'email' : 'SMS'} gönderilecek. Emin misin?`,
+      `${ids.length} kontağa ${channelLabel} gönderilecek. Emin misin?`,
     );
     if (!confirmed) return;
 
@@ -108,7 +109,7 @@ export default function OutreachSendPage() {
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold font-headline">
-            Toplu {channel === 'email' ? 'Email' : 'SMS'} Gönder
+            Toplu {channelLabel} Gönder
           </h1>
           <p className="text-muted-foreground text-sm">
             <Badge variant="outline" className="mr-2">{ids.length} kontak</Badge>
@@ -142,7 +143,7 @@ export default function OutreachSendPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            {channel === 'email' ? <Mail className="h-5 w-5 text-primary" /> : <MessageSquare className="h-5 w-5 text-primary" />}
+            {channel === 'email' ? <Mail className="h-5 w-5 text-primary" /> : channel === 'whatsapp' ? <MessageCircle className="h-5 w-5 text-primary" /> : <MessageSquare className="h-5 w-5 text-primary" />}
             Mesaj İçeriği
           </CardTitle>
           <CardDescription className="flex items-center gap-1 text-xs">

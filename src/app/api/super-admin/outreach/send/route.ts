@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
   if (!source || !['registryVakiflar', 'registryDernekler', 'outreachContacts'].includes(source)) {
     return NextResponse.json({ errorCode: 'BAD_SOURCE', message: 'source geçersiz' }, { status: 400 });
   }
-  if (!channel || !['email', 'sms'].includes(channel)) {
+  if (!channel || !['email', 'sms', 'whatsapp'].includes(channel)) {
     return NextResponse.json({ errorCode: 'BAD_CHANNEL', message: 'channel geçersiz' }, { status: 400 });
   }
   if (!Array.isArray(ids) || ids.length === 0) {
@@ -208,7 +208,7 @@ export async function POST(req: NextRequest) {
         errors.push(`${c.name} <${c.email}>: ${e instanceof Error ? e.message.slice(0, 100) : String(e)}`);
       }
     }
-  } else {
+  } else if (channel === 'sms') {
     const provider = getSmsProvider();
     const senderId = (body.senderId || 'HANGEL').slice(0, 11);
     for (const c of contacts) {
@@ -228,6 +228,51 @@ export async function POST(req: NextRequest) {
       } catch (e) {
         failed++;
         errors.push(`${c.name} <${c.phone}>: ${e instanceof Error ? e.message.slice(0, 100) : String(e)}`);
+      }
+    }
+  } else {
+    // WhatsApp — soğuk numaralara serbest metin GÖNDERİLEMEZ; Meta politikası gereği
+    // onaylı bir pazarlama (marketing) şablonu şart. Şablon adı WHATSAPP_OUTREACH_TEMPLATE_NAME
+    // env ile gelir (Meta Business Manager'da oluşturulup onaylanınca). Yapılandırılmadıysa
+    // hepsini atla + net mesaj ver (sessiz başarısızlık yok).
+    const tplName = process.env.WHATSAPP_OUTREACH_TEMPLATE_NAME;
+    const token = process.env.WHATSAPP_ACCESS_TOKEN;
+    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+    const tplLang = process.env.WHATSAPP_OUTREACH_TEMPLATE_LANG || 'tr';
+    if (!tplName || !token || !phoneNumberId) {
+      skipped = contacts.length;
+      errors.push('WhatsApp toplu gönderim için Meta-onaylı pazarlama şablonu gerekli (WHATSAPP_OUTREACH_TEMPLATE_NAME yapılandırılmadı).');
+    } else {
+      const apiVer = process.env.WHATSAPP_API_VERSION || 'v21.0';
+      for (const c of contacts) {
+        if (!c.phone) {
+          skipped++;
+          continue;
+        }
+        const personalizedBody = interpolate(body.body, { name: c.name }).slice(0, 1024);
+        try {
+          const res = await fetch(`https://graph.facebook.com/${apiVer}/${phoneNumberId}/messages`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              messaging_product: 'whatsapp',
+              to: c.phone.replace(/[^0-9]/g, ''),
+              type: 'template',
+              template: {
+                name: tplName,
+                language: { code: tplLang },
+                components: [{ type: 'body', parameters: [{ type: 'text', text: personalizedBody }] }],
+              },
+            }),
+          });
+          if (!res.ok) {
+            throw new Error((await res.text().catch(() => '')).slice(0, 120));
+          }
+          sent++;
+        } catch (e) {
+          failed++;
+          errors.push(`${c.name} <${c.phone}>: ${e instanceof Error ? e.message.slice(0, 100) : String(e)}`);
+        }
       }
     }
   }

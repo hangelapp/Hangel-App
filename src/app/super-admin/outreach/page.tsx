@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Search, Mail, MessageSquare, Phone, MapPin, Upload, Plus,
+  Search, Mail, MessageSquare, MessageCircle, Phone, MapPin, Upload, Plus,
   Building2, Heart, Trophy, Server, Landmark, Loader2, AlertCircle, CheckCircle2,
   ChevronDown, X, FileSpreadsheet, UserMinus,
 } from 'lucide-react';
@@ -565,6 +565,7 @@ export default function OutreachHubPage() {
   const idList = Array.from(selectedIds).join(',');
   const emailHref = `/super-admin/outreach/send?source=${sourceCol}&channel=email&ids=${encodeURIComponent(idList)}`;
   const smsHref = `/super-admin/outreach/send?source=${sourceCol}&channel=sms&ids=${encodeURIComponent(idList)}`;
+  const whatsappHref = `/super-admin/outreach/send?source=${sourceCol}&channel=whatsapp&ids=${encodeURIComponent(idList)}`;
 
   // "Listeden Çıkar / Geri Al" — status alanını flip eder ve API'ye gönderir.
   async function toggleUnsubscribe(r: OutreachRow) {
@@ -865,6 +866,9 @@ export default function OutreachHubPage() {
                   </Button>
                   <Button asChild size="sm" disabled={selectedWithPhone === 0}>
                     <Link href={smsHref}><MessageSquare className="h-4 w-4 mr-1" /> SMS Gönder ({selectedWithPhone})</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50" disabled={selectedWithPhone === 0}>
+                    <Link href={whatsappHref}><MessageCircle className="h-4 w-4 mr-1" /> WhatsApp Gönder ({selectedWithPhone})</Link>
                   </Button>
                 </div>
               </CardContent>
