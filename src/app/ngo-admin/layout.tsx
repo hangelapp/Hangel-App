@@ -155,9 +155,8 @@ const NGO_MENU: MenuGroup[] = [
   {
     title: 'Operasyon, Finans & Araçlar',
     items: [
-      // Etkinlik Yönetimi NGO için bilinçli olarak "Yakında" (aktif kullanım kulüplere özel;
-      // SideMenu guard'ı comingSoon=false olunca NGO'da gizliyor — bu yüzden burada kalmalı).
-      { href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: Calendar, comingSoon: true },
+      // Etkinlik Yönetimi STK'lara açıldı (2026-06-18) — kulüplerle aynı akış.
+      { href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: Calendar },
       { href: '/ngo-admin/online-meeting', label: 'Online Eğitim/Toplantı Araçları', icon: Video, comingSoon: true },
       { href: '/ngo-admin/design-tools', label: 'Tasarım Programları', icon: Palette, comingSoon: true },
       { href: '/ngo-admin/accounting', label: 'Ön Muhasebe Yönetimi', icon: Calculator, comingSoon: true },

@@ -137,7 +137,9 @@ export default function EventManagementPage() {
     }, [activeIdFromCtx, activeKind, activeDoc]);
 
     const initialLoading = activeLoading;
-    const isClub = activeEntity?.kind === 'club';
+    // Etkinlik oluşturabilen entity: öğrenci kulübü VEYA STK (marka hariç).
+    // (Değişken adı geçmişten 'isClub'; artık STK'yı da kapsıyor.)
+    const isClub = activeEntity?.kind === 'club' || activeEntity?.kind === 'ngo';
 
     // ---- Existing events for this club ----
     const myEventsQ = useMemoFirebase(
@@ -334,7 +336,7 @@ export default function EventManagementPage() {
 
     const handleCreateEvent = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!firestore || !activeEntity || activeEntity.kind !== 'club') return;
+        if (!firestore || !activeEntity || !isClub) return;
         if (!evName.trim() || !evDate.trim()) {
             toast({ title: t('ngo_admin_events.missingFieldToast'), description: t('ngo_admin_events.missingFieldDesc'), variant: 'destructive' });
             return;

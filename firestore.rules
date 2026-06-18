@@ -255,12 +255,13 @@ service cloud.firestore {
 
     match /events/{eventId} {
       allow read, list: if true; // Public event listings
-      // Öğrenci kulüpleri kendi etkinliklerini oluşturabilir (status='Beklemede')
+      // Öğrenci kulüpleri VE STK'lar kendi etkinliklerini oluşturabilir (status='Beklemede').
       allow create: if isSignedIn() &&
         request.resource.data.status == 'Beklemede' &&
         (request.resource.data.organizerId == request.auth.uid ||
          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == request.resource.data.organizerId));
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == request.resource.data.organizerId ||
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == request.resource.data.organizerId)));
       // Sahibi kendi etkinliğini günceller (status DAHIL DEĞIL — super-admin onaylar).
       // Super-admin tüm alanları (status dahil) günceller; spesifik match catch-all'ı override eder.
       allow update: if isSuperAdmin() || (
