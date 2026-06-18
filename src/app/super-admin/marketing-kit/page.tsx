@@ -48,6 +48,7 @@ import {
   EyeOff,
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
@@ -297,9 +298,16 @@ export default function MarketingKitPage() {
             <a href="/tanitim" target="_blank" className="text-primary font-bold"> /tanitim</a> sayfasından açabilirsiniz.
           </p>
         </div>
-        <Button onClick={openCreate} className="rounded-xl font-bold h-11 px-5 shrink-0">
-          <Plus className="mr-2 h-4 w-4" /> Yeni Materyal
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button asChild variant="outline" className="rounded-xl font-bold h-11 px-4">
+            <Link href="/super-admin/marketing-kit/tanitim">
+              <Globe className="mr-2 h-4 w-4" /> Konferans Sayfası
+            </Link>
+          </Button>
+          <Button onClick={openCreate} className="rounded-xl font-bold h-11 px-5">
+            <Plus className="mr-2 h-4 w-4" /> Yeni Materyal
+          </Button>
+        </div>
       </div>
 
       {permError && (

@@ -31,8 +31,16 @@ export function useSuperAdminPermissions() {
     user.getIdTokenResult()
       .then((res) => {
         if (cancelled) return;
-        const p = (res.claims as { superAdminPermissions?: unknown }).superAdminPermissions;
-        setPerms(Array.isArray(p) ? (p as string[]) : null);
+        const claims = res.claims as { superAdminPermissions?: unknown; email?: unknown };
+        // Kurucu (founder) her zaman TAM yetkili — yeni eklenen super-admin
+        // sayfaları (örn. marketing-kit) re-grant gerektirmeden görünsün.
+        // superAdminPermissions yalnız UI granularite katmanıdır; gerçek güvenlik
+        // sınırı role=='super-admin' claim'i + Firestore rules'tur (storage.rules
+        // ile aynı founder e-postası).
+        const isFounder = typeof claims.email === 'string' &&
+          claims.email.toLowerCase() === 'ismailhilmi@hangel.org';
+        const p = claims.superAdminPermissions;
+        setPerms(isFounder ? null : (Array.isArray(p) ? (p as string[]) : null));
         setLoading(false);
       })
       .catch(() => { if (!cancelled) { setPerms(null); setLoading(false); } });
