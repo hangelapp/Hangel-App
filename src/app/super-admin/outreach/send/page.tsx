@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/firebase';
 import { ArrowLeft, Mail, MessageSquare, Send, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
 const VARIABLES_HELP = '{{name}} — kuruluş adı için kullanılabilir.';
@@ -33,6 +34,7 @@ const VARIABLES_HELP = '{{name}} — kuruluş adı için kullanılabilir.';
 export default function OutreachSendPage() {
   const sp = useSearchParams();
   const { toast } = useToast();
+  const { user } = useUser();
 
   const source = (sp.get('source') || 'registryVakiflar') as
     'registryVakiflar' | 'registryDernekler' | 'outreachContacts';
@@ -71,12 +73,17 @@ export default function OutreachSendPage() {
     );
     if (!confirmed) return;
 
+    if (!user) {
+      toast({ title: 'Oturum gerekli', description: 'Lütfen tekrar giriş yapın.', variant: 'destructive' });
+      return;
+    }
     setSending(true);
     setResult(null);
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/super-admin/outreach/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           source, channel, ids, subject, body, fromEmail, fromName, senderId,
         }),
