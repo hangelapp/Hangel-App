@@ -47,7 +47,7 @@ interface InlineRec { email: string; name?: string }
 interface Body {
   subject?: string;
   body?: string;
-  source?: 'outreach' | 'inline';
+  source?: 'outreach' | 'vakif' | 'inline';
   filter?: OutreachFilter;
   inlineRecipients?: InlineRec[];
   dryRun?: boolean;
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ errorCode: 'INVALID_JSON', message: 'Geçersiz JSON' }, { status: 400 });
   }
 
-  const source = body.source === 'inline' ? 'inline' : 'outreach';
+  const source = (body.source === 'inline' || body.source === 'vakif') ? body.source : 'outreach';
   const dryRun = body.dryRun === true;
 
   const db = getAdminFirestore();
@@ -106,6 +106,18 @@ export async function POST(req: Request) {
       const email = (r?.email ?? '').trim().toLowerCase();
       if (!EMAIL_RE.test(email) || collected.has(email)) continue;
       collected.set(email, { email, name: r?.name });
+      if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
+    }
+  } else if (source === 'vakif') {
+    // registryVakiflar — e-posta alanı ePosta; il (şehir) kodda süzülür.
+    const cityFilter = (body.filter?.city ?? '').trim().toLocaleLowerCase('tr');
+    const snap = await db.collection('registryVakiflar').limit(MAX_RECIPIENTS * 4).get();
+    for (const d of snap.docs) {
+      const data = d.data() as { ePosta?: string; name?: string; il?: string };
+      const email = (data.ePosta ?? '').trim().toLowerCase();
+      if (!EMAIL_RE.test(email) || collected.has(email)) continue;
+      if (cityFilter && (data.il ?? '').trim().toLocaleLowerCase('tr') !== cityFilter) continue;
+      collected.set(email, { email, name: data.name });
       if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
     }
   } else {

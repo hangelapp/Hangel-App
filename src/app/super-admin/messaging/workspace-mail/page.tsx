@@ -56,7 +56,7 @@ export default function PlatformWorkspaceMailPage() {
   const [disconnecting, setDisconnecting] = useState(false);
 
   // Gönderim
-  const [source, setSource] = useState<'outreach' | 'inline'>('outreach');
+  const [source, setSource] = useState<'outreach' | 'vakif' | 'inline'>('outreach');
   const [facetTypes, setFacetTypes] = useState<FacetType[]>([]);
   const [filterType, setFilterType] = useState('GençlikSporMüdürlüğü');
   const [filterCity, setFilterCity] = useState('');
@@ -172,9 +172,12 @@ export default function PlatformWorkspaceMailPage() {
   };
   const removeOne = (em: string) => setList((p) => p.filter((x) => x !== em));
 
-  const buildSourcePayload = () => source === 'inline'
-    ? { source: 'inline' as const, inlineRecipients: list.map((email) => ({ email })) }
-    : { source: 'outreach' as const, filter: { type: filterType || undefined, city: filterCity.trim() || undefined } };
+  const buildSourcePayload = () =>
+    source === 'inline'
+      ? { source: 'inline' as const, inlineRecipients: list.map((email) => ({ email })) }
+      : source === 'vakif'
+        ? { source: 'vakif' as const, filter: { city: filterCity.trim() || undefined } }
+        : { source: 'outreach' as const, filter: { type: filterType || undefined, city: filterCity.trim() || undefined } };
 
   const doPreview = async () => {
     if (source === 'inline' && list.length === 0) { toast({ variant: 'destructive', title: 'Liste boş' }); return; }
@@ -292,7 +295,8 @@ export default function PlatformWorkspaceMailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2 rounded-xl bg-muted/60 p-1">
-                <button type="button" onClick={() => { setSource('outreach'); setPreview(null); }} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${source === 'outreach' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}>Outreach Datası</button>
+                <button type="button" onClick={() => { setSource('outreach'); setPreview(null); }} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${source === 'outreach' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}>Outreach</button>
+                <button type="button" onClick={() => { setSource('vakif'); setPreview(null); }} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${source === 'vakif' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}>Vakıflar</button>
                 <button type="button" onClick={() => { setSource('inline'); setPreview(null); }} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${source === 'inline' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}>Yüklenen Liste</button>
               </div>
 
@@ -316,6 +320,15 @@ export default function PlatformWorkspaceMailPage() {
                       {allProvinces.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
+                </div>
+              ) : source === 'vakif' ? (
+                <div className="space-y-1.5 sm:max-w-xs">
+                  <Label>Şehir (opsiyonel)</Label>
+                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={filterCity} onChange={(e) => { setFilterCity(e.target.value); setPreview(null); }}>
+                    <option value="">Tümü</option>
+                    {allProvinces.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <p className="text-xs text-muted-foreground">Vakıf kayıt veritabanından (~6.700 vakıf) e-postası olanlara gönderilir.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
