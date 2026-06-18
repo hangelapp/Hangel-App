@@ -19,7 +19,7 @@ import Link from 'next/link';
 import {
     Megaphone, HandCoins, Users, Heart, Sparkles, Globe, Check, ExternalLink,
     Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2, Link2, BadgeCheck, Copy,
-    Facebook, Music2, Building2, Info, Hash, Film, Target, Image as ImageIcon,
+    Facebook, Music2, Building2, Info, Hash, Film, Target, Image as ImageIcon, BarChart3,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
@@ -966,6 +966,7 @@ export default function AdsPage() {
                         onPublish={(id, title) => void publishPlan(id, title)}
                         entityName={entityName}
                         faaliyetAlani={faaliyetAlani}
+                        metrics={adsMetrics}
                     />
                 </section>
 
@@ -1529,7 +1530,7 @@ function CustomAdBlock({ platform, value, onChange, onGenerate, loading }: {
 function AiPlanBlock({
     platform, proposals, loading, onGenerate, onChoose, onCopy, selected,
     savedStatusByKind, savedPlanByKind, connected, publishingId, onPublish,
-    entityName, faaliyetAlani,
+    entityName, faaliyetAlani, metrics = [],
 }: {
     platform: AdPlatform;
     proposals: AdProposal[];
@@ -1545,9 +1546,16 @@ function AiPlanBlock({
     onPublish: (id: string, title?: string) => void;
     entityName: string;
     faaliyetAlani: string;
+    metrics?: AdsCampaignMetric[];
 }) {
     // Öneri kartı başına kullanıcı tarafından düzenlenen günlük bütçe (₺) — key: `${kind}-${i}`.
     const [budgetEdits, setBudgetEdits] = useState<Record<string, string>>({});
+    // Aktif reklamın altındaki "İstatistik" panelinin açık olduğu plan (kind).
+    const [statsOpenKind, setStatsOpenKind] = useState<ProposalKind | null>(null);
+    const metricTotals = useMemo(() => metrics.reduce(
+        (a, m) => ({ impressions: a.impressions + (m.impressions || 0), clicks: a.clicks + (m.clicks || 0), costMicros: a.costMicros + (m.costMicros || 0) }),
+        { impressions: 0, clicks: 0, costMicros: 0 },
+    ), [metrics]);
     const platformLabel = platform === 'google' ? 'Google Arama' : platform === 'meta' ? 'Facebook/Instagram' : 'TikTok kısa video';
     const platformHint = platform === 'google'
         ? 'anahtar kelime, başlık ve açıklamalarla hazır Arama reklamları'
@@ -1718,7 +1726,12 @@ function AiPlanBlock({
                                                 {STATUS_LABEL[savedStatus]}
                                             </span>
                                         )}
-                                        {savedStatus && savedStatus !== 'active' && savedStatus !== 'rejected' && connected && savedId ? (
+                                        {savedStatus === 'active' ? (
+                                            <button onClick={() => setStatsOpenKind(statsOpenKind === p.kind ? null : p.kind)}
+                                                className="h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95 bg-secondary text-foreground">
+                                                <BarChart3 className="h-4 w-4" /> İstatistik
+                                            </button>
+                                        ) : savedStatus && savedStatus !== 'rejected' && connected && savedId ? (
                                             <button
                                                 onClick={() => { const sp = savedPlanByKind.get(p.kind); if (sp?.id) onPublish(sp.id, sp.title || p.title); }}
                                                 disabled={publishingId === savedId}
@@ -1736,6 +1749,22 @@ function AiPlanBlock({
                                         )}
                                     </div>
                                 </div>
+                                {savedStatus === 'active' && statsOpenKind === p.kind && (
+                                    <div className="mt-3 rounded-2xl bg-muted/40 border border-border/50 p-3">
+                                        {metricTotals.impressions === 0 && metricTotals.clicks === 0 ? (
+                                            <p className="text-[12px] text-muted-foreground leading-relaxed">
+                                                <span className="font-semibold text-foreground">Henüz gösterim yok.</span> Reklam onay bekliyor ya da bütçe/hedefleme nedeniyle yayında olmayabilir. Onay genelde birkaç saat–1 gün sürer; daha uzun sürerse bağlı reklam hesabından bütçe ve durum kontrol edilmeli.
+                                            </p>
+                                        ) : (
+                                            <div className="grid grid-cols-3 gap-2 text-center">
+                                                <div><div className="text-[11px] text-muted-foreground">Gösterim</div><div className="text-base font-bold tabular-nums">{metricTotals.impressions.toLocaleString('tr-TR')}</div></div>
+                                                <div><div className="text-[11px] text-muted-foreground">Tıklama</div><div className="text-base font-bold tabular-nums">{metricTotals.clicks.toLocaleString('tr-TR')}</div></div>
+                                                <div><div className="text-[11px] text-muted-foreground">Harcama</div><div className="text-base font-bold tabular-nums">{formatTRY(metricTotals.costMicros)}</div></div>
+                                            </div>
+                                        )}
+                                        <p className="mt-1.5 text-[10px] text-muted-foreground text-center">Son 30 gün · bağlı hesaptaki tüm kampanyalar toplamı</p>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
