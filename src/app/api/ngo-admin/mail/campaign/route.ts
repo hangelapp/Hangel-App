@@ -24,6 +24,7 @@ import { enqueueCampaign } from '@/lib/messaging/queue/enqueue';
 import { logAudit, actorFromRequest } from '@/lib/messaging/audit';
 import { computeCampaignCost } from '@/lib/messaging/pricing';
 import { isMailConfigured } from '@/lib/mail/credential-crypto';
+import { buildEmailSignatureHtml } from '@/lib/mail/email-signature';
 import { COLLECTIONS } from '@/firebase/collections';
 import type {
   CampaignStats,
@@ -54,14 +55,6 @@ function withSignature(body: string, signature?: string): string {
   const sig = typeof signature === 'string' ? signature.trim() : '';
   if (!sig) return body;
   return `${body}<br/><br/>—<br/>${sig.replace(/\n/g, '<br/>')}`;
-}
-
-interface NgoInfo { name?: string; contact?: { phone?: string; email?: string; website?: string } }
-/** Kurum bilgilerinden otomatik mail imzası (özel imza yoksa). */
-function defaultNgoSignature(ngo?: NgoInfo): string {
-  const c = ngo?.contact ?? {};
-  return [ngo?.name, c.phone && `Tel: ${c.phone}`, c.email && `E-posta: ${c.email}`, c.website]
-    .filter(Boolean).join('\n');
 }
 
 const BATCH = 450;
@@ -101,7 +94,7 @@ export async function POST(req: Request) {
   // bir STK'yı açıkça kapatmak isterse featureFlags.bulkMailEnabled = false yazar.
   const ngoSnap = await db.collection(COLLECTIONS.ngos).doc(actor.ngoId).get();
   const ngoData = ngoSnap.exists
-    ? (ngoSnap.data() as { featureFlags?: { bulkMailEnabled?: boolean }; name?: string; contact?: { phone?: string; email?: string; website?: string } } | undefined)
+    ? (ngoSnap.data() as { featureFlags?: { bulkMailEnabled?: boolean }; name?: string; logoUrl?: string; address?: string; contact?: { phone?: string; email?: string; website?: string } } | undefined)
     : undefined;
   if (ngoData?.featureFlags?.bulkMailEnabled === false) {
     return NextResponse.json(
@@ -178,7 +171,17 @@ export async function POST(req: Request) {
     ngoId: actor.ngoId,
     templateId: null,
     subject: body.subject.trim(),
-    body: withSignature(body.body, account.signature?.trim() || defaultNgoSignature(ngoData)),
+    // İmza: STK kendi özel imzasını yazdıysa onu (metin) kullan; yoksa kurum
+    // profilinden (logo + ad + adres + telefon + web) kurumsal HTML imza üret.
+    body: account.signature?.trim()
+      ? withSignature(body.body, account.signature.trim())
+      : body.body + buildEmailSignatureHtml({
+          orgName: ngoData?.name || 'Kurumumuz',
+          logoUrl: ngoData?.logoUrl,
+          address: ngoData?.address,
+          phone: ngoData?.contact?.phone,
+          website: ngoData?.contact?.website,
+        }),
     senderId: fromEmail,
     fromEmail,
     fromName: fromName || null,
