@@ -80,6 +80,9 @@ const fallbackSchedule = [
   },
 ];
 
+// Yakında açılacak şehirler — tarih/yer netleşince Firestore etkinliğine dönüştürülür.
+const comingSoonCities = ['Batman', 'Adana', 'Manisa', 'Diyarbakır'];
+
 const curriculum = [
   {
     icon: HandCoins,
@@ -214,7 +217,7 @@ export default function IncomeModelConferencePage() {
       .sort((a, b) => (a.startDate || a.date || '').localeCompare(b.startDate || b.date || ''));
   }, [liveEventsRaw]);
 
-  const eventCount = liveEvents.length || fallbackSchedule.length;
+  const eventCount = (liveEvents.length || fallbackSchedule.length) + comingSoonCities.length;
 
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -295,6 +298,27 @@ export default function IncomeModelConferencePage() {
             {isLoading && <p className="col-span-full text-center text-sm text-muted-foreground">Etkinlikler yükleniyor…</p>}
           </div>
         )}
+
+        {/* Yakında açılacak şehirler — tarih/yer netleşince etkinliğe dönüşür. */}
+        <div className="mt-8">
+          <h3 className="px-1 mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Yakında Açılacak Şehirler</h3>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {comingSoonCities.map((city) => (
+              <Card key={city} className="border-dashed border-primary/30 bg-primary/[0.02]">
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                    <CalendarDays className="h-6 w-6 text-primary" aria-hidden="true" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-lg font-bold leading-tight">{city}</h4>
+                    <p className="text-sm font-semibold text-primary">Yakında</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">Tarih ve yer yakında açıklanacak</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Müfredat */}
