@@ -70,7 +70,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { signOut } from 'firebase/auth';
 import { isNativeApp } from '@/lib/capacitor';
@@ -340,17 +340,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 // alınca akış normal devam eder. Ref ile tek sefer denenir.
                 if (!selfHealedRef.current && db && authUser) {
                     selfHealedRef.current = true;
-                    void setDoc(
-                        doc(db, COLLECTIONS.users, authUser.uid),
-                        {
+                    const ref = doc(db, COLLECTIONS.users, authUser.uid);
+                    // GÜVENLİK: userData transient null olabilir (izin/yükleme gecikmesi).
+                    // ÖNCE doc gerçekten var mı diye getDoc ile bak — VARSA DOKUNMA (mevcut
+                    // doc'u role:'user' ile EZME = downgrade önle). Sadece GERÇEKTEN yoksa
+                    // minimal profil oluştur.
+                    void getDoc(ref).then((snap) => {
+                        if (snap.exists()) return;
+                        return setDoc(ref, {
                             name: authUser.displayName?.trim() || 'hangel Üyesi',
                             phoneNumber: authUser.phoneNumber || null,
                             email: authUser.email || null,
                             role: 'user',
                             createdAt: serverTimestamp(),
-                        },
-                        { merge: true },
-                    ).catch(() => undefined);
+                        });
+                    }).catch(() => undefined);
                 }
                 return;
             }
