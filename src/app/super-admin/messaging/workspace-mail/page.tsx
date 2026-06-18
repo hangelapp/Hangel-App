@@ -17,13 +17,23 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
+import { allProvinces } from '@/lib/data';
 import { ArrowLeft, Loader2, Link2, Send, CheckCircle2, Users, X, Database, Lock } from 'lucide-react';
 
 interface Connection { configured: boolean; connected: boolean; fromEmail?: string; signature?: string }
+interface FacetType { type: string; total: number; withEmail: number }
 
-const OUTREACH_TYPES = [
-  'GençlikSporMüdürlüğü', 'Dernek', 'Vakıf', 'SivilToplumMüdürlüğü', 'Federasyon', 'SporKulübü', 'MailHizmet', 'Diğer',
-];
+// Ham tür kodları → okunabilir etiket.
+const TYPE_LABELS: Record<string, string> = {
+  'GençlikSporMüdürlüğü': 'GSB İl Müdürlükleri',
+  'GencSporMudurlugu': 'GSB İl Müdürlükleri (eski)',
+  'GencSporIlceMudurlugu': 'GSB İlçe Müdürlükleri',
+  'SivilToplumMüdürlüğü': 'Sivil Toplum Müdürlükleri',
+  'SporKulübü': 'Spor Kulüpleri',
+  'Federasyon': 'Federasyonlar',
+  'MailHizmet': 'Mail Hizmet',
+};
+const typeLabel = (t: string) => TYPE_LABELS[t] ?? t;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function parseEmails(raw: string): string[] {
@@ -47,6 +57,7 @@ export default function PlatformWorkspaceMailPage() {
 
   // Gönderim
   const [source, setSource] = useState<'outreach' | 'inline'>('outreach');
+  const [facetTypes, setFacetTypes] = useState<FacetType[]>([]);
   const [filterType, setFilterType] = useState('GençlikSporMüdürlüğü');
   const [filterCity, setFilterCity] = useState('');
   const [list, setList] = useState<string[]>([]);
@@ -93,6 +104,24 @@ export default function PlatformWorkspaceMailPage() {
   };
 
   useEffect(() => { void refresh(); }, [refresh]);
+
+  // Outreach tür dağılımını (e-posta sayılı) yükle → tür dropdown.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/super-admin/mail/outreach-facets', { headers: { Authorization: `Bearer ${await user.getIdToken()}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        const types = (data.types ?? []) as FacetType[];
+        setFacetTypes(types);
+        if (types.length) setFilterType((cur) => (types.find((t) => t.type === cur) ? cur : types[0].type));
+      } catch { /* sessiz */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const handleConnect = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -272,13 +301,20 @@ export default function PlatformWorkspaceMailPage() {
                   <div className="space-y-1.5">
                     <Label>Tür</Label>
                     <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={filterType} onChange={(e) => { setFilterType(e.target.value); setPreview(null); }}>
-                      {OUTREACH_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                      {facetTypes.length === 0 ? (
+                        <option value={filterType}>{typeLabel(filterType)}</option>
+                      ) : (
+                        facetTypes.map((t) => <option key={t.type} value={t.type}>{typeLabel(t.type)} ({t.withEmail} e-postalı)</option>)
+                      )}
                     </select>
-                    <p className="text-xs text-muted-foreground">Sadece e-postası olan kayıtlara gönderilir.</p>
+                    <p className="text-xs text-muted-foreground">Yalnız e-postası olan kayıtlar listelenir (boş türler görünmez).</p>
                   </div>
                   <div className="space-y-1.5">
                     <Label>Şehir (opsiyonel)</Label>
-                    <Input value={filterCity} onChange={(e) => { setFilterCity(e.target.value); setPreview(null); }} placeholder="ör. Ankara — boş = hepsi" />
+                    <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={filterCity} onChange={(e) => { setFilterCity(e.target.value); setPreview(null); }}>
+                      <option value="">Tümü</option>
+                      {allProvinces.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
                 </div>
               ) : (
