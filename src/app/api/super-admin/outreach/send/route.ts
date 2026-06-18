@@ -32,6 +32,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { getEmailProvider } from '@/lib/messaging/providers/email';
 import { getSmsProvider } from '@/lib/messaging/providers/sms';
+import { buildEmailSignatureHtml, HANGEL_EMAIL_SIGNATURE } from '@/lib/mail/email-signature';
 
 const MAX_PER_REQUEST = 500;
 
@@ -78,9 +79,14 @@ async function loadContacts(source: string, ids: string[]): Promise<OutreachCont
           phone: data.telefon1 || data.telefon2,
         });
       } else if (source === 'registryDernekler') {
+        // Dernek kütüğünde e-posta `ePosta` alanında (vakıflarla aynı şema). Önceden
+        // hiç map'lenmiyordu → e-postası OLAN dernekler bile "kanal bilgisi yok" diye
+        // atlanıyordu. (Çoğu dernekte ePosta yoktur; olanlar artık gönderilir.)
         out.push({
           id: doc.id,
           name: data.name || '',
+          email: data.ePosta,
+          phone: data.telefon1 || data.telefon2,
         });
       } else {
         out.push({
@@ -183,6 +189,10 @@ export async function POST(req: NextRequest) {
     const provider = getEmailProvider();
     const from = body.fromEmail || process.env.RESEND_FROM_EMAIL || 'merhaba@hangel.org';
     const fromName = body.fromName || process.env.RESEND_FROM_NAME || 'hangel';
+    // hangel kurumsal imzası (her mailin gövdesinin altına eklenir).
+    const sigHtml = buildEmailSignatureHtml(HANGEL_EMAIL_SIGNATURE);
+    const sg = HANGEL_EMAIL_SIGNATURE;
+    const sigText = `\n\n--\n${sg.contactName}\n${sg.title}\n${sg.address}\nTel: ${sg.phone} · Mobil: ${sg.mobile}\n${sg.tagline} ${sg.website}`;
     for (const c of contacts) {
       if (!c.email) {
         skipped++;
@@ -190,7 +200,7 @@ export async function POST(req: NextRequest) {
       }
       const personalizedSubject = interpolate(body.subject || '', { name: c.name });
       const personalizedBody = interpolate(body.body, { name: c.name });
-      const withFooter = addUnsubscribeFooter(plainToHtml(personalizedBody), personalizedBody, from);
+      const withFooter = addUnsubscribeFooter(plainToHtml(personalizedBody) + sigHtml, personalizedBody + sigText, from);
       try {
         await provider.send({
           to: c.email,
