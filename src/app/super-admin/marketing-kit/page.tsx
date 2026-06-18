@@ -46,6 +46,7 @@ import {
   ImageOff,
   CheckCircle2,
   EyeOff,
+  PackagePlus,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -63,6 +64,8 @@ import {
   MARKETING_THUMB_ACCEPT,
   categoryLabel,
   targetKindLabel,
+  MARKETING_STARTER_PACK,
+  MARKETING_ASSET_BASE,
   type MarketingAsset,
   type MarketingCategory,
   type MarketingTargetKind,
@@ -110,6 +113,7 @@ export default function MarketingKitPage() {
   const [thumb, setThumb] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<MarketingAsset | null>(null);
+  const [seeding, setSeeding] = useState(false);
 
   const permError = useMemo(() => {
     if (!assetsError) return null;
@@ -262,6 +266,56 @@ export default function MarketingKitPage() {
     }
   };
 
+  // Başlangıç paketi — hazır hangel materyallerini TASLAK olarak içe aktarır.
+  // seedKey ile mükerrer önlenir; sadece eksik olanlar eklenir. Dosyalar
+  // public/marketing-kit/ altında statik servis edilir (deploy ile yayında).
+  const handleImportStarterPack = async () => {
+    setSeeding(true);
+    const existingKeys = new Set((assets || []).map((a) => a.seedKey).filter(Boolean));
+    let created = 0;
+    try {
+      for (const item of MARKETING_STARTER_PACK) {
+        if (existingKeys.has(item.seedKey)) continue;
+        const now = new Date().toISOString();
+        await addDoc(collection(db, COLLECTIONS.marketingAssets), {
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          fileUrl: `${MARKETING_ASSET_BASE}${item.fileName}`,
+          storagePath: '',
+          fileName: item.fileName,
+          contentType: item.contentType,
+          thumbnailUrl: item.thumbnailFile ? `${MARKETING_ASSET_BASE}${item.thumbnailFile}` : null,
+          targetKinds: item.targetKinds,
+          isPublic: item.isPublic,
+          publicListed: false, // taslak — yayınlanınca türetilir
+          status: 'taslak',
+          seedKey: item.seedKey,
+          createdBy: currentUser?.uid || null,
+          createdAt: now,
+          updatedAt: now,
+        });
+        created++;
+      }
+      toast({
+        title: created > 0 ? 'Başlangıç paketi eklendi' : 'Hepsi zaten ekli',
+        description: created > 0
+          ? `${created} materyal TASLAK olarak eklendi. Her birini “Yayınla” ile onaylayın.`
+          : 'Başlangıç paketindeki tüm materyaller zaten mevcut.',
+      });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
+      toast({
+        variant: 'destructive',
+        title: 'İçe aktarılamadı',
+        description: code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : message,
+      });
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const handleDelete = async (a: MarketingAsset) => {
     try {
       await deleteDoc(doc(db, COLLECTIONS.marketingAssets, a.id));
@@ -298,11 +352,15 @@ export default function MarketingKitPage() {
             <a href="/tanitim" target="_blank" className="text-primary font-bold"> /tanitim</a> sayfasından açabilirsiniz.
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
           <Button asChild variant="outline" className="rounded-xl font-bold h-11 px-4">
             <Link href="/super-admin/marketing-kit/tanitim">
               <Globe className="mr-2 h-4 w-4" /> Konferans Sayfası
             </Link>
+          </Button>
+          <Button variant="outline" className="rounded-xl font-bold h-11 px-4" onClick={handleImportStarterPack} disabled={seeding}>
+            {seeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PackagePlus className="mr-2 h-4 w-4" />}
+            Başlangıç Paketi
           </Button>
           <Button onClick={openCreate} className="rounded-xl font-bold h-11 px-5">
             <Plus className="mr-2 h-4 w-4" /> Yeni Materyal
