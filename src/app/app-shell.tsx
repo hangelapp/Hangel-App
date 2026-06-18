@@ -70,7 +70,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { doc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { signOut } from 'firebase/auth';
 import { isNativeApp } from '@/lib/capacitor';
@@ -163,6 +163,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const { user: authUser, isUserLoading } = useUser();
     const auth = useAuth();
     const db = useFirestore();
+    // Profil self-heal: Auth'ta var ama Firestore profili olmayan hesap için
+    // minimal profil OTOMATİK oluşturulur (tek sefer; yazma döngüsü önlenir).
+    const selfHealedRef = useRef(false);
     const { t } = useTranslation();
     const { toast } = useToast();
     // 2./3. girişte bilgi yönlendirmesi mantığı sadece bir kez çalışsın diye guard
@@ -330,23 +333,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             const isNewAccount = accountAgeMs < 60_000;
 
             if (!userDataLoading && !userData && !isNewAccount) {
-                toast({
-                    variant: 'destructive',
-                    title: 'Hesap doğrulanamadı',
-                    description: 'Hesabınız sistem listesinde bulunamadı. Lütfen yöneticinizle iletişime geçin.',
-                });
-                if (typeof window !== 'undefined') {
-                    try {
-                        sessionStorage.setItem('session-expired-toast-at', String(Date.now()));
-                    } catch {
-                        // private mode
-                    }
+                // KALICI SELF-HEAL (2026-06-18): Auth'ta var ama Firestore profili yok.
+                // Eskiden zorla çıkış (BUG-19) yapılıyordu; artık OTP/QR ile doğrulanmış
+                // gerçek kullanıcı için minimal profil OTOMATİK oluşturulur (hesaba özel
+                // değil — tüm giriş yollarını kapsar). useDoc dinleyicisi yeni doc'u
+                // alınca akış normal devam eder. Ref ile tek sefer denenir.
+                if (!selfHealedRef.current && db && authUser) {
+                    selfHealedRef.current = true;
+                    void setDoc(
+                        doc(db, COLLECTIONS.users, authUser.uid),
+                        {
+                            name: authUser.displayName?.trim() || 'hangel Üyesi',
+                            phoneNumber: authUser.phoneNumber || null,
+                            email: authUser.email || null,
+                            role: 'user',
+                            createdAt: serverTimestamp(),
+                        },
+                        { merge: true },
+                    ).catch(() => undefined);
                 }
-                signOut(auth)
-                    .catch(() => undefined)
-                    .finally(() => {
-                        router.replace('/login/selection?action=login');
-                    });
                 return;
             }
 
