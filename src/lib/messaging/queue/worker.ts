@@ -84,16 +84,26 @@ export async function workerTick(opts: { batch?: number; workerId?: string } = {
   const workerId = opts.workerId ?? `w_${Math.random().toString(36).slice(2, 10)}`;
   const now = Timestamp.now();
 
-  const candidates = await db
+  // Index-bağımsız: TEK eşitlik (status) sorgusu + nextAttemptAt'i client-side süz/sırala.
+  // (status+nextAttemptAt composite index'i deploy edilmese de worker çalışır; eski hâli
+  // eksik index yüzünden FAILED_PRECONDITION atıp TÜM kuyruğu 'pending'de bırakıyordu.)
+  const nowMs = now.toMillis();
+  const naMs = (d: FirebaseFirestore.QueryDocumentSnapshot): number => {
+    const na = (d.data() as { nextAttemptAt?: Timestamp }).nextAttemptAt;
+    return na instanceof Timestamp ? na.toMillis() : 0;
+  };
+  const pendingSnap = await db
     .collection(COLLECTIONS.messageJobs)
     .where('status', '==', 'pending')
-    .where('nextAttemptAt', '<=', now)
-    .orderBy('nextAttemptAt')
-    .limit(batchSize)
+    .limit(Math.max(batchSize * 4, 200))
     .get();
+  const candidateDocs = pendingSnap.docs
+    .filter((d) => naMs(d) <= nowMs)
+    .sort((a, b) => naMs(a) - naMs(b))
+    .slice(0, batchSize);
 
   const result: WorkerTickResult = {
-    scanned: candidates.size,
+    scanned: candidateDocs.length,
     dispatched: 0,
     successes: 0,
     failures: 0,
@@ -101,7 +111,7 @@ export async function workerTick(opts: { batch?: number; workerId?: string } = {
     dead: 0,
   };
 
-  for (const candidate of candidates.docs) {
+  for (const candidate of candidateDocs) {
     const leased = await db.runTransaction(async (tx) => {
       const fresh = await tx.get(candidate.ref);
       if (!fresh.exists) return null;

@@ -11,17 +11,23 @@ import type { JobStatus } from '../types';
 export async function reclaimExpiredLeases(limit = 200): Promise<{ reclaimed: number }> {
   const db = getAdminFirestore();
   const now = Timestamp.now();
+  // Index-bağımsız: tek eşitlik (status) sorgusu + leasedUntil'i client-side süz
+  // (status+leasedUntil composite index gerektirmez).
+  const nowMs = now.toMillis();
   const snap = await db
     .collection(COLLECTIONS.messageJobs)
     .where('status', '==', 'leased')
-    .where('leasedUntil', '<=', now)
-    .limit(limit)
+    .limit(Math.max(limit * 2, 400))
     .get();
+  const expired = snap.docs.filter((d) => {
+    const lu = (d.data() as { leasedUntil?: Timestamp }).leasedUntil;
+    return lu instanceof Timestamp && lu.toMillis() <= nowMs;
+  }).slice(0, limit);
 
-  if (snap.empty) return { reclaimed: 0 };
+  if (expired.length === 0) return { reclaimed: 0 };
 
   const batch = db.batch();
-  for (const doc of snap.docs) {
+  for (const doc of expired) {
     batch.update(doc.ref, {
       status: 'pending' as JobStatus,
       leasedUntil: FieldValue.delete(),
@@ -31,5 +37,5 @@ export async function reclaimExpiredLeases(limit = 200): Promise<{ reclaimed: nu
     });
   }
   await batch.commit();
-  return { reclaimed: snap.size };
+  return { reclaimed: expired.length };
 }
