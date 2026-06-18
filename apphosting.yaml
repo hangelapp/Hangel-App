@@ -201,3 +201,7 @@ env:
     value: "ad69f2cf765067d4060b845be62d78539d2f5e4683982e1a"
     availability:
       - RUNTIME
+  - variable: MESSAGING_WORKER_KEY
+    secret: MESSAGING_WORKER_KEY
+    availability:
+      - RUNTIME
