@@ -19,7 +19,7 @@ import { getWhatsAppProvider } from '../providers/whatsapp';
 import { takeToken, getEffectiveRate } from './rateLimiter';
 import { isTerminal, MAX_ATTEMPTS, nextAttemptAt } from './retry';
 import { render } from '../template';
-import { appendEmailUnsubscribeFooter, buildUnsubscribeUrl, ensureUnsubscribeToken } from '../unsubscribe';
+import { appendEmailUnsubscribeFooter, appendGenericOptOutFooter, buildUnsubscribeUrl, ensureUnsubscribeToken } from '../unsubscribe';
 import { debit, refund } from '../wallet';
 
 const DEFAULT_LEASE_MS = 60_000;
@@ -195,6 +195,10 @@ async function dispatch(job: JobDoc): Promise<SendResult> {
     if (token) {
       unsubscribeUrl = buildUnsubscribeUrl(token, 'email');
       html = appendEmailUnsubscribeFooter(html, unsubscribeUrl);
+    } else {
+      // userId yok (yüklenen liste / outreach datası): token üretilemez →
+      // gönderene yanıt-bazlı "Listeden çıkmak istiyorum" footer'ı ekle.
+      html = appendGenericOptOutFooter(html, job.payload.fromEmail ?? undefined);
     }
   }
 

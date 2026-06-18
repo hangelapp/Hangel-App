@@ -34,9 +34,20 @@ export async function GET(req: NextRequest) {
 
   // Bağlı SMTP hesabı: mailAccounts/{ngoId}
   const mailSnap = await db.collection(COLLECTIONS.mailAccounts).doc(actor.ngoId).get().catch(() => null);
-  const mailData = mailSnap?.exists ? (mailSnap.data() as { fromEmail?: unknown } | undefined) : undefined;
-  const connected = !!mailData;
+  const mailData = mailSnap?.exists ? (mailSnap.data() as { fromEmail?: unknown; signature?: unknown } | undefined) : undefined;
   const fromEmail = typeof mailData?.fromEmail === 'string' ? mailData.fromEmail : undefined;
+  const connected = !!fromEmail;
+  const signature = typeof mailData?.signature === 'string' ? mailData.signature : undefined;
 
-  return NextResponse.json({ configured, gateOpen, connected, fromEmail });
+  return NextResponse.json({ configured, gateOpen, connected, fromEmail, signature });
+}
+
+/** POST — mail imzasını kaydet (İmzanı Düzenle). */
+export async function POST(req: NextRequest) {
+  const auth = await requireNgoAdmin(req, { scope: 'messaging' });
+  if ('error' in auth) return auth.error;
+  const body = (await req.json().catch(() => null)) as { signature?: unknown } | null;
+  const signature = typeof body?.signature === 'string' ? body.signature.slice(0, 2000) : '';
+  await getAdminFirestore().collection(COLLECTIONS.mailAccounts).doc(auth.actor.ngoId).set({ signature }, { merge: true });
+  return NextResponse.json({ ok: true });
 }

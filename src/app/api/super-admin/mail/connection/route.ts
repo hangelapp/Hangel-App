@@ -29,8 +29,23 @@ export async function GET(req: NextRequest) {
   const configured = isMailConfigured();
   const db = getAdminFirestore();
   const snap = await db.collection(COLLECTIONS.mailAccounts).doc(PLATFORM_MAIL_ID).get().catch(() => null);
-  const connected = !!snap?.exists;
-  const fromEmail = connected ? (snap!.data()?.fromEmail as string | undefined) : undefined;
+  const data = snap?.exists ? (snap.data() as { fromEmail?: unknown; signature?: unknown } | undefined) : undefined;
+  const fromEmail = typeof data?.fromEmail === 'string' ? data.fromEmail : undefined;
+  const connected = !!fromEmail;
+  const signature = typeof data?.signature === 'string' ? data.signature : undefined;
 
-  return NextResponse.json({ configured, connected, fromEmail });
+  return NextResponse.json({ configured, connected, fromEmail, signature });
+}
+
+/** POST — hangel mail imzasını kaydet. */
+export async function POST(req: NextRequest) {
+  const auth = await requireNgoAdmin(req, { targetNgoId: PLATFORM_MAIL_ID, allowSuperAdmin: true });
+  if ('error' in auth) return auth.error;
+  if (!auth.actor.isSuperAdmin) {
+    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Super-admin yetkisi gerekli.' }, { status: 403 });
+  }
+  const body = (await req.json().catch(() => null)) as { signature?: unknown } | null;
+  const signature = typeof body?.signature === 'string' ? body.signature.slice(0, 2000) : '';
+  await getAdminFirestore().collection(COLLECTIONS.mailAccounts).doc(PLATFORM_MAIL_ID).set({ signature }, { merge: true });
+  return NextResponse.json({ ok: true });
 }

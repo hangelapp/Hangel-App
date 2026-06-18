@@ -35,6 +35,13 @@ const MAX_RECIPIENTS = 5000;
 const BATCH = 450;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** İmzayı gövdenin altına ekle (HTML; satır sonları <br/>). */
+function withSignature(body: string, signature?: string): string {
+  const sig = typeof signature === 'string' ? signature.trim() : '';
+  if (!sig) return body;
+  return `${body}<br/><br/>—<br/>${sig.replace(/\n/g, '<br/>')}`;
+}
+
 interface OutreachFilter { type?: string; city?: string }
 interface InlineRec { email: string; name?: string }
 interface Body {
@@ -80,7 +87,7 @@ export async function POST(req: Request) {
       { status: 409 },
     );
   }
-  const account = (accountSnap.data() as { fromEmail?: string; fromName?: string } | undefined) ?? {};
+  const account = (accountSnap.data() as { fromEmail?: string; fromName?: string; signature?: string } | undefined) ?? {};
   const fromEmail = typeof account.fromEmail === 'string' ? account.fromEmail : '';
   const fromName = typeof account.fromName === 'string' ? account.fromName : '';
   if (!fromEmail) {
@@ -153,7 +160,7 @@ export async function POST(req: Request) {
     ngoId: PLATFORM_MAIL_ID,
     templateId: null,
     subject: body.subject.trim(),
-    body: body.body,
+    body: withSignature(body.body, account.signature?.trim() || ['hangel', 'hangel.org.tr', fromEmail].filter(Boolean).join('\n')),
     senderId: fromEmail,
     fromEmail,
     fromName: fromName || null,

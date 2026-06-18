@@ -47,6 +47,22 @@ interface CreateBody {
 interface MailAccountDoc {
   fromEmail?: string;
   fromName?: string;
+  signature?: string;
+}
+
+/** İmzayı gövdenin altına ekle (HTML; satır sonları <br/>). */
+function withSignature(body: string, signature?: string): string {
+  const sig = typeof signature === 'string' ? signature.trim() : '';
+  if (!sig) return body;
+  return `${body}<br/><br/>—<br/>${sig.replace(/\n/g, '<br/>')}`;
+}
+
+interface NgoInfo { name?: string; contact?: { phone?: string; email?: string; website?: string } }
+/** Kurum bilgilerinden otomatik mail imzası (özel imza yoksa). */
+function defaultNgoSignature(ngo?: NgoInfo): string {
+  const c = ngo?.contact ?? {};
+  return [ngo?.name, c.phone && `Tel: ${c.phone}`, c.email && `E-posta: ${c.email}`, c.website]
+    .filter(Boolean).join('\n');
 }
 
 const BATCH = 450;
@@ -85,7 +101,7 @@ export async function POST(req: Request) {
   // Süper-admin gate: ngos/{ngoId}.featureFlags.bulkMailEnabled açık mı?
   const ngoSnap = await db.collection(COLLECTIONS.ngos).doc(actor.ngoId).get();
   const ngoData = ngoSnap.exists
-    ? (ngoSnap.data() as { featureFlags?: { bulkMailEnabled?: boolean } } | undefined)
+    ? (ngoSnap.data() as { featureFlags?: { bulkMailEnabled?: boolean }; name?: string; contact?: { phone?: string; email?: string; website?: string } } | undefined)
     : undefined;
   if (ngoData?.featureFlags?.bulkMailEnabled !== true) {
     return NextResponse.json(
@@ -181,7 +197,7 @@ export async function POST(req: Request) {
     ngoId: actor.ngoId,
     templateId: null,
     subject: body.subject.trim(),
-    body: body.body,
+    body: withSignature(body.body, account.signature?.trim() || defaultNgoSignature(ngoData)),
     senderId: fromEmail,
     fromEmail,
     fromName: fromName || null,

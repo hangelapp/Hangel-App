@@ -49,3 +49,17 @@ export function appendEmailUnsubscribeFooter(html: string, url: string): string 
   const footer = `<hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0 12px 0" /><p style="font-size:11px;color:#6b7280;text-align:center;font-family:Helvetica,Arial,sans-serif">Bu pazarlama e-postasını almak istemiyorsanız <a href="${url}" style="color:#6b7280;text-decoration:underline">aboneliği iptal edin</a>.</p>`;
   return html + footer;
 }
+
+/**
+ * userId'siz alıcılar (yüklenen liste / outreach datası) için token üretilemediğinden
+ * yanıt-bazlı çıkış footer'ı: "Listeden çıkmak istiyorum" → gönderene mailto yanıtı.
+ */
+export function appendGenericOptOutFooter(html: string, fromEmail?: string): string {
+  const subject = encodeURIComponent('Listeden çıkmak istiyorum');
+  const label = 'Listeden çıkmak istiyorum';
+  const link = fromEmail
+    ? `<a href="mailto:${fromEmail}?subject=${subject}" style="color:#6b7280;text-decoration:underline">${label}</a>`
+    : label;
+  const footer = `<hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0 12px 0" /><p style="font-size:11px;color:#6b7280;text-align:center;font-family:Helvetica,Arial,sans-serif">Bu e-postaları almak istemiyorsanız ${link} yazıp yanıtlayın.</p>`;
+  return html + footer;
+}

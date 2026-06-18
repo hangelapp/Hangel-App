@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
 import { ArrowLeft, Loader2, Link2, Send, CheckCircle2, Users, X, Database, Lock } from 'lucide-react';
 
-interface Connection { configured: boolean; connected: boolean; fromEmail?: string }
+interface Connection { configured: boolean; connected: boolean; fromEmail?: string; signature?: string }
 
 const OUTREACH_TYPES = [
   'GençlikSporMüdürlüğü', 'Dernek', 'Vakıf', 'SivilToplumMüdürlüğü', 'Federasyon', 'SporKulübü', 'MailHizmet', 'Diğer',
@@ -57,6 +57,10 @@ export default function PlatformWorkspaceMailPage() {
   const [preview, setPreview] = useState<{ count: number; capped: boolean } | null>(null);
   const [previewing, setPreviewing] = useState(false);
   const [sending, setSending] = useState(false);
+  // İmza
+  const [sigText, setSigText] = useState('');
+  const [sigEditing, setSigEditing] = useState(false);
+  const [sigSaving, setSigSaving] = useState(false);
 
   const token = useCallback(async () => (user ? user.getIdToken() : ''), [user]);
 
@@ -65,9 +69,28 @@ export default function PlatformWorkspaceMailPage() {
     try {
       const res = await fetch('/api/super-admin/mail/connection', { headers: { Authorization: `Bearer ${await user.getIdToken()}` } });
       if (!res.ok) return;
-      setConn((await res.json()) as Connection);
+      const data = (await res.json()) as Connection;
+      setConn(data);
+      if (typeof data.signature === 'string' && data.signature) setSigText(data.signature);
     } catch { /* sessiz */ }
   }, [user]);
+
+  const defaultSig = ['hangel', 'hangel.org.tr'].join('\n');
+  const startEditSig = () => { if (!sigText.trim()) setSigText(defaultSig); setSigEditing(true); };
+  const saveSig = async () => {
+    setSigSaving(true);
+    try {
+      const res = await fetch('/api/super-admin/mail/connection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await token()}` },
+        body: JSON.stringify({ signature: sigText }),
+      });
+      if (!res.ok) { toast({ variant: 'destructive', title: 'İmza kaydedilemedi' }); return; }
+      toast({ title: 'İmza kaydedildi' });
+      setSigEditing(false);
+    } catch { toast({ variant: 'destructive', title: 'Bağlantı hatası' }); }
+    finally { setSigSaving(false); }
+  };
 
   useEffect(() => { void refresh(); }, [refresh]);
 
@@ -321,6 +344,25 @@ export default function PlatformWorkspaceMailPage() {
               <div className="space-y-1.5">
                 <Label>Mesaj</Label>
                 <Textarea rows={8} value={messageBody} onChange={(e) => setMessageBody(e.target.value)} placeholder="Mesajınızı yazın..." />
+              </div>
+              <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm">Mail İmzası</Label>
+                  {!sigEditing ? (
+                    <Button type="button" variant="outline" size="sm" onClick={startEditSig}>İmzanı Düzenle</Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setSigEditing(false)}>İptal</Button>
+                      <Button type="button" size="sm" onClick={saveSig} disabled={sigSaving}>{sigSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Kaydet'}</Button>
+                    </div>
+                  )}
+                </div>
+                {sigEditing ? (
+                  <Textarea rows={4} value={sigText} onChange={(e) => setSigText(e.target.value)} placeholder="hangel, web sitesi, iletişim..." />
+                ) : (
+                  <p className="whitespace-pre-line text-xs text-muted-foreground">{sigText || defaultSig}</p>
+                )}
+                <p className="text-[11px] text-muted-foreground">İmza her mailin altına eklenir. En alta otomatik &quot;Listeden çıkmak istiyorum&quot; satırı konur.</p>
               </div>
               <Button className="w-full" onClick={doSend} disabled={sending}>
                 {sending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />} Workspace Toplu Mail Gönder

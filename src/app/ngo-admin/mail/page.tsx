@@ -12,7 +12,7 @@ import { ArrowLeft, Mail, Loader2, Wallet, AlertTriangle, Settings, Clock } from
 import { collection, doc, orderBy, query, where } from 'firebase/firestore';
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
-import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { normalizeQuota, quotaRemaining, type NgoQuota } from '@/lib/messaging-quota';
 import { Lock, Link2, Send, CheckCircle2, Users, X } from 'lucide-react';
 
@@ -22,6 +22,7 @@ interface MailConnection {
     gateOpen: boolean;
     connected: boolean;
     fromEmail?: string;
+    signature?: string;
 }
 
 interface WorkspaceSegmentRow {
@@ -46,6 +47,7 @@ export default function MailManagementPage() {
     const db = useFirestore();
     const { user: authUser } = useUser();
     const { id: ngoId } = useActiveEntity();
+    const { data: entityDoc } = useActiveEntityDoc<{ name?: string; contact?: { phone?: string; email?: string; website?: string } }>();
 
     const [recipientsRaw, setRecipientsRaw] = useState('');
     const [subject, setSubject] = useState('');
@@ -67,6 +69,10 @@ export default function MailManagementPage() {
     const [wsMessage, setWsMessage] = useState('');
     const [wsSegmentId, setWsSegmentId] = useState('__all');
     const [wsSending, setWsSending] = useState(false);
+    // Mail imzası
+    const [wsSignature, setWsSignature] = useState('');
+    const [wsSigEditing, setWsSigEditing] = useState(false);
+    const [wsSigSaving, setWsSigSaving] = useState(false);
     // Yüklenen alıcı listesi (data) — ekle/çıkar/görüntüle, Workspace gönderiminde kaynak.
     const [wsList, setWsList] = useState<string[]>([]);
     const [wsListPaste, setWsListPaste] = useState('');
@@ -106,7 +112,9 @@ export default function MailManagementPage() {
                 gateOpen: !!data.gateOpen,
                 connected: !!data.connected,
                 fromEmail: typeof data.fromEmail === 'string' ? data.fromEmail : undefined,
+                signature: typeof data.signature === 'string' ? data.signature : undefined,
             });
+            if (typeof data.signature === 'string' && data.signature) setWsSignature(data.signature);
         } catch {
             // sessizce geç — Workspace bloğu gizli kalır, mevcut form bozulmaz
         }
@@ -292,6 +300,28 @@ export default function MailManagementPage() {
 
     const removeFromList = (email: string) => setWsList((prev) => prev.filter((x) => x !== email));
     const clearList = () => { setWsList([]); setWsSegmentId('__all'); };
+
+    // ── Mail imzası ──
+    const defaultSignature = useMemo(() => {
+        const c = entityDoc?.contact ?? {};
+        return [entityDoc?.name, c.phone && `Tel: ${c.phone}`, c.email && `E-posta: ${c.email}`, c.website].filter(Boolean).join('\n');
+    }, [entityDoc]);
+    const startEditSignature = () => { if (!wsSignature.trim()) setWsSignature(defaultSignature); setWsSigEditing(true); };
+    const saveSignature = async () => {
+        setWsSigSaving(true);
+        try {
+            const token = await authUser?.getIdToken();
+            const res = await fetch('/api/ngo-admin/mail/connection', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ signature: wsSignature }),
+            });
+            if (!res.ok) { toast({ variant: 'destructive', title: 'İmza kaydedilemedi' }); return; }
+            toast({ title: 'İmza kaydedildi', description: 'Her mailin altına otomatik eklenecek.' });
+            setWsSigEditing(false);
+        } catch { toast({ variant: 'destructive', title: 'Bağlantı hatası' }); }
+        finally { setWsSigSaving(false); }
+    };
 
     const walletRef = useMemoFirebase(
         () => (db && ngoId ? doc(db, COLLECTIONS.ngoMessagingWallets, ngoId) : null),
@@ -583,6 +613,27 @@ export default function MailManagementPage() {
                             <div className="space-y-2">
                                 <Label>Mesaj</Label>
                                 <Textarea rows={8} value={wsMessage} onChange={(e) => setWsMessage(e.target.value)} placeholder="Mesajınızı yazın..." />
+                            </div>
+                            <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-sm">Mail İmzası</Label>
+                                    {!wsSigEditing ? (
+                                        <Button type="button" variant="outline" size="sm" onClick={startEditSignature}>İmzanı Düzenle</Button>
+                                    ) : (
+                                        <div className="flex gap-2">
+                                            <Button type="button" variant="ghost" size="sm" onClick={() => setWsSigEditing(false)}>İptal</Button>
+                                            <Button type="button" size="sm" onClick={saveSignature} disabled={wsSigSaving}>
+                                                {wsSigSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Kaydet'}
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                                {wsSigEditing ? (
+                                    <Textarea rows={4} value={wsSignature} onChange={(e) => setWsSignature(e.target.value)} placeholder="Kurum adı, telefon, web sitesi..." />
+                                ) : (
+                                    <p className="whitespace-pre-line text-xs text-muted-foreground">{wsSignature || defaultSignature || 'Kurum bilgilerinizden otomatik imza eklenecek.'}</p>
+                                )}
+                                <p className="text-[11px] text-muted-foreground">İmza her mailin altına eklenir. En alta otomatik &quot;Listeden çıkmak istiyorum&quot; satırı konur.</p>
                             </div>
                             <Button type="submit" className="w-full" disabled={wsSending}>
                                 {wsSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
