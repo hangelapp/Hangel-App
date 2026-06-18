@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { COLLECTIONS } from '@/firebase/collections';
 import {
     Star, Briefcase, School, FileText, Languages,
-    HandCoins, Handshake, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Brain, Globe, HeartPulse, Users, Plane, Landmark, Cpu, Edit, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, CheckCircle, Leaf, X, Loader2, LogOut, Store, HeartHandshake,
+    HandCoins, Handshake, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Brain, Globe, HeartPulse, Users, Plane, Landmark, Cpu, Edit, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, CheckCircle, Leaf, X, Loader2, QrCode, Store, HeartHandshake,
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -27,9 +27,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { EtkiTabContent } from '@/components/profile/etki-tab-content';
 import { enrichBadges } from '@/lib/badge-points';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, where, documentId } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
+import { QrScanDialog } from '@/components/auth/qr-scan-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useTranslation } from '@/components/providers/language-provider';
@@ -181,16 +181,8 @@ export default function ProfilePage() {
 
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
-    const auth = useAuth();
-
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            router.push('/login');
-        } catch {
-            toast({ variant: 'destructive', title: t('profilePage.logoutErrorTitle'), description: t('profilePage.logoutErrorDesc') });
-        }
-    };
+    // Üst turuncu banttaki QR okutucu (başka cihazdaki giriş QR'ını okutmak için).
+    const [qrScanOpen, setQrScanOpen] = useState(false);
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
@@ -682,10 +674,11 @@ export default function ProfilePage() {
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label={t('aria.back')}>
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <Button onClick={handleLogout} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label={t('profilePage.logoutAria')}>
-                    <LogOut className="h-5 w-5" />
+                <Button onClick={() => setQrScanOpen(true)} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label="QR ile giriş okut">
+                    <QrCode className="h-5 w-5" />
                 </Button>
             </div>
+            <QrScanDialog open={qrScanOpen} onOpenChange={setQrScanOpen} />
             <div className="p-4 space-y-6">
                 <div className="flex flex-col items-center text-center">
                     <UserAvatar className="w-24 h-24 mb-4" />
