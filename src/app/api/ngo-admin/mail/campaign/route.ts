@@ -23,7 +23,6 @@ import { resolveRecipients } from '@/lib/messaging/resolver';
 import { enqueueCampaign } from '@/lib/messaging/queue/enqueue';
 import { logAudit, actorFromRequest } from '@/lib/messaging/audit';
 import { computeCampaignCost } from '@/lib/messaging/pricing';
-import { reserve as walletReserve, InsufficientBalanceError } from '@/lib/messaging/wallet';
 import { isMailConfigured } from '@/lib/mail/credential-crypto';
 import { COLLECTIONS } from '@/firebase/collections';
 import type {
@@ -151,40 +150,21 @@ export async function POST(req: Request) {
     );
   }
 
-  // Cost — Workspace mail e-posta kanalı.
+  // Workspace toplu mail ÜCRETSİZ: STK kendi Google Workspace'inden gönderir,
+  // hangel'e gönderim maliyeti yok → kontör/cüzdan rezervasyonu YAPILMAZ.
+  // (Cost breakdown'ı yine de hesaplıyoruz ama ücreti sıfırlıyoruz; gösterim için.)
   const costDetail = await computeCampaignCost({
     channel: 'email',
     recipientCount: resolved.recipients.length,
     body: body.body,
   });
-  const perRecipientWithVat = resolved.recipients.length > 0
-    ? +(costDetail.total / resolved.recipients.length).toFixed(4)
-    : 0;
   const cost = {
     ...costDetail,
-    estimatedCost: costDetail.total,
-    perRecipientWithVat,
+    total: 0,
+    estimatedCost: 0,
+    perRecipientWithVat: 0,
+    freeUnitsUsed: resolved.recipients.length,
   };
-
-  // Wallet reserve (NGO admin için zorunlu)
-  try {
-    await walletReserve({
-      ngoId: actor.ngoId,
-      amount: costDetail.total,
-      campaignId: 'pending',
-      channel: 'email',
-      freeUnitsUsed: costDetail.freeUnitsUsed,
-      actorUid: actor.uid,
-    });
-  } catch (err) {
-    if (err instanceof InsufficientBalanceError) {
-      return NextResponse.json(
-        { errorCode: 'INSUFFICIENT_BALANCE', message: 'Yetersiz bakiye', balance: err.balance, required: err.required, costDetail },
-        { status: 402 }
-      );
-    }
-    throw err;
-  }
 
   const isScheduled = !!body.scheduledAt;
   const initialStatus: CampaignStatus = isScheduled ? 'scheduled' : 'draft';
