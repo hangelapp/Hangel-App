@@ -30,11 +30,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
-import { getEmailProvider } from '@/lib/messaging/providers/email';
 import { getSmsProvider } from '@/lib/messaging/providers/sms';
 import { buildEmailSignatureHtml, HANGEL_EMAIL_SIGNATURE } from '@/lib/mail/email-signature';
+import { enqueueCampaign } from '@/lib/messaging/queue/enqueue';
+import { isMailConfigured } from '@/lib/mail/credential-crypto';
+import type { CampaignStats, CampaignStatus } from '@/lib/messaging/types';
 
 const MAX_PER_REQUEST = 500;
+// hangel platform Workspace mail hesabı (mailAccounts/__platform) — toplu outreach
+// e-postaları, doğrudan Resend yerine bu hesabın SMTP'sinden dakikada 1 gönderilir.
+const PLATFORM_MAIL_ID = '__platform';
+const RECIPIENTS_BATCH = 450;
 
 interface OutreachContact {
   id: string;
@@ -155,6 +161,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ errorCode: 'NO_SUBJECT', message: 'Email için konu gerekli' }, { status: 400 });
   }
 
+  // Email dalı Workspace kuyruğuna gittiğinden, platform mail hesabının bağlı
+  // olduğunu (mailAccounts/__platform + secret) önden doğrula — yoksa job'lar
+  // sessizce başarısız olur. SMS/WhatsApp bu kontrolden etkilenmez.
+  if (channel === 'email' && !isMailConfigured()) {
+    return NextResponse.json(
+      { errorCode: 'MAIL_NOT_CONFIGURED', message: 'Workspace mail özelliği şu anda kullanılamıyor.' },
+      { status: 503 },
+    );
+  }
+
   const db = getAdminFirestore();
   const auditRef = db.collection('outreachSends').doc();
   await auditRef.set({
@@ -177,46 +193,130 @@ export async function POST(req: NextRequest) {
   let skipped = 0;
   const errors: string[] = [];
 
-  // KVKK uyumu — TÜM toplu outreach maillerine otomatik unsubscribe footer eklenir.
-  // Bu footer kullanıcı body'sinde olsun olmasın HER zaman eklenir; yinelenmesi sorun değil.
-  function addUnsubscribeFooter(html: string, text: string, replyTo: string): { html: string; text: string } {
-    const htmlFooter = `<hr style="margin:24px 0 12px;border:none;border-top:1px solid #e5e5e5"><p style="font-size:11px;color:#666;font-family:system-ui,sans-serif;line-height:1.5">Bu e-postayı, hangel.org tanıtım iletişimi kapsamında aldınız. <strong>İletişim listesinden çıkmak için</strong> bu maile "ÇIKAR" yazarak yanıtlayın (Reply-To: <a href="mailto:${replyTo}" style="color:#666">${replyTo}</a>). Kaydınız 7 iş günü içinde kapatılır. — KVKK Ticari Elektronik İleti Yönetmeliği uyarınca.</p>`;
-    const textFooter = `\n\n---\nBu e-postayı, hangel.org tanıtım iletişimi kapsamında aldınız.\nİletişim listesinden çıkmak için bu maile "ÇIKAR" yazarak yanıtlayın (${replyTo}).\nKaydınız 7 iş günü içinde kapatılır. — KVKK Ticari Elektronik İleti Yönetmeliği uyarınca.`;
-    return { html: html + htmlFooter, text: text + textFooter };
-  }
+  // NOT: KVKK "ÇIKAR/listeden çık" footer'ı artık email dalında BURADA eklenmez —
+  // Workspace kuyruğunda worker dispatch'i ekler (appendGenericOptOutFooter), çift
+  // eklemeyi önlemek için. SMS/WhatsApp footer'ı kendi dallarında.
 
   if (channel === 'email') {
-    const provider = getEmailProvider();
+    // DOĞRUDAN Resend YOK. Workspace Toplu Mail ile aynı yol: bir campaign doc'u
+    // (ngoId=__platform, mailWorkspace, perMinute=1) + recipients yaz, enqueue et.
+    // Worker __platform SMTP'sinden dakikada 1 gönderir, KVKK "ÇIKAR" footer'ını
+    // dispatch sırasında ekler (appendGenericOptOutFooter).
+    //
+    // Değişken interpolasyonu worker'da yapılır ama worker'ın render()'ı TEK süslü
+    // parantez token'ı kullanır ({ad}, {name}). UI'da kullanıcı {{name}} yazıyor →
+    // worker'a gitmeden ÇİFT parantezi TEKE indir, ve hem {name} hem {ad}/{tam_ad}
+    // (resolver şeması) vars olarak ver. (SMS/WhatsApp dalları kendi {{name}}
+    // interpolate()'ini kullanmaya devam eder; orası DEĞİŞMEDİ.)
+    const normalizeTokens = (s: string): string => s.replace(/\{\{(\w+)\}\}/g, '{$1}');
+
     const from = body.fromEmail || process.env.RESEND_FROM_EMAIL || 'merhaba@hangel.org';
     const fromName = body.fromName || process.env.RESEND_FROM_NAME || 'hangel';
-    // hangel kurumsal imzası (her mailin gövdesinin altına eklenir).
+
+    // hangel kurumsal imzası gövdeye GÖVDE içine eklenir (worker bu yolda imza
+    // EKLEMEZ; yalnız KVKK opt-out footer'ı ekler → footer çift eklenmez).
     const sigHtml = buildEmailSignatureHtml(HANGEL_EMAIL_SIGNATURE);
-    const sg = HANGEL_EMAIL_SIGNATURE;
-    const sigText = `\n\n--\n${sg.contactName}\n${sg.title}\n${sg.address}\nTel: ${sg.phone} · Mobil: ${sg.mobile}\n${sg.tagline} ${sg.website}`;
+    // Gövde HAM tutulur (interpolasyon worker'da); plain text → HTML + imza.
+    const htmlBody = plainToHtml(normalizeTokens(body.body)) + sigHtml;
+    const subjectTpl = normalizeTokens((body.subject || '').trim());
+
+    // E-postası OLAN contact'lardan alıcı listesi kur; olmayan = skipped.
+    const recipients: { userId: string | null; channelAddress: string; vars: Record<string, string> }[] = [];
+    const seen = new Set<string>();
     for (const c of contacts) {
-      if (!c.email) {
+      const email = (c.email || '').trim().toLowerCase();
+      if (!email) {
         skipped++;
         continue;
       }
-      const personalizedSubject = interpolate(body.subject || '', { name: c.name });
-      const personalizedBody = interpolate(body.body, { name: c.name });
-      const withFooter = addUnsubscribeFooter(plainToHtml(personalizedBody) + sigHtml, personalizedBody + sigText, from);
-      try {
-        await provider.send({
-          to: c.email,
-          subject: personalizedSubject,
-          html: withFooter.html,
-          text: withFooter.text,
-          fromEmail: from,
-          fromName,
-          replyTo: from,  // Yanıt aynı adrese — "ÇIKAR" yanıtlarını okumak için
-          useCase: 'marketing',
+      if (seen.has(email)) continue;
+      seen.add(email);
+      const firstName = (c.name || '').split(' ')[0] ?? '';
+      recipients.push({
+        userId: c.id || null,
+        channelAddress: email,
+        // {name} (UI) + {ad}/{tam_ad} (resolver şeması) — render() hangisi varsa çözer.
+        vars: { name: c.name || '', ad: firstName, tam_ad: c.name || '' },
+      });
+    }
+
+    if (recipients.length === 0) {
+      await auditRef.update({
+        status: 'completed',
+        sent: 0,
+        failed: 0,
+        skipped,
+        errors: [],
+        completedAt: FieldValue.serverTimestamp(),
+      });
+      return NextResponse.json({ ok: true, mode: 'queued', queued: 0, skipped, campaignId: null });
+    }
+
+    const initialStats: CampaignStats = { queued: 0, sent: 0, delivered: 0, failed: 0, bounced: 0 };
+    const campRef = db.collection(COLLECTIONS.campaigns).doc();
+    await campRef.set({
+      name: subjectTpl || 'Outreach',
+      channel: 'email',
+      useCase: 'marketing',
+      ngoId: PLATFORM_MAIL_ID,
+      templateId: null,
+      subject: subjectTpl,
+      body: htmlBody,
+      senderId: from,
+      fromEmail: from,
+      fromName: fromName || null,
+      replyTo: from,
+      whatsapp: null,
+      mailWorkspace: true,
+      rateConfig: { perSecond: 1, perMinute: 1 },
+      platformOutreach: true,
+      schedule: { mode: 'now', scheduledAt: null, timezone: 'Europe/Istanbul' },
+      status: 'draft' as CampaignStatus,
+      stats: initialStats,
+      createdAt: FieldValue.serverTimestamp(),
+      createdBy: auth.uid,
+      createdByEmail: null,
+    });
+
+    const recipientsRef = campRef.collection(COLLECTIONS.recipients);
+    for (let i = 0; i < recipients.length; i += RECIPIENTS_BATCH) {
+      const slice = recipients.slice(i, i + RECIPIENTS_BATCH);
+      const wb = db.batch();
+      for (const r of slice) {
+        wb.set(recipientsRef.doc(), {
+          userId: r.userId,
+          channelAddress: r.channelAddress,
+          vars: r.vars,
+          status: 'pending',
+          attempts: 0,
+          createdAt: FieldValue.serverTimestamp(),
         });
-        sent++;
-      } catch (e) {
-        failed++;
-        errors.push(`${c.name} <${c.email}>: ${e instanceof Error ? e.message.slice(0, 100) : String(e)}`);
       }
+      await wb.commit();
+    }
+
+    try {
+      const enq = await enqueueCampaign(campRef.id);
+      await auditRef.update({
+        status: 'completed',
+        mode: 'queued',
+        campaignId: campRef.id,
+        queued: enq.queued,
+        skipped,
+        completedAt: FieldValue.serverTimestamp(),
+      });
+      return NextResponse.json({
+        ok: true,
+        mode: 'queued',
+        queued: enq.queued,
+        skipped,
+        campaignId: campRef.id,
+      });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      await campRef.update({ status: 'failed' as CampaignStatus, lastError: message });
+      await auditRef.update({ status: 'failed', error: message, completedAt: FieldValue.serverTimestamp() });
+      return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'Internal server error' }, { status: 500 });
     }
   } else if (channel === 'sms') {
     const provider = getSmsProvider();

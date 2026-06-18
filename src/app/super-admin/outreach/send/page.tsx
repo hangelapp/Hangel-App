@@ -53,7 +53,13 @@ export default function OutreachSendPage() {
   const [fromName, setFromName] = useState('hangel');
   const [senderId, setSenderId] = useState('HANGEL');
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState<{ sent: number; failed: number; skipped: number; errors?: string[] } | null>(null);
+  // Email → kuyruğa alma ({mode:'queued', queued, skipped, campaignId}).
+  // SMS/WhatsApp → doğrudan gönderim ({sent, failed, skipped, errors}).
+  const [result, setResult] = useState<
+    | { mode: 'queued'; queued: number; skipped: number; campaignId: string | null }
+    | { sent: number; failed: number; skipped: number; errors?: string[] }
+    | null
+  >(null);
 
   async function handleSend() {
     if (ids.length === 0) {
@@ -92,7 +98,11 @@ export default function OutreachSendPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Gönderim başarısız');
       setResult(data);
-      toast({ title: 'Gönderim tamamlandı', description: `${data.sent} başarılı, ${data.failed} başarısız` });
+      if (data?.mode === 'queued') {
+        toast({ title: 'Kuyruğa alındı', description: `${data.queued} kişi Workspace kuyruğunda` });
+      } else {
+        toast({ title: 'Gönderim tamamlandı', description: `${data.sent} başarılı, ${data.failed} başarısız` });
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Hata';
       toast({ title: 'Gönderim hatası', description: msg, variant: 'destructive' });
@@ -118,7 +128,20 @@ export default function OutreachSendPage() {
         </div>
       </div>
 
-      {result && (
+      {result && ('mode' in result ? (
+        <Card className="border-emerald-300 bg-emerald-50">
+          <CardContent className="p-4 flex items-start gap-3">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5" />
+            <div className="text-sm space-y-1">
+              <p className="font-bold">Kuyruğa alındı</p>
+              <p>
+                ✅ {result.queued} kişi kuyruğa alındı — Workspace&apos;ten dakikada 1 mail gönderilecek.
+                {result.skipped > 0 ? ` ${result.skipped} atlandı (e-posta yok).` : ''}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
         <Card className={result.failed > 0 ? 'border-amber-300 bg-amber-50' : 'border-emerald-300 bg-emerald-50'}>
           <CardContent className="p-4 flex items-start gap-3">
             {result.failed > 0
@@ -138,7 +161,7 @@ export default function OutreachSendPage() {
             </div>
           </CardContent>
         </Card>
-      )}
+      ))}
 
       <Card>
         <CardHeader>
