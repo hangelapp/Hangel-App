@@ -31,6 +31,8 @@ import {
   Landmark,
   Send,
   LineChart,
+  PhoneCall,
+  MessageCircle,
 } from 'lucide-react';
 import {
   MarketingNav,
@@ -167,6 +169,16 @@ const TR = {
       title: 'Reklam Yönetimi',
       description:
         'Google, Meta, TikTok ve Google Ad Grants için reklam kurulum sihirbazı; AI reklam metni ve landing önerisi. Onay sürecindedir.',
+    },
+    callCenter: {
+      title: 'Çağrı Merkezi (Sanal Santral)',
+      description:
+        'Tarayıcıdan kulaklıkla arama yapın — kendi hattınızı bağlayın. Gelen/giden çağrı, görüşme notu, sonuç ve kayıt tek panelde; cevapsızlar listelenir.',
+    },
+    contactCenter: {
+      title: "İletişim Merkezi (WhatsApp'tan Çağrıya)",
+      description:
+        "Gönüllülerinize hazır WhatsApp şablonlarıyla ulaşın; 'Evet' diyenler otomatik çağrı sırasına düşer, 'Hayır' diyene randevu kurulur, operatör tek tıkla arar.",
     },
   },
 
@@ -327,6 +339,16 @@ const EN: typeof TR = {
       description:
         'A setup wizard for Google, Meta, TikTok and Google Ad Grants; AI ad copy and landing suggestions. Pending approval.',
     },
+    callCenter: {
+      title: 'Call Center (Virtual PBX)',
+      description:
+        'Call right from your browser with a headset — bring your own line. Inbound/outbound calls, notes, dispositions and recordings in one panel; missed calls tracked.',
+    },
+    contactCenter: {
+      title: 'Contact Center (WhatsApp to Call)',
+      description:
+        "Reach volunteers with ready WhatsApp templates; 'Yes' replies drop into the call queue automatically, 'No' replies get a callback appointment, your operator calls in one click.",
+    },
   },
 
   soon: {
@@ -391,6 +413,8 @@ export default function NgoOnboardingPage() {
     { icon: Users, title: C.tools.roles.title, description: C.tools.roles.description },
     { icon: QrCode, title: C.tools.presence.title, description: C.tools.presence.description },
     { icon: Megaphone, title: C.tools.ads.title, description: C.tools.ads.description, badge: { kind: 'beta' } },
+    { icon: PhoneCall, title: C.tools.callCenter.title, description: C.tools.callCenter.description, badge: { kind: 'beta' } },
+    { icon: MessageCircle, title: C.tools.contactCenter.title, description: C.tools.contactCenter.description, badge: { kind: 'beta' } },
   ];
 
   const soonTools: FeatureItem[] = [
