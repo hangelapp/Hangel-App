@@ -24,6 +24,7 @@ import { resolveRecipients } from '@/lib/messaging/resolver';
 import { enqueueCampaign } from '@/lib/messaging/queue/enqueue';
 import { isMailConfigured } from '@/lib/mail/credential-crypto';
 import { COLLECTIONS } from '@/firebase/collections';
+import type { Query } from 'firebase-admin/firestore';
 import type { CampaignStats, CampaignStatus } from '@/lib/messaging/types';
 
 export const runtime = 'nodejs';
@@ -102,12 +103,15 @@ export async function POST(req: Request) {
     }
   } else {
     const filter = body.filter ?? {};
-    let q = db.collection(COLLECTIONS.outreachContacts).where('status', '==', 'active');
+    // Tek eşitlik filtresi (type) — composite index gerektirmez; status/city/email
+    // kodda süzülür.
+    let q: Query = db.collection(COLLECTIONS.outreachContacts);
     if (filter.type) q = q.where('type', '==', filter.type);
     const snap = await q.limit(MAX_RECIPIENTS * 4).get();
     const cityFilter = (filter.city ?? '').trim().toLocaleLowerCase('tr');
     for (const d of snap.docs) {
-      const data = d.data() as { email?: string; name?: string; city?: string };
+      const data = d.data() as { email?: string; name?: string; city?: string; status?: string };
+      if (data.status && data.status !== 'active') continue;
       const email = (data.email ?? '').trim().toLowerCase();
       if (!EMAIL_RE.test(email) || collected.has(email)) continue;
       if (cityFilter && (data.city ?? '').trim().toLocaleLowerCase('tr') !== cityFilter) continue;
