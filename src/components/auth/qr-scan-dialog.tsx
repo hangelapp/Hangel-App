@@ -72,13 +72,31 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       rafRef.current = requestAnimationFrame(scan);
     };
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error('no-getusermedia');
+      // Bazı WebView'ler facingMode obje constraint'ini reddeder → sırayla dene.
+      const tries: MediaStreamConstraints[] = [
+        { video: { facingMode: { ideal: 'environment' } } },
+        { video: true },
+      ];
+      let stream: MediaStream | null = null;
+      let lastErr: unknown;
+      for (const c of tries) {
+        try { stream = await navigator.mediaDevices.getUserMedia(c); break; } catch (e) { lastErr = e; }
+      }
+      if (!stream) throw lastErr ?? new Error('no-stream');
       streamRef.current = stream;
       if (videoRef.current) { videoRef.current.srcObject = stream; await videoRef.current.play(); }
       rafRef.current = requestAnimationFrame(scan);
-    } catch {
+    } catch (e) {
       setStatus('error');
-      setErrMsg('Kameraya erişilemedi. Tarayıcı/uygulama izinlerini kontrol edip tekrar dene.');
+      const name = (e as { name?: string } | null)?.name;
+      setErrMsg(
+        name === 'NotAllowedError'
+          ? 'Kamera izni reddedildi. Telefon Ayarlar → Uygulamalar → hangel → İzinler → Kamera açık olmalı.'
+          : name === 'NotFoundError'
+            ? 'Kamera bulunamadı.'
+            : 'Kameraya erişilemedi. Uygulamayı en son sürüme güncelleyip tekrar dene.',
+      );
     }
   }, [approve, stop]);
 
