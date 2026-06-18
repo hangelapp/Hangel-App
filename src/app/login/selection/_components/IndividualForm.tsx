@@ -10,6 +10,7 @@ import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber, getAuth, onAuthStateChanged, signInWithCustomToken, type ConfirmationResult } from 'firebase/auth';
+import { QrLoginDialog } from '@/components/auth/qr-login-dialog';
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
 import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -32,6 +33,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
 
     type IndividualStep = 'email' | 'login' | 'register' | 'verify-sent' | 'forgot' | 'forgot-sent' | 'phone-enter' | 'phone-otp' | 'whatsapp-enter' | 'whatsapp-otp' | 'whatsapp-code-input';
     const [step, setStep] = useState<IndividualStep>('whatsapp-enter');
+    const [showQrLogin, setShowQrLogin] = useState(false);
     // authMode mail+SMS tab'ları kaldırıldıktan sonra sadece commented JSX'te kullanılır.
     // ESLint için _ prefix; setAuthMode hala line 227'de aktif (mail check fallback).
     const [_authMode, setAuthMode] = useState<'mail' | 'phone' | 'whatsapp'>('whatsapp');
@@ -798,6 +800,18 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                         {isLoading ? <Loader2 className="animate-spin" /> : 'Doğrulama Kodu Gönder'}
                     </Button>
                 </form>
+
+                {/* Zaten üyeyim → QR ile hızlı giriş (telefondaki app onaylar) */}
+                <div className="pt-1 text-center">
+                    <button
+                        type="button"
+                        onClick={() => setShowQrLogin(true)}
+                        className="text-sm font-semibold text-primary underline underline-offset-4"
+                    >
+                        Zaten üyeyim — QR ile giriş yap
+                    </button>
+                </div>
+                <QrLoginDialog open={showQrLogin} onOpenChange={setShowQrLogin} onSuccess={() => { setShowQrLogin(false); onComplete(false); }} />
             </div>
         );
     }

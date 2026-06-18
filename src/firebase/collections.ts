@@ -56,6 +56,9 @@ export const COLLECTIONS = {
   // 10 dk TTL, server-only. Distinct from `loginLinks` so the new flow can
   // evolve (e.g. multi-device pairing) without touching the welcome chain.
   deviceLinks: 'device_links',
+  // QR ile masaüstü girişi: masaüstü QR üretir, telefondaki app okutup onaylar,
+  // masaüstü custom token ile giriş yapar. 5 dk TTL, tek kullanımlık (consumed).
+  qrLogins: 'qr_logins',
   events: 'events',
   // Etkinlik mekanları (salon/yerleşke) — kulüp/STK admin'leri ekler, super-admin
   // veya oluşturan düzenler/siler. Rezervasyon e-posta (mailto) ya da link olabilir.

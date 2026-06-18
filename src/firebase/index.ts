@@ -2,7 +2,7 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import {
   getFirestore,
   initializeFirestore,
@@ -58,6 +58,13 @@ export function getSdks(firebaseApp: FirebaseApp) {
     auth.languageCode = 'tr';
   } catch {
     /* readonly veya init incomplete */
+  }
+  // Oturum kalıcılığı: tarayıcı/ sekme kapansa bile oturum açık kalsın (localStorage).
+  // SSR'da window yok → atla.
+  if (typeof window !== 'undefined') {
+    void setPersistence(auth, browserLocalPersistence).catch(() => {
+      /* persistence desteklenmiyorsa default davranış sürer */
+    });
   }
   return {
     firebaseApp,
