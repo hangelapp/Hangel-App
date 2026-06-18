@@ -98,14 +98,15 @@ export async function POST(req: Request) {
 
   const db = getAdminFirestore();
 
-  // Süper-admin gate: ngos/{ngoId}.featureFlags.bulkMailEnabled açık mı?
+  // Workspace toplu mail TÜM STK'lara varsayılan AÇIK (2026-06-18). Süper-admin
+  // bir STK'yı açıkça kapatmak isterse featureFlags.bulkMailEnabled = false yazar.
   const ngoSnap = await db.collection(COLLECTIONS.ngos).doc(actor.ngoId).get();
   const ngoData = ngoSnap.exists
     ? (ngoSnap.data() as { featureFlags?: { bulkMailEnabled?: boolean }; name?: string; contact?: { phone?: string; email?: string; website?: string } } | undefined)
     : undefined;
-  if (ngoData?.featureFlags?.bulkMailEnabled !== true) {
+  if (ngoData?.featureFlags?.bulkMailEnabled === false) {
     return NextResponse.json(
-      { errorCode: 'MAIL_FEATURE_DISABLED', message: 'Bu özellik kurumunuz için henüz açılmadı.' },
+      { errorCode: 'MAIL_FEATURE_DISABLED', message: 'Bu özellik kurumunuz için kapatılmış.' },
       { status: 403 }
     );
   }

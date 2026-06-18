@@ -26,11 +26,12 @@ export async function GET(req: NextRequest) {
 
   const db = getAdminFirestore();
 
-  // Süper-admin gate: ngos/{ngoId}.featureFlags.bulkMailEnabled === true
+  // Workspace toplu mail TÜM STK'lara varsayılan AÇIK (2026-06-18). Süper-admin
+  // bir STK'yı açıkça kapatmak isterse featureFlags.bulkMailEnabled = false yazar.
   const ngoSnap = await db.collection(COLLECTIONS.ngos).doc(actor.ngoId).get().catch(() => null);
   const ngoData = ngoSnap?.exists ? (ngoSnap.data() as Record<string, unknown> | undefined) : undefined;
   const featureFlags = (ngoData?.featureFlags ?? undefined) as { bulkMailEnabled?: unknown } | undefined;
-  const gateOpen = featureFlags?.bulkMailEnabled === true;
+  const gateOpen = featureFlags?.bulkMailEnabled !== false;
 
   // Bağlı SMTP hesabı: mailAccounts/{ngoId}
   const mailSnap = await db.collection(COLLECTIONS.mailAccounts).doc(actor.ngoId).get().catch(() => null);
