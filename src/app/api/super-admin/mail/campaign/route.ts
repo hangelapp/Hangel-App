@@ -1,0 +1,194 @@
+/**
+ * POST /api/super-admin/mail/campaign — hangel platform Workspace toplu mail.
+ *
+ * hangel kendi Workspace SMTP'sinden (mailAccounts/__platform) outreach datasına
+ * ya da yüklenen listeye toplu mail gönderir. Alıcılar inlineRecipients olarak
+ * çözülür (resolver inline kaynağı; marketing consent'i geçer, unsubscribe footer
+ * dispatch'te eklenir). NGO cüzdanı YOK (platform). Hız: dakikada 1 mail.
+ *
+ * Body: {
+ *   subject, body,
+ *   source: 'outreach' | 'inline',
+ *   filter?: { type?: string; city?: string },   // source='outreach'
+ *   inlineRecipients?: { email: string; name?: string }[],  // source='inline'
+ *   dryRun?: boolean,   // sadece alıcı sayısını döndür, gönderme
+ * }
+ *
+ * Yetki: yalnız super-admin. Hata: { errorCode, message }.
+ */
+import { NextResponse } from 'next/server';
+import { requireNgoAdmin } from '@/lib/messaging/server-auth';
+import { getAdminFirestore } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
+import { resolveRecipients } from '@/lib/messaging/resolver';
+import { enqueueCampaign } from '@/lib/messaging/queue/enqueue';
+import { isMailConfigured } from '@/lib/mail/credential-crypto';
+import { COLLECTIONS } from '@/firebase/collections';
+import type { CampaignStats, CampaignStatus } from '@/lib/messaging/types';
+
+export const runtime = 'nodejs';
+export const maxDuration = 300;
+
+const PLATFORM_MAIL_ID = '__platform';
+const MAX_RECIPIENTS = 5000;
+const BATCH = 450;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+interface OutreachFilter { type?: string; city?: string }
+interface InlineRec { email: string; name?: string }
+interface Body {
+  subject?: string;
+  body?: string;
+  source?: 'outreach' | 'inline';
+  filter?: OutreachFilter;
+  inlineRecipients?: InlineRec[];
+  dryRun?: boolean;
+}
+
+export async function POST(req: Request) {
+  const auth = await requireNgoAdmin(req, { targetNgoId: PLATFORM_MAIL_ID, allowSuperAdmin: true });
+  if ('error' in auth) return auth.error;
+  if (!auth.actor.isSuperAdmin) {
+    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Super-admin yetkisi gerekli.' }, { status: 403 });
+  }
+
+  if (!isMailConfigured()) {
+    return NextResponse.json(
+      { errorCode: 'MAIL_NOT_CONFIGURED', message: 'Workspace mail özelliği şu anda kullanılamıyor.' },
+      { status: 503 },
+    );
+  }
+
+  let body: Body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ errorCode: 'INVALID_JSON', message: 'Geçersiz JSON' }, { status: 400 });
+  }
+
+  const source = body.source === 'inline' ? 'inline' : 'outreach';
+  const dryRun = body.dryRun === true;
+
+  const db = getAdminFirestore();
+
+  // Platform Workspace hesabı bağlı mı?
+  const accountSnap = await db.collection(COLLECTIONS.mailAccounts).doc(PLATFORM_MAIL_ID).get();
+  if (!accountSnap.exists) {
+    return NextResponse.json(
+      { errorCode: 'NOT_CONNECTED', message: 'hangel Workspace hesabı bağlı değil.' },
+      { status: 409 },
+    );
+  }
+  const account = (accountSnap.data() as { fromEmail?: string; fromName?: string } | undefined) ?? {};
+  const fromEmail = typeof account.fromEmail === 'string' ? account.fromEmail : '';
+  const fromName = typeof account.fromName === 'string' ? account.fromName : '';
+  if (!fromEmail) {
+    return NextResponse.json(
+      { errorCode: 'NOT_CONNECTED', message: 'hangel Workspace hesabı bağlı değil.' },
+      { status: 409 },
+    );
+  }
+
+  // Alıcıları çöz: outreach datası ya da yüklenen liste.
+  const collected = new Map<string, InlineRec>();
+  let capped = false;
+
+  if (source === 'inline') {
+    for (const r of body.inlineRecipients ?? []) {
+      const email = (r?.email ?? '').trim().toLowerCase();
+      if (!EMAIL_RE.test(email) || collected.has(email)) continue;
+      collected.set(email, { email, name: r?.name });
+      if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
+    }
+  } else {
+    const filter = body.filter ?? {};
+    let q = db.collection(COLLECTIONS.outreachContacts).where('status', '==', 'active');
+    if (filter.type) q = q.where('type', '==', filter.type);
+    const snap = await q.limit(MAX_RECIPIENTS * 4).get();
+    const cityFilter = (filter.city ?? '').trim().toLocaleLowerCase('tr');
+    for (const d of snap.docs) {
+      const data = d.data() as { email?: string; name?: string; city?: string };
+      const email = (data.email ?? '').trim().toLowerCase();
+      if (!EMAIL_RE.test(email) || collected.has(email)) continue;
+      if (cityFilter && (data.city ?? '').trim().toLocaleLowerCase('tr') !== cityFilter) continue;
+      collected.set(email, { email, name: data.name });
+      if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
+    }
+  }
+
+  const inlineRecipients = [...collected.values()];
+
+  const resolved = await resolveRecipients({
+    channel: 'email',
+    useCase: 'marketing',
+    inlineRecipients,
+  });
+
+  if (resolved.recipients.length === 0) {
+    return NextResponse.json(
+      { errorCode: 'NO_RECIPIENTS', message: 'Geçerli alıcı bulunamadı.' },
+      { status: 400 },
+    );
+  }
+
+  // Önizleme: sadece sayı.
+  if (dryRun) {
+    return NextResponse.json({ count: resolved.recipients.length, capped });
+  }
+
+  if (!body.subject?.trim() || !body.body?.trim()) {
+    return NextResponse.json({ errorCode: 'INVALID_INPUT', message: 'Konu ve mesaj gerekli.' }, { status: 400 });
+  }
+
+  const initialStats: CampaignStats = { queued: 0, sent: 0, delivered: 0, failed: 0, bounced: 0 };
+  const campRef = db.collection(COLLECTIONS.campaigns).doc();
+  await campRef.set({
+    name: body.subject.trim(),
+    channel: 'email',
+    useCase: 'marketing',
+    ngoId: PLATFORM_MAIL_ID,
+    templateId: null,
+    subject: body.subject.trim(),
+    body: body.body,
+    senderId: fromEmail,
+    fromEmail,
+    fromName: fromName || null,
+    whatsapp: null,
+    mailWorkspace: true,
+    rateConfig: { perSecond: 1, perMinute: 1 },
+    platformOutreach: true,
+    recipients: { totalUnique: resolved.summary.afterDedupe, afterConsentFilter: resolved.summary.afterConsent },
+    schedule: { mode: 'now', scheduledAt: null, timezone: 'Europe/Istanbul' },
+    status: 'draft' as CampaignStatus,
+    stats: initialStats,
+    createdAt: FieldValue.serverTimestamp(),
+    createdBy: auth.actor.uid,
+    createdByEmail: auth.actor.email ?? null,
+  });
+
+  const recipientsRef = campRef.collection(COLLECTIONS.recipients);
+  for (let i = 0; i < resolved.recipients.length; i += BATCH) {
+    const slice = resolved.recipients.slice(i, i + BATCH);
+    const wb = db.batch();
+    for (const r of slice) {
+      wb.set(recipientsRef.doc(), {
+        userId: r.userId,
+        channelAddress: r.channelAddress,
+        vars: r.vars,
+        status: 'pending',
+        attempts: 0,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    }
+    await wb.commit();
+  }
+
+  try {
+    const result = await enqueueCampaign(campRef.id);
+    return NextResponse.json({ campaignId: campRef.id, status: result.status, queued: result.queued, capped });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await campRef.update({ status: 'failed' as CampaignStatus, lastError: message });
+    return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'Internal server error' }, { status: 500 });
+  }
+}

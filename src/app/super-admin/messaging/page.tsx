@@ -34,17 +34,34 @@ interface CampaignRow {
   stats?: { queued?: number; sent?: number; failed?: number };
 }
 
-const NAV = [
-  { href: '/super-admin/outreach', icon: Megaphone, color: 'bg-pink-500', label: 'Outreach / Tanıtım Veritabanı', desc: '6.680 vakıf + 100.967 dernek + manuel kontaklar. Hangel\'i tanıştırmak için toplu mail / SMS.' },
-  { href: '/super-admin/messaging/send-hangel', icon: MessageSquare, color: 'bg-orange-500', label: 'Hangel Toplu SMS', desc: 'Pasifik Telekom üzerinden hangel adına bakiye sorgu + test + toplu gönderim.' },
-  { href: '/super-admin/messaging/campaigns', icon: Send, color: 'bg-violet-500', label: 'Kampanyalar', desc: 'Yeni kampanya oluştur, geçmişi gör, detay analitiği incele.' },
-  { href: '/super-admin/messaging/templates', icon: FileText, color: 'bg-sky-500', label: 'Şablonlar', desc: 'Tekrar kullanılabilir SMS / e-posta şablonları.' },
-  { href: '/super-admin/messaging/whatsapp/templates', icon: MessageCircle, color: 'bg-emerald-600', label: 'WhatsApp Şablonları', desc: 'Meta-onaylı WhatsApp template\'leri.' },
-  { href: '/super-admin/messaging/segments', icon: Filter, color: 'bg-emerald-500', label: 'Segmentler', desc: 'Filtre tabanlı alıcı kitleleri tanımla.' },
-  { href: '/super-admin/messaging/pricing', icon: Coins, color: 'bg-amber-500', label: 'Pricing', desc: 'Tier indirimleri, ücretsiz kotalar, KDV ve çarpanlar.' },
-  { href: '/super-admin/messaging/ngo-wallets', icon: Wallet, color: 'bg-emerald-700', label: 'NGO Cüzdanları', desc: 'NGO bakiyeleri + manuel top-up / düzeltme.' },
-  { href: '/super-admin/messaging/providers', icon: SettingsIcon, color: 'bg-yellow-500', label: 'Provider Ayarları', desc: 'SMS/E-posta sağlayıcısı, sender ID, rate limit ve İYS modu.' },
-  { href: '/super-admin/messaging/audit', icon: History, color: 'bg-rose-500', label: 'Audit Log', desc: 'Kim, ne zaman, ne gönderdi — denetim kaydı.' },
+interface NavItem { href: string; icon: typeof Send; color: string; label: string; desc: string }
+const GROUPS: { title: string; items: NavItem[] }[] = [
+  {
+    title: 'Gönderim',
+    items: [
+      { href: '/super-admin/messaging/workspace-mail', icon: Mail, color: 'bg-primary', label: 'Workspace Toplu Mail', desc: 'hangel kendi Workspace adresinden outreach datasına ya da yüklenen listeye toplu e-posta (dakikada 1).' },
+      { href: '/super-admin/outreach', icon: Megaphone, color: 'bg-pink-500', label: 'Outreach Veritabanı', desc: '6.680 vakıf + 100.967 dernek + GSB müdürlükleri + manuel kontaklar.' },
+      { href: '/super-admin/messaging/send-hangel', icon: MessageSquare, color: 'bg-orange-500', label: 'Toplu SMS', desc: 'Pasifik Telekom üzerinden hangel adına test + toplu SMS gönderimi.' },
+      { href: '/super-admin/messaging/campaigns', icon: Send, color: 'bg-violet-500', label: 'Kampanyalar', desc: 'Geçmiş kampanyalar + detay analitiği.' },
+    ],
+  },
+  {
+    title: 'İçerik & Kitle',
+    items: [
+      { href: '/super-admin/messaging/templates', icon: FileText, color: 'bg-sky-500', label: 'Şablonlar', desc: 'Tekrar kullanılabilir SMS / e-posta şablonları.' },
+      { href: '/super-admin/messaging/whatsapp/templates', icon: MessageCircle, color: 'bg-emerald-600', label: 'WhatsApp Şablonları', desc: 'Meta-onaylı WhatsApp template\'leri.' },
+      { href: '/super-admin/messaging/segments', icon: Filter, color: 'bg-emerald-500', label: 'Segmentler', desc: 'Filtre tabanlı alıcı kitleleri.' },
+    ],
+  },
+  {
+    title: 'Ayarlar & Kayıt',
+    items: [
+      { href: '/super-admin/messaging/pricing', icon: Coins, color: 'bg-amber-500', label: 'Pricing', desc: 'Tier indirimleri, ücretsiz kotalar, KDV.' },
+      { href: '/super-admin/messaging/ngo-wallets', icon: Wallet, color: 'bg-emerald-700', label: 'NGO Cüzdanları', desc: 'NGO bakiyeleri + manuel top-up.' },
+      { href: '/super-admin/messaging/providers', icon: SettingsIcon, color: 'bg-yellow-500', label: 'Provider Ayarları', desc: 'Sağlayıcı, sender ID, rate limit, İYS.' },
+      { href: '/super-admin/messaging/audit', icon: History, color: 'bg-rose-500', label: 'Audit Log', desc: 'Kim, ne zaman, ne gönderdi.' },
+    ],
+  },
 ];
 
 function StatusBadge({ status }: { status?: string }) {
@@ -77,29 +94,34 @@ export default function MessagingHub() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {NAV.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link key={item.href} href={item.href} className="block">
-              <Card className="hover:shadow-md transition-shadow h-full">
-                <CardHeader className="flex flex-row items-center gap-3 space-y-0">
-                  <div className={cn('h-10 w-10 rounded-lg flex items-center justify-center', item.color)}>
-                    <Icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <CardTitle className="text-base">{item.label}</CardTitle>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-xs">{item.desc}</CardDescription>
-                </CardContent>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
+      {GROUPS.map((group) => (
+        <section key={group.title} className="space-y-3">
+          <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link key={item.href} href={item.href} className="block">
+                  <Card className="hover:shadow-md transition-shadow h-full">
+                    <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+                      <div className={cn('h-10 w-10 rounded-lg flex items-center justify-center', item.color)}>
+                        <Icon className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <CardTitle className="text-base">{item.label}</CardTitle>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-xs">{item.desc}</CardDescription>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ))}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
