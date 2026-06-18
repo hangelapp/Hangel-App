@@ -8,7 +8,7 @@
  * e-posta gönderir. Per-STK mail özelliğinin platform sürümü; /api/super-admin/mail/*.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,23 @@ export default function PlatformWorkspaceMailPage() {
   const [filterType, setFilterType] = useState('GençlikSporMüdürlüğü');
   const [filterCity, setFilterCity] = useState('');
   const [list, setList] = useState<string[]>([]);
+  // "Yüklenen Liste" KALICI: localStorage'da tutulur — kullanıcı 'Temizle'/× ile
+  // silmedikçe sayfa yenilense/kapansa da kalır. İlk mount yazımı atlanır ki
+  // localStorage'daki değer boş [] ile ezilmesin.
+  const firstListPersistRef = useRef(true);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('ws-mail-uploaded-list');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setList(parsed.filter((x) => typeof x === 'string'));
+      }
+    } catch { /* yoksay */ }
+  }, []);
+  useEffect(() => {
+    if (firstListPersistRef.current) { firstListPersistRef.current = false; return; }
+    try { localStorage.setItem('ws-mail-uploaded-list', JSON.stringify(list)); } catch { /* yoksay */ }
+  }, [list]);
   const [paste, setPaste] = useState('');
   const [single, setSingle] = useState('');
   const [subject, setSubject] = useState('');
