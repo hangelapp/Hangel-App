@@ -70,6 +70,7 @@ import type { Volunteering, Application as UserApplication } from '@/lib/types';
 import { ListingForm, type ListingFormValues } from './_components/listing-form';
 import { ApplicationReviewCard, type ApplicationReviewItem } from './_components/application-review-card';
 import { CompletionScoringDialog } from './_components/completion-scoring-dialog';
+import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
 
 /** Volunteering doc'larında status henüz mevcut değilse default 'Aktif' kabul
  *  ederiz — eski dokümanlar bozulmasın. */
@@ -338,6 +339,18 @@ function ListingsTab({
                 ) : null}
               </CardContent>
               <CardFooter className="flex gap-2 flex-wrap">
+                <SocialShareButton
+                  kind="volunteering"
+                  item={{
+                    title: opp.title,
+                    description: opp.description || '',
+                    date: opp.dates?.eventStart || '',
+                    location: opp.location?.address || '',
+                    city: opp.location?.city || '',
+                    ngoName: ngoName || opp.organization || '',
+                    url: typeof window !== 'undefined' ? `${window.location.origin}/volunteering/${opp.id}` : '',
+                  }}
+                />
                 <Button variant="outline" size="sm" onClick={() => openEdit(opp)}>
                   <Pencil className="h-3.5 w-3.5 mr-1.5" />
                   {t('ngo_admin_volunteering.listings.editBtn')}

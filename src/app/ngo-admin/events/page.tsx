@@ -49,6 +49,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import type { EventContributor, EventContributorRole, EventAgendaItem } from '@/lib/types';
 import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
+import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -617,6 +618,18 @@ export default function EventManagementPage() {
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-2 shrink-0">
+                                                <SocialShareButton
+                                                    kind="event"
+                                                    item={{
+                                                        title: event.name || '',
+                                                        description: event.description || '',
+                                                        date: event.date || event.startDate || '',
+                                                        location: event.location?.address || '',
+                                                        city: event.location?.city || '',
+                                                        ngoName: activeEntity?.data.name || '',
+                                                        url: typeof window !== 'undefined' ? `${window.location.origin}/events/${event.id}` : '',
+                                                    }}
+                                                />
                                                 <Button variant="outline" size="sm" onClick={() => openEdit(event)}>
                                                     <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
                                                 </Button>
