@@ -47,7 +47,7 @@ interface InlineRec { email: string; name?: string }
 interface Body {
   subject?: string;
   body?: string;
-  source?: 'outreach' | 'vakif' | 'inline';
+  source?: 'outreach' | 'vakif' | 'dernek' | 'inline';
   filter?: OutreachFilter;
   inlineRecipients?: InlineRec[];
   dryRun?: boolean;
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ errorCode: 'INVALID_JSON', message: 'Geçersiz JSON' }, { status: 400 });
   }
 
-  const source = (body.source === 'inline' || body.source === 'vakif') ? body.source : 'outreach';
+  const source = (body.source === 'inline' || body.source === 'vakif' || body.source === 'dernek') ? body.source : 'outreach';
   const dryRun = body.dryRun === true;
 
   const db = getAdminFirestore();
@@ -120,6 +120,21 @@ export async function POST(req: Request) {
       collected.set(email, { email, name: data.name });
       if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
     }
+  } else if (source === 'dernek') {
+    // registryDernekler — resmi kütükte e-posta neredeyse hiç yok; yalnız ePosta
+    // alanı OLAN kayıtları çek (orderBy alanı olmayanları eler). Çoğu zaman boş döner.
+    const cityFilter = (body.filter?.city ?? '').trim().toLocaleLowerCase('tr');
+    try {
+      const snap = await db.collection('registryDernekler').orderBy('ePosta').limit(MAX_RECIPIENTS).get();
+      for (const d of snap.docs) {
+        const data = d.data() as { ePosta?: string; name?: string; il?: string };
+        const email = (data.ePosta ?? '').trim().toLowerCase();
+        if (!EMAIL_RE.test(email) || collected.has(email)) continue;
+        if (cityFilter && (data.il ?? '').trim().toLocaleLowerCase('tr') !== cityFilter) continue;
+        collected.set(email, { email, name: data.name });
+        if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
+      }
+    } catch { /* ePosta index/alan yoksa boş geç — hata verme */ }
   } else {
     const filter = body.filter ?? {};
     // Tek eşitlik filtresi (type) — composite index gerektirmez; status/city/email
@@ -147,16 +162,16 @@ export async function POST(req: Request) {
     inlineRecipients,
   });
 
-  if (resolved.recipients.length === 0) {
-    return NextResponse.json(
-      { errorCode: 'NO_RECIPIENTS', message: 'Geçerli alıcı bulunamadı.' },
-      { status: 400 },
-    );
-  }
-
-  // Önizleme: sadece sayı.
+  // Önizleme: sadece sayı (0 olsa bile hata DEĞİL — kaynak boş olabilir).
   if (dryRun) {
     return NextResponse.json({ count: resolved.recipients.length, capped });
+  }
+
+  if (resolved.recipients.length === 0) {
+    return NextResponse.json(
+      { errorCode: 'NO_RECIPIENTS', message: 'Bu kaynakta e-posta adresi olan kayıt yok.' },
+      { status: 400 },
+    );
   }
 
   if (!body.subject?.trim() || !body.body?.trim()) {
