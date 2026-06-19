@@ -127,8 +127,10 @@ export default function ConferenceDeckPage() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); next(); }
-      else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+      // Sunum kumandaları/"pointer" (Logitech, Kensington vb.) varsayılan olarak
+      // Page Down/Up gönderir (ok tuşu değil); bazıları Enter/Backspace/Tab kullanır.
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter' || e.key === 'PageDown') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace') { e.preventDefault(); prev(); }
       // Tam ekrandayken Esc'i tarayıcı tam ekranı kapatmak için kullanır; sunumu kapatma.
       else if (e.key === 'Escape') { if (!fsActive()) exit(); }
     };
