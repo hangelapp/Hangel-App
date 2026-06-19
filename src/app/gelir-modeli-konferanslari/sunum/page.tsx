@@ -137,7 +137,7 @@ export default function ConferenceDeckPage() {
   }, [next, prev, exit]);
 
   const slide = SLIDES[Math.min(i, SLIDES.length - 1)];
-  const isCoral = slide.kind === 'title' || slide.kind === 'section' || slide.kind === 'closing' || slide.kind === 'thanks';
+  const isCoral = slide.kind === 'title' || slide.kind === 'section' || slide.kind === 'closing' || slide.kind === 'thanks' || (slide.kind === 'list' && !!slide.hero);
   const isLast = i === SLIDES.length - 1;
 
   return (
@@ -206,7 +206,40 @@ export default function ConferenceDeckPage() {
             </>
           )}
 
-          {slide.kind === 'list' && (
+          {slide.kind === 'list' && slide.hero && (
+            <>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.15em] backdrop-blur">
+                <Sparkles className="h-3.5 w-3.5" /> Sosyal Etki Platformu
+              </div>
+              <h2 className="text-7xl font-black lowercase leading-none tracking-tighter sm:text-9xl">{slide.title}</h2>
+              {slide.intro && <p className="mx-auto mt-4 max-w-xl text-lg font-semibold text-white/90 sm:text-2xl">{slide.intro}</p>}
+              <div className="mx-auto mt-9 grid max-w-2xl grid-cols-1 gap-3 text-left sm:grid-cols-2">
+                {slide.items.map((it, k) => {
+                  const m = it.match(/^(.*?)\s*\((.*)\)\s*$/);
+                  const t = m ? m[1] : it;
+                  const d = m ? m[2] : '';
+                  return (
+                    <div key={k} className="rounded-2xl bg-white/15 p-4 ring-1 ring-white/20 backdrop-blur transition hover:bg-white/25">
+                      <div className="text-base font-bold sm:text-lg">{t}</div>
+                      {d && <div className="mt-1 text-sm leading-snug text-white/80">{d}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+              {slide.foot && (
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-xs font-bold sm:text-sm">
+                  {slide.foot.replace(/\.\s*$/, '').split('→').map((step, k, arr) => (
+                    <React.Fragment key={k}>
+                      <span className="rounded-full bg-black/15 px-3 py-1.5">{step.trim()}</span>
+                      {k < arr.length - 1 && <span className="text-white/70">→</span>}
+                    </React.Fragment>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {slide.kind === 'list' && !slide.hero && (
             <>
               <h2 className="text-3xl font-black leading-tight tracking-tighter sm:text-5xl">{slide.title}</h2>
               {slide.intro && <p className="mx-auto mt-4 max-w-2xl text-base font-medium text-white/55 sm:text-lg">{slide.intro}</p>}

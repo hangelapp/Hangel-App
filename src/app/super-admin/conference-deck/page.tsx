@@ -129,6 +129,10 @@ function SlideEditor({ slide, onChange }: { slide: Slide; onChange: (s: Slide) =
             <input type="checkbox" checked={!!slide.reveal} onChange={e => u({ reveal: e.target.checked })} className="h-4 w-4 accent-[#f34723]" />
             Maddeler tıklayınca açılsın (önce başlık görünür)
           </label>
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input type="checkbox" checked={!!slide.hero} onChange={e => u({ hero: e.target.checked })} className="h-4 w-4 accent-[#f34723]" />
+            Hero tasarım (coral zemin, dev başlık, özellik kartları) — “hangel” gibi
+          </label>
         </div>
       );
     case 'flow':

@@ -14,7 +14,8 @@ export type Slide =
   // row: true → rakamlar tek yatay satırda (mobilde de yan yana).
   | { kind: 'stats'; title: string; intro?: string; stats: { big: string; label: string }[]; foot?: string; row?: boolean }
   // reveal: true → başlık önce gelir, maddeler bir sonraki tıklamada açılır.
-  | { kind: 'list'; title: string; intro?: string; items: string[]; foot?: string; reveal?: boolean }
+  // hero: true → markalı hero tasarımı (coral zemin, dev başlık, özellik kartları, akış).
+  | { kind: 'list'; title: string; intro?: string; items: string[]; foot?: string; reveal?: boolean; hero?: boolean }
   | { kind: 'flow'; title: string; intro?: string; steps: string[] }
   // highlight: en vurucu bulgu / örneklem; source: kaynak linki (en altta).
   | { kind: 'research'; n: number; paper: string; year: string; authors: string[]; unis: string[]; finding: string[]; highlight?: string; source?: string }
@@ -74,7 +75,7 @@ export const DEFAULT_SLIDES: Slide[] = [
   { kind: 'list', title: 'Google Destekleri', intro: 'STK’lar için:', items: ['Google Workspace (kurumsal e-posta + Takvim + Dokümanlar)', 'Google Drive (100 TB bulut depolama alanı)', 'Google Meet (sınırsız çevrimiçi toplantı)', 'Google Ad Grants (ayda 10.000 USD ücretsiz reklam)'], foot: 'Dijital kapasiteyi ücretsiz büyütme imkânı.' },
   { kind: 'list', title: 'Canva Destekleri', intro: 'STK’lar için:', items: ['Canva Pro (tüm premium tasarım özellikleri)', 'Tasarım Araçları (afiş, broşür, kart)', 'Sunum Hazırlama (hazır şablonlar)', 'Sosyal Medya (post + story setleri)'], foot: 'STK başına belirli sürelerle ücretsiz kullanım.' },
   { kind: 'list', title: 'Microsoft Destekleri', intro: 'STK’lar için:', items: ['Microsoft 365 (Word, Excel, PowerPoint, Outlook)', 'Teams (toplantı + ekip iletişimi)', 'Kurumsal Yazılımlar (uygunluğa göre)'], foot: 'Uygunluk kriterlerine göre ücretsiz veya indirimli.' },
-  { kind: 'list', title: 'hangel', intro: 'STK’lar için sosyal ticaret ve gönüllülük platformu:', items: ['Alışverişle Bağış (destekçilerin alışverişi düzenli gelire döner)', 'Gönüllülük Yönetimi (ilan, başvuru, katılım, sertifika)', 'STK Paneli (bağış, üye, etkinlik, reklam, mesaj tek yerde)', 'Şeffaflık Endeksi (bağışçı güvenini artırır)'], foot: 'Kullanıcı → marka alışverişi → STK desteği → sosyal etki.' },
+  { kind: 'list', title: 'hangel', intro: 'STK’lar için sosyal ticaret ve gönüllülük platformu', items: ['Alışverişle Bağış (destekçilerin alışverişi düzenli gelire döner)', 'Gönüllülük Yönetimi (ilan, başvuru, katılım, sertifika)', 'STK Paneli (bağış, üye, etkinlik, reklam, mesaj tek yerde)', 'Şeffaflık Endeksi (bağışçı güvenini artırır)'], foot: 'Kullanıcı → marka alışverişi → STK desteği → sosyal etki.', hero: true },
   { kind: 'body', title: 'AbilityPool', lines: ['STK’ların gönüllülük ilanı açabildiği, kurumsal şirket çalışanlarının gönüllülük yaparak sosyal projelere katılabildiği dijital platform.', 'Amaç: Yeteneği sosyal faydaya dönüştürmek.'] },
   { kind: 'body', title: 'HelpSteps', lines: ['Günlük hareketleri sosyal faydaya dönüştüren dijital sosyal etki modeli.'] },
 
