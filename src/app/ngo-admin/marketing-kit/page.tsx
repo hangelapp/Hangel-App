@@ -102,7 +102,7 @@ export default function OrgMarketingKitPage() {
                           <FileText className="h-12 w-12 text-muted-foreground/40" />
                         )}
                         {a.isPublic && (
-                          <Badge className="absolute top-2 left-2 bg-blue-600 text-white text-[9px] font-black uppercase gap-1">
+                          <Badge className="absolute top-2 left-2 bg-[#042654] text-white text-[9px] font-black uppercase gap-1">
                             <Globe className="h-2.5 w-2.5" />Herkese açık
                           </Badge>
                         )}

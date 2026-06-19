@@ -20,7 +20,7 @@ function KeynoteBanner() {
   return (
     <Link
       href={KEYNOTE_HREF}
-      className="group block rounded-3xl overflow-hidden border border-black/5 shadow-lg bg-gradient-to-br from-[#f34723] to-[#ff7a4d] text-white"
+      className="group block rounded-3xl overflow-hidden border border-black/5 shadow-lg bg-gradient-to-br from-[#f34723] to-[#c5391b] text-white"
     >
       <div className="p-7 sm:p-9 flex flex-col sm:flex-row sm:items-center gap-6">
         <div className="flex-1 space-y-2">

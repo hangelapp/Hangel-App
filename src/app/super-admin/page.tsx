@@ -104,7 +104,7 @@ const iconColorMap: { [key: string]: string } = {
   'HelpCircle': 'bg-pink-500',
   'LifeBuoy': 'bg-blue-400',
   'Megaphone': 'bg-yellow-500',
-  'Presentation': 'bg-rose-500',
+  'Presentation': 'bg-[#f34723]',
   'LayoutDashboard': 'bg-blue-500',
   'Inbox': 'bg-cyan-500',
   'Users': 'bg-blue-500',

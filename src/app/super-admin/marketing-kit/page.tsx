@@ -380,11 +380,11 @@ export default function MarketingKitPage() {
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Toplam Materyal</p>
         </CardContent></Card>
         <Card className="rounded-2xl"><CardContent className="p-4">
-          <p className="text-2xl font-black text-green-600">{publishedCount}</p>
+          <p className="text-2xl font-black text-primary">{publishedCount}</p>
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Yayında</p>
         </CardContent></Card>
         <Card className="rounded-2xl"><CardContent className="p-4">
-          <p className="text-2xl font-black text-blue-600">{publicCount}</p>
+          <p className="text-2xl font-black text-[#042654]">{publicCount}</p>
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Herkese Açık</p>
         </CardContent></Card>
       </div>
@@ -420,12 +420,12 @@ export default function MarketingKitPage() {
                   </button>
                   <div className="absolute top-2 left-2 z-20 flex gap-1">
                     {a.status === 'yayinda' ? (
-                      <Badge className="bg-green-600 text-white text-[9px] font-black uppercase">Yayında</Badge>
+                      <Badge className="bg-primary text-primary-foreground text-[9px] font-black uppercase">Yayında</Badge>
                     ) : (
                       <Badge variant="secondary" className="text-[9px] font-black uppercase">Taslak</Badge>
                     )}
                     {a.publicListed && (
-                      <Badge className="bg-blue-600 text-white text-[9px] font-black uppercase gap-1"><Globe className="h-2.5 w-2.5" />Herkese açık</Badge>
+                      <Badge className="bg-[#042654] text-white text-[9px] font-black uppercase gap-1"><Globe className="h-2.5 w-2.5" />Herkese açık</Badge>
                     )}
                   </div>
                 </div>
