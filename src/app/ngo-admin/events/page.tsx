@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { LocationFields } from '@/components/shared/location-fields';
 import { VenueManager } from './_components/venue-manager';
 import { EventAttendees } from '@/components/events/event-attendees';
+import { EventCheckinQR } from '@/components/events/event-checkin-qr';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Dialog,
@@ -635,6 +636,7 @@ export default function EventManagementPage() {
                                                 <Button variant="outline" size="sm" onClick={() => openEdit(event)}>
                                                     <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
                                                 </Button>
+                                                <EventCheckinQR eventId={event.id} />
                                                 <EventAttendees eventId={event.id} />
                                             </div>
                                         </div>
