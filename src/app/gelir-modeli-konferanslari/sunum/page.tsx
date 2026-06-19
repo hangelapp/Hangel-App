@@ -198,7 +198,7 @@ export default function ConferenceDeckPage() {
                 {slide.stats.map((s, k) => (
                   <div key={k} className={slide.row ? 'flex flex-col items-center' : 'space-y-1'}>
                     <div className={`font-black leading-none tracking-tighter ${slide.row ? 'text-4xl sm:text-7xl' : 'text-6xl sm:text-7xl'}`} style={{ color: CORAL }}>{s.big}</div>
-                    <div className={`font-medium leading-snug text-white/60 ${slide.row ? 'mt-1 max-w-[6.5rem] text-xs sm:text-sm' : 'text-sm'}`}>{s.label}</div>
+                    <div className={`font-medium leading-snug text-white/60 ${slide.row ? 'mt-1 whitespace-nowrap text-xs sm:text-base' : 'text-sm'}`}>{s.label}</div>
                   </div>
                 ))}
               </div>
