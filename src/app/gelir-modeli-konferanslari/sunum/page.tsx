@@ -213,15 +213,16 @@ export default function ConferenceDeckPage() {
               </div>
               <h2 className="text-7xl font-black lowercase leading-none tracking-tighter sm:text-9xl">{slide.title}</h2>
               {slide.intro && <p className="mx-auto mt-4 max-w-xl text-lg font-semibold text-white/90 sm:text-2xl">{slide.intro}</p>}
-              <div className="mx-auto mt-9 grid max-w-2xl grid-cols-1 gap-3 text-left sm:grid-cols-2">
+              <div className="mx-auto mt-8 flex max-w-2xl flex-col gap-2.5 text-left">
                 {slide.items.map((it, k) => {
                   const m = it.match(/^(.*?)\s*\((.*)\)\s*$/);
                   const t = m ? m[1] : it;
                   const d = m ? m[2] : '';
                   return (
-                    <div key={k} className="rounded-2xl bg-white/15 p-4 ring-1 ring-white/20 backdrop-blur transition hover:bg-white/25">
-                      <div className="text-base font-bold sm:text-lg">{t}</div>
-                      {d && <div className="mt-1 text-sm leading-snug text-white/80">{d}</div>}
+                    <div key={k} className="flex items-baseline gap-2.5 rounded-2xl bg-white/15 px-4 py-3 ring-1 ring-white/20 backdrop-blur transition hover:bg-white/25">
+                      <span className="h-2 w-2 shrink-0 self-center rounded-full bg-white/90" />
+                      <span className="font-bold sm:text-lg">{t}</span>
+                      {d && <span className="text-sm text-white/75">— {d}</span>}
                     </div>
                   );
                 })}
