@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { openExternalUrl } from '@/lib/capacitor';
 import { Share } from '@capacitor/share';
 import {
   Award, Loader2, Calendar, Heart, Clock, Sparkles, ExternalLink, Share2, Wallet, RefreshCw,
@@ -102,11 +103,17 @@ export default function PassportPage() {
     }
   };
 
-  const addToWallet = () => {
-    toast({
-      title: t('passportPage.soonTitle'),
-      description: t('passportPage.soonDesc'),
-    });
+  const addToWallet = async () => {
+    if (!user) { toast({ variant: 'destructive', title: 'Giriş gerekli' }); return; }
+    try {
+      // Token URL'de (kısa ömürlü) — .pkpass'i Safari/SFSafariViewController açar,
+      // iOS "Cüzdana Ekle" sayfasını gösterir. WKWebView blob'dan açamadığı için şart.
+      const token = await user.getIdToken();
+      const url = new URL(`/api/passes/donor/${user.uid}?token=${encodeURIComponent(token)}`, window.location.origin).toString();
+      await openExternalUrl(url);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Cüzdana eklenemedi', description: e instanceof Error ? e.message : 'Tekrar deneyin.' });
+    }
   };
 
   if (isUserLoading || (loading && !data)) {

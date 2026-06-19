@@ -66,13 +66,18 @@ export async function GET(
     return NextResponse.json({ ok: false, errorCode: 'NO_UID', message: 'Kullanıcı kimliği eksik.' }, { status: 400 });
   }
 
+  // Token: Authorization header VEYA ?token= query. Query desteği şart çünkü iOS'ta
+  // .pkpass'i sistem Safari'sinde açmak gerekiyor (WKWebView blob'dan Wallet açamaz)
+  // ve harici tarayıcıya header gönderemeyiz → token URL'de taşınır (kısa ömürlü).
   const authHeader = req.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
+  const queryToken = new URL(req.url).searchParams.get('token')?.trim();
+  const idToken = authHeader?.startsWith('Bearer ') ? authHeader.slice('Bearer '.length).trim() : (queryToken || '');
+  if (!idToken) {
     return NextResponse.json({ ok: false, errorCode: 'NO_AUTH', message: 'Giriş gerekli.' }, { status: 401 });
   }
   let authUid: string;
   try {
-    const decoded = await getAdminAuth().verifyIdToken(authHeader.slice('Bearer '.length).trim());
+    const decoded = await getAdminAuth().verifyIdToken(idToken);
     authUid = decoded.uid;
   } catch {
     return NextResponse.json({ ok: false, errorCode: 'INVALID_TOKEN', message: 'Geçersiz oturum.' }, { status: 401 });
