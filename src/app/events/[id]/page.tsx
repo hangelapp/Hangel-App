@@ -195,6 +195,12 @@ export default function EventDetailPage() {
 
   const submitRsvp = async (action: 'going' | 'cancel') => {
     // ADIM 7 — Misafir/Keşfet: anonim kullanıcı eylem anında giriş'e davet edilir.
+    // BUGFIX 2026-06-19: anonim kullanıcı "Katıl"a basıp giriş yapınca /events
+    // sayfasına geri dönüyor ama RSVP tamamlanmıyordu (51 yeni kullanıcı / 13 kayıt).
+    // Niyeti sakla → dönüşte (aşağıdaki effect) otomatik RSVP tamamlanır.
+    if (action === 'going' && !authUser && resolvedEventId && typeof window !== 'undefined') {
+      try { sessionStorage.setItem('hangel:pendingRsvp', resolvedEventId); } catch { /* yok say */ }
+    }
     if (!requireAuth({ title: 'Etkinliğe katılmak için giriş yap', description: 'Etkinliğe katılmak için giriş yap ya da hemen kayıt ol.' })) return;
     if (!authUser || !resolvedEventId) return; // requireAuth yönlendirdi; TS daraltması için.
     setIsRsvpLoading(true);
@@ -274,6 +280,21 @@ export default function EventDetailPage() {
       setIsRsvpLoading(false);
     }
   };
+
+  // BUGFIX 2026-06-19: giriş sonrası /events sayfasına dönüldüğünde, "Katıl"
+  // niyeti varsa RSVP'yi otomatik tamamla. (Aksi halde giriş yapanlar RSVP'siz kalıyordu.)
+  const autoRsvpRef = useRef(false);
+  useEffect(() => {
+    if (autoRsvpRef.current || !authUser || !resolvedEventId || isGoing) return;
+    let pending: string | null = null;
+    try { pending = sessionStorage.getItem('hangel:pendingRsvp'); } catch { /* yok say */ }
+    if (pending !== resolvedEventId) return;
+    autoRsvpRef.current = true;
+    try { sessionStorage.removeItem('hangel:pendingRsvp'); } catch { /* yok say */ }
+    void submitRsvp('going');
+    // submitRsvp kasıtlı bağımlılık dışı (her render'da yeniden oluşur; ref guard tek sefer garantiler).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authUser, resolvedEventId, isGoing]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && event) {
