@@ -11,9 +11,10 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, X, ArrowDown, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronLeft, ChevronRight, X, ArrowDown, Sparkles, Pencil } from 'lucide-react';
 import { doc } from 'firebase/firestore';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { DEFAULT_SLIDES, DECK_COLLECTION, DECK_DOC, normalizeSlides } from '@/lib/conference-deck';
 
 const CORAL = '#f34723';
@@ -24,6 +25,20 @@ export default function ConferenceDeckPage() {
   const deckRef = useMemoFirebase(() => (db ? doc(db, DECK_COLLECTION, DECK_DOC) : null), [db]);
   const { data: deckDoc } = useDoc<{ slides?: unknown }>(deckRef);
   const SLIDES = useMemo(() => normalizeSlides(deckDoc?.slides ?? DEFAULT_SLIDES), [deckDoc]);
+
+  // Kalem ikonu yalnız süper-admin'e (veya kurucuya) görünür — ziyaretçi görmez.
+  const { user: authUser } = useUser();
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if (!authUser) { setIsAdmin(false); return; }
+    let cancelled = false;
+    authUser.getIdTokenResult().then((res) => {
+      if (cancelled) return;
+      const claims = res.claims as { role?: unknown; email?: unknown };
+      setIsAdmin(claims.role === 'super-admin' || (typeof claims.email === 'string' && claims.email.toLowerCase() === 'ismailhilmi@hangel.org'));
+    }).catch(() => { if (!cancelled) setIsAdmin(false); });
+    return () => { cancelled = true; };
+  }, [authUser]);
 
   const [i, setI] = useState(0);
   const [dir, setDir] = useState<1 | -1>(1);
@@ -198,6 +213,20 @@ export default function ConferenceDeckPage() {
         <button onClick={() => go(i + 1, SLIDES.length)} aria-label="Sonraki" className="absolute right-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-full bg-white/10 p-2 text-white backdrop-blur transition hover:bg-white/20 sm:block">
           <ChevronRight className="h-6 w-6" />
         </button>
+      )}
+
+      {/* Son slayt — süper-admin için sağ altta minik kalem: düzenleme ekranını açar */}
+      {isAdmin && i === SLIDES.length - 1 && (
+        <Link
+          href="/super-admin/conference-deck"
+          target="_blank"
+          onClick={(e) => e.stopPropagation()}
+          aria-label="Sunumu düzenle"
+          title="Sunumu düzenle"
+          className="absolute bottom-7 right-5 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white shadow-lg ring-1 ring-white/25 backdrop-blur transition hover:bg-white/30 active:scale-95"
+        >
+          <Pencil className="h-5 w-5" />
+        </Link>
       )}
     </div>
   );
