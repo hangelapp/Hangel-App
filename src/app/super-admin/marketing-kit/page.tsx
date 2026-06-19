@@ -45,6 +45,7 @@ import {
   FileText,
   ImageOff,
   CheckCircle2,
+  Eye,
   EyeOff,
   PackagePlus,
 } from 'lucide-react';
@@ -114,6 +115,7 @@ export default function MarketingKitPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<MarketingAsset | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [previewing, setPreviewing] = useState<MarketingAsset | null>(null);
 
   const permError = useMemo(() => {
     if (!assetsError) return null;
@@ -406,7 +408,17 @@ export default function MarketingKitPage() {
                   ) : (
                     <FileText className="h-12 w-12 text-muted-foreground/40" />
                   )}
-                  <div className="absolute top-2 left-2 flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewing(a)}
+                    title="Önizle"
+                    className="absolute inset-0 z-10 group/preview cursor-pointer bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center"
+                  >
+                    <span className="opacity-0 group-hover/preview:opacity-100 transition-opacity inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-[#1d1d1f] shadow">
+                      <Eye className="h-3.5 w-3.5" /> Önizle
+                    </span>
+                  </button>
+                  <div className="absolute top-2 left-2 z-20 flex gap-1">
                     {a.status === 'yayinda' ? (
                       <Badge className="bg-green-600 text-white text-[9px] font-black uppercase">Yayında</Badge>
                     ) : (
@@ -440,7 +452,10 @@ export default function MarketingKitPage() {
                     >
                       {a.status === 'yayinda' ? <><EyeOff className="mr-1 h-3.5 w-3.5" />Taslağa al</> : <><CheckCircle2 className="mr-1 h-3.5 w-3.5" />Yayınla</>}
                     </Button>
-                    <Button asChild size="icon" variant="outline" className="rounded-lg h-8 w-8" title="İndir / Önizle">
+                    <Button size="icon" variant="outline" className="rounded-lg h-8 w-8" title="Önizle" onClick={() => setPreviewing(a)}>
+                      <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button asChild size="icon" variant="outline" className="rounded-lg h-8 w-8" title="İndir">
                       <a href={a.fileUrl} download={a.fileName} target="_blank" rel="noopener noreferrer"><Download className="h-3.5 w-3.5" /></a>
                     </Button>
                     <Button size="icon" variant="outline" className="rounded-lg h-8 w-8" title="Düzenle" onClick={() => openEdit(a)}>
@@ -550,6 +565,46 @@ export default function MarketingKitPage() {
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editing ? 'Kaydet' : 'Ekle'}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Önizleme (lightbox) — görsel inline, PDF iframe */}
+      <Dialog open={!!previewing} onOpenChange={(o) => !o && setPreviewing(null)}>
+        <DialogContent className="rounded-2xl sm:max-w-[860px] max-h-[92vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-bold flex items-center gap-2"><Eye className="h-5 w-5 text-primary" />{previewing?.title}</DialogTitle>
+            <DialogDescription>
+              {previewing ? categoryLabel(previewing.category) : ''}
+              {previewing?.description ? ` · ${previewing.description}` : ''}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-xl border bg-muted/30 overflow-hidden">
+            {previewing && (previewing.contentType || '').startsWith('image/') ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={previewing.fileUrl} alt={previewing.title} className="w-full h-auto max-h-[72vh] object-contain mx-auto bg-white" />
+            ) : previewing && (previewing.contentType || '').includes('pdf') ? (
+              <iframe src={previewing.fileUrl} title={previewing.title} className="w-full h-[72vh] bg-white" />
+            ) : (
+              <div className="p-12 text-center text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground/40" />
+                <p>Bu dosya türü önizlenemiyor. İndirerek görüntüleyin.</p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button asChild variant="outline" className="rounded-xl font-bold">
+              <a href={previewing?.fileUrl} download={previewing?.fileName} target="_blank" rel="noopener noreferrer">
+                <Download className="mr-2 h-4 w-4" /> İndir
+              </a>
+            </Button>
+            {previewing && previewing.status !== 'yayinda' && (
+              <Button className="rounded-xl font-bold" onClick={() => { handlePublishToggle(previewing); setPreviewing(null); }}>
+                <CheckCircle2 className="mr-2 h-4 w-4" /> Yayınla
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
