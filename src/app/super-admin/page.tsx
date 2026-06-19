@@ -126,6 +126,7 @@ const superAdminNavSections = [
             { href: '/super-admin/contracts', label: 'Sözleşmeler ve Politikalar', icon: 'FileText', description: 'Kullanıcı sözleşmesi, KVKK, gizlilik ve diğer hukuki metinleri düzenle veya yeni sözleşme ekle.' },
             { href: '/super-admin/pages', label: 'İçerik Sayfaları (Basın/Etkinlik vb.)', icon: 'Newspaper', description: 'Basın, etkinlik, kariyer gibi sayfaları oluştur ve düzenle.' },
             { href: '/super-admin/marketing-kit', label: 'Tanıtım Araçları', icon: 'Presentation', description: 'hangel tanıtım materyalleri: sunum, sosyal medya seti, döner kart, mağaza ekipmanı, A5 kart, örümcek stand. STK/marka/kulüp panellerine onayla.' },
+            { href: '/super-admin/conference-deck', label: 'Konferans Sunumu (Düzenle)', icon: 'Presentation', description: 'Gelir Modeli Konferansları sunumunu düzenle — slayt ekle/sil/sırala, metinleri değiştir; canlı sunum anında güncellenir.' },
         ],
     },
     {
