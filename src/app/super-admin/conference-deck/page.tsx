@@ -27,7 +27,7 @@ import {
   SLIDE_KIND_LABEL, normalizeSlides,
 } from '@/lib/conference-deck';
 
-const KIND_ORDER: SlideKind[] = ['title', 'section', 'body', 'stats', 'list', 'flow', 'research', 'closing'];
+const KIND_ORDER: SlideKind[] = ['title', 'section', 'body', 'stats', 'list', 'flow', 'research', 'closing', 'thanks'];
 
 function newSlide(kind: SlideKind): Slide {
   switch (kind) {
@@ -38,7 +38,8 @@ function newSlide(kind: SlideKind): Slide {
     case 'list': return { kind, title: 'Başlık', items: ['Madde 1', 'Madde 2'] };
     case 'flow': return { kind, title: 'Başlık', steps: ['Adım 1', 'Adım 2', 'Adım 3'] };
     case 'research': return { kind, n: 1, paper: 'Makale başlığı', year: '2024', authors: ['Yazar'], unis: ['Üniversite'], finding: ['Çıktı'] };
-    case 'closing': return { kind, title: 'Kapanış', lines: ['Metin'] };
+    case 'closing': return { kind, title: 'Kapanış', lines: ['Metin'], qr: 'https://hangel.org.tr/gelir-modeli-konferanslari' };
+    case 'thanks': return { kind, title: 'Teşekkürler', sub: 'hangel', qr: 'https://hangel.org.tr/gelir-modeli-konferanslari' };
   }
 }
 
@@ -120,6 +121,10 @@ function SlideEditor({ slide, onChange }: { slide: Slide; onChange: (s: Slide) =
           <Field label="Giriş (opsiyonel)"><Input value={slide.intro ?? ''} onChange={e => u({ intro: e.target.value })} /></Field>
           <ArrField label="Maddeler (her satır ayrı; 7+ madde 2 sütun olur)" value={slide.items} onChange={items => u({ items })} rows={5} />
           <Field label="Alt not (opsiyonel)"><Input value={slide.foot ?? ''} onChange={e => u({ foot: e.target.value })} /></Field>
+          <label className="flex items-center gap-2 pt-1 text-sm font-medium">
+            <input type="checkbox" checked={!!slide.reveal} onChange={e => u({ reveal: e.target.checked })} className="h-4 w-4 accent-[#f34723]" />
+            Maddeler tıklayınca açılsın (önce başlık görünür)
+          </label>
         </div>
       );
     case 'flow':
@@ -141,6 +146,8 @@ function SlideEditor({ slide, onChange }: { slide: Slide; onChange: (s: Slide) =
           <ArrField label="Yazarlar (her satır ayrı)" value={slide.authors} onChange={authors => u({ authors })} />
           <ArrField label="Üniversiteler (her satır ayrı)" value={slide.unis} onChange={unis => u({ unis })} />
           <ArrField label="Çıktı (her satır ayrı)" value={slide.finding} onChange={finding => u({ finding })} />
+          <Field label="En vurucu bulgu / örneklem (opsiyonel)"><Textarea rows={2} value={slide.highlight ?? ''} onChange={e => u({ highlight: e.target.value })} /></Field>
+          <Field label="Kaynak linki (opsiyonel)"><Input value={slide.source ?? ''} onChange={e => u({ source: e.target.value })} placeholder="https://…" /></Field>
         </div>
       );
     case 'closing':
@@ -148,6 +155,15 @@ function SlideEditor({ slide, onChange }: { slide: Slide; onChange: (s: Slide) =
         <div className="space-y-3">
           <Field label="Başlık (Enter = satır kırma)"><Textarea rows={2} value={slide.title} onChange={e => u({ title: e.target.value })} /></Field>
           <ArrField label="Satırlar (her satır ayrı)" value={slide.lines} onChange={lines => u({ lines })} />
+          <Field label="QR kod linki (boşsa “Kayıt Ol” butonu görünür)"><Input value={slide.qr ?? ''} onChange={e => u({ qr: e.target.value })} placeholder="https://hangel.org.tr/…" /></Field>
+        </div>
+      );
+    case 'thanks':
+      return (
+        <div className="space-y-3">
+          <Field label="Başlık"><Input value={slide.title} onChange={e => u({ title: e.target.value })} /></Field>
+          <Field label="Alt başlık (opsiyonel)"><Input value={slide.sub ?? ''} onChange={e => u({ sub: e.target.value })} /></Field>
+          <Field label="QR kod linki (opsiyonel)"><Input value={slide.qr ?? ''} onChange={e => u({ qr: e.target.value })} placeholder="https://hangel.org.tr/…" /></Field>
         </div>
       );
   }
