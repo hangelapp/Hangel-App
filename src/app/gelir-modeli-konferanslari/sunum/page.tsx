@@ -12,10 +12,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, X, ArrowDown, Sparkles, Pencil, ExternalLink, Maximize } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ArrowDown, Sparkles, Pencil, ExternalLink, Maximize, Download, Loader2 } from 'lucide-react';
 import { doc } from 'firebase/firestore';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
-import { type Slide, DEFAULT_SLIDES, DECK_COLLECTION, DECK_DOC, normalizeSlides } from '@/lib/conference-deck';
+import { type Slide, DEFAULT_SLIDES, DECK_COLLECTION, DECK_DOC, normalizeSlides, DEFAULT_QR_CAPTION_CLOSING, DEFAULT_QR_CAPTION_THANKS, DECK_QR_URL } from '@/lib/conference-deck';
 
 const CORAL = '#f34723';
 
@@ -79,6 +79,34 @@ export default function ConferenceDeckPage() {
   const [dir, setDir] = useState<1 | -1>(1);
   const touchX = useRef<number | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const [dl, setDl] = useState(false);
+
+  // Sunumu PowerPoint (.pptx) olarak indir — ekrandaki (Firestore) slaytları
+  // sunucuya POST eder; route .pptx üretip döner (pptxgenjs Node tarafında).
+  const handleDownloadPptx = useCallback(async () => {
+    setDl(true);
+    try {
+      const res = await fetch('/api/conference-deck/pptx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slides: SLIDES }),
+      });
+      if (!res.ok) throw new Error(`İndirme başarısız (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'hangel-gelir-modeli-sunum.pptx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('PPTX indirilemedi:', err);
+    } finally {
+      setDl(false);
+    }
+  }, [SLIDES]);
 
   // Tam ekran (Fullscreen API) — tarayıcının üst çubukları (sekme/URL) gizlenir.
   const [isFs, setIsFs] = useState(false);
@@ -162,6 +190,15 @@ export default function ConferenceDeckPage() {
         <X className="h-5 w-5" />
       </button>
       <div className="absolute left-6 top-6 z-30 text-[13px] font-semibold tabular-nums text-white/45">{i + 1} / {SLIDES.length}</div>
+
+      {/* Her slaytta sol alt köşe — konferans sayfasına götüren kalıcı QR. */}
+      {/* closing/thanks slaytlarının zaten büyük QR'ı var; orada tekrar gösterme. */}
+      {slide.kind !== 'closing' && slide.kind !== 'thanks' && (
+        <div className="pointer-events-none absolute bottom-6 left-5 z-40 flex flex-col items-center gap-1.5">
+          <SlideQR url={DECK_QR_URL} size={isFs ? 100 : 80} />
+          <span className="rounded-full bg-black/30 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">Okut, katıl</span>
+        </div>
+      )}
 
       <div key={i} className={`flex h-full w-full items-center justify-center px-8 py-20 ${dir === 1 ? 'animate-in slide-in-from-right-6' : 'animate-in slide-in-from-left-6'} fade-in duration-500`}>
         <div className="mx-auto w-full max-w-4xl text-center">
@@ -311,7 +348,7 @@ export default function ConferenceDeckPage() {
               {slide.qr ? (
                 <div className="mt-9 flex flex-col items-center gap-3">
                   <SlideQR url={slide.qr} size={190} />
-                  <p className="text-sm font-bold text-white/95 sm:text-base">Telefonunla okut → hangel’e katıl</p>
+                  <p className="text-sm font-bold text-white/95 sm:text-base">{slide.qrCaption || DEFAULT_QR_CAPTION_CLOSING}</p>
                 </div>
               ) : (
                 <div className="mt-10">
@@ -330,7 +367,7 @@ export default function ConferenceDeckPage() {
               {slide.qr && (
                 <div className="mt-9 flex flex-col items-center gap-3">
                   <SlideQR url={slide.qr} size={170} />
-                  <p className="text-sm font-bold text-white/95 sm:text-base">Telefonunla okut</p>
+                  <p className="text-sm font-bold text-white/95 sm:text-base">{slide.qrCaption || DEFAULT_QR_CAPTION_THANKS}</p>
                 </div>
               )}
             </>
@@ -358,6 +395,15 @@ export default function ConferenceDeckPage() {
       {/* Sağ alt köşe — tam ekranda DEĞİLKEN her slaytta: tam ekran + (süper-admin) düzenle */}
       {!isFs && (
         <div className="absolute bottom-7 right-5 z-40 flex items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); handleDownloadPptx(); }}
+            disabled={dl}
+            aria-label="PowerPoint olarak indir"
+            title="PowerPoint (.pptx) olarak indir"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white shadow-lg ring-1 ring-white/25 backdrop-blur transition hover:bg-white/30 active:scale-95 disabled:opacity-60"
+          >
+            {dl ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+          </button>
           <button
             onClick={(e) => { e.stopPropagation(); toggleFs(); }}
             aria-label="Tam ekran"

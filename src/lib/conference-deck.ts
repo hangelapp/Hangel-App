@@ -20,10 +20,15 @@ export type Slide =
   // highlight: en vurucu bulgu / örneklem; source: kaynak linki (en altta).
   | { kind: 'research'; n: number; paper: string; year: string; authors: string[]; unis: string[]; finding: string[]; highlight?: string; source?: string }
   // qr: verilen URL'in QR kodu gösterilir (yoksa Kayıt Ol butonu).
-  | { kind: 'closing'; title: string; lines: string[]; qr?: string }
-  | { kind: 'thanks'; title: string; sub?: string; qr?: string };
+  // qrCaption: QR altındaki çağrı metni (düzenlenebilir; boşsa varsayılan kullanılır).
+  | { kind: 'closing'; title: string; lines: string[]; qr?: string; qrCaption?: string }
+  | { kind: 'thanks'; title: string; sub?: string; qr?: string; qrCaption?: string };
 
 export type SlideKind = Slide['kind'];
+
+// QR altı varsayılan çağrı metinleri (slide.qrCaption boşsa kullanılır).
+export const DEFAULT_QR_CAPTION_CLOSING = 'Telefonunla okut → hangel’e katıl';
+export const DEFAULT_QR_CAPTION_THANKS = 'Telefonunla okut';
 
 export const DECK_ID = 'gelir-modeli-konferanslari';
 // Firestore konumu: siteSettings public-read + super-admin-write (yeni rule gerekmez).
@@ -79,8 +84,8 @@ export const DEFAULT_SLIDES: Slide[] = [
   { kind: 'body', title: 'AbilityPool', lines: ['STK’ların gönüllülük ilanı açabildiği, kurumsal şirket çalışanlarının gönüllülük yaparak sosyal projelere katılabildiği dijital platform.', 'Amaç: Yeteneği sosyal faydaya dönüştürmek.'] },
   { kind: 'body', title: 'HelpSteps', lines: ['Günlük hareketleri sosyal faydaya dönüştüren dijital sosyal etki modeli.'] },
 
-  { kind: 'closing', title: 'Geleceğin\nSTK Modeli', lines: ['Sadece bağış bekleyen değil;', 'gelir üreten, teknoloji kullanan ve sürdürülebilir etki oluşturan STK’lar.'], qr: DECK_QR_URL },
-  { kind: 'thanks', title: 'Teşekkürler', sub: 'hangel · Birlikte sürdürülebilir sosyal etki', qr: DECK_QR_URL },
+  { kind: 'closing', title: 'Geleceğin\nSTK Modeli', lines: ['Sadece bağış bekleyen değil;', 'gelir üreten, teknoloji kullanan ve sürdürülebilir etki oluşturan STK’lar.'], qr: DECK_QR_URL, qrCaption: DEFAULT_QR_CAPTION_CLOSING },
+  { kind: 'thanks', title: 'Teşekkürler', sub: 'hangel · Birlikte sürdürülebilir sosyal etki', qr: DECK_QR_URL, qrCaption: DEFAULT_QR_CAPTION_THANKS },
 ];
 
 /** Firestore'dan gelen ham veriyi güvenli Slide[]'a çevir (yoksa default). */

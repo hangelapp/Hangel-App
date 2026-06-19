@@ -230,7 +230,7 @@ export default function IncomeModelConferencePage() {
           <div className="flex items-center gap-4 text-[12px] font-medium text-[#1d1d1f]/80">
             <span className="hidden sm:inline">Gelir Modeli Konferansları</span>
             <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
-              <Link href="#takvim">Kayıt Ol</Link>
+              <Link href="#takvim">Etkinliği Seç, Katıl</Link>
             </Button>
           </div>
         </div>

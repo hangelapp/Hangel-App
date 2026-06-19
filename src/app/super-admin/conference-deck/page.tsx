@@ -164,6 +164,7 @@ function SlideEditor({ slide, onChange }: { slide: Slide; onChange: (s: Slide) =
           <Field label="Başlık (Enter = satır kırma)"><Textarea rows={2} value={slide.title} onChange={e => u({ title: e.target.value })} /></Field>
           <ArrField label="Satırlar (her satır ayrı)" value={slide.lines} onChange={lines => u({ lines })} />
           <Field label="QR kod linki (boşsa “Kayıt Ol” butonu görünür)"><Input value={slide.qr ?? ''} onChange={e => u({ qr: e.target.value })} placeholder="https://hangel.org.tr/…" /></Field>
+          <Field label="QR altı çağrı metni (boşsa varsayılan)"><Input value={slide.qrCaption ?? ''} onChange={e => u({ qrCaption: e.target.value })} placeholder="Telefonunla okut → hangel’e katıl" /></Field>
         </div>
       );
     case 'thanks':
@@ -172,6 +173,7 @@ function SlideEditor({ slide, onChange }: { slide: Slide; onChange: (s: Slide) =
           <Field label="Başlık"><Input value={slide.title} onChange={e => u({ title: e.target.value })} /></Field>
           <Field label="Alt başlık (opsiyonel)"><Input value={slide.sub ?? ''} onChange={e => u({ sub: e.target.value })} /></Field>
           <Field label="QR kod linki (opsiyonel)"><Input value={slide.qr ?? ''} onChange={e => u({ qr: e.target.value })} placeholder="https://hangel.org.tr/…" /></Field>
+          <Field label="QR altı çağrı metni (boşsa varsayılan)"><Input value={slide.qrCaption ?? ''} onChange={e => u({ qrCaption: e.target.value })} placeholder="Telefonunla okut" /></Field>
         </div>
       );
   }
