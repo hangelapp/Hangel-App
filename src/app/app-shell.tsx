@@ -188,6 +188,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         setIsMounted(true);
     }, []);
 
+    // Milestone kutlaması: impact puanı ARTTIĞINDA konfeti + haptik (markadan
+    // alışveriş, check-in, davet — hangi yolla kazanılırsa kazanılsın). İlk
+    // yüklemede tetiklenmez; sadece artışta. (Apple hissi.)
+    const prevImpactRef = useRef<number | null>(null);
+    useEffect(() => {
+        const score = userData?.impactScore;
+        if (typeof score !== 'number') return;
+        if (prevImpactRef.current != null && score > prevImpactRef.current) {
+            void import('@/lib/celebrate').then((m) => m.celebrate()).catch(() => undefined);
+        }
+        prevImpactRef.current = score;
+    }, [userData?.impactScore]);
+
     // Custom claims role — fetched once auth user resolves. Primary signal for super-admin.
     const [claimsRole, setClaimsRole] = useState<string | null>(null);
     useEffect(() => {
