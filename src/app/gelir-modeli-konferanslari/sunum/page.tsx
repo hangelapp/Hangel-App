@@ -12,12 +12,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, X, ArrowDown, Sparkles, Pencil, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ArrowDown, Sparkles, Pencil, ExternalLink, Maximize, Minimize } from 'lucide-react';
 import { doc } from 'firebase/firestore';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { type Slide, DEFAULT_SLIDES, DECK_COLLECTION, DECK_DOC, normalizeSlides } from '@/lib/conference-deck';
 
 const CORAL = '#f34723';
+
+// Fullscreen API — webkit (Safari) önekli yöntemleri de kapsayan tipler.
+type FsEl = HTMLElement & { webkitRequestFullscreen?: () => void };
+type FsDoc = Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => void };
+const fsActive = () => typeof document !== 'undefined' && !!(document.fullscreenElement || (document as FsDoc).webkitFullscreenElement);
 
 /** Slayt-içi açılış (build) sayısı: reveal'lı liste → 1, diğer → 0. */
 function buildsFor(s: Slide): number {
@@ -66,6 +71,30 @@ export default function ConferenceDeckPage() {
   const [build, setBuild] = useState(0);
   const [dir, setDir] = useState<1 | -1>(1);
   const touchX = useRef<number | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Tam ekran (Fullscreen API) — tarayıcının üst çubukları (sekme/URL) gizlenir.
+  const [isFs, setIsFs] = useState(false);
+  useEffect(() => {
+    const onFs = () => setIsFs(fsActive());
+    document.addEventListener('fullscreenchange', onFs);
+    document.addEventListener('webkitfullscreenchange', onFs);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFs);
+      document.removeEventListener('webkitfullscreenchange', onFs);
+    };
+  }, []);
+  const toggleFs = useCallback(() => {
+    const d = document as FsDoc;
+    const el = rootRef.current as FsEl | null;
+    if (fsActive()) {
+      if (document.exitFullscreen) void document.exitFullscreen();
+      else d.webkitExitFullscreen?.();
+    } else if (el) {
+      if (el.requestFullscreen) void el.requestFullscreen();
+      else el.webkitRequestFullscreen?.();
+    }
+  }, []);
 
   const next = useCallback(() => {
     setDir(1);
@@ -93,7 +122,8 @@ export default function ConferenceDeckPage() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); next(); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
-      else if (e.key === 'Escape') exit();
+      // Tam ekrandayken Esc'i tarayıcı tam ekranı kapatmak için kullanır; sunumu kapatma.
+      else if (e.key === 'Escape') { if (!fsActive()) exit(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -105,6 +135,7 @@ export default function ConferenceDeckPage() {
 
   return (
     <div
+      ref={rootRef}
       className={`fixed inset-0 z-[100] overflow-hidden select-none text-white ${isCoral ? '' : 'bg-black'}`}
       style={isCoral ? { background: `linear-gradient(135deg, ${CORAL} 0%, #c5391b 100%)` } : undefined}
       onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
@@ -131,6 +162,13 @@ export default function ConferenceDeckPage() {
               <p className="mb-6 text-sm font-bold uppercase tracking-[0.2em] text-white/80">{slide.eyebrow}</p>
               <h1 className="whitespace-pre-line text-5xl font-black leading-[0.98] tracking-tighter sm:text-7xl lg:text-8xl">{slide.title}</h1>
               <p className="mt-6 text-xl font-bold tracking-tight text-white/90 sm:text-3xl">{slide.sub}</p>
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleFs(); }}
+                className="mt-9 inline-flex items-center gap-2 rounded-full bg-white/15 px-5 py-2.5 text-sm font-bold backdrop-blur transition hover:bg-white/30 active:scale-95"
+              >
+                {isFs ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                {isFs ? 'Tam Ekrandan Çık' : 'Tam Ekran Sun'}
+              </button>
             </>
           )}
 
