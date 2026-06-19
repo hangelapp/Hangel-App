@@ -17,12 +17,15 @@ import path from 'node:path';
 const OUT = path.join(process.cwd(), 'public', 'marketing-kit');
 fs.mkdirSync(OUT, { recursive: true });
 
-const CORAL = '#f34723';
-const CORAL2 = '#ff7a4d';
-const INK = '#15151a';
+// Resmi hangel renk kartelası (/logo-usage):
+const CORAL = '#f34723';      // hangel Mercan
+const CORAL2 = '#c5391b';     // koyu koral (gradient ucu — keynote standardı)
+const INK = '#1f1f1f';        // Gece Siyahı
+const LIGHT = '#f1f1f1';      // Açık Gri
+const NAVY = '#042654';       // Lacivert
 
 const SITE = 'https://hangel.org.tr';
-const qr = await QRCode.toDataURL(SITE, { margin: 1, width: 640, color: { dark: '#15151a', light: '#ffffff' } });
+const qr = await QRCode.toDataURL(SITE, { margin: 1, width: 640, color: { dark: '#1f1f1f', light: '#ffffff' } });
 const qrLight = await QRCode.toDataURL(SITE, { margin: 1, width: 640, color: { dark: '#ffffff', light: '#00000000' } });
 
 const FONT = `-apple-system,'SF Pro Display','Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif`;
@@ -174,25 +177,38 @@ await renderPDF(page(794, 1123, calendar), 'sosyal-medya-takvimi-15gun.pdf', { f
 await renderPNG(page(794, 1123, calendar), 794, 1123, 'sosyal-medya-takvimi-15gun-kapak.png');
 
 /* ───────────────────────── 3) Sosyal medya postları (1080×1080) ───── */
+// theme: 'coral' (Mercan gradient) | 'light' (Açık Gri) | 'navy' (Lacivert) — kartela.
 const posts = [
-  { f: 'sosyal-post-1.png', big: 'her alışveriş\nbir iyilik', sub: 'hangel ile destekçilerin günlük alışverişi düzenli bağışa dönüşür.', grad: true },
-  { f: 'sosyal-post-2.png', big: 'STK’na\nsürdürülebilir\ngelir', sub: 'Tek kaynağa bağımlılıktan kurtul, gelirini çeşitlendir.', grad: false },
-  { f: 'sosyal-post-3.png', big: 'gönüllülüğünü\nhangel’le\nyönet', sub: 'Başvuru, görev ve sertifikayı tek panelden takip et.', grad: true },
-  { f: 'sosyal-post-4.png', big: 'iyilik\nherkesin\nhakkı', sub: 'Sen de bu topluluğun parçası ol.', grad: false },
+  { f: 'sosyal-post-1.png', big: 'her alışveriş\nbir iyilik', sub: 'hangel ile destekçilerin günlük alışverişi düzenli bağışa dönüşür.', theme: 'coral' },
+  { f: 'sosyal-post-2.png', big: 'STK’na\nsürdürülebilir\ngelir', sub: 'Tek kaynağa bağımlılıktan kurtul, gelirini çeşitlendir.', theme: 'light' },
+  { f: 'sosyal-post-3.png', big: 'gönüllülüğünü\nhangel’le\nyönet', sub: 'Başvuru, görev ve sertifikayı tek panelden takip et.', theme: 'coral' },
+  { f: 'sosyal-post-4.png', big: 'iyilik\nherkesin\nhakkı', sub: 'Sen de bu topluluğun parçası ol.', theme: 'navy' },
 ];
 for (const post of posts) {
-  const bigHtml = post.big.split('\n').map((l) => `<div>${l}</div>`).join('');
-  const body = post.grad
-    ? `<div style="width:1080px;height:1080px;background:linear-gradient(150deg,${CORAL},${CORAL2});color:#fff;padding:96px;display:flex;flex-direction:column;justify-content:space-between">
+  const lines = post.big.split('\n');
+  let body;
+  if (post.theme === 'coral') {
+    const bigHtml = lines.map((l) => `<div>${l}</div>`).join('');
+    body = `<div style="width:1080px;height:1080px;background:linear-gradient(150deg,${CORAL} 0%,${CORAL2} 100%);color:#fff;padding:96px;display:flex;flex-direction:column;justify-content:space-between">
          <div style="display:flex;justify-content:space-between;align-items:center"><span class="wm" style="font-size:54px">hangel</span>${heart(56)}</div>
          <div style="font-size:118px;font-weight:900;letter-spacing:-.05em;line-height:.92">${bigHtml}</div>
          <div style="font-size:34px;font-weight:500;line-height:1.35;opacity:.95">${post.sub}<div style="margin-top:22px;font-weight:800;opacity:1">hangel.org.tr</div></div>
-       </div>`
-    : `<div style="width:1080px;height:1080px;background:#fff;color:${INK};padding:96px;display:flex;flex-direction:column;justify-content:space-between">
-         <div style="display:flex;justify-content:space-between;align-items:center"><span class="wm coral" style="font-size:54px">hangel</span>${heart(56, CORAL)}</div>
-         <div style="font-size:118px;font-weight:900;letter-spacing:-.05em;line-height:.92">${bigHtml.replace(/<div>/g, `<div style="border-left:10px solid ${CORAL};padding-left:28px">`)}</div>
-         <div style="font-size:34px;font-weight:500;line-height:1.35;color:#555">${post.sub}<div style="margin-top:22px;font-weight:800;color:${CORAL}">hangel.org.tr</div></div>
        </div>`;
+  } else if (post.theme === 'light') {
+    const bigHtml = lines.map((l) => `<div style="border-left:12px solid ${CORAL};padding-left:30px">${l}</div>`).join('');
+    body = `<div style="width:1080px;height:1080px;background:${LIGHT};color:${INK};padding:96px;display:flex;flex-direction:column;justify-content:space-between">
+         <div style="display:flex;justify-content:space-between;align-items:center"><span class="wm coral" style="font-size:54px">hangel</span>${heart(56, CORAL)}</div>
+         <div style="font-size:116px;font-weight:900;letter-spacing:-.05em;line-height:.96;display:flex;flex-direction:column;gap:18px">${bigHtml}</div>
+         <div style="font-size:34px;font-weight:500;line-height:1.35;color:${INK}">${post.sub}<div style="margin-top:22px;font-weight:800;color:${CORAL}">hangel.org.tr</div></div>
+       </div>`;
+  } else { // navy
+    const bigHtml = lines.map((l) => `<div>${l}</div>`).join('');
+    body = `<div style="width:1080px;height:1080px;background:${NAVY};color:#fff;padding:96px;display:flex;flex-direction:column;justify-content:space-between">
+         <div style="display:flex;justify-content:space-between;align-items:center"><span class="wm" style="font-size:54px">hangel</span>${heart(56, CORAL)}</div>
+         <div style="font-size:118px;font-weight:900;letter-spacing:-.05em;line-height:.92">${bigHtml.replace(/<div>(.*?)<\/div>/, `<div><span style="color:${CORAL}">$1</span></div>`)}</div>
+         <div style="font-size:34px;font-weight:500;line-height:1.35;opacity:.92">${post.sub}<div style="margin-top:22px;font-weight:800;color:${CORAL}">hangel.org.tr</div></div>
+       </div>`;
+  }
   await renderPNG(page(1080, 1080, body), 1080, 1080, post.f);
 }
 
