@@ -54,18 +54,25 @@ export default function ConferenceDeckPage() {
   const SLIDES = useMemo(() => normalizeSlides(deckDoc?.slides ?? DEFAULT_SLIDES), [deckDoc]);
 
   // Kalem ikonu yalnız süper-admin'e (veya kurucuya) görünür — ziyaretçi görmez.
+  // Sağlam tespit: token claim (zorla yenilenir) VEYA Firestore'daki rol VEYA Auth e-postası.
+  const FOUNDER_EMAIL = 'ismailhilmi@hangel.org';
   const { user: authUser } = useUser();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [claimsAdmin, setClaimsAdmin] = useState(false);
   useEffect(() => {
-    if (!authUser) { setIsAdmin(false); return; }
+    if (!authUser) { setClaimsAdmin(false); return; }
     let cancelled = false;
-    authUser.getIdTokenResult().then((res) => {
+    authUser.getIdTokenResult(true).then((res) => { // true = bayat claim'i yenile
       if (cancelled) return;
       const claims = res.claims as { role?: unknown; email?: unknown };
-      setIsAdmin(claims.role === 'super-admin' || (typeof claims.email === 'string' && claims.email.toLowerCase() === 'ismailhilmi@hangel.org'));
-    }).catch(() => { if (!cancelled) setIsAdmin(false); });
+      setClaimsAdmin(claims.role === 'super-admin' || (typeof claims.email === 'string' && claims.email.toLowerCase() === FOUNDER_EMAIL));
+    }).catch(() => { if (!cancelled) setClaimsAdmin(false); });
     return () => { cancelled = true; };
   }, [authUser]);
+  const userDocRef = useMemoFirebase(() => (db && authUser ? doc(db, 'users', authUser.uid) : null), [db, authUser]);
+  const { data: userDoc } = useDoc<{ role?: string }>(userDocRef);
+  const isAdmin = claimsAdmin
+    || userDoc?.role === 'super-admin'
+    || (typeof authUser?.email === 'string' && authUser.email.toLowerCase() === FOUNDER_EMAIL);
 
   const [i, setI] = useState(0);
   const [build, setBuild] = useState(0);
