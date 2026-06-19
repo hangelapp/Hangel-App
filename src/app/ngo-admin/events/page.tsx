@@ -608,7 +608,7 @@ export default function EventManagementPage() {
                                     {myEvents!.map((event) => (
                                         <div
                                             key={event.id}
-                                            className="p-4 border rounded-2xl flex items-center justify-between group hover:bg-accent/50 transition-colors"
+                                            className="p-4 border rounded-2xl flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between group hover:bg-accent/50 transition-colors"
                                         >
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
@@ -620,7 +620,7 @@ export default function EventManagementPage() {
                                                     {event.location?.city ? ` • ${event.location.city}` : ''}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center gap-2 shrink-0">
+                                            <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
                                                 <SocialShareButton
                                                     kind="event"
                                                     item={{
