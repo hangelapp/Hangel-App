@@ -27,6 +27,10 @@ import { createHash } from 'crypto';
 
 export const runtime = 'nodejs';
 
+// İlk (kimliği doğrulanmış) check-in'de kullanıcının impact puanına eklenir.
+// Anonim (App Clip dev_) check-in'lerde puan verilmez (kullanıcı yok).
+const CHECKIN_POINTS = 5;
+
 type ClipCheckinSource = 'qr' | 'nfc';
 
 interface ClipCheckinBody {
@@ -187,7 +191,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     await eventRef.update({ checkedInCount: FieldValue.increment(1) });
 
-    return NextResponse.json({ ok: true, checkinId: checkinDocId, source });
+    // Kimliği doğrulanmış ilk check-in → impact puanı (uygulama açıldığında
+    // milestone konfetisi de bu artışla tetiklenir).
+    if (uid) {
+      await db.collection(COLLECTIONS.users).doc(uid)
+        .update({ impactScore: FieldValue.increment(CHECKIN_POINTS) })
+        .catch(() => undefined);
+    }
+
+    return NextResponse.json({ ok: true, checkinId: checkinDocId, source, points: uid ? CHECKIN_POINTS : 0 });
   } catch (err) {
     console.error('[clip/checkin] error', err);
     return NextResponse.json(
