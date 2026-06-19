@@ -12,7 +12,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, X, ArrowDown, Sparkles, Pencil, ExternalLink, Maximize, Minimize } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ArrowDown, Sparkles, Pencil, ExternalLink, Maximize } from 'lucide-react';
 import { doc } from 'firebase/firestore';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { type Slide, DEFAULT_SLIDES, DECK_COLLECTION, DECK_DOC, normalizeSlides } from '@/lib/conference-deck';
@@ -162,13 +162,6 @@ export default function ConferenceDeckPage() {
               <p className="mb-6 text-sm font-bold uppercase tracking-[0.2em] text-white/80">{slide.eyebrow}</p>
               <h1 className="whitespace-pre-line text-5xl font-black leading-[0.98] tracking-tighter sm:text-7xl lg:text-8xl">{slide.title}</h1>
               <p className="mt-6 text-xl font-bold tracking-tight text-white/90 sm:text-3xl">{slide.sub}</p>
-              <button
-                onClick={(e) => { e.stopPropagation(); toggleFs(); }}
-                className="mt-9 inline-flex items-center gap-2 rounded-full bg-white/15 px-5 py-2.5 text-sm font-bold backdrop-blur transition hover:bg-white/30 active:scale-95"
-              >
-                {isFs ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-                {isFs ? 'Tam Ekrandan Çık' : 'Tam Ekran Sun'}
-              </button>
             </>
           )}
 
@@ -194,11 +187,11 @@ export default function ConferenceDeckPage() {
             <>
               <h2 className="text-3xl font-black leading-tight tracking-tighter sm:text-5xl">{slide.title}</h2>
               {slide.intro && <p className="mx-auto mt-4 max-w-2xl text-base font-medium text-white/55 sm:text-lg">{slide.intro}</p>}
-              <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
+              <div className={slide.row ? 'mt-10 flex flex-row flex-nowrap items-start justify-center gap-4 sm:gap-12' : 'mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3'}>
                 {slide.stats.map((s, k) => (
-                  <div key={k} className="space-y-1">
-                    <div className="text-6xl font-black leading-none tracking-tighter sm:text-7xl" style={{ color: CORAL }}>{s.big}</div>
-                    <div className="text-sm font-medium leading-snug text-white/60">{s.label}</div>
+                  <div key={k} className={slide.row ? 'flex flex-col items-center' : 'space-y-1'}>
+                    <div className={`font-black leading-none tracking-tighter ${slide.row ? 'text-4xl sm:text-7xl' : 'text-6xl sm:text-7xl'}`} style={{ color: CORAL }}>{s.big}</div>
+                    <div className={`font-medium leading-snug text-white/60 ${slide.row ? 'mt-1 max-w-[6.5rem] text-xs sm:text-sm' : 'text-sm'}`}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -319,18 +312,30 @@ export default function ConferenceDeckPage() {
         </button>
       )}
 
-      {/* Son slayt — süper-admin için sağ altta minik kalem: düzenleme ekranını açar */}
-      {isAdmin && isLast && (
-        <Link
-          href="/super-admin/conference-deck"
-          target="_blank"
-          onClick={(e) => e.stopPropagation()}
-          aria-label="Sunumu düzenle"
-          title="Sunumu düzenle"
-          className="absolute bottom-7 right-5 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white shadow-lg ring-1 ring-white/25 backdrop-blur transition hover:bg-white/30 active:scale-95"
-        >
-          <Pencil className="h-5 w-5" />
-        </Link>
+      {/* Sağ alt köşe — tam ekranda DEĞİLKEN her slaytta: tam ekran + (süper-admin) düzenle */}
+      {!isFs && (
+        <div className="absolute bottom-7 right-5 z-40 flex items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleFs(); }}
+            aria-label="Tam ekran"
+            title="Tam ekran"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white shadow-lg ring-1 ring-white/25 backdrop-blur transition hover:bg-white/30 active:scale-95"
+          >
+            <Maximize className="h-5 w-5" />
+          </button>
+          {isAdmin && (
+            <Link
+              href="/super-admin/conference-deck"
+              target="_blank"
+              onClick={(e) => e.stopPropagation()}
+              aria-label="Sunumu düzenle"
+              title="Sunumu düzenle"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white shadow-lg ring-1 ring-white/25 backdrop-blur transition hover:bg-white/30 active:scale-95"
+            >
+              <Pencil className="h-5 w-5" />
+            </Link>
+          )}
+        </div>
       )}
     </div>
   );

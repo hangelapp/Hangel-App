@@ -11,7 +11,8 @@ export type Slide =
   | { kind: 'title'; eyebrow: string; title: string; sub: string }
   | { kind: 'section'; num: string; name: string }
   | { kind: 'body'; eyebrow?: string; title: string; lines: string[] }
-  | { kind: 'stats'; title: string; intro?: string; stats: { big: string; label: string }[]; foot?: string }
+  // row: true → rakamlar tek yatay satırda (mobilde de yan yana).
+  | { kind: 'stats'; title: string; intro?: string; stats: { big: string; label: string }[]; foot?: string; row?: boolean }
   // reveal: true → başlık önce gelir, maddeler bir sonraki tıklamada açılır.
   | { kind: 'list'; title: string; intro?: string; items: string[]; foot?: string; reveal?: boolean }
   | { kind: 'flow'; title: string; intro?: string; steps: string[] }
@@ -48,7 +49,7 @@ export const DEFAULT_SLIDES: Slide[] = [
   { kind: 'section', num: '01', name: 'Social Business Global' },
   { kind: 'body', eyebrow: 'Social Business Global', title: 'Sosyal etki odaklı\nbir yapı', lines: ['Sosyal sorunlara girişimcilik bakışıyla, sosyal inovasyonla; yenilikçi ve kalıcı çözümler üretmek amacıyla çalışmalar yürütüyoruz.'] },
   { kind: 'stats', title: 'Uluslararası Sosyal Girişimcilik Çalıştayları', intro: 'Her yıl farklı şehirlerde, 20 farklı ülkeden katılımcı bir araya geliyor.', stats: [{ big: '54', label: 'farklı ülkeden katılımcı ağı' }, { big: '639', label: 'sürdürülebilir etki girişimcisi incelendi' }, { big: '20', label: 'ülkeden her yıl katılım' }], foot: 'Amaç: Dünyadaki başarılı sosyal girişim modellerini inceleyip Türkiye’ye uyarlanabilir modeller geliştirmek.' },
-  { kind: 'stats', title: 'Sosyal Girişimcilik Eğitimleri ve Konferanslar', stats: [{ big: '29', label: 'farklı üniversite' }, { big: '161', label: 'konferans' }, { big: '300+', label: 'eğitim ve konferans' }], foot: '18 belediye · 12 ticaret odası · onlarca lise iş birliğiyle.' },
+  { kind: 'stats', title: 'Sosyal Girişimcilik Eğitimleri ve Konferanslar', stats: [{ big: '29', label: 'farklı üniversite' }, { big: '161', label: 'konferans' }, { big: '300+', label: 'eğitim ve konferans' }], foot: '18 belediye · 12 ticaret odası · onlarca lise iş birliğiyle.', row: true },
   { kind: 'list', title: 'Sosyal Girişimcilik Kanun Teklifi', intro: 'TBMM’ye sunulmak üzere hazırladık. Mevzuata sahip 16 ülkeyi inceledik; Ticaret Kanunu’nda değişiklik öngören 29 maddelik teklif.', items: ['Sosyal girişimlerin hukuki tanımı', 'Sosyal fayda ölçümü', 'Kamu destek mekanizmaları', 'Denetim ve sürdürülebilirlik modelleri'], foot: '16 ülke incelendi · 29 madde · TBMM’ye sunulmak üzere.' },
   { kind: 'flow', title: 'Gönüllülük Temelli İstihdam Protokolü', intro: 'Gönüllülük deneyimlerinin iş dünyasında görünür hale gelmesi.', steps: ['STK deneyimi', 'Yetkinlik kazanımı', 'İş başvurularında değerlendirme', 'Sosyal katkı odaklı istihdam'] },
   { kind: 'list', title: 'STK Gelir Modeli Oluşturma Konferansları', intro: 'Amaç: STK’ların tek kaynağa bağımlılığını azaltmak ve profesyonel, sürdürülebilir yapılar kurmak.', items: ['Tek kaynağa bağımlılığı azaltmak', 'Gelir çeşitliliği oluşturmak', 'Profesyonel ve sürdürülebilir yapılar kurmak'], foot: 'Türkiye’de 100.967 dernek · 6.680 vakıf · 22.566 spor kulübü.' },

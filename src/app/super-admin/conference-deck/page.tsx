@@ -112,6 +112,10 @@ function SlideEditor({ slide, onChange }: { slide: Slide; onChange: (s: Slide) =
               onChange={e => u({ stats: e.target.value.split('\n').map(line => { const idx = line.indexOf('|'); return idx === -1 ? { big: line.trim(), label: '' } : { big: line.slice(0, idx).trim(), label: line.slice(idx + 1).trim() }; }) })} />
           </Field>
           <Field label="Alt not (opsiyonel)"><Input value={slide.foot ?? ''} onChange={e => u({ foot: e.target.value })} /></Field>
+          <label className="flex items-center gap-2 pt-1 text-sm font-medium">
+            <input type="checkbox" checked={!!slide.row} onChange={e => u({ row: e.target.checked })} className="h-4 w-4 accent-[#f34723]" />
+            Rakamlar tek satırda yan yana
+          </label>
         </div>
       );
     case 'list':
