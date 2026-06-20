@@ -222,7 +222,9 @@ export const onEventCountdownUpdate = onDocumentUpdated(
     const after = event.data?.after?.data();
     if (!after) return;
     const referenceId = event.params.id;
-    const isFinished = after.status === 'finished' || after.status === 'cancelled';
+    // "Etkinliği Kapat/Tamamla" → completed:true. Bittiğinde kilit ekranındaki
+    // Canlı Etkinlik kendiliğinden kalksın (dismissal-date ile 'end' push).
+    const isFinished = after.status === 'finished' || after.status === 'cancelled' || after.completed === true;
 
     await sendLiveActivityPush(
       'event-countdown',

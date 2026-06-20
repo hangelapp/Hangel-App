@@ -39,6 +39,7 @@ import {
   DatabaseBackup,
   Mail,
   PhoneCall,
+  Presentation,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -168,6 +169,9 @@ function resolveWebPath(sound: NotificationSound): string | null {
 // Her item süper-admin ana sayfa pattern'ına göre: renkli icon + description.
 // href varsa Link olarak başka sayfaya navigate, yoksa bu sayfada inline render.
 const SETTINGS_SECTIONS = [
+  { id: 'marketing-kit', label: 'Tanıtım Malzemeleri', icon: Presentation, color: 'bg-[#f34723]',
+    href: '/super-admin/marketing-kit',
+    description: 'Sunum, sosyal medya, döner kart, mağaza/kasa kartı, stand görselleri — "Tümünü Yayınla" ile markalar/STK panellerine açılır.' },
   { id: 'notifications', label: 'Bildirimler', icon: Bell, color: 'bg-amber-500',
     description: 'Olay başına in-app + e-posta + SMS kanal seçimi ve bildirim sesi.' },
   { id: 'access-control', label: 'Yetkili & Rol Yönetimi', icon: ShieldCheck, color: 'bg-emerald-600',

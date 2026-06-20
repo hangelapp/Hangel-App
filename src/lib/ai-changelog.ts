@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "1d115591",
+    "date": "2026-06-21",
+    "subject": "build(ios): widget+denetim Swift dosyalarını HangelLiveActivities target'ına ekle"
+  },
+  {
+    "hash": "4624092d",
+    "date": "2026-06-21",
+    "subject": "feat(ios): widget+denetimleri WidgetBundle'a kaydet (Xcode target-add + build bekliyor)"
+  },
+  {
+    "hash": "e84bd00e",
+    "date": "2026-06-21",
+    "subject": "feat: akıllı erişilebilirlik + iOS denetim/widget + gönüllülük backfill (workflow)"
+  },
+  {
     "hash": "d60bd3a6",
     "date": "2026-06-21",
     "subject": "feat(volunteering): detayda başlamasına→bitişe akan geri sayım (DualCountdown)"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "be94f1de",
     "date": "2026-06-20",
     "subject": "fix(ngo-admin): aktif kuruluşu URL'de kanonikleştir (giriş karmaşasını bitir)"
-  },
-  {
-    "hash": "485574f9",
-    "date": "2026-06-20",
-    "subject": "feat(stk): hızlı STK ön kayıt — kütükten sahiplen (taslak) + ikaz banner"
-  },
-  {
-    "hash": "e0c9b5e1",
-    "date": "2026-06-20",
-    "subject": "feat(events): katılım puanı kayıttan TAMAMLAMAYA taşındı + kurumsal teşekkür metni"
-  },
-  {
-    "hash": "df2de356",
-    "date": "2026-06-20",
-    "subject": "feat(events): 'Etkinliği Tamamla' butonu + completion akışı"
   }
 ];

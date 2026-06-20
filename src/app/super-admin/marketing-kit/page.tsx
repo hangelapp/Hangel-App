@@ -318,6 +318,70 @@ export default function MarketingKitPage() {
     }
   };
 
+  // Tek tık: başlangıç paketinde eksik olanları DOĞRUDAN yayında ekle + mevcut
+  // tüm taslakları yayına al. "Onaylıyorum, hepsi yayınlansın" akışı.
+  const handlePublishEverything = async () => {
+    setSeeding(true);
+    const existing = assets || [];
+    const existingKeys = new Set(existing.map((a) => a.seedKey).filter(Boolean));
+    let created = 0;
+    let published = 0;
+    try {
+      // 1) Mevcut taslakları yayına al.
+      for (const a of existing) {
+        if (a.status !== 'yayinda') {
+          await updateDoc(doc(db, COLLECTIONS.marketingAssets, a.id), {
+            status: 'yayinda',
+            publicListed: !!a.isPublic,
+            updatedAt: new Date().toISOString(),
+          });
+          published++;
+        }
+      }
+      // 2) Başlangıç paketinde eksik olanları doğrudan YAYINDA ekle.
+      for (const item of MARKETING_STARTER_PACK) {
+        if (existingKeys.has(item.seedKey)) continue;
+        const now = new Date().toISOString();
+        await addDoc(collection(db, COLLECTIONS.marketingAssets), {
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          fileUrl: `${MARKETING_ASSET_BASE}${item.fileName}`,
+          storagePath: '',
+          fileName: item.fileName,
+          contentType: item.contentType,
+          thumbnailUrl: item.thumbnailFile ? `${MARKETING_ASSET_BASE}${item.thumbnailFile}` : null,
+          targetKinds: item.targetKinds,
+          isPublic: item.isPublic,
+          publicListed: item.isPublic, // yayında → isPublic ise herkese açık
+          status: 'yayinda',
+          seedKey: item.seedKey,
+          createdBy: currentUser?.uid || null,
+          createdAt: now,
+          updatedAt: now,
+        });
+        created++;
+        published++;
+      }
+      toast({
+        title: published > 0 ? 'Tümü yayında 🎉' : 'Zaten hepsi yayında',
+        description: published > 0
+          ? `${created} yeni materyal eklendi, toplam ${published} materyal yayına alındı. Markalar/STK'lar artık indirebilir.`
+          : 'Tüm materyaller zaten yayında.',
+      });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
+      toast({
+        variant: 'destructive',
+        title: 'Yayınlanamadı',
+        description: code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : message,
+      });
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const handleDelete = async (a: MarketingAsset) => {
     try {
       await deleteDoc(doc(db, COLLECTIONS.marketingAssets, a.id));
@@ -363,6 +427,10 @@ export default function MarketingKitPage() {
           <Button variant="outline" className="rounded-xl font-bold h-11 px-4" onClick={handleImportStarterPack} disabled={seeding}>
             {seeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PackagePlus className="mr-2 h-4 w-4" />}
             Başlangıç Paketi
+          </Button>
+          <Button className="rounded-xl font-bold h-11 px-4 bg-emerald-600 hover:bg-emerald-700" onClick={handlePublishEverything} disabled={seeding}>
+            {seeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Megaphone className="mr-2 h-4 w-4" />}
+            Tümünü Yayınla
           </Button>
           <Button onClick={openCreate} className="rounded-xl font-bold h-11 px-5">
             <Plus className="mr-2 h-4 w-4" /> Yeni Materyal
