@@ -20,6 +20,7 @@ import { AccessibilityApplier } from '@/components/shared/accessibility-applier'
 import { ThemeApplier } from '@/components/shared/theme-applier';
 import { LocationPermissionPrompt } from '@/components/shared/location-permission-prompt';
 import { CookieBanner } from '@/components/shared/cookie-banner';
+import { DraftNgoBanner } from '@/components/shared/draft-ngo-banner';
 import { WebVitalsTracker } from '@/components/shared/web-vitals-tracker';
 import { FirstVisitDownloadPopup } from '@/components/marketing/first-visit-download-popup';
 
@@ -120,6 +121,7 @@ export default function RootLayout({
             <AccessibilityApplier />
             <LocationPermissionPrompt />
             <CookieBanner />
+            <DraftNgoBanner />
             <WebVitalsTracker />
             <FirstVisitDownloadPopup />
             <Toaster />

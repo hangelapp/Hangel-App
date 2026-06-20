@@ -95,6 +95,8 @@ export default function NgosPage() {
         let filtered = enrichedNgos.filter((raw) => {
             const ngo = raw as NGO & { status?: string; isDemo?: boolean };
             if (ngo.status === 'Pasif') return false;
+            // Taslak (ön kayıt / evrak yüklenmemiş) STK'lar herkese görünmez — sadece sahibi yönetir.
+            if (ngo.status === 'taslak') return false;
             if (ngo.isDemo === true) return false;
             const nm = (ngo.name ?? '').trim().toLowerCase();
             if (nm.startsWith('demo ') || nm.startsWith('test ') || nm.startsWith('örnek ') || nm.startsWith('ornek ')) return false;
