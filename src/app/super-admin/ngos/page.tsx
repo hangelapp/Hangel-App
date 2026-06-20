@@ -78,12 +78,12 @@ interface NgoInvitation {
   invitedAt?: { toDate?: () => Date } | Date | null;
 }
 
-const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRevoke, onChangeRole }: {
+const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRemove, onChangeRole }: {
   ngo: NgoItem;
   allUsers: SimpleNgoUser[] | null;
   onAssign: (ngoId: string, newUserId: string, newUserName: string, role: NgoRole) => Promise<void>;
-  onRevoke: (invitationId: string, inviteeName: string) => Promise<void>;
-  onChangeRole: (ngoId: string, invitationId: string, userId: string | undefined, newRole: NgoRole, name: string) => Promise<void>;
+  onRemove: (ngoId: string, userId: string, invitationId: string | undefined, name: string) => Promise<void>;
+  onChangeRole: (ngoId: string, invitationId: string | undefined, userId: string | undefined, newRole: NgoRole, name: string) => Promise<void>;
 }) => {
   const db = useFirestore();
   const [open, setOpen] = useState(false);
@@ -124,6 +124,43 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRevoke, onChangeRole }
     [invitations],
   );
 
+  // STK'nın TÜM yetkilileri: managedNgoId == ngo.id olan kullanıcılar (davet kaydı
+  // olmasa da, örn. kuruluş sahibi) + davet kayıtları, kullanıcı bazında birleşik.
+  const ownerUserId = (ngo as { adminUserId?: string }).adminUserId || null;
+  const managerRows = useMemo(() => {
+    const byId = new Map<string, { userId: string; name: string; avatarUrl?: string; role: string; invitationId?: string; isOwner: boolean }>();
+    (allUsers || []).forEach(u => {
+      if ((u.managedNgoId as string | undefined) !== ngo.id) return;
+      byId.set(u.id, {
+        userId: u.id,
+        name: u.name || u.displayName || 'Üye',
+        avatarUrl: u.avatarUrl,
+        role: (u.ngoRoleTitle as string) || (u.roleTitle as string) || 'Yönetici',
+        isOwner: ownerUserId === u.id,
+      });
+    });
+    activeInvitations.forEach(inv => {
+      const uid = inv.inviteeUserId;
+      if (!uid) return;
+      const info = (allUsers || []).find(u => u.id === uid);
+      const ex = byId.get(uid);
+      if (ex) {
+        ex.invitationId = inv.id;
+        if (inv.role) ex.role = inv.role;
+        return;
+      }
+      byId.set(uid, {
+        userId: uid,
+        name: inv.inviteeName || info?.name || info?.displayName || 'Üye',
+        avatarUrl: info?.avatarUrl,
+        role: inv.role || 'Yönetici',
+        invitationId: inv.id,
+        isOwner: ownerUserId === uid,
+      });
+    });
+    return Array.from(byId.values()).sort((a, b) => (b.isOwner ? 1 : 0) - (a.isOwner ? 1 : 0));
+  }, [allUsers, activeInvitations, ngo.id, ownerUserId]);
+
   const handleAssign = async () => {
     if (!matchedUser) return;
     setSubmitting(true);
@@ -135,17 +172,6 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRevoke, onChangeRole }
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const formatDate = (raw: NgoInvitation['invitedAt']): string => {
-    if (!raw) return '';
-    try {
-      let d: Date | null = null;
-      if (raw instanceof Date) d = raw;
-      else if (typeof (raw as { toDate?: () => Date }).toDate === 'function') d = (raw as { toDate: () => Date }).toDate();
-      if (!d) return '';
-      return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
-    } catch { return ''; }
   };
 
   return (
@@ -164,33 +190,33 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRevoke, onChangeRole }
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Daha önce yetkilendirilenler */}
-          {activeInvitations.length > 0 && (
+          {/* STK'nın tüm yetkilileri (rolleriyle) */}
+          {managerRows.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mevcut Yetkililer</p>
+              <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mevcut Yetkililer ({managerRows.length})</p>
               <div className="space-y-1.5 rounded-2xl border border-black/5 bg-muted/20 p-2">
-                {activeInvitations.map(inv => {
-                  const userInfo = (allUsers || []).find(u => u.id === inv.inviteeUserId);
-                  const displayName = inv.inviteeName || userInfo?.name || userInfo?.displayName || 'Üye';
-                  const currentRole = (inv.role || 'Yönetici') as NgoRole;
-                  const editedRole = roleEdits[inv.id] ?? currentRole;
+                {managerRows.map(row => {
+                  const currentRole = (row.role || 'Yönetici') as NgoRole;
+                  const editedRole = roleEdits[row.userId] ?? currentRole;
                   const isKnownRole = (NGO_ROLE_OPTIONS as readonly string[]).includes(editedRole);
-                  const isUpdatingThis = updatingInv === inv.id;
+                  const isUpdatingThis = updatingInv === row.userId;
                   return (
-                    <div key={inv.id} className="flex items-center gap-2 p-2 rounded-xl bg-white flex-wrap">
+                    <div key={row.userId} className="flex items-center gap-2 p-2 rounded-xl bg-white flex-wrap">
                       <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarImage src={userInfo?.avatarUrl} />
-                        <AvatarFallback className="text-xs font-bold">{displayName.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={row.avatarUrl} />
+                        <AvatarFallback className="text-xs font-bold">{row.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-[140px]">
-                        <p className="font-bold text-sm truncate">{displayName}</p>
-                        {inv.invitedAt && (
-                          <span className="text-[10px] text-muted-foreground">{formatDate(inv.invitedAt)}</span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-bold text-sm truncate">{row.name}</p>
+                          {row.isOwner && (
+                            <Badge variant="outline" className="text-[9px] font-bold px-1.5 py-0 bg-amber-100 text-amber-800 border-amber-300/50">Sahip</Badge>
+                          )}
+                        </div>
                       </div>
                       <Select
                         value={isKnownRole ? editedRole : undefined}
-                        onValueChange={(v) => setRoleEdits(prev => ({ ...prev, [inv.id]: v as NgoRole }))}>
+                        onValueChange={(v) => setRoleEdits(prev => ({ ...prev, [row.userId]: v as NgoRole }))}>
                         <SelectTrigger className="h-8 w-auto min-w-[150px] text-xs font-bold rounded-lg" aria-label="Rol değiştir">
                           <SelectValue placeholder={currentRole} />
                         </SelectTrigger>
@@ -204,23 +230,25 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRevoke, onChangeRole }
                         className="h-8 px-2.5 text-xs font-bold rounded-lg"
                         disabled={isUpdatingThis || editedRole === currentRole}
                         onClick={async () => {
-                          setUpdatingInv(inv.id);
+                          setUpdatingInv(row.userId);
                           try {
-                            await onChangeRole(ngo.id, inv.id, inv.inviteeUserId, editedRole, displayName);
-                            setRoleEdits(prev => { const n = { ...prev }; delete n[inv.id]; return n; });
+                            await onChangeRole(ngo.id, row.invitationId, row.userId, editedRole, row.name);
+                            setRoleEdits(prev => { const n = { ...prev }; delete n[row.userId]; return n; });
                           } finally { setUpdatingInv(null); }
                         }}>
                         {isUpdatingThis ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
                         Güncelle
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
-                        aria-label="Yetkiyi Kaldır"
-                        onClick={() => onRevoke(inv.id, displayName)}>
-                        <X className="h-4 w-4" />
-                      </Button>
+                      {!row.isOwner && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
+                          aria-label="Yetkiyi Kaldır"
+                          onClick={() => onRemove(ngo.id, row.userId, row.invitationId, row.name)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   );
                 })}
@@ -487,17 +515,21 @@ export default function NgosPage() {
 
   const handleChangeAdminRole = async (
     ngoId: string,
-    invitationId: string,
+    invitationId: string | undefined,
     userId: string | undefined,
     newRole: NgoRole,
     inviteeName: string,
   ) => {
     try {
-      await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
-        role: newRole,
-        roleChangedAt: serverTimestamp(),
-        roleChangedBy: 'super-admin',
-      });
+      // Davet kaydı varsa rolünü güncelle (managedNgoId ile atanmış ama davet
+      // kaydı olmayan yetkililerde invitationId olmayabilir — o zaman atla).
+      if (invitationId) {
+        await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
+          role: newRole,
+          roleChangedAt: serverTimestamp(),
+          roleChangedBy: 'super-admin',
+        });
+      }
       if (userId) {
         const patch: Record<string, unknown> = { ngoRoleTitle: newRole, roleTitle: newRole };
         if (newRole === 'Genel Yönetici') {
@@ -538,13 +570,27 @@ export default function NgosPage() {
     }
   };
 
-  const handleRevokeAdmin = async (invitationId: string, inviteeName: string) => {
+  const handleRemoveManager = async (ngoId: string, userId: string, invitationId: string | undefined, inviteeName: string) => {
     try {
-      await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
-        status: 'revoked',
-        revokedAt: serverTimestamp(),
-        revokedBy: 'super-admin',
-      });
+      // 1) Davet kaydı varsa revoke et.
+      if (invitationId) {
+        await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
+          status: 'revoked',
+          revokedAt: serverTimestamp(),
+          revokedBy: 'super-admin',
+        });
+      }
+      // 2) Kullanıcının bu STK'ya dair yönetim alanlarını temizle (managedNgoId ile
+      //    atanmış davet kaydı olmayan yetkililer de gerçekten kaldırılsın).
+      const userSnap = await getDoc(doc(db, COLLECTIONS.users, userId));
+      const targetManagedNgo = userSnap.exists() ? (userSnap.data() as { managedNgoId?: string }).managedNgoId : undefined;
+      if (targetManagedNgo === ngoId) {
+        const patch: Record<string, unknown> = { managedNgoId: null, ngoRoleTitle: null, roleTitle: null };
+        if (userSnap.exists() && (userSnap.data() as { role?: string }).role !== 'super-admin') {
+          patch.role = 'user';
+        }
+        await updateDoc(doc(db, COLLECTIONS.users, userId), patch);
+      }
       toast({
         title: 'Yetki Kaldırıldı',
         description: `${inviteeName} için yetkilendirme iptal edildi.`,
@@ -698,7 +744,7 @@ export default function NgosPage() {
                         <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3" asChild>
                           <Link href={`/super-admin/ngos/${ngo.id}/edit`}><Edit3 className="mr-1.5 h-3.5 w-3.5" />Düzelt</Link>
                         </Button>
-                        <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRevoke={handleRevokeAdmin} onChangeRole={handleChangeAdminRole} />
+                        <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRemove={handleRemoveManager} onChangeRole={handleChangeAdminRole} />
                         <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3"
                                 onClick={() => handleToggleStatus(ngo.id, ngo.status)}>
                           {isPassive ? <><Power className="mr-1.5 h-3.5 w-3.5" /> Aktif</> : <><PowerOff className="mr-1.5 h-3.5 w-3.5" /> Pasife</>}
