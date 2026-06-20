@@ -101,10 +101,16 @@ export async function POST(
             slug?: string;
             location?: { city?: string };
             contributors?: EventContributor[];
+            completed?: boolean;
           }
         | undefined;
       const eventName = eventData?.name || 'Etkinlik';
       const eventSlug = eventData?.slug || eventId;
+
+      // Etkinlik kapandıysa (Tamamla) yeni katılım alınmaz; mevcut kayıt iptali serbest.
+      if (action === 'going' && eventData?.completed === true) {
+        throw new RsvpError('event_finished', 'Etkinlik sona erdi, yeni kayıt alınmıyor', 409);
+      }
       // Kullanıcının etkinlikteki rolü (contributors eşleşmesi; yoksa 'participant').
       const role = getUserEventRole(eventData?.contributors, uid);
 

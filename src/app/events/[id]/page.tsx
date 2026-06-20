@@ -38,6 +38,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useToast } from '@/hooks/use-toast';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { COLLECTIONS } from '@/firebase/collections';
+import { eventPhase } from '@/lib/event-time';
+
+type WeatherDay = { date: string; tempMax: number; tempMin: number; label: string; emoji: string };
 
 const InfoRow = ({ icon: Icon, label, children, href }: { icon: React.ElementType; label: string; children: React.ReactNode, href?: string }) => {
 
@@ -73,6 +76,9 @@ export default function EventDetailPage() {
   const cardFrontRef = useRef<HTMLDivElement>(null);
   const cardBackRef = useRef<HTMLDivElement>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  // Hava durumu (fiziksel etkinlikte aktivite günleri) + adres geocode sonucu (mesafe + hava için).
+  const [weather, setWeather] = useState<WeatherDay[] | null>(null);
+  const [geocoded, setGeocoded] = useState<{ lat: number; lon: number } | null>(null);
 
   const handleDownloadBadgePdf = async () => {
     if (!cardFrontRef.current || !cardBackRef.current) return;
@@ -304,6 +310,53 @@ export default function EventDetailPage() {
     }
   }, [event, slug]);
 
+  // Mesafe + hava durumu için koordinat: kayıtta coordinates yoksa adresi BİR KEZ geocode et.
+  const evLocType = event && typeof event.location !== 'string' ? event.location.type : undefined;
+  const evCoords = event && typeof event.location !== 'string' ? event.location.coordinates : undefined;
+  const evAddress = event && typeof event.location !== 'string' ? event.location.address : undefined;
+  const evCity = event && typeof event.location !== 'string' ? event.location.city : undefined;
+  const evDistrict = event && typeof event.location !== 'string' ? event.location.district : undefined;
+  useEffect(() => {
+    if (evLocType !== 'Fiziksel' || evCoords) return;
+    const q = [evAddress, evDistrict, evCity].filter(Boolean).join(', ').trim();
+    if (!q) return;
+    let active = true;
+    fetch(`/api/geocode?q=${encodeURIComponent(q)}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then((j: { lat?: number; lon?: number } | null) => {
+        if (active && j && typeof j.lat === 'number' && typeof j.lon === 'number') {
+          setGeocoded({ lat: j.lat, lon: j.lon });
+        }
+      })
+      .catch(() => { /* geocode best-effort; sessiz başarısız */ });
+    return () => { active = false; };
+  }, [evLocType, evCoords, evAddress, evCity, evDistrict]);
+
+  // Hava durumu — yalnız fiziksel etkinlikte; coordinates varsa lat/lon, yoksa city/district (geocode'a takılmadan).
+  useEffect(() => {
+    if (evLocType !== 'Fiziksel') { setWeather(null); return; }
+    let active = true;
+    const params = new URLSearchParams({ days: '3' });
+    const lat = evCoords?.lat ?? geocoded?.lat;
+    const lon = evCoords?.lon ?? geocoded?.lon;
+    if (lat != null && lon != null) {
+      params.set('lat', String(lat));
+      params.set('lon', String(lon));
+    } else if (evCity) {
+      params.set('city', evCity);
+      if (evDistrict) params.set('district', evDistrict);
+    } else {
+      return;
+    }
+    fetch(`/api/weather?${params.toString()}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then((j: { days?: WeatherDay[] } | null) => {
+        if (active && j?.days?.length) setWeather(j.days);
+      })
+      .catch(() => { /* hava durumu best-effort; hata sayfayı bozmaz */ });
+    return () => { active = false; };
+  }, [evLocType, evCoords?.lat, evCoords?.lon, geocoded?.lat, geocoded?.lon, evCity, evDistrict]);
+
   if (isEventLoading) {
     return <div className="flex items-center justify-center py-32"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
   }
@@ -406,6 +459,14 @@ export default function EventDetailPage() {
     ? event.imageUrl
     : 'https://placehold.co/600x800/eee/aaa?text=Etkinlik';
 
+  // Mesafe rozeti hedefi: önce kayıtlı coordinates, yoksa adresten geocode edilen konum.
+  const distanceTarget = event.location.coordinates
+    ? { lat: event.location.coordinates.lat, lon: event.location.coordinates.lon }
+    : geocoded;
+
+  // Etkinlik bitti mi? completed=true VEYA bitiş zamanı geçti → yeni RSVP kapanır.
+  const isEventFinished = event.completed === true || eventPhase(event) === 'ended';
+
   // Etkinlik ekibi — userId → User eşlemesi (fotoğraf için).
   // NOT: `Map` adı lucide-react'ten import edildiği için global Map constructor gölgeleniyor → düz Record kullan.
   const contributors = event.contributors ?? [];
@@ -433,7 +494,7 @@ export default function EventDetailPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 lg:pt-12">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] gap-8 lg:gap-16 items-start">
 
-          {/* ───────── SOL KOLON: Afiş (desktop'ta sticky) ───────── */}
+          {/* ───────── SOL KOLON: Afiş hero — bilgiler + CTA afişin ÜZERİNDE (overlay) ───────── */}
           <div className="lg:sticky lg:top-8">
             <div className="relative">
               {/* Üst sol: Geri butonu */}
@@ -447,7 +508,7 @@ export default function EventDetailPage() {
                 <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} buttonClassName="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-10 w-10" />
               </div>
 
-              {/* A4 portre poster — büyük, net, yumuşak köşeler, ince kenarlık */}
+              {/* A4 portre poster — büyük, net; alt kısma karanlık gradyan + beyaz bilgi + CTA overlay */}
               <div className="relative aspect-[210/297] w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-black/10 border border-black/5 bg-muted">
                 <Image
                   src={safeImageUrl}
@@ -458,50 +519,65 @@ export default function EventDetailPage() {
                   sizes="(max-width: 1024px) 100vw, 460px"
                   data-ai-hint="event poster a4 portrait"
                 />
+
+                {/* Aşağıdan yukarı koyu scrim — beyaz metin okunabilirliği için */}
+                <div
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5"
+                  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0) 100%)' }}
+                />
+
+                {/* Overlay bilgi seti — afişin altına yaslı; en altta katıl CTA'sı */}
+                <div className="absolute inset-x-0 bottom-0 z-10 p-5 sm:p-7 flex flex-col gap-3.5 text-white">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className="bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3 py-1">{event.type}</Badge>
+                    {organizerCategory && (
+                      <Badge className="bg-white/15 backdrop-blur-sm text-white border-white/30 text-[10px] font-medium rounded-full px-3 py-1">{organizerCategory}</Badge>
+                    )}
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-headline tracking-tight leading-[1.08] break-words drop-shadow-sm">{event.name}</h1>
+                  <div className="flex items-center gap-2.5">
+                    {organizerLogo && (
+                      <span className="h-9 w-9 rounded-full overflow-hidden border border-white/40 bg-white shrink-0 flex items-center justify-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={organizerLogo} alt={event.organizer} className="h-full w-full object-contain" />
+                      </span>
+                    )}
+                    <Link href={organizerLink} className="text-base sm:text-lg font-semibold text-white hover:underline drop-shadow-sm">{event.organizer}</Link>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm font-medium text-white/90">
+                    <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" />{formatDateTime(event.startDate).split(',')[0]}</span>
+                    <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4" />{formatDateTime(event.startDate).split(',')[1]?.trim() || '—'}</span>
+                    <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" />{event.location.type === 'Online' ? 'Online' : `${event.location.district}, ${event.location.city}`}</span>
+                  </div>
+                  {/* En alttaki öğe: Etkinliğe Katıl CTA (bitti ise kapalı) */}
+                  <Button
+                    size="lg"
+                    disabled={isRsvpLoading || (!isGoing && isEventFinished)}
+                    onClick={() => submitRsvp(isGoing ? 'cancel' : 'going')}
+                    variant={isGoing ? 'outline' : 'default'}
+                    className={isGoing
+                      ? 'w-full h-13 rounded-2xl text-base sm:text-lg font-black mt-1 bg-white/10 text-white border-white/40 hover:bg-white/20 backdrop-blur-sm'
+                      : 'w-full h-13 rounded-2xl text-base sm:text-lg font-black mt-1 shadow-xl shadow-black/30'}
+                  >
+                    {isRsvpLoading
+                      ? <Loader2 className="h-5 w-5 animate-spin" />
+                      : (isGoing ? 'Katıldın ✓ — Vazgeç' : (isEventFinished ? 'Etkinlik bitti' : 'Etkinliğe Katıl'))}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Geri sayım — afişin hemen altında, görünür kalır */}
+              <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3">
+                <EventCountdown event={event} className="text-base" />
               </div>
             </div>
           </div>
 
-          {/* ───────── SAĞ KOLON: Başlık + bilgiler + CTA ───────── */}
+          {/* ───────── SAĞ KOLON: Ek bilgiler + içerik ───────── */}
           <div className="space-y-8 sm:space-y-10">
 
-            {/* Başlık bloğu — büyük kalın başlık, tracking-tight */}
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                <Badge className="bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3 py-1">{event.type}</Badge>
-                {organizerCategory && (
-                  <Badge variant="outline" className="text-[10px] font-medium rounded-full px-3 py-1">{organizerCategory}</Badge>
-                )}
-              </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-headline tracking-tight leading-[1.05] break-words">{event.name}</h1>
-              <div className="flex items-center gap-2.5">
-                {organizerLogo && (
-                  <span className="h-9 w-9 rounded-full overflow-hidden border bg-white shrink-0 flex items-center justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={organizerLogo} alt={event.organizer} className="h-full w-full object-contain" />
-                  </span>
-                )}
-                <Link href={organizerLink} className="text-base sm:text-lg font-semibold text-primary hover:underline">{event.organizer}</Link>
-              </div>
-              <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3">
-                <EventCountdown event={event} className="text-base" />
-              </div>
-            </div>
-
-            {/* Quick info chips — ferah, nötr palet + turuncu vurgu */}
+            {/* Quick info chips — kapasite / dil / sertifika (tarih-saat-konum afiş overlay'inde) */}
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full bg-primary/10 text-primary">
-                <Calendar className="h-3.5 w-3.5" />
-                {formatDateTime(event.startDate).split(',')[0]}
-              </div>
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full bg-muted">
-                <Clock className="h-3.5 w-3.5" />
-                {formatDateTime(event.startDate).split(',')[1]?.trim() || '—'}
-              </div>
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full bg-muted">
-                <MapPin className="h-3.5 w-3.5" />
-                {event.location.type === 'Online' ? 'Online' : `${event.location.district}, ${event.location.city}`}
-              </div>
               {event.capacity?.max > 0 && (
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full bg-muted">
                   <Users className="h-3.5 w-3.5" />
@@ -519,17 +595,6 @@ export default function EventDetailPage() {
                 </div>
               )}
             </div>
-
-            {/* PRIMARY RSVP CTA */}
-            <Button
-              size="lg"
-              disabled={isRsvpLoading}
-              onClick={() => submitRsvp(isGoing ? 'cancel' : 'going')}
-              variant={isGoing ? 'outline' : 'default'}
-              className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
-            >
-              {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isGoing ? 'Katıldın ✓ — Vazgeç' : 'Etkinliğe Katıl')}
-            </Button>
 
             {/* Canlı etkinlik modu — geri sayım / Canlı Başlat-Bitir / konuşmacıya canlı puan */}
             {resolvedEventId && (
@@ -562,13 +627,26 @@ export default function EventDetailPage() {
                                             </Button>
                                         )}
                                         {event.location.type !== 'Online' && (
-                                            <DistanceBadge target={{
-                                                lat: parseFloat((event.location as { lat?: string }).lat || ''),
-                                                lon: parseFloat((event.location as { lon?: string }).lon || ''),
-                                            }} />
+                                            <DistanceBadge target={distanceTarget} />
                                         )}
                                     </div>
                                 </InfoRow>
+                                {/* Hava durumu — yalnız fiziksel etkinlikte; adresin hemen altında */}
+                                {event.location.type !== 'Online' && weather && weather.length > 0 && (
+                                    <div className="py-4 px-4 sm:px-6">
+                                        <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3">Hava durumu</p>
+                                        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-1 px-1">
+                                            {weather.map((d) => (
+                                                <div key={d.date} className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl border border-border bg-card min-w-[88px] shrink-0 text-center">
+                                                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{formatDateTime(d.date).split(',')[0]}</span>
+                                                    <span className="text-2xl leading-none">{d.emoji}</span>
+                                                    <span className="text-xs text-muted-foreground">{d.label}</span>
+                                                    <span className="text-sm font-semibold tracking-tight">{d.tempMax}° / {d.tempMin}°</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 <InfoRow icon={Languages} label="Dil">
                                     <Link href={`/events?tag=${encodeURIComponent(event.language)}`}>
                                         <Badge variant="secondary" className="font-bold hover:bg-primary/10 transition-colors">{event.language}</Badge>
@@ -699,15 +777,25 @@ export default function EventDetailPage() {
                 <div className="flex flex-wrap gap-2 sm:gap-3 pt-1 pb-2">
             {isGoing ? (
               <>
-              <Button
-                size="lg"
-                variant="outline"
-                disabled={isRsvpLoading}
-                onClick={() => submitRsvp('cancel')}
-                className="flex-1 h-14 rounded-2xl text-lg font-black"
-              >
-                {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Katıldın ✓ — vazgeç'}
-              </Button>
+              {event.completed ? (
+                <Button
+                  asChild
+                  size="lg"
+                  className="flex-1 h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
+                >
+                  <Link href="/my-badges">Sertifikan 🎓</Link>
+                </Button>
+              ) : (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  disabled={isRsvpLoading}
+                  onClick={() => submitRsvp('cancel')}
+                  className="flex-1 h-14 rounded-2xl text-lg font-black"
+                >
+                  {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Katıldın ✓ — vazgeç'}
+                </Button>
+              )}
               <Button
                 size="lg"
                 variant="secondary"
@@ -755,6 +843,7 @@ export default function EventDetailPage() {
               >
                 🎫 Wallet
               </Button>
+              {!event.completed && (
               <Button
                 size="lg"
                 variant="outline"
@@ -788,15 +877,16 @@ export default function EventDetailPage() {
               >
                 📲 NFC
               </Button>
+              )}
               </>
             ) : (
               <Button
                 size="lg"
-                disabled={isRsvpLoading}
+                disabled={isRsvpLoading || isEventFinished}
                 onClick={() => submitRsvp('going')}
                 className="flex-1 h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
               >
-                {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Etkinliğe Katıl'}
+                {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isEventFinished ? 'Etkinlik bitti' : 'Etkinliğe Katıl')}
               </Button>
             )}
             {isGoing && (

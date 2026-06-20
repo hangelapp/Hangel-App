@@ -79,6 +79,9 @@ struct EventCountdownLiveActivity: Widget {
         .padding(14)
         .activityBackgroundTint(Color.hangelOrange.opacity(0.10))
         .activitySystemActionForegroundColor(.hangelOrange)
+        // Kilit ekranındaki canlı etkinliğe dokununca da uygulamayı ilgili
+        // etkinliğe götür (dynamicIsland'da vardı, lock screen'de eksikti → "tıklayınca gitmiyor").
+        .widgetURL(URL(string: "hangel://event/\(context.attributes.eventId)"))
     }
 
     // MARK: - Faz mantığı
@@ -127,18 +130,25 @@ struct EventCountdownLiveActivity: Widget {
     private func flowLine(_ c: ActivityViewContext<EventCountdownAttributes>) -> some View {
         switch phase(c) {
         case .before:
-            // Başlamadan önce: ince, boş akış çizgisi + başlangıç bilgisi.
-            ProgressView(value: 0) {
-                HStack {
-                    Text("Etkinliğe kaldı").font(.caption2).foregroundStyle(.secondary)
-                    Spacer()
-                    if let s = startDate(c) {
+            // Başlamadan önce: son 2 saatte kendiliğinden ilerleyen akış çizgisi
+            // (başlangıca yaklaştıkça dolar) + başlangıç saati.
+            if let s = startDate(c) {
+                let windowStart = s.addingTimeInterval(-2 * 3600)
+                ProgressView(timerInterval: windowStart...s, countsDown: false) {
+                    HStack {
+                        Text("Etkinliğe kaldı").font(.caption2).foregroundStyle(.secondary)
+                        Spacer()
                         Text(s, format: .dateTime.hour().minute())
                             .font(.caption2.bold()).foregroundStyle(Color.hangelOrange)
                     }
                 }
+                .tint(.hangelOrange)
+            } else {
+                ProgressView(value: 0) {
+                    Text("Etkinliğe kaldı").font(.caption2).foregroundStyle(.secondary)
+                }
+                .tint(.hangelOrange)
             }
-            .tint(.hangelOrange)
         case .during:
             // Etkinlik sırasında: başlangıç→bitiş otomatik dolan akış çizgisi.
             if let s = startDate(c), let e = endDate(c), s < e {

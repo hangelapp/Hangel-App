@@ -177,6 +177,7 @@ export type Event = {
     address: string;
     city: string;
     district: string;
+    coordinates?: { lat: number; lon: number }; // Mesafe ölçümü + hava durumu için (gönüllülük ile aynı şema)
   };
   language: string;
   participationCondition: 'Herkese Açık' | 'Üyelere Özel' | 'Öğrencilere Özel' | 'Davetlilere Özel';

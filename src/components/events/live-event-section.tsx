@@ -3,27 +3,39 @@
 /**
  * LiveEventSection — canlı etkinlik modu (Apple kimliği, coral vurgu).
  *
- *  • Yaklaşan etkinlik: başlangıca geri sayım.
- *  • Yönetici + başlangıca ≤2 saat: "🔴 Canlı yayını başlat" ("başlıyor muyuz?").
- *  • Canlı: herkese CANLI bandı + konuşmacılar öne çıkar; yönetici "Canlı bitir".
+ *  • Yaklaşan etkinlik (başlangıca ≤2 saat): boşalan ilerleme çizgisi + geri sayım.
+ *  • Canlı (saatten otomatik türetilir, yönetici aksiyonu gerekmez): dolan ilerleme
+ *    çizgisi + CANLI bandı + konuşmacılar öne çıkar; yönetici "Etkinliği kapat".
  *  • SADECE "going" RSVP'li katılımcı konuşmacıya canlı puan (1-5) verebilir.
+ *  • event.completed → hiçbir şey gösterme.
  */
 
 import React, { useEffect, useState } from 'react';
-import { Radio, Star, Loader2 } from 'lucide-react';
+import { Star, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { celebrate } from '@/lib/celebrate';
 import type { EventContributor } from '@/lib/types';
 
 const HOUR = 3600_000;
+const PRE_WINDOW = 2 * HOUR; // başlangıçtan önce canlı UI'nin açıldığı pencere
+const DEFAULT_DURATION = 3 * HOUR; // endDate yoksa varsayılan süre
+
+const CORAL = '#f34723';
 
 interface LiveEventSectionProps {
   eventId: string;
-  event: { name: string; startDate: string; endDate?: string; live?: boolean; contributors?: EventContributor[] };
+  event: { name: string; startDate: string; endDate?: string; live?: boolean; contributors?: EventContributor[]; completed?: boolean };
   isManager: boolean;
   isGoing: boolean;
   authUser: { getIdToken: () => Promise<string> } | null;
+}
+
+type Phase = 'pre' | 'live' | null;
+
+function clampPct(n: number): number {
+  if (!Number.isFinite(n)) return 0;
+  return Math.min(100, Math.max(0, n));
 }
 
 function fmtCountdown(ms: number): string {
@@ -41,7 +53,9 @@ export function LiveEventSection({ eventId, event, isManager, isGoing, authUser 
   const [ratingBusy, setRatingBusy] = useState<number | null>(null);
 
   const startMs = Date.parse(event.startDate?.replace(' ', 'T') || '') || NaN;
-  const isLive = event.live === true;
+  const hasStart = !isNaN(startMs) && startMs > 0;
+  const endMs = event.endDate ? (Date.parse(event.endDate.replace(' ', 'T')) || NaN) : NaN;
+  const liveFlag = event.live === true;
   const contributors = event.contributors ?? [];
 
   useEffect(() => {
@@ -49,11 +63,30 @@ export function LiveEventSection({ eventId, event, isManager, isGoing, authUser 
     return () => clearInterval(t);
   }, []);
 
-  // Geçerli bir başlangıç yoksa ve canlı değilse hiçbir şey gösterme.
-  if (!isLive && (isNaN(startMs) || startMs <= 0)) return null;
+  // Kapatılmış etkinlik → hiçbir canlı UI gösterme.
+  if (event.completed === true) return null;
 
-  const canGoLive = isManager && !isLive && !isNaN(startMs) && now >= startMs - 2 * HOUR;
-  const showCountdown = !isLive && !isNaN(startMs) && now < startMs;
+  // Geçerli bir başlangıç yoksa ve canlı değilse hiçbir şey gösterme.
+  if (!liveFlag && !hasStart) return null;
+
+  // Bitiş zamanı: endDate yoksa start + varsayılan süre.
+  const computedEndMs = !isNaN(endMs) && endMs > startMs ? endMs : (hasStart ? startMs + DEFAULT_DURATION : NaN);
+
+  // Faz tamamen saatten türetilir (yönetici aksiyonu gerekmez).
+  // 'pre'  = başlangıçtan önceki 2 saatlik pencere içindeyiz.
+  // 'live' = başlangıç ile bitiş arasındayız (ya da event.live === true).
+  let phase: Phase = null;
+  if (liveFlag || (hasStart && now >= startMs && now <= computedEndMs)) {
+    phase = 'live';
+  } else if (hasStart && now >= startMs - PRE_WINDOW && now < startMs) {
+    phase = 'pre';
+  }
+  const isLive = phase === 'live';
+
+  // İlerleme çizgisi yüzdeleri (defansif: NaN / sıfır süre korumalı, 0..100 clamp).
+  const prePct = phase === 'pre' ? clampPct(((startMs - now) / PRE_WINDOW) * 100) : 0; // boşalır
+  const liveDuration = computedEndMs - startMs;
+  const livePct = phase === 'live' && liveDuration > 0 ? clampPct(((now - startMs) / liveDuration) * 100) : (phase === 'live' ? 100 : 0); // dolar
 
   const callLive = async (action: 'start' | 'end') => {
     if (!authUser) return;
@@ -94,7 +127,7 @@ export function LiveEventSection({ eventId, event, isManager, isGoing, authUser 
 
   return (
     <section className="rounded-[1.75rem] border border-black/5 bg-card p-5 shadow-sm">
-      {isLive ? (
+      {phase === 'live' ? (
         <div className="mb-4 flex items-center gap-2.5">
           <span className="relative flex h-3 w-3">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
@@ -103,33 +136,42 @@ export function LiveEventSection({ eventId, event, isManager, isGoing, authUser 
           <span className="text-sm font-black uppercase tracking-[0.15em] text-red-600">Canlı</span>
           <span className="truncate text-sm font-semibold text-muted-foreground">· {event.name}</span>
         </div>
-      ) : showCountdown ? (
+      ) : phase === 'pre' ? (
         <div className="mb-4 flex items-baseline justify-between gap-3">
           <span className="text-sm font-bold text-muted-foreground">Başlamasına</span>
           <span className="font-mono text-2xl font-black tabular-nums text-foreground">{fmtCountdown(startMs - now)}</span>
         </div>
       ) : null}
 
-      {/* Yönetici kontrolleri */}
-      {isManager && (
+      {/* İlerleme çizgisi: pre'de boşalır (start'ta 0), live'da dolar (bitişte 100). */}
+      {(phase === 'pre' || phase === 'live') && (
         <div className="mb-4">
-          {canGoLive && (
-            <Button onClick={() => callLive('start')} disabled={busy}
-              className="h-12 w-full rounded-2xl bg-red-600 text-base font-bold text-white hover:bg-red-700">
-              {busy ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Radio className="mr-2 h-5 w-5" />}
-              Canlı yayını başlat
-            </Button>
+          {phase === 'live' && (
+            <div className="mb-2 flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-600" />
+              </span>
+              <span className="text-xs font-bold text-muted-foreground">Etkinlik başladı · devam ediyor</span>
+            </div>
           )}
-          {isLive && (
-            <Button onClick={() => callLive('end')} disabled={busy} variant="outline"
-              className="h-12 w-full rounded-2xl border-red-600/40 text-base font-bold text-red-600 hover:bg-red-50">
-              {busy ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-              Canlı yayını bitir
-            </Button>
-          )}
-          {!isLive && !canGoLive && showCountdown && (
-            <p className="text-center text-xs font-medium text-muted-foreground">Canlı yayın, başlangıca 2 saat kala başlatılabilir.</p>
-          )}
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted" role="progressbar"
+            aria-valuemin={0} aria-valuemax={100}
+            aria-valuenow={Math.round(phase === 'pre' ? prePct : livePct)}>
+            <div className="h-full rounded-full transition-[width] duration-1000 ease-linear"
+              style={{ width: `${phase === 'pre' ? prePct : livePct}%`, backgroundColor: CORAL }} />
+          </div>
+        </div>
+      )}
+
+      {/* Yönetici kontrolleri — sadece canlıyken "Etkinliği kapat". */}
+      {isManager && isLive && (
+        <div className="mb-4">
+          <Button onClick={() => callLive('end')} disabled={busy} variant="outline"
+            className="h-12 w-full rounded-2xl border-red-600/40 text-base font-bold text-red-600 hover:bg-red-50">
+            {busy ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+            Etkinliği kapat
+          </Button>
         </div>
       )}
 

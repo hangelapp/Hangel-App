@@ -201,6 +201,9 @@ export const COLLECTIONS = {
   eventCheckins: 'checkins',
   // events/{eventId}/speakerRatings/{uid} — canlı modda konuşmacı puanları (sadece going).
   eventSpeakerRatings: 'speakerRatings',
+  // events/{eventId}/participantReviews/{uid} — yönetici "Tamamla" akışında katılımcıya
+  // verdiği puan (1-5) + yorum. Etkinliği kapatınca teşekkür DM'ine işlenir.
+  eventParticipantReviews: 'participantReviews',
 
   // Mikro Gönüllülük — Faz 3
   // 5-30 dk kısa görevler. STK admin oluşturur, kullanıcı konuma göre

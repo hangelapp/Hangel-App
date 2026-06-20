@@ -61,36 +61,44 @@ export function generateCertificateHtml(input: CertificateInput): string {
 <meta charset="UTF-8" />
 <title>hangel sertifikası — ${escapeHtml(userName)}</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+  /* Apple marka kimliği: sistem SF font yığını (Google Fonts importu YOK → çevrimdışı
+     çalışır + Türkçe ğ/ş/ı/İ/ç/ö/ü tam destek). hangel coral paleti. */
   @page { size: A4 landscape; margin: 0; }
-  body { margin: 0; font-family: 'Poppins', 'Helvetica', 'Arial', sans-serif; background: #fafafa; }
+  body {
+    margin: 0;
+    font-family: -apple-system, 'SF Pro Display', system-ui, 'Helvetica Neue', Arial, sans-serif;
+    background: #f1f1f1;
+    -webkit-font-smoothing: antialiased;
+  }
   .cert {
     width: 297mm; height: 210mm; box-sizing: border-box;
     padding: 28mm 24mm; background: #fff; position: relative;
-    border: 4px solid #f34723; color: #111;
+    border: 1.5px solid #f34723; border-radius: 6mm; color: #1f1f1f;
   }
   .header { display: flex; justify-content: space-between; align-items: baseline; }
   .brand { font-size: 22pt; font-weight: 800; color: #f34723; letter-spacing: -0.5px; }
-  .cert-id { font-size: 9pt; color: #777; }
-  h1 { font-size: 36pt; margin: 40px 0 10px; text-align: center; font-weight: 800; }
-  .subtitle { text-align: center; font-size: 13pt; color: #555; margin-bottom: 28px; }
-  .name { text-align: center; font-size: 30pt; font-weight: 700; margin: 10px 0; color: #f34723; }
-  .body-text { text-align: center; font-size: 13pt; line-height: 1.6; max-width: 220mm; margin: 16px auto; }
+  .cert-id { font-size: 9pt; color: #86868b; }
+  h1 { font-size: 30pt; margin: 44px 0 6px; text-align: center; font-weight: 800; letter-spacing: -0.5px; }
+  .rule { width: 50px; height: 3px; background: #f34723; border-radius: 2px; margin: 10px auto 22px; }
+  .subtitle { text-align: center; font-size: 12pt; color: #86868b; margin-bottom: 28px; }
+  .name { text-align: center; font-size: 30pt; font-weight: 800; margin: 10px 0; color: #1f1f1f; letter-spacing: -0.5px; }
+  .body-text { text-align: center; font-size: 13pt; line-height: 1.6; max-width: 220mm; margin: 16px auto; color: #515154; }
+  .body-text strong { color: #1f1f1f; }
   .stats {
     display: flex; justify-content: center; gap: 36px;
     margin: 32px 0 24px;
   }
   .stat { text-align: center; }
-  .stat-value { font-size: 22pt; font-weight: 800; color: #111; }
-  .stat-label { font-size: 10pt; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 22pt; font-weight: 800; color: #c5391b; }
+  .stat-label { font-size: 10pt; color: #86868b; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
   .footer {
     position: absolute; bottom: 18mm; left: 24mm; right: 24mm;
     display: flex; justify-content: space-between; align-items: flex-end;
-    font-size: 10pt; color: #555;
+    font-size: 10pt; color: #86868b;
   }
   .stamp { text-align: right; }
-  .stamp-org { font-weight: 700; color: #111; font-size: 11pt; }
-  @media print { body { background: #fff; } .cert { border: 4px solid #f34723; } }
+  .stamp-org { font-weight: 700; color: #1f1f1f; font-size: 11pt; }
+  @media print { body { background: #fff; } .cert { border: 1.5px solid #f34723; } }
 </style>
 </head>
 <body>
@@ -100,6 +108,7 @@ export function generateCertificateHtml(input: CertificateInput): string {
       <div class="cert-id">Sertifika No: ${escapeHtml(completionId)}</div>
     </div>
     <h1>Gönüllülük Sertifikası</h1>
+    <div class="rule"></div>
     <div class="subtitle">Bu belge, aşağıda adı geçen gönüllünün katkısını teyit eder.</div>
     <div class="name">${escapeHtml(userName)}</div>
     <div class="body-text">

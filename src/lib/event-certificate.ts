@@ -1,10 +1,10 @@
 // hangel rol-farkında ETKİNLİK katılım/katkı sertifikası PDF üretici.
 // Why:
-// - badge-generator.ts (A6 yaka kartı) ile AYNI stil/yapı: jsPDF dinamik import,
-//   turuncu hangel teması, dış kaynaktan QR base64 embed, Türkçe metin, hangel lowercase.
+// - iOS-GÜVENLİ render: sertifika self-contained SVG string olarak kurulup native
+//   Image → canvas → jsPDF ile gömülür (html2canvas WKWebView'de kırılıyordu).
 // - Etkinlik sertifikası YATAY A5 tek sayfa: katılımcıya/konuşmacıya verilen resmi belge.
 // - Rol-farkında: roleLabelTr (başlık rozeti) + roleCertificatePhraseTr (gövde cümlesi).
-// - Renk: hangel turuncu (#f34723).
+// - Renk: hangel coral paleti (Mercan #f34723, koyu koral #c5391b, Gece Siyahı #1f1f1f).
 
 import { roleLabelTr, roleCertificatePhraseTr } from '@/lib/event-roles';
 import type { EventUserRole } from '@/lib/event-roles';
@@ -90,14 +90,64 @@ export type EventCertificateInput = {
  *
  * badge-generator.generateVolunteerBadgePDF ile tutarlı: Promise<Blob> döner.
  */
+/**
+ * XML/SVG güvenli kaçış. SVG <text> içinde &, <, >, ", ' kaçılmalı.
+ * Kullanıcıdan gelen tüm metinler bu helper'dan geçer (CLAUDE.md güvenlik kuralı).
+ */
+const escXml = (s: string): string =>
+  String(s).replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string),
+  );
+
+/**
+ * SVG string'i iOS-GÜVENLİ şekilde JPEG data URI'ye çevirir.
+ *
+ * Why (iOS fix): html2canvas WKWebView'de foreignObject/CSS klonlama, bellek ve
+ * toDataURL timeout bug'ları yüzünden "pdf oluşturulurken hata oluştu" veriyordu.
+ * Native <img src="data:image/svg+xml,...">"" → ctx.drawImage → canvas.toDataURL
+ * yolu iOS Safari/WKWebView'de çalışır (data-URI görseller canvas'ı taint ETMEZ).
+ * SVG <foreignObject> KULLANMIYORUZ (iOS'u kıran element); sadece <text> + <image>.
+ */
+function rasterizeSvgToJpeg(svg: string, widthPx: number, heightPx: number, scale = 2): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const img = new Image();
+    img.decoding = 'sync';
+    // crossOrigin gerekmez: tüm <image href> data: URI (taint yok).
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(widthPx * scale);
+        canvas.height = Math.round(heightPx * scale);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('canvas 2d context alınamadı'));
+          return;
+        }
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.95));
+      } catch (e) {
+        reject(e instanceof Error ? e : new Error('SVG rasterize hatası'));
+      }
+    };
+    img.onerror = () => reject(new Error('Sertifika görseli oluşturulamadı (SVG yüklenemedi)'));
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  });
+}
+
 export async function generateEventCertificate(input: EventCertificateInput): Promise<Blob> {
   const { eventName, eventDate, userName, organizerName, role, certificateId, verifyUrl } = input;
 
-  // YENİDEN TASARIM 2026-06-19: jsPDF 'helvetica' Türkçe ğ/ş/ı/İ glyph'lerini
-  // desteklemediği için yazılar okunmuyordu. Çözüm: sertifikayı HTML+CSS (tarayıcı
-  // sistem fontu = Türkçe tam destek) olarak kurup html2canvas ile görsele çevir,
-  // jsPDF'e tek görsel olarak göm. Apple marka kimliği: temiz, bol boşluk, coral vurgu.
+  // iOS FIX 2026-06-20: html2canvas WKWebView'de "pdf oluşturulurken hata oluştu"
+  // veriyordu (foreignObject/CSS klonlama + toDataURL timeout bug'ları). Çözüm:
+  // sertifikayı kendi içinde tam (self-contained) SVG string olarak kur (<text> +
+  // data-URI <image>, foreignObject YOK), native Image ile canvas'a çiz, jsPDF'e göm.
+  // Sistem font yığını → Türkçe ğ/ş/ı/İ/ç/ö/ü glyph'leri doğru render edilir.
+  // Apple marka kimliği: temiz, bol boşluk, ince coral çerçeve, hangel paleti.
   const CORAL = '#f34723';
+  const CORAL_DARK = '#c5391b';
+  const INK = '#1f1f1f';
   const certUrl = verifyUrl || `https://hangel.org.tr/certificate/${certificateId}`;
   const [logoUri, qrUri] = await Promise.all([
     typeof window !== 'undefined' ? urlToDataUri(HANGEL_LOGO_PATH) : Promise.resolve(null),
@@ -105,63 +155,51 @@ export async function generateEventCertificate(input: EventCertificateInput): Pr
   ]);
   const roleLabel = roleLabelTr(role);
   const phrase = `${eventName} etkinliğinde ${roleCertificatePhraseTr(role)}.`;
-  const esc = (s: string) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 
   // A5 yatay @96dpi ≈ 794 × 559 px
-  const PX_W = 794, PX_H = 559;
-  const FONT = "-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,system-ui,'Helvetica Neue',Arial,sans-serif";
-  const html = `
-    <div style="width:${PX_W}px;height:${PX_H}px;background:#fff;position:relative;font-family:${FONT};color:#1d1d1f;box-sizing:border-box;overflow:hidden;-webkit-font-smoothing:antialiased">
-      <div style="position:absolute;inset:18px;border:1.5px solid ${CORAL};border-radius:20px"></div>
-      <div style="position:absolute;inset:25px;border:1px solid ${CORAL}33;border-radius:15px"></div>
-      <div style="position:absolute;top:46px;left:60px;right:60px;display:flex;align-items:center;justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:11px">
-          ${logoUri ? `<img src="${logoUri}" style="width:34px;height:34px;border-radius:9px" />` : ''}
-          <span style="font-size:25px;font-weight:800;letter-spacing:-0.03em;color:${CORAL}">hangel</span>
-        </div>
-        <span style="background:${CORAL};color:#fff;font-size:12px;font-weight:700;letter-spacing:0.06em;padding:8px 17px;border-radius:999px;text-transform:uppercase">${esc(roleLabel)}</span>
-      </div>
-      <div style="position:absolute;top:0;left:60px;right:60px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
-        <div style="font-size:14px;font-weight:800;letter-spacing:0.3em;color:${CORAL};text-transform:uppercase">${esc(certTitleTr(role))}</div>
-        <div style="width:50px;height:3px;background:${CORAL};border-radius:2px;margin:15px 0 24px"></div>
-        <div style="font-size:13px;color:#86868b;font-weight:500">Bu belge</div>
-        <div style="font-size:44px;font-weight:800;letter-spacing:-0.025em;margin:5px 0 16px;line-height:1.04;max-width:660px">${esc(userName || 'Katılımcı')}</div>
-        <div style="font-size:16px;color:#515154;font-weight:500;max-width:580px;line-height:1.55">${esc(phrase)}</div>
-        <div style="margin-top:28px;font-size:11px;font-weight:700;letter-spacing:0.22em;color:#aeaeb2">DÜZENLEYEN</div>
-        <div style="font-size:17px;font-weight:700;color:${CORAL};margin-top:5px;max-width:580px">${esc(organizerName || 'hangel')}</div>
-      </div>
-      <div style="position:absolute;bottom:48px;left:60px">
-        <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;color:#aeaeb2">TARİH</div>
-        <div style="font-size:15px;color:#515154;font-weight:500;margin-top:4px">${esc(formatTrDate(eventDate))}</div>
-      </div>
-      ${qrUri ? `<div style="position:absolute;bottom:42px;right:60px;text-align:center">
-        <img src="${qrUri}" style="width:76px;height:76px" />
-        <div style="font-size:9px;color:#aeaeb2;margin-top:4px">Doğrulamak için tarayın</div>
-      </div>` : ''}
-      <div style="position:absolute;bottom:21px;left:0;right:0;text-align:center">
-        <span style="font-size:12px;font-weight:700;color:${CORAL}">hangel.org.tr</span>
-        <span style="font-size:10px;color:#c7c7cc;margin-left:9px">Sertifika No: ${esc(certificateId)}</span>
-      </div>
-    </div>`;
+  const PX_W = 794;
+  const PX_H = 559;
+  const FONT = "-apple-system,'SF Pro Display',system-ui,'Helvetica Neue',Arial,sans-serif";
 
-  const holder = document.createElement('div');
-  holder.style.cssText = `position:fixed;left:-99999px;top:0;width:${PX_W}px;height:${PX_H}px`;
-  holder.innerHTML = html;
-  document.body.appendChild(holder);
-  try {
-    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-      import('html2canvas'),
-      import('jspdf'),
-    ]);
-    const canvas = await html2canvas(holder.firstElementChild as HTMLElement, {
-      scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false,
-    });
-    const pdf = new jsPDF({ unit: 'mm', format: [CERT_WIDTH_MM, CERT_HEIGHT_MM], orientation: 'landscape', compress: true });
-    pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, CERT_WIDTH_MM, CERT_HEIGHT_MM);
-    return pdf.output('blob');
-  } finally {
-    document.body.removeChild(holder);
-  }
+  // Uzun metinleri tek satıra sığacak şekilde kırp (SVG <text> sarmaz).
+  const fit = (s: string, max: number) => (s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s);
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${PX_W}" height="${PX_H}" viewBox="0 0 ${PX_W} ${PX_H}">
+  <style>text{font-family:${FONT};}</style>
+  <rect width="${PX_W}" height="${PX_H}" fill="#ffffff"/>
+  <rect x="18" y="18" width="${PX_W - 36}" height="${PX_H - 36}" rx="20" fill="none" stroke="${CORAL}" stroke-width="1.5"/>
+  <rect x="25" y="25" width="${PX_W - 50}" height="${PX_H - 50}" rx="15" fill="none" stroke="${CORAL}" stroke-opacity="0.2" stroke-width="1"/>
+
+  ${logoUri ? `<image x="60" y="46" width="34" height="34" href="${logoUri}" xlink:href="${logoUri}"/>` : ''}
+  <text x="${logoUri ? 105 : 60}" y="71" font-size="25" font-weight="800" letter-spacing="-0.7" fill="${CORAL}">hangel</text>
+
+  <rect x="${PX_W - 60 - 150}" y="48" width="150" height="32" rx="16" fill="${CORAL}"/>
+  <text x="${PX_W - 60 - 75}" y="69" font-size="12" font-weight="700" letter-spacing="0.7" fill="#ffffff" text-anchor="middle">${escXml(fit(roleLabel, 22))}</text>
+
+  <text x="${PX_W / 2}" y="186" font-size="14" font-weight="800" letter-spacing="4" fill="${CORAL}" text-anchor="middle">${escXml(certTitleTr(role))}</text>
+  <rect x="${PX_W / 2 - 25}" y="200" width="50" height="3" rx="1.5" fill="${CORAL}"/>
+
+  <text x="${PX_W / 2}" y="240" font-size="13" font-weight="500" fill="#86868b" text-anchor="middle">Bu belge</text>
+  <text x="${PX_W / 2}" y="290" font-size="44" font-weight="800" letter-spacing="-1.1" fill="${INK}" text-anchor="middle">${escXml(fit(userName || 'Katılımcı', 34))}</text>
+  <text x="${PX_W / 2}" y="326" font-size="16" font-weight="500" fill="#515154" text-anchor="middle">${escXml(fit(phrase, 78))}</text>
+
+  <text x="${PX_W / 2}" y="372" font-size="11" font-weight="700" letter-spacing="2.4" fill="#aeaeb2" text-anchor="middle">DÜZENLEYEN</text>
+  <text x="${PX_W / 2}" y="394" font-size="17" font-weight="700" fill="${CORAL_DARK}" text-anchor="middle">${escXml(fit(organizerName || 'hangel', 50))}</text>
+
+  <text x="60" y="${PX_H - 78}" font-size="11" font-weight="700" letter-spacing="2" fill="#aeaeb2">TARİH</text>
+  <text x="60" y="${PX_H - 58}" font-size="15" font-weight="500" fill="#515154">${escXml(formatTrDate(eventDate))}</text>
+
+  ${qrUri ? `<image x="${PX_W - 60 - 76}" y="${PX_H - 110}" width="76" height="76" href="${qrUri}" xlink:href="${qrUri}"/>
+  <text x="${PX_W - 60 - 38}" y="${PX_H - 22}" font-size="9" fill="#aeaeb2" text-anchor="middle">Doğrulamak için tarayın</text>` : ''}
+
+  <text x="${PX_W / 2}" y="${PX_H - 21}" text-anchor="middle"><tspan font-size="12" font-weight="700" fill="${CORAL}">hangel.org.tr</tspan><tspan font-size="10" fill="#c7c7cc" dx="9">Sertifika No: ${escXml(certificateId)}</tspan></text>
+</svg>`;
+
+  const jpeg = await rasterizeSvgToJpeg(svg, PX_W, PX_H, 2);
+  const { default: jsPDF } = await import('jspdf');
+  const pdf = new jsPDF({ unit: 'mm', format: [CERT_WIDTH_MM, CERT_HEIGHT_MM], orientation: 'landscape', compress: true });
+  pdf.addImage(jpeg, 'JPEG', 0, 0, CERT_WIDTH_MM, CERT_HEIGHT_MM);
+  return pdf.output('blob');
 }
 
 /**

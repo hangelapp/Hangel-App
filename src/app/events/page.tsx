@@ -22,11 +22,19 @@ import { collection, query } from 'firebase/firestore';
 import { EventMapDialog } from '@/components/events/event-map-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { COLLECTIONS } from '@/firebase/collections';
+import { eventPhase } from '@/lib/event-time';
 
 // Statuses that explicitly hide an event from the public listing.
 // Everything else — including 'Yayında', 'Aktif', and legacy docs with no
 // `status` field — is treated as a publicly visible (active) event.
 const HIDDEN_EVENT_STATUSES = new Set(['Beklemede', 'Reddedildi', 'Pasif']);
+
+// Tamamlanan etkinlik, tamamlanma anından sonra bu süre kadar "Etkinlik bitti"
+// rozetiyle listede kalır; sonra düşer.
+const COMPLETED_VISIBLE_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 saat
+
+// Boş/eksik etkinlik adı için kullanıcıya gösterilen yedek metin.
+const EVENT_NAME_FALLBACK = 'Adsız etkinlik';
 
 // Etkinlik startDate/endDate alanları "yyyy-MM-dd HH:mm", saatsiz "yyyy-MM-dd"
 // veya (eski/legacy kayıtlarda) boş/undefined gelebilir. Güvenli parse: önce
@@ -50,6 +58,37 @@ function formatEventDate(s?: string): string {
   if (!d) return '—';
   const hasTime = typeof s === 'string' && /\d{1,2}:\d{2}/.test(s);
   return format(d, hasTime ? 'dd MMM yy, HH:mm' : 'dd MMM yy', { locale: tr });
+}
+
+// `completedAt` Firestore Timestamp ({seconds}), ms (number) ya da ISO string
+// olarak gelebilir. Hepsini ms'e çevirir; çözülemezse null döner.
+function completedAtMs(value: unknown): number | null {
+  if (value == null) return null;
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const parsed = Date.parse(trimmed);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  if (typeof value === 'object') {
+    const seconds = (value as { seconds?: unknown }).seconds;
+    if (typeof seconds === 'number' && Number.isFinite(seconds)) {
+      return seconds * 1000;
+    }
+  }
+  return null;
+}
+
+// Tamamlanan bir etkinliğin "kapanış" anını ms olarak döndürür. Önce
+// completedAt; yoksa endDate/startDate (yerel parse) yedeği kullanılır.
+function completionTimeMs(e: { completedAt?: unknown; endDate?: string; startDate?: string }): number | null {
+  const fromCompletedAt = completedAtMs(e.completedAt);
+  if (fromCompletedAt != null) return fromCompletedAt;
+  const fallback = parseEventDate(e.endDate) ?? parseEventDate(e.startDate);
+  return fallback ? fallback.getTime() : null;
 }
 
 function EventsPageContent() {
@@ -79,9 +118,21 @@ function EventsPageContent() {
   );
   const { data: firestoreEvents } = useCollection(eventsRef);
   const events = useMemo<Event[]>(() => {
-    const all = (firestoreEvents ?? []) as (Event & { status?: string; completed?: boolean })[];
-    // Tamamlanan etkinlikler aktif listeden ve canlıdan düşer ("Tamamla = kapat").
-    return all.filter((e) => !HIDDEN_EVENT_STATUSES.has(e.status ?? '') && e.completed !== true) as Event[];
+    const now = Date.now();
+    const all = (firestoreEvents ?? []) as (Event & { status?: string; completed?: boolean; completedAt?: unknown })[];
+    return all.filter((e) => {
+      // Gizli statüler her zaman listeden düşer.
+      if (HIDDEN_EVENT_STATUSES.has(e.status ?? '')) return false;
+      // Tamamlanan etkinlik, tamamlanma anından 24 saat boyunca "Etkinlik bitti"
+      // rozetiyle listede kalır; sonra düşer. completedAt yoksa endDate/startDate
+      // yedeği kullanılır; o da yoksa (zaman bilinmiyor) yeni bitmiş sayılıp tutulur.
+      if (e.completed === true) {
+        const completedMs = completionTimeMs(e);
+        if (completedMs == null) return true;
+        return now - completedMs < COMPLETED_VISIBLE_WINDOW_MS;
+      }
+      return true;
+    }) as Event[];
   }, [firestoreEvents]);
 
   // Filters from URL
@@ -118,8 +169,8 @@ function EventsPageContent() {
     if (searchTerm.trim()) {
       const lowercased = searchTerm.toLowerCase();
       eventsToFilter = eventsToFilter.filter(event =>
-        event.name.toLowerCase().includes(lowercased) ||
-        event.organizer.toLowerCase().includes(lowercased)
+        (event.name ?? '').toLowerCase().includes(lowercased) ||
+        (event.organizer ?? '').toLowerCase().includes(lowercased)
       );
     }
 
@@ -175,7 +226,7 @@ function EventsPageContent() {
     // Sort
     return eventsToFilter.sort((a, b) => {
         if (sortKey === 'name') {
-            return a.name.localeCompare(b.name);
+            return (a.name ?? '').localeCompare(b.name ?? '');
         }
         if (sortKey === 'capacity') {
             return ((b.capacity?.max ?? 0) - (b.capacity?.current ?? 0)) - ((a.capacity?.max ?? 0) - (a.capacity?.current ?? 0));
@@ -342,23 +393,31 @@ function EventsPageContent() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {sortedEvents.map((event: Event) => {
           const detailHref = `/events/${event.slug || event.id}`;
+          const eventName = event.name || EVENT_NAME_FALLBACK;
+          // Etkinlik bitti: ya tamamlandı olarak işaretli ya da bitiş zamanı geçti.
+          const isEnded = (event as Event & { completed?: boolean }).completed === true || eventPhase(event) === 'ended';
           return (
             <Link key={event.id} href={detailHref} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-[1.5rem]">
               <Card variant="glass" className="overflow-hidden flex flex-col h-full border-none shadow-md rounded-[1.5rem] hover:shadow-xl transition-shadow cursor-pointer">
                 <div className="relative aspect-[210/297] w-full bg-muted block">
                   <Image
                     src={event.imageUrl}
-                    alt={event.name}
+                    alt={eventName}
                     fill
-                    className="object-cover"
+                    className={`object-cover${isEnded ? ' grayscale-[0.35]' : ''}`}
                     data-ai-hint="event poster a4"
                   />
                   <div className="absolute top-2 left-2">
                     <Badge className="bg-white/90 backdrop-blur-md text-primary border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">{event.type}</Badge>
                   </div>
+                  {isEnded && (
+                    <div className="absolute top-2 right-2">
+                      <Badge className="bg-foreground/85 backdrop-blur-md text-background border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">Etkinlik bitti</Badge>
+                    </div>
+                  )}
                 </div>
                 <CardContent className="p-3 flex-1 space-y-2">
-                  <h2 className="text-sm font-bold font-headline leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">{event.name}</h2>
+                  <h2 className="text-sm font-bold font-headline leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">{eventName}</h2>
                   <p className="text-[10px] font-bold text-primary truncate">{event.organizer}</p>
                   <div className="space-y-1 pt-1 border-t border-dashed">
                     <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1.5">
@@ -377,9 +436,15 @@ function EventsPageContent() {
                         <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{t('eventsPageExtra.capacityLabel')}</p>
                         <p className="text-[10px] font-black">{event.capacity?.current}/{event.capacity?.max}</p>
                     </div>
-                    <Button size="sm" className="rounded-lg font-black text-[10px] h-7 px-3 pointer-events-none">
-                      {t('eventsPageExtra.inspectBtn')}
-                    </Button>
+                    {isEnded ? (
+                      <Button size="sm" variant="secondary" disabled className="rounded-lg font-black text-[10px] h-7 px-3 pointer-events-none opacity-60">
+                        Bitti
+                      </Button>
+                    ) : (
+                      <Button size="sm" className="rounded-lg font-black text-[10px] h-7 px-3 pointer-events-none">
+                        {t('eventsPageExtra.inspectBtn')}
+                      </Button>
+                    )}
                   </div>
                 </CardFooter>
               </Card>

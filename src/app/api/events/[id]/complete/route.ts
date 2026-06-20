@@ -57,15 +57,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
   if (!authorized) return errJson('forbidden', 'Bu etkinliği tamamlama yetkin yok', 403);
 
-  // Katılımcılar — RSVP going + checkins (kimliği olanlar)
-  const [rsvpsSnap, checkinsSnap] = await Promise.all([
+  // Katılımcılar — RSVP going + checkins (kimliği olanlar) + yönetici değerlendirmeleri
+  const [rsvpsSnap, checkinsSnap, reviewsSnap] = await Promise.all([
     eventRef.collection(COLLECTIONS.eventRsvps).where('status', '==', 'going').get(),
     eventRef.collection(COLLECTIONS.eventCheckins).get(),
+    eventRef.collection(COLLECTIONS.eventParticipantReviews).get(),
   ]);
   const uids = new Set<string>(rsvpsSnap.docs.map((d) => d.id));
   for (const d of checkinsSnap.docs) {
     const u = (d.data() as { uid?: string | null }).uid;
     if (u) uids.add(u);
+  }
+  // Yöneticinin "Tamamla" akışında verdiği puan/yorum → teşekkür DM'ine işlenir.
+  const reviewByUid: Record<string, { rating?: number; comment?: string }> = {};
+  for (const d of reviewsSnap.docs) {
+    const data = d.data() as { rating?: number; comment?: string };
+    reviewByUid[d.id] = { rating: data.rating, comment: data.comment };
   }
 
   const eventName = ev.name || 'Etkinlik';
@@ -89,6 +96,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     await db.collection(COLLECTIONS.users).doc(targetUid).update({ impactScore: FieldValue.increment(COMPLETION_POINTS) }).catch(() => undefined);
 
     const thanks = `${ngoName} yönetim ekibi olarak ${eventName} etkinliğimize katılımınız için teşekkür ederiz 🧡`;
+    // Yönetici değerlendirmesi (puan/yorum) varsa teşekkür mesajına ekle.
+    const rev = reviewByUid[targetUid];
+    let reviewLine = '';
+    if (rev) {
+      const stars = typeof rev.rating === 'number' && rev.rating >= 1 && rev.rating <= 5
+        ? '⭐'.repeat(rev.rating) + ` (${rev.rating}/5)`
+        : '';
+      const comment = (rev.comment || '').trim();
+      if (stars || comment) {
+        reviewLine = `\n\nEkip değerlendirmesi: ${stars}${stars && comment ? ' — ' : ''}${comment ? `“${comment}”` : ''}`;
+      }
+    }
     try {
       await notifyUser({
         userId: targetUid,
@@ -99,7 +118,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         data: { eventId, kind: 'event-certificate', certificateId: certId },
         storeAsMessage: true,
         messageSubject: 'Sertifikan Hazır 🎓',
-        messageContent: `${thanks}\n\nKatılım sertifikanız hazır — "Rozetler ve Sertifikalar" sayfanızdan görüntüleyip PDF olarak indirebilirsiniz. (+${COMPLETION_POINTS} impact puanı)`,
+        messageContent: `${thanks}${reviewLine}\n\nKatılım sertifikanız hazır — "Rozetler ve Sertifikalar" sayfanızdan görüntüleyip PDF olarak indirebilirsiniz. (+${COMPLETION_POINTS} impact puanı)`,
       });
     } catch (e) {
       console.warn('[events/complete] notify failed', targetUid, e);

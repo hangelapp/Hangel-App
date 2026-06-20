@@ -173,77 +173,35 @@ function formatDate(
     return format(d, 'dd MMMM yyyy', { locale: locale === 'tr' ? tr : undefined });
 }
 
-/**
- * A6 yaka kartı canvas renderer.
- * A6 landscape ≈ 148×105 mm. Print-quality için 300 DPI → 1748×1240 px.
- * Önizleme amacıyla 4× DPI yeterli (744×525), download için 300 DPI kullanırız.
- */
-function renderLanyardCanvas(
-    cert: VolunteeringCertificate,
-    userName: string,
-    opts: { dpi?: number } = {},
-): HTMLCanvasElement | null {
-    const dpi = opts.dpi ?? 300;
-    const mmToPx = (mm: number) => Math.round((mm / 25.4) * dpi);
-    const W = mmToPx(148);
-    const H = mmToPx(105);
+// hangel resmi paleti (Apple marka kimliği): Mercan, koyu koral, Gece Siyahı, Açık Gri.
+const CORAL = '#f34723';
+const CORAL_DARK = '#c5391b';
+const INK = '#1f1f1f';
+const LIGHT_GRAY = '#f1f1f1';
+// Sistem SF font yığını → Türkçe ğ/ş/ı/İ/ç/ö/ü glyph'leri doğru render edilir.
+const LANYARD_FONT =
+    "-apple-system,'SF Pro Display',system-ui,'Helvetica Neue',Arial,sans-serif";
 
-    const canvas = document.createElement('canvas');
-    canvas.width = W;
-    canvas.height = H;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-
-    // Arka plan: pastel turuncudan beyaza degrade
-    const bg = ctx.createLinearGradient(0, 0, W, H);
-    bg.addColorStop(0, '#fff7ed');
-    bg.addColorStop(1, '#ffffff');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
-
-    // Yaka kartı delik (üst ortada)
-    const holeR = Math.round(W * 0.018);
-    ctx.fillStyle = '#e5e7eb';
-    ctx.beginPath();
-    ctx.arc(W / 2, holeR * 2.2, holeR, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Çerçeve
-    ctx.strokeStyle = '#ea580c';
-    ctx.lineWidth = Math.max(3, Math.round(W * 0.005));
-    ctx.strokeRect(
-        Math.round(W * 0.02),
-        Math.round(H * 0.08),
-        W - Math.round(W * 0.04),
-        H - Math.round(H * 0.16),
+const escXml = (s: string): string =>
+    String(s).replace(/[&<>"']/g, (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string),
     );
 
-    // Brand
-    ctx.fillStyle = '#ea580c';
-    ctx.font = `bold ${Math.round(H * 0.07)}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.fillText('hangel', W / 2, Math.round(H * 0.22));
+/**
+ * A6 yaka kartı SVG string'i. Yatay 148×105 mm.
+ *
+ * iOS FIX 2026-06-20: önceki sürüm doğrudan 300 DPI (1748×1240) canvas çiziyordu —
+ * iOS WKWebView bellek limitinde toDataURL boş/hata dönebiliyordu. Yeni yol: kartı
+ * mantıksal px boyutunda SVG (<text> + <image>) olarak kur, rasterizeSvgToJpeg ile
+ * makul ölçekte (scale 2/3) JPEG'e çevir. <foreignObject> YOK (iOS'u kıran element).
+ * Palet: hangel coral (#f34723 / #c5391b), Gece Siyahı (#1f1f1f), Açık Gri (#f1f1f1).
+ */
+function buildLanyardSvg(cert: VolunteeringCertificate, userName: string): { svg: string; w: number; h: number } {
+    // Mantıksal tasarım boyutu (96dpi A6 yatay ≈ 559×397). Ölçek raster aşamasında.
+    const W = 559;
+    const H = 397;
+    const fit = (s: string, max: number) => (s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s);
 
-    ctx.fillStyle = '#525252';
-    ctx.font = `${Math.round(H * 0.035)}px Arial`;
-    ctx.fillText('Gönüllülük Sertifikası', W / 2, Math.round(H * 0.3));
-
-    // Sahibi
-    ctx.fillStyle = '#171717';
-    ctx.font = `bold ${Math.round(H * 0.075)}px Arial`;
-    ctx.fillText(userName || 'Gönüllü', W / 2, Math.round(H * 0.46));
-
-    // Başlık
-    ctx.fillStyle = '#404040';
-    ctx.font = `${Math.round(H * 0.04)}px Arial`;
-    ctx.fillText(cert.title, W / 2, Math.round(H * 0.6));
-
-    // Kuruluş
-    ctx.fillStyle = '#737373';
-    ctx.font = `${Math.round(H * 0.034)}px Arial`;
-    ctx.fillText(cert.organization, W / 2, Math.round(H * 0.68));
-
-    // Saat + mali etki (varsa)
     const metaParts: string[] = [];
     if (typeof cert.hoursLogged === 'number' && cert.hoursLogged > 0) {
         metaParts.push(`${cert.hoursLogged.toLocaleString('tr-TR')} saat gönüllülük`);
@@ -251,27 +209,70 @@ function renderLanyardCanvas(
     if (typeof cert.impactValueTRY === 'number' && cert.impactValueTRY > 0) {
         metaParts.push(`${cert.impactValueTRY.toLocaleString('tr-TR')} ₺ sosyal etki`);
     }
-    if (metaParts.length > 0) {
-        ctx.fillStyle = '#ea580c';
-        ctx.font = `bold ${Math.round(H * 0.032)}px Arial`;
-        ctx.fillText(metaParts.join('  •  '), W / 2, Math.round(H * 0.74));
-    }
+    const meta = metaParts.join('   •   ');
+    const bandH = Math.round(H * 0.07);
 
-    // Tarih
-    ctx.fillStyle = '#525252';
-    ctx.font = `${Math.round(H * 0.03)}px Arial`;
-    if (cert.completedAt) {
-        ctx.fillText(cert.completedAt, W / 2, Math.round(H * 0.81));
-    }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <style>text{font-family:${LANYARD_FONT};}</style>
+  <rect width="${W}" height="${H}" fill="#ffffff"/>
+  <rect x="${Math.round(W * 0.02)}" y="${Math.round(H * 0.08)}" width="${W - Math.round(W * 0.04)}" height="${H - Math.round(H * 0.16)}" rx="14" fill="none" stroke="${CORAL}" stroke-width="2"/>
+  <circle cx="${W / 2}" cy="${Math.round(H * 0.05)}" r="${Math.round(W * 0.018)}" fill="${LIGHT_GRAY}"/>
 
-    // Rozet alt-band
-    ctx.fillStyle = '#fed7aa';
-    ctx.fillRect(0, H - Math.round(H * 0.07), W, Math.round(H * 0.07));
-    ctx.fillStyle = '#9a3412';
-    ctx.font = `${Math.round(H * 0.028)}px Arial`;
-    ctx.fillText('hangel.org', W / 2, H - Math.round(H * 0.025));
+  <text x="${W / 2}" y="${Math.round(H * 0.22)}" font-size="${Math.round(H * 0.075)}" font-weight="800" letter-spacing="-0.5" fill="${CORAL}" text-anchor="middle">hangel</text>
+  <text x="${W / 2}" y="${Math.round(H * 0.31)}" font-size="${Math.round(H * 0.038)}" font-weight="500" fill="#86868b" text-anchor="middle">Gönüllülük Sertifikası</text>
 
-    return canvas;
+  <text x="${W / 2}" y="${Math.round(H * 0.47)}" font-size="${Math.round(H * 0.078)}" font-weight="800" letter-spacing="-0.4" fill="${INK}" text-anchor="middle">${escXml(fit(userName || 'Gönüllü', 28))}</text>
+
+  <text x="${W / 2}" y="${Math.round(H * 0.6)}" font-size="${Math.round(H * 0.042)}" font-weight="600" fill="#515154" text-anchor="middle">${escXml(fit(cert.title, 40))}</text>
+  <text x="${W / 2}" y="${Math.round(H * 0.68)}" font-size="${Math.round(H * 0.036)}" font-weight="500" fill="#86868b" text-anchor="middle">${escXml(fit(cert.organization, 44))}</text>
+
+  ${meta ? `<text x="${W / 2}" y="${Math.round(H * 0.76)}" font-size="${Math.round(H * 0.034)}" font-weight="700" fill="${CORAL_DARK}" text-anchor="middle">${escXml(fit(meta, 48))}</text>` : ''}
+  ${cert.completedAt ? `<text x="${W / 2}" y="${Math.round(H * 0.83)}" font-size="${Math.round(H * 0.032)}" font-weight="500" fill="#86868b" text-anchor="middle">${escXml(fit(cert.completedAt, 40))}</text>` : ''}
+
+  <rect x="0" y="${H - bandH}" width="${W}" height="${bandH}" fill="${CORAL}"/>
+  <text x="${W / 2}" y="${H - Math.round(bandH * 0.32)}" font-size="${Math.round(H * 0.03)}" font-weight="700" letter-spacing="0.5" fill="#ffffff" text-anchor="middle">hangel.org</text>
+</svg>`;
+    return { svg, w: W, h: H };
+}
+
+/**
+ * SVG string'i iOS-GÜVENLİ JPEG data URI'ye çevirir (native Image → canvas →
+ * toDataURL). data: URI görseller canvas'ı taint etmez; <foreignObject> yok.
+ */
+function rasterizeSvgToJpeg(svg: string, widthPx: number, heightPx: number, scale = 2): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(widthPx * scale);
+                canvas.height = Math.round(heightPx * scale);
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    reject(new Error('canvas 2d context alınamadı'));
+                    return;
+                }
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.95));
+            } catch (e) {
+                reject(e instanceof Error ? e : new Error('SVG rasterize hatası'));
+            }
+        };
+        img.onerror = () => reject(new Error('Yaka kartı görseli oluşturulamadı'));
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    });
+}
+
+/** Yaka kartını iOS-güvenli JPEG data URI olarak üretir (önizleme + indirme ortak yol). */
+function renderLanyardJpeg(
+    cert: VolunteeringCertificate,
+    userName: string,
+    opts: { scale?: number } = {},
+): Promise<string> {
+    const { svg, w, h } = buildLanyardSvg(cert, userName);
+    return rasterizeSvgToJpeg(svg, w, h, opts.scale ?? 2);
 }
 
 const LanyardPreview = React.memo(function LanyardPreview({
@@ -283,8 +284,17 @@ const LanyardPreview = React.memo(function LanyardPreview({
 }) {
     const [src, setSrc] = useState<string | null>(null);
     React.useEffect(() => {
-        const c = renderLanyardCanvas(cert, userName, { dpi: 96 });
-        if (c) setSrc(c.toDataURL('image/jpeg', 0.9));
+        let active = true;
+        renderLanyardJpeg(cert, userName, { scale: 1.5 })
+            .then((dataUrl) => {
+                if (active) setSrc(dataUrl);
+            })
+            .catch(() => {
+                /* önizleme oluşmazsa skeleton kalır */
+            });
+        return () => {
+            active = false;
+        };
     }, [cert, userName]);
     if (!src) {
         return (
@@ -293,7 +303,7 @@ const LanyardPreview = React.memo(function LanyardPreview({
     }
     return (
         // Önizleme — yaka kartı görseli (raster, data URL). next/image dataURL'i
-        // optimize edemez, ham <img> kullanıyoruz. PDF/JPG indir 300 DPI canvas'tan.
+        // optimize edemez, ham <img> kullanıyoruz. İndirme daha yüksek ölçekten.
         <img
             src={src}
             alt="Yaka kartı önizleme"
@@ -464,12 +474,12 @@ export function VolunteeringCertificates({
         language,
     ]);
 
-    const handleDownloadJpg = (cert: VolunteeringCertificate) => {
+    const handleDownloadJpg = async (cert: VolunteeringCertificate) => {
         try {
-            const canvas = renderLanyardCanvas(cert, userName, { dpi: 300 });
-            if (!canvas) throw new Error('canvas oluşturulamadı');
+            // iOS-güvenli: SVG → Image → canvas (scale 3 ≈ baskı kalitesi, bellek dostu).
+            const dataUrl = await renderLanyardJpeg(cert, userName, { scale: 3 });
             const a = document.createElement('a');
-            a.href = canvas.toDataURL('image/jpeg', 0.95);
+            a.href = dataUrl;
             a.download = `yaka-karti-${cert.title.replace(/\s+/g, '-').toLowerCase()}.jpg`;
             a.click();
             toast({
@@ -488,9 +498,8 @@ export function VolunteeringCertificates({
 
     const handleDownloadPdf = async (cert: VolunteeringCertificate) => {
         try {
-            const canvas = renderLanyardCanvas(cert, userName, { dpi: 300 });
-            if (!canvas) throw new Error('canvas oluşturulamadı');
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+            // iOS-güvenli: SVG → Image → canvas (scale 3), sonra jsPDF'e göm.
+            const dataUrl = await renderLanyardJpeg(cert, userName, { scale: 3 });
             const { default: jsPDF } = await import('jspdf');
             // A6 landscape: 148×105 mm
             const pdf = new jsPDF({ unit: 'mm', format: 'a6', orientation: 'landscape' });
@@ -697,7 +706,7 @@ export function VolunteeringCertificates({
                                 <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
                                     <Button
                                         size="sm"
-                                        className="bg-[#f34723] text-white hover:bg-[#d83c1c]"
+                                        className="bg-[#f34723] text-white hover:bg-[#c5391b]"
                                         onClick={() => handleOpenCertificate(cert)}
                                     >
                                         <FileText className="mr-1.5 h-4 w-4" />
@@ -776,7 +785,7 @@ export function VolunteeringCertificates({
                                     PDF
                                 </Button>
                                 <Button
-                                    className="bg-[#f34723] text-white hover:bg-[#d83c1c]"
+                                    className="bg-[#f34723] text-white hover:bg-[#c5391b]"
                                     onClick={() => handleOpenCertificate(previewing)}
                                 >
                                     <FileText className="mr-2 h-4 w-4" />

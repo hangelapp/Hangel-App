@@ -3,6 +3,56 @@ export const AI_CHANGELOG_GENERATED = "2026-06-20";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "6865e0be",
+    "date": "2026-06-20",
+    "subject": "feat(events): canlı etkinlik modu — geri sayım + Canlı Başlat/Bitir + canlı konuşmacı puanı"
+  },
+  {
+    "hash": "8d75273a",
+    "date": "2026-06-20",
+    "subject": "feat(functions): etkinlik başlangıcında organizatöre \"başlatayım mı?\" bildirimi"
+  },
+  {
+    "hash": "b337592b",
+    "date": "2026-06-20",
+    "subject": "feat(super-admin): taslak (ön kayıt) STK'ları onayla → Aktif + doğrulanmış"
+  },
+  {
+    "hash": "3d331384",
+    "date": "2026-06-20",
+    "subject": "feat(events): super-admin tam düzenleme + organizatör logosu + geri sayım + canlı/tıklanabilir"
+  },
+  {
+    "hash": "9ab70b83",
+    "date": "2026-06-20",
+    "subject": "feat(org): coral doğrulama tiki STK liste kartında da göster"
+  },
+  {
+    "hash": "710d1fab",
+    "date": "2026-06-20",
+    "subject": "feat(yetkili): super-admin tam kontrol + sahip her zaman listelensin"
+  },
+  {
+    "hash": "03d8ee32",
+    "date": "2026-06-20",
+    "subject": "feat(events): 'Tamamla = kapat' — tamamlanan etkinlik aktif/canlı listeden düşer"
+  },
+  {
+    "hash": "40934b55",
+    "date": "2026-06-20",
+    "subject": "feat(org): coral doğrulama tiki (VerifiedBadge) — STK profilinde"
+  },
+  {
+    "hash": "331b260e",
+    "date": "2026-06-20",
+    "subject": "feat: kütük no tireleri otomatik + hoş geldin puanı (hangel rozeti)"
+  },
+  {
+    "hash": "2a8f7509",
+    "date": "2026-06-20",
+    "subject": "chore(audit): 'yarat-' (oluşturma fiili) → 'üret/oluştur' (Apple/dil kuralı)"
+  },
+  {
     "hash": "0d348c75",
     "date": "2026-06-20",
     "subject": "feat(org): çok-tipli kuruluş ön kayıt (dernek/vakıf/kulüp) + İngilizce route"
@@ -76,55 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "0700746d",
     "date": "2026-06-19",
     "subject": "fix(certificate): Apple kimliğinde yeniden tasarım — Türkçe font sorunu çözüldü"
-  },
-  {
-    "hash": "8980e3f9",
-    "date": "2026-06-19",
-    "subject": "fix(events): giriş sonrası RSVP otomatik tamamlanıyor (51 kullanıcı / 13 kayıt bug'ı)"
-  },
-  {
-    "hash": "dc9e3258",
-    "date": "2026-06-19",
-    "subject": "fix(events): etkinlik kartı mobil uyumlu — butonlar dikey/saran düzen"
-  },
-  {
-    "hash": "c810b499",
-    "date": "2026-06-19",
-    "subject": "fix(wallet): 'Cüzdana Ekle' artık gerçekten çalışıyor (placeholder kaldırıldı)"
-  },
-  {
-    "hash": "ec0996be",
-    "date": "2026-06-19",
-    "subject": "feat(checkin): kimliği doğrulanmış check-in'de +5 impact puanı"
-  },
-  {
-    "hash": "a06fbe64",
-    "date": "2026-06-19",
-    "subject": "feat(events): Check-in & Kayıt QR sistemi (kapıda okut → otomatik)"
-  },
-  {
-    "hash": "3cdc6bb9",
-    "date": "2026-06-19",
-    "subject": "feat(konferans): PPT indir + düzenlenebilir QR metni + sol-alt QR + CTA"
-  },
-  {
-    "hash": "743e9703",
-    "date": "2026-06-19",
-    "subject": "feat: milestone kutlaması — impact puanı artınca konfeti + haptik"
-  },
-  {
-    "hash": "12799c40",
-    "date": "2026-06-19",
-    "subject": "fix(konferans/sunum): sunum kumandası (pointer) desteği — Page Down/Up + Backspace"
-  },
-  {
-    "hash": "62116b2f",
-    "date": "2026-06-19",
-    "subject": "feat(konferans): hangel hero — her madde tek satırda (tek sütun)"
-  },
-  {
-    "hash": "a0ea353d",
-    "date": "2026-06-19",
-    "subject": "feat(konferans): hangel slaytı hero tasarımı — sunumun en güzel sayfası"
   }
 ];
