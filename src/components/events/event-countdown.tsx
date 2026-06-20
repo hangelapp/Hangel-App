@@ -43,6 +43,51 @@ export function EventCountdown({ event, className }: { event: EventLike; classNa
 }
 
 /**
+ * DualCountdown — başlamasına geri sayar; başlayınca BİTİŞE geri sayar.
+ * Tarih + saat AYRI ("YYYY-MM-DD" + "HH:mm", gönüllülük) ya da birleşik gelebilir.
+ * Bitiş yoksa başlangıç + 3 saat varsayılır. Sona erince gizlenir.
+ */
+export function DualCountdown({ start, startTime, end, endTime, className }: { start?: string; startTime?: string; end?: string; endTime?: string; className?: string }) {
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const startStr = start ? (startTime ? `${start} ${startTime}` : start) : undefined;
+  const endStr = end ? (endTime ? `${end} ${endTime}` : end) : undefined;
+  const startD = eventStart({ startDate: startStr });
+  if (!startD || !now) return null;
+  const startMs = startD.getTime();
+  const endD = eventStart({ startDate: endStr });
+  const endMs = endD ? endD.getTime() : startMs + 3 * 3600_000;
+  if (now > endMs) return null; // sona erdi → gösterme
+
+  const live = now >= startMs;
+  return (
+    <div className={cn('flex items-center justify-between gap-3 rounded-2xl border p-4', live ? 'border-red-500/25 bg-red-500/5' : 'border-primary/20 bg-primary/5', className)}>
+      <span className="inline-flex items-center gap-2">
+        {live ? (
+          <>
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-600" />
+            </span>
+            <span className="text-sm font-black uppercase tracking-wider text-red-600">Canlı · Bitişe</span>
+          </>
+        ) : (
+          <span className="text-sm font-bold text-muted-foreground">Başlamasına</span>
+        )}
+      </span>
+      <span className={cn('font-mono text-xl font-black tabular-nums', live ? 'text-red-600' : 'text-foreground')}>
+        {formatCountdown((live ? endMs : startMs) - now)}
+      </span>
+    </div>
+  );
+}
+
+/**
  * Etkinlik kartı için kompakt geri sayım rozeti — SADECE başlangıca <24 saat
  * kalınca görünür ("3sa 12dk" / "45 dk"). Dakika hassasiyeti (30 sn'de bir tik).
  */

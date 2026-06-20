@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { openExternalUrl } from '@/lib/capacitor';
+import { DualCountdown } from '@/components/events/event-countdown';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { DistanceBadge } from '@/components/shared/distance-badge';
@@ -682,6 +683,8 @@ export default function VolunteeringDetailPage() {
                     {/* Tarihler — düzenli liste */}
                     <section className="space-y-5">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Tarihler</h2>
+                        {/* Başlamasına → başlayınca bitişe akan geri sayım */}
+                        <DualCountdown start={opp.dates?.eventStart} startTime={opp.dates?.eventStartTime} end={opp.dates?.eventEnd} endTime={opp.dates?.eventEndTime} />
                         <dl className="divide-y divide-border border-t border-b border-border">
                             <div className="flex justify-between items-baseline gap-4 py-4">
                                 <dt className="text-base text-muted-foreground">Başvuru başlangıç</dt>
