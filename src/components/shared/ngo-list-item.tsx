@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Heart, Users, ShieldCheck, Network, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { VerifiedBadge, isVerifiedOrg } from '@/components/shared/verified-badge';
 import type { NGO } from '@/lib/types';
 
 /**
@@ -52,7 +53,7 @@ export function NgoListItem({ ngo, href, onClick, rightSlot, className }: NgoLis
       {/* Satır 1: Ad (+kısa ad) — tam genişlik, ortada rightSlot. */}
       <div className="flex items-start justify-between gap-2 leading-tight">
         <div className="flex items-baseline flex-wrap gap-1.5 min-w-0">
-          <p className="font-bold text-sm leading-tight">{ngo.name}</p>
+          <p className="font-bold text-sm leading-tight inline-flex items-center gap-1">{ngo.name}{isVerifiedOrg(ngo as unknown as Record<string, unknown>) && <VerifiedBadge size={14} />}</p>
           {shortName && <span className="text-xs text-muted-foreground font-medium">({shortName})</span>}
         </div>
         {rightSlot && <div className="shrink-0">{rightSlot}</div>}
