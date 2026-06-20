@@ -32,6 +32,7 @@ import { LocationFields } from '@/components/shared/location-fields';
 import { VenueManager } from './_components/venue-manager';
 import { EventAttendees } from '@/components/events/event-attendees';
 import { EventCheckinQR } from '@/components/events/event-checkin-qr';
+import { EventCompleteButton } from '@/components/events/event-complete-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Dialog,
@@ -637,6 +638,7 @@ export default function EventManagementPage() {
                                                     <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
                                                 </Button>
                                                 <EventCheckinQR eventId={event.id} />
+                                                <EventCompleteButton eventId={event.id} />
                                                 <EventAttendees eventId={event.id} />
                                             </div>
                                         </div>
