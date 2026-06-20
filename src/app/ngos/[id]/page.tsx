@@ -2,6 +2,7 @@
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { VerifiedBadge, isVerifiedOrg } from '@/components/shared/verified-badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, Share2, Target, Copy, ExternalLink, QrCode, Download } from 'lucide-react';
@@ -448,7 +449,7 @@ export default function NgoProfilePage() {
             </Avatar>
             <div className="space-y-1">
                 <div className="flex items-center gap-3 flex-wrap">
-                    <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
+                    <h1 className="text-2xl font-bold font-headline inline-flex items-center gap-1.5">{ngo.name}{isVerifiedOrg(ngo) && <VerifiedBadge size={20} title={`${ngo.name} — doğrulanmış kuruluş`} />}</h1>
                     <Badge variant="outline" className="text-base font-bold border-primary/50 text-primary bg-primary/10">
                         <ShieldCheck className="h-4 w-4 mr-1.5"/>
                         {transparencyScore}
