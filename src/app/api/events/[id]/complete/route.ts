@@ -112,13 +112,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       await notifyUser({
         userId: targetUid,
         type: 'badge_earned',
-        title: 'Sertifikan hazır 🎓',
-        body: `${thanks} Katılım sertifikanız profilinize yüklendi — görüntüleyip indirebilirsiniz.`,
-        link: '/my-badges',
+        title: 'Sertifikan hazır 🎓 — etkinliği değerlendir ⭐',
+        body: `${thanks} Sertifikan profiline yüklendi. Etkinliği değerlendirmek ve sertifikana ulaşmak için dokun 👉`,
+        link: `/events/${eventId}`,
         data: { eventId, kind: 'event-certificate', certificateId: certId },
         storeAsMessage: true,
-        messageSubject: 'Sertifikan Hazır 🎓',
-        messageContent: `${thanks}${reviewLine}\n\nKatılım sertifikanız hazır — "Rozetler ve Sertifikalar" sayfanızdan görüntüleyip PDF olarak indirebilirsiniz. (+${COMPLETION_POINTS} impact puanı)`,
+        messageSubject: 'Sertifikan Hazır 🎓 — Etkinliği Değerlendir ⭐',
+        messageContent: `${thanks}${reviewLine}\n\nKatılım sertifikanız hazır (+${COMPLETION_POINTS} impact puanı). Etkinlik sayfasından sertifikanı görüntüleyip indirebilir, "⭐ Değerlendir" butonuyla etkinliği puanlayabilirsin 🧡`,
       });
     } catch (e) {
       console.warn('[events/complete] notify failed', targetUid, e);

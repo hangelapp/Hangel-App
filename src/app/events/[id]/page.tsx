@@ -7,6 +7,7 @@ import { startEventCountdownActivity } from '@/lib/native-live-activity';
 import { EventCountdown } from '@/components/events/event-countdown';
 import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
 import { LiveEventSection } from '@/components/events/live-event-section';
+import { EventEvaluateButton } from '@/components/events/event-evaluate-button';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -876,6 +877,14 @@ export default function EventDetailPage() {
               >
                 📲 NFC
               </Button>
+              )}
+              {isEventFinished && (
+                <>
+                  <Button size="lg" variant="outline" className="h-14 rounded-2xl font-black px-4 flex items-center gap-2" asChild>
+                    <Link href="/my-badges">🎓 Sertifika</Link>
+                  </Button>
+                  <EventEvaluateButton eventId={resolvedEventId || ''} eventName={event.name} authUser={authUser ?? null} className="h-14 rounded-2xl font-black px-4 flex items-center gap-2" />
+                </>
               )}
               </>
             ) : (

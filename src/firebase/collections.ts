@@ -201,6 +201,8 @@ export const COLLECTIONS = {
   eventCheckins: 'checkins',
   // events/{eventId}/speakerRatings/{uid} — canlı modda konuşmacı puanları (sadece going).
   eventSpeakerRatings: 'speakerRatings',
+  // events/{eventId}/eventEvaluations/{uid} — etkinlik sonrası puan+yorum (sadece going).
+  eventEvaluations: 'eventEvaluations',
   // events/{eventId}/participantReviews/{uid} — yönetici "Tamamla" akışında katılımcıya
   // verdiği puan (1-5) + yorum. Etkinliği kapatınca teşekkür DM'ine işlenir.
   eventParticipantReviews: 'participantReviews',
