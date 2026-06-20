@@ -142,5 +142,16 @@ struct HangelLiveActivitiesBundle: WidgetBundle {
         VolunteerTaskLiveActivity()
         EventCountdownLiveActivity()
         DonationCampaignLiveActivity()
+        // Ana ekran widget'ları (araç takımı) — iOS 16.1+
+        UpcomingEventWidget()
+        ImpactScoreWidget()
+        BloodStatusWidget()
+        // Kontrol Merkezi denetimleri — iOS 18+ (koşullu)
+        if #available(iOS 18.0, *) {
+            EmergencyBloodControl()
+            EventCheckinControl()
+            QuickDonateControl()
+            VolunteeringControl()
+        }
     }
 }
