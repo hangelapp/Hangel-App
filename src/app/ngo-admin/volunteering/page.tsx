@@ -23,6 +23,7 @@ import {
   collection,
   query,
   where,
+  orderBy,
   doc,
   addDoc,
   updateDoc,
@@ -69,7 +70,7 @@ import type { Volunteering, Application as UserApplication } from '@/lib/types';
 
 import { ListingForm, type ListingFormValues } from './_components/listing-form';
 import { ApplicationReviewCard, type ApplicationReviewItem } from './_components/application-review-card';
-import { CompletionScoringDialog } from './_components/completion-scoring-dialog';
+import { CompletionScoringDialog, type ScoringItem } from './_components/completion-scoring-dialog';
 import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
 
 /** Volunteering doc'larında status henüz mevcut değilse default 'Aktif' kabul
@@ -650,17 +651,16 @@ function ApplicationsTab({
 function CompletedTab({
   opportunities,
   applications,
-  ngoName,
+  scoringItems,
   isLoading,
 }: {
   opportunities: VolunteeringWithStatus[];
   applications: UserApplication[];
-  ngoName: string;
+  scoringItems: ScoringItem[];
   isLoading: boolean;
 }) {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const db = useFirestore();
   const { user: authUser } = useUser();
 
   const [scoringTarget, setScoringTarget] = useState<{
@@ -683,10 +683,18 @@ function CompletedTab({
     return m;
   }, [applications]);
 
-  const handleScore = async ({ score, comment }: { score: number; comment: string }) => {
+  const handleScore = async ({
+    hours,
+    taskTypeId,
+    notes,
+  }: {
+    hours: number;
+    taskTypeId: string;
+    notes: string;
+  }) => {
     if (!scoringTarget) return;
     const { listing, volunteer } = scoringTarget;
-    if (!volunteer.userId) {
+    if (!volunteer.userId || !authUser) {
       toast({
         variant: 'destructive',
         title: t('ngo_admin_volunteering.toast.scoreFailedTitle'),
@@ -696,51 +704,28 @@ function CompletedTab({
     }
     setSubmitting(true);
     try {
-      // Sertifika doc'u — users/{uid}/certificates altında saklanır.
-      await addDoc(collection(db, COLLECTIONS.users, volunteer.userId, COLLECTIONS.certificates), {
-        userId: volunteer.userId,
-        listingId: listing.id,
-        listingTitle: listing.title,
-        ngoName: ngoName || listing.organization || '',
-        ngoId: listing.ngoId,
-        score,
-        comment,
-        date: serverTimestamp(),
-        issuedBy: authUser?.uid ?? null,
+      // Kanonik tamamlama rotası: volunteerCompletions oluşturur + ANINDA onaylar,
+      // puan/mali değer hesaplar, user.stats + pastVolunteering yazar, gönüllüye
+      // teşekkür + "değerlendir misiniz?" bildirimi gönderir.
+      const token = await authUser.getIdToken();
+      const res = await fetch(`/api/volunteering/${listing.id}/complete-volunteer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          userId: volunteer.userId,
+          taskTypeId,
+          hours,
+          ...(notes ? { notes } : {}),
+        }),
       });
-
-      const titleMsg = `${t('ngo_admin_volunteering.notif.certificateReadyPrefix')} ${listing.title}`;
-      const bodyMsg = t('ngo_admin_volunteering.notif.certificateReadyBody');
-
-      await addDoc(collection(db, COLLECTIONS.notifications), {
-        userId: volunteer.userId,
-        type: 'certificate',
-        title: titleMsg,
-        body: bodyMsg,
-        data: { listingId: listing.id, score },
-        read: false,
-        createdAt: serverTimestamp(),
-      });
-
-      if (authUser) {
-        await addDoc(collection(db, COLLECTIONS.messages), {
-          sender: {
-            id: authUser.uid,
-            name: ngoName || listing.organization || t('ngo_admin_volunteering.notif.ngoFallback'),
-            avatarUrl: authUser.photoURL || null,
-          },
-          senderId: authUser.uid,
-          recipient: {
-            id: volunteer.userId,
-            name: volunteer.userName ?? t('ngo_admin_volunteering.review.volunteerFallback'),
-            avatarUrl: null,
-          },
-          recipientId: volunteer.userId,
-          subject: titleMsg,
-          content: bodyMsg,
-          timestamp: serverTimestamp(),
-          status: 'sent',
-        });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+        impactValueTRY?: number;
+        impactPoints?: number;
+      };
+      if (!res.ok || !json.ok) {
+        throw new Error(json.error || 'Tamamlama işlenemedi');
       }
 
       setScoredKeys((prev) => {
@@ -751,15 +736,18 @@ function CompletedTab({
 
       toast({
         title: t('ngo_admin_volunteering.toast.scoreSavedTitle'),
-        description: t('ngo_admin_volunteering.toast.scoreSavedDesc'),
+        description:
+          typeof json.impactPoints === 'number' && typeof json.impactValueTRY === 'number'
+            ? `${json.impactPoints.toLocaleString('tr-TR')} puan ve ${json.impactValueTRY.toLocaleString('tr-TR')} ₺ etki değeri gönüllünün profiline işlendi.`
+            : t('ngo_admin_volunteering.toast.scoreSavedDesc'),
       });
       setScoringTarget(null);
     } catch (err) {
-      console.error('[ngo-admin/volunteering] score failed', err);
+      console.error('[ngo-admin/volunteering] completion failed', err);
       toast({
         variant: 'destructive',
         title: t('ngo_admin_volunteering.toast.scoreFailedTitle'),
-        description: t('ngo_admin_volunteering.toast.scoreFailedDesc'),
+        description: err instanceof Error ? err.message : t('ngo_admin_volunteering.toast.scoreFailedDesc'),
       });
     } finally {
       setSubmitting(false);
@@ -847,6 +835,7 @@ function CompletedTab({
           scoringTarget?.volunteer.userName ?? t('ngo_admin_volunteering.review.volunteerFallback')
         }
         listingTitle={scoringTarget?.listing.title ?? ''}
+        scoringItems={scoringItems}
         onSubmit={handleScore}
         submitting={submitting}
       />
@@ -928,6 +917,15 @@ function VolunteeringPage() {
   const { data: ngoData } = useCollection<{ id: string; name?: string }>(ngoQuery);
   const ngoName = ngoData?.[0]?.name ?? '';
 
+  // Süper-admin iş kalemi kataloğu — tamamlama dialog'unda yönetici seçer,
+  // puan + mali değer otomatik hesaplanır.
+  const scoringQuery = useMemoFirebase(
+    () => (db ? query(collection(db, COLLECTIONS.volunteerScoring), orderBy('order', 'asc')) : null),
+    [db],
+  );
+  const { data: scoringData } = useCollection<ScoringItem>(scoringQuery);
+  const scoringItems = useMemo(() => scoringData ?? [], [scoringData]);
+
   if (!authUser) {
     return (
       <div className="p-8 text-center text-muted-foreground">
@@ -979,7 +977,7 @@ function VolunteeringPage() {
           <CompletedTab
             opportunities={opportunities}
             applications={applications}
-            ngoName={ngoName}
+            scoringItems={scoringItems}
             isLoading={oppsLoading}
           />
         </TabsContent>

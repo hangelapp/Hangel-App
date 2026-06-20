@@ -106,8 +106,12 @@ export async function POST(
 
   const subject = 'Gönüllülük Başvurun Onaylandı';
   const content =
-    `Merhaba, "${oppTitle}" ilanına yaptığın gönüllülük başvurusu ${ngoName} tarafından onaylandı.` +
+    `Merhaba, "${oppTitle}" ilanına yaptığın gönüllülük başvurusu ${ngoName} tarafından onaylandı. ` +
+    `İlan sayfasından etkinliği takvimine ekleyebilirsin.` +
     (ngoNote ? `\n\nSTK notu: ${ngoNote}` : '');
+
+  // İlan sayfasına yönlendiren link — orada "Takvime ekle" butonu var.
+  const oppLink = `/volunteering/${oppId}`;
 
   // 2) users/{uid}/notifications alt koleksiyonu (CLAUDE.md: badge için)
   await db
@@ -119,6 +123,7 @@ export async function POST(
       type: 'application_accepted',
       title: subject,
       body: content.slice(0, 160),
+      link: oppLink,
       applicationId,
       volunteeringId: oppId,
       read: false,
@@ -143,6 +148,7 @@ export async function POST(
       applicationId,
       volunteeringId: oppId,
       ngoId: oppData.ngoId,
+      link: oppLink,
     },
   });
 
@@ -151,7 +157,7 @@ export async function POST(
     await sendPushToUser(userId, {
       title: subject,
       body: `"${oppTitle}" başvurun onaylandı`,
-      clickAction: `/volunteering/${oppId}`,
+      clickAction: oppLink,
       data: {
         type: 'application_accepted',
         applicationId,

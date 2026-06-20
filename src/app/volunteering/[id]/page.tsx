@@ -19,6 +19,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
+import { EvaluationDialog } from '@/components/shared/evaluation-dialog';
+import { questionsForDirection } from '@/lib/evaluations';
 import Image from 'next/image';
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -87,6 +90,22 @@ export default function VolunteeringDetailPage() {
     );
   }, [db, authUser, id]);
   const { data: myApplications } = useCollection<{ status?: string }>(myApplicationsQuery);
+
+  // Tamamlama kaydı — kullanıcının bu göreve dair onaylı (ngoApproved) tamamlaması var mı.
+  // Varsa gönüllü → STK değerlendirme akışı açılabilir.
+  const myCompletionsQuery = useMemoFirebase(() => {
+    if (!db || !authUser || !id) return null;
+    return query(
+      collection(db, COLLECTIONS.volunteerCompletions),
+      where('userId', '==', authUser.uid),
+      where('taskId', '==', id),
+    );
+  }, [db, authUser, id]);
+  const { data: myCompletions } = useCollection<{ id: string; ngoId?: string; ngoApproved?: boolean; status?: string }>(myCompletionsQuery);
+
+  // Değerlendirme (gönüllü → STK) dialog durumu.
+  const [isEvalOpen, setIsEvalOpen] = useState(false);
+  const [isEvalSubmitting, setIsEvalSubmitting] = useState(false);
 
   const matchingProfile = useMemo<MatchingUserProfile>(() => ({
     volunteerInfo: userData?.volunteerInfo ?? null,
@@ -266,6 +285,11 @@ export default function VolunteeringDetailPage() {
   // Wallet / NFC / Yaka Kartı yalnız başvuru ONAYLANINCA aktif.
   const isApproved = applicationStatus === 'Onaylandı';
 
+  // Onaylı tamamlama kaydı (volunteerCompletions, ngoApproved=true) → gönüllü STK'yı değerlendirebilir.
+  const approvedCompletion = (myCompletions ?? []).find(
+    (c) => c.ngoApproved === true || c.status === 'approved',
+  ) || null;
+
   // Adres tarifi linki — coordinates varsa lat/lon, yoksa açık adres metni.
   const directionsUrl = (() => {
     if (coords?.lat != null && coords?.lon != null) {
@@ -372,6 +396,46 @@ export default function VolunteeringDetailPage() {
       toast({ title: 'NFC etiketi okundu', description: result.url });
     } catch (e) {
       toast({ variant: 'destructive', title: 'NFC hatası', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
+    }
+  };
+
+  // Takvime ekle — /ics endpoint'ini sistem tarayıcısında açar (.ics → takvim uygulaması).
+  const handleAddToCalendar = async () => {
+    try {
+      const url = new URL(`/api/volunteering/${opportunity.id}/ics`, window.location.origin).toString();
+      await openExternalUrl(url);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Takvime eklenemedi', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
+    }
+  };
+
+  // Gönüllü → STK değerlendirmesi gönder (10 soru, 1-5). refId = tamamlama kaydı id'si.
+  const handleSubmitEvaluation = async (answers: Record<string, number>, comment?: string) => {
+    if (!authUser || !approvedCompletion) return;
+    setIsEvalSubmitting(true);
+    try {
+      const token = await authUser.getIdToken();
+      const res = await fetch('/api/evaluations/volunteer-to-ngo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          kind: 'volunteer',
+          refId: approvedCompletion.id,
+          ngoId: approvedCompletion.ngoId || opportunity.ngoId,
+          answers,
+          comment,
+        }),
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => null);
+        throw new Error(e?.message || 'Değerlendirme gönderilemedi.');
+      }
+      setIsEvalOpen(false);
+      toast({ title: 'Değerlendirmen alındı 🧡', description: 'Geri bildirimin için teşekkürler.' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Gönderilemedi', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
+    } finally {
+      setIsEvalSubmitting(false);
     }
   };
 
@@ -517,19 +581,14 @@ export default function VolunteeringDetailPage() {
                 {/* ───── SOL KOLON: özet + içerik ───── */}
                 <div className="space-y-12 min-w-0">
 
-                    {/* Profil uygunluğu — ince, minimal */}
+                    {/* Profil uygunluğu — dolan progress bar */}
                     {authUser && hasProfile && (
                         <div className="space-y-3">
                             <div className="flex justify-between items-baseline">
-                                <span className="text-sm font-semibold text-muted-foreground tracking-tight">Profil uygunluğun</span>
+                                <span className="text-sm font-semibold text-muted-foreground tracking-tight">Profil uygunluğun: %{matchPercentage}</span>
                                 <span className={`text-2xl font-bold tracking-tight ${matchTone.text}`}>%{matchPercentage}</span>
                             </div>
-                            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div
-                                    className={`h-full ${matchTone.bar} rounded-full transition-all duration-700 ease-out`}
-                                    style={{ width: `${matchPercentage}%` }}
-                                />
-                            </div>
+                            <Progress value={matchPercentage} className="h-2 rounded-full" />
                         </div>
                     )}
 
@@ -708,6 +767,28 @@ export default function VolunteeringDetailPage() {
                         >
                             📲 NFC
                         </Button>
+                        <Button
+                            size="lg"
+                            variant="outline"
+                            onClick={handleAddToCalendar}
+                            className="h-14 rounded-2xl font-semibold px-5 flex items-center gap-2"
+                            aria-label="Takvime ekle"
+                            title="Takvime ekle"
+                        >
+                            📅 Takvime ekle
+                        </Button>
+                        {approvedCompletion && (
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                onClick={() => setIsEvalOpen(true)}
+                                className="h-14 rounded-2xl font-semibold px-5 flex items-center gap-2"
+                                aria-label="STK'yı değerlendir"
+                                title="STK'yı değerlendir"
+                            >
+                                ⭐ Değerlendir
+                            </Button>
+                        )}
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button size="lg" variant="secondary" className="h-14 rounded-2xl font-semibold px-5">Yaka Kartı</Button>
@@ -837,6 +918,36 @@ export default function VolunteeringDetailPage() {
                             </AlertDialogContent>
                         </AlertDialog>
                     </div>
+                )}
+
+                {/* Tamamlanmış görev için STK değerlendirme (başvuru durumu Onaylandı değilse de göster) */}
+                {approvedCompletion && !isApproved && (
+                    <div className="flex flex-wrap gap-3">
+                        <Button
+                            size="lg"
+                            variant="outline"
+                            onClick={() => setIsEvalOpen(true)}
+                            className="h-14 rounded-2xl font-semibold px-5 flex items-center gap-2"
+                            aria-label="STK'yı değerlendir"
+                            title="STK'yı değerlendir"
+                        >
+                            ⭐ Değerlendir
+                        </Button>
+                    </div>
+                )}
+
+                {/* Gönüllü → STK değerlendirme dialog'u (10 soru, 1-5) */}
+                {approvedCompletion && (
+                    <EvaluationDialog
+                        open={isEvalOpen}
+                        onOpenChange={setIsEvalOpen}
+                        title="STK ve faaliyeti değerlendir"
+                        description="Deneyimini 10 soruda puanla. Geri bildirimin STK'ya yardımcı olur."
+                        questions={[...questionsForDirection('volunteer_to_ngo')]}
+                        withComment
+                        submitting={isEvalSubmitting}
+                        onSubmit={handleSubmitEvaluation}
+                    />
                 )}
 
                 </div>

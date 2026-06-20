@@ -45,6 +45,122 @@ export interface AwardBadgesResult {
 }
 
 /**
+ * Kilometre taşı (milestone) rozetleri — alan-bazlı tier rozetlerinden bağımsız,
+ * global başarı rozetleri. Kullanıcının toplam aktivitesine (user.stats) göre
+ * tek seferlik açılır; alan puanına bağlı DEĞİL.
+ *
+ * id'ler `milestone-` ön ekiyle namespace'lenir → alan rozetleriyle
+ * (`{alan}-{seviye}`) çakışmaz, aynı `users/{uid}/badges` ledger'ında yan yana
+ * durur. `socialArea` hepsinde 'Genel' → enrichBadges/my-badges tier mantığını
+ * etkilemez (orada yalnızca 19 sosyal alan üzerinden gruplanır).
+ *
+ * Koşul saf bir predicate'tir; user.stats üzerinden değerlendirilir. Eşikler
+ * makul tutulmuştur (gerçek gönüllülük temposuna göre).
+ */
+interface MilestoneStats {
+  volunteerHours: number;
+  completedProjects: number;
+  totalImpactValue: number;
+  totalImpactPoints: number;
+}
+
+interface MilestoneBadgeDef {
+  id: string;
+  /** Kullanıcıya gösterilen TR ad. */
+  name: string;
+  /** Kısa TR açıklama (nasıl kazanıldığı). */
+  description: string;
+  /** UI/bildirim için emoji ikon. */
+  emoji: string;
+  level: string;
+  /** Koşulu sağlayan eşik (bildirim/sıralama için bilgilendirici). */
+  threshold: number;
+  /** Açılış koşulu — user.stats üzerinden saf değerlendirme. */
+  unlocked: (s: MilestoneStats) => boolean;
+}
+
+const MILESTONE_BADGES: MilestoneBadgeDef[] = [
+  {
+    id: 'milestone-ilk-adim',
+    name: 'İlk Adım',
+    description: 'İlk gönüllülük/etkinlik tamamlaman onaylandı.',
+    emoji: '🌱',
+    level: 'Bakır',
+    threshold: 1,
+    unlocked: (s) => s.completedProjects >= 1,
+  },
+  {
+    id: 'milestone-ilk-etkinlik',
+    name: 'İlk Etkinlik',
+    description: 'İlk etkinliğini başarıyla tamamladın.',
+    emoji: '🎉',
+    level: 'Bakır',
+    threshold: 1,
+    unlocked: (s) => s.completedProjects >= 1,
+  },
+  {
+    id: 'milestone-bes-etkinlik',
+    name: '5 Etkinlik',
+    description: 'Toplam 5 etkinlik/gönüllülük tamamladın.',
+    emoji: '🖐️',
+    level: 'Bronz',
+    threshold: 5,
+    unlocked: (s) => s.completedProjects >= 5,
+  },
+  {
+    id: 'milestone-sadik-gonullu',
+    name: 'Sadık Gönüllü',
+    description: 'Toplam 10 etkinlik/gönüllülük tamamladın.',
+    emoji: '🤝',
+    level: 'Gümüş',
+    threshold: 10,
+    unlocked: (s) => s.completedProjects >= 10,
+  },
+  {
+    id: 'milestone-gonullu-10s',
+    name: 'Gönüllü',
+    description: '10 saat gönüllülük katkısı sağladın.',
+    emoji: '⏳',
+    level: 'Bronz',
+    threshold: 10,
+    unlocked: (s) => s.volunteerHours >= 10,
+  },
+  {
+    id: 'milestone-aktivist-50s',
+    name: 'Aktivist',
+    description: '50 saat gönüllülük katkısı sağladın.',
+    emoji: '🔥',
+    level: 'Gümüş',
+    threshold: 50,
+    unlocked: (s) => s.volunteerHours >= 50,
+  },
+  {
+    id: 'milestone-topluluk-lideri-100s',
+    name: 'Topluluk Lideri',
+    description: '100 saat gönüllülük katkısı sağladın.',
+    emoji: '🏆',
+    level: 'Altın',
+    threshold: 100,
+    unlocked: (s) => s.volunteerHours >= 100,
+  },
+];
+
+/** user.stats'ı (gevşek) güvenli MilestoneStats'a normalize et. */
+function readMilestoneStats(raw: unknown): MilestoneStats {
+  const s = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const num = (v: unknown) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  };
+  return {
+    volunteerHours: num(s.volunteerHours),
+    completedProjects: num(s.completedProjects),
+    totalImpactValue: num(s.totalImpactValue),
+    totalImpactPoints: num(s.totalImpactPoints),
+  };
+}
+
+/**
  * Bir bağış/gönüllülük dökümanından geçen tüm ngoId'leri topla → kategori
  * haritası kur (computeAreaPoints'in alan eşlemesi için).
  */
@@ -85,9 +201,11 @@ export async function awardBadgesForUser(
     const userData = (userSnap.data() ?? {}) as {
       areaPoints?: Record<string, number>;
       inviteCount?: number;
+      stats?: unknown;
     };
     const storedAreaPoints = userData.areaPoints ?? {};
     const inviteCount = Number(userData.inviteCount) || 0;
+    const milestoneStats = readMilestoneStats(userData.stats);
 
     const pastVolunteering: PastVolunteeringLike[] = pastVolSnap.docs.map(
       (d) => d.data() as PastVolunteeringLike,
@@ -135,16 +253,37 @@ export async function awardBadgesForUser(
       }
     }
 
-    // Yeni rozet kayıtlarını yaz.
+    // Kilometre taşı (milestone) rozetleri — user.stats üzerinden değerlendir.
+    // Aynı idempotency seti (earnedIds) ile: zaten kazanılmışsa atlanır.
+    const newMilestones: Array<{ def: MilestoneBadgeDef }> = [];
+    for (const m of MILESTONE_BADGES) {
+      if (!earnedIds.has(m.id) && m.unlocked(milestoneStats)) {
+        newMilestones.push({ def: m });
+        newBadges.push({
+          id: m.id,
+          name: m.name,
+          level: m.level,
+          socialArea: 'Genel',
+          pointsRequired: m.threshold,
+        });
+      }
+    }
+
+    // Yeni rozet kayıtlarını yaz (alan + milestone).
     if (newBadges.length > 0) {
+      const milestoneById = new Map(newMilestones.map((x) => [x.def.id, x.def]));
       const batch = db.batch();
       for (const nb of newBadges) {
+        const m = milestoneById.get(nb.id);
         batch.set(userRef.collection(COLLECTIONS.badges).doc(nb.id), {
           badgeId: nb.id,
           name: nb.name,
           level: nb.level,
           socialArea: nb.socialArea,
           pointsRequired: nb.pointsRequired,
+          ...(m
+            ? { kind: 'milestone', description: m.description, emoji: m.emoji }
+            : { kind: 'area' }),
           earnedAt: FieldValue.serverTimestamp(),
         });
       }
@@ -155,9 +294,10 @@ export async function awardBadgesForUser(
         const lead = newBadges[0];
         const more = newBadges.length - 1;
         const title = 'Yeni rozet kazandın! 🧡';
+        const leadSuffix = lead.socialArea && lead.socialArea !== 'Genel' ? ` (${lead.socialArea})` : '';
         const body =
           newBadges.length === 1
-            ? `"${lead.name}" rozetini kazandın (${lead.socialArea}). Rozetlerini profilinde görebilirsin.`
+            ? `"${lead.name}" rozetini kazandın${leadSuffix}. Rozetlerini profilinde görebilirsin.`
             : `"${lead.name}" ve ${more} rozet daha kazandın! Rozetlerini profilinde görebilirsin.`;
         await notifyUser({
           userId: uid,

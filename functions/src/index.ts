@@ -145,6 +145,11 @@ export { eventStartOrganizerPrompt } from './event-start-prompt';
 // Her 5 dk, idempotent (event.reminders.{day|hour|tenMin}). See ./event-reminders.ts
 export { eventAttendeeReminders } from './event-reminders';
 
+// Gönüllülük katılımcı hatırlatmaları — onaylı başvuranlara (applications,
+// status=='Onaylandı') 1 gün / 1 saat / 10 dk kala push. Her 5 dk, idempotent
+// (volunteering.reminders.{day|hour|tenMin}). See ./volunteer-reminders.ts
+export { volunteerAttendeeReminders } from './volunteer-reminders';
+
 // Daily 11:00 Europe/Istanbul nudge for users who registered ~24h / ~72h ago
 // but never completed onboarding. Writes notifications doc (push via
 // onNotificationCreated) and stamps the user doc for idempotency.

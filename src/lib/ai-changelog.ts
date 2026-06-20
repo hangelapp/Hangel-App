@@ -3,6 +3,41 @@ export const AI_CHANGELOG_GENERATED = "2026-06-20";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "2e8c1a29",
+    "date": "2026-06-20",
+    "subject": "fix(wallet): etkinlik pkpass üretimi patlıyordu — yanlış alan okuması"
+  },
+  {
+    "hash": "5b1a4f4d",
+    "date": "2026-06-20",
+    "subject": "feat(functions): etkinlik katılımcı hatırlatmaları — 1 gün / 1 saat / 10 dk push"
+  },
+  {
+    "hash": "f62fc886",
+    "date": "2026-06-20",
+    "subject": "feat(events): RSVP sonrası 'Takvime ekle' (.ics) + 1 saat önce alarm"
+  },
+  {
+    "hash": "02b118dd",
+    "date": "2026-06-20",
+    "subject": "fix(wallet): etkinlik + gönüllülük 'Wallet' butonu açılmıyordu → passport pattern"
+  },
+  {
+    "hash": "3931774c",
+    "date": "2026-06-20",
+    "subject": "feat(events): etkinlik sonrası değerlendirme (puan+yorum) + Sertifika/Değerlendir butonları"
+  },
+  {
+    "hash": "e4ad7d0e",
+    "date": "2026-06-20",
+    "subject": "feat(events): otomatik canlı mod + kart geri sayımı + kapasite dolunca kayıt kapanır"
+  },
+  {
+    "hash": "e1d81d4c",
+    "date": "2026-06-20",
+    "subject": "feat(events): etkinlik elden geçirme — afiş overlay, hava durumu, mesafe, canlı sayaç, sertifika DM akışı"
+  },
+  {
     "hash": "6865e0be",
     "date": "2026-06-20",
     "subject": "feat(events): canlı etkinlik modu — geri sayım + Canlı Başlat/Bitir + canlı konuşmacı puanı"
@@ -91,40 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "7936092e",
     "date": "2026-06-20",
     "subject": "fix(app): native uygulamada çerez popup'ı gösterme (zaten app'teyiz)"
-  },
-  {
-    "hash": "48b94b68",
-    "date": "2026-06-20",
-    "subject": "fix(ngo-admin/users): yetkili listesi AKTİF kuruluşa göre gelsin (çoklu kurum)"
-  },
-  {
-    "hash": "64a9c037",
-    "date": "2026-06-20",
-    "subject": "feat(kurumsal): yetkili kişi telefonuyla otomatik yetkilendirme (onay + kayıt)"
-  },
-  {
-    "hash": "915f7445",
-    "date": "2026-06-20",
-    "subject": "fix(super-admin/ngos): Yetkili diyaloğu STK'nın TÜM yetkililerini rolleriyle listelesin"
-  },
-  {
-    "hash": "30673cc1",
-    "date": "2026-06-20",
-    "subject": "fix(ngo-admin/users): yetkili listeleme + rol değiştir/çıkar Admin SDK ile çalışsın"
-  },
-  {
-    "hash": "fff30ea7",
-    "date": "2026-06-20",
-    "subject": "feat(appclip): /clip landing sayfası (App Clip Default Experience URL + tarayıcı fallback)"
-  },
-  {
-    "hash": "66877b5e",
-    "date": "2026-06-20",
-    "subject": "fix(appclip): canlı AASA'ya appclips + webcredentials eklendi (App Clip engeli)"
-  },
-  {
-    "hash": "0700746d",
-    "date": "2026-06-19",
-    "subject": "fix(certificate): Apple kimliğinde yeniden tasarım — Türkçe font sorunu çözüldü"
   }
 ];

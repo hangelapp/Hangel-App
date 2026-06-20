@@ -253,24 +253,26 @@ export async function PATCH(
 
   // 5) Tamamlama onayı bildirimi — üst düzey notifications (merkez) + mesaj + push.
   //    "saatin onaylandı → X puan kazandın → sertifikan hazır" zincirini netleştir.
-  const subject = 'Tamamlama onaylandı, sertifikan hazır 🧡';
+  const subject = 'Tamamlaman onaylandı, sertifikan hazır 🧡';
   const content =
     `"${oppTitle}" görevini başarıyla tamamladın. ${ngoName} ${finalHours} saatlik katkını onayladı. ` +
     `${finalImpactPoints.toLocaleString('tr-TR')} puan ve ${finalImpactValue.toLocaleString('tr-TR')} ₺ sosyal etki değeri kazandın. ` +
-    `Sertifikan hazır — profilinden görüntüleyebilirsin.`;
+    `Deneyimini birkaç saniyede değerlendirir misin? Görüşün ${ngoName} için çok değerli.`;
 
   await notifyUser({
     userId: volunteerUid,
     type: 'volunteer_completion_approved',
     title: subject,
     body: content,
-    link: '/profile?tab=etki',
+    // "Değerlendir misiniz?" → /volunteering/{id} (orada Değerlendir butonu var).
+    link: `/volunteering/${taskId}`,
     data: {
       completionId,
       taskId,
       ngoId: completionNgoId,
       impactValueTRY: finalImpactValue,
       impactPoints: finalImpactPoints,
+      cta: 'evaluate',
     },
     storeAsMessage: true,
     messageSubject: subject,
@@ -281,6 +283,7 @@ export async function PATCH(
       taskId,
       ngoId: completionNgoId,
       impactValueTRY: finalImpactValue,
+      cta: 'evaluate',
     },
   });
 

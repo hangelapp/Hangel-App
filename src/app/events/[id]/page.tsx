@@ -204,6 +204,15 @@ export default function EventDetailPage() {
   const isGoing = rsvpData?.status === 'going';
   const [isRsvpLoading, setIsRsvpLoading] = useState(false);
 
+  // Yönetici = super-admin VEYA yönettiği kuruluş/kulüp etkinliğin organizatörü.
+  // managedNgoId/managedClubId User tipinde tanımlı değil → yerelde cast et.
+  const eventOrganizerId = (event as { organizerId?: string } | null)?.organizerId;
+  const ud = userData as (typeof userData & { managedNgoId?: string; managedClubId?: string }) | null;
+  const isManager = !!ud && (
+    ud.role === 'super-admin' ||
+    (!!eventOrganizerId && (ud.managedNgoId === eventOrganizerId || ud.managedClubId === eventOrganizerId))
+  );
+
   const submitRsvp = async (action: 'going' | 'cancel') => {
     // ADIM 7 — Misafir/Keşfet: anonim kullanıcı eylem anında giriş'e davet edilir.
     // BUGFIX 2026-06-19: anonim kullanıcı "Katıl"a basıp giriş yapınca /events
@@ -604,7 +613,7 @@ export default function EventDetailPage() {
             {/* Canlı etkinlik modu — geri sayım / Canlı Başlat-Bitir / konuşmacıya canlı puan */}
             {resolvedEventId && (
               <div className="mt-4">
-                <LiveEventSection eventId={resolvedEventId} event={event} isGoing={isGoing} authUser={authUser ?? null} />
+                <LiveEventSection eventId={resolvedEventId} event={event} isGoing={isGoing} isManager={isManager} authUser={authUser ?? null} />
               </div>
             )}
 

@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Star, Loader2 } from 'lucide-react';
+import { Star, Loader2, UserCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { celebrate } from '@/lib/celebrate';
 import { eventStart, eventEnd, formatCountdown } from '@/lib/event-time';
@@ -23,20 +23,45 @@ interface LiveEventSectionProps {
   eventId: string;
   event: { name: string; startDate: string; endDate?: string; completed?: boolean; contributors?: EventContributor[] };
   isGoing: boolean;
+  isManager?: boolean;
   authUser: { getIdToken: () => Promise<string> } | null;
 }
 
-export function LiveEventSection({ eventId, event, isGoing, authUser }: LiveEventSectionProps) {
+type LiveStats = { checkinCount: number; avgSpeakerRating: number; ratingCount: number };
+
+export function LiveEventSection({ eventId, event, isGoing, isManager, authUser }: LiveEventSectionProps) {
   const { toast } = useToast();
   const [now, setNow] = useState(0);
   const [myRatings, setMyRatings] = useState<Record<number, number>>({});
   const [ratingBusy, setRatingBusy] = useState<number | null>(null);
+  const [stats, setStats] = useState<LiveStats | null>(null);
 
   useEffect(() => {
     setNow(Date.now());
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  // Yönetici canlı paneli — 12 sn'de bir check-in + ortalama konuşmacı puanını çek.
+  const startMsForPoll = eventStart(event)?.getTime() ?? NaN;
+  const endMsForPoll = eventEnd(event)?.getTime() ?? (isNaN(startMsForPoll) ? NaN : startMsForPoll + 3 * HOUR);
+  const liveForPoll = !!now && !isNaN(startMsForPoll) && event.completed !== true && now >= startMsForPoll && now <= endMsForPoll;
+  useEffect(() => {
+    if (!isManager || !liveForPoll || !authUser) return;
+    let active = true;
+    const load = async () => {
+      try {
+        const token = await authUser.getIdToken();
+        const res = await fetch(`/api/events/${eventId}/live-stats`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) return;
+        const data = (await res.json()) as LiveStats;
+        if (active) setStats(data);
+      } catch { /* canlı panel best-effort; sessiz başarısız */ }
+    };
+    void load();
+    const t = setInterval(load, 12_000);
+    return () => { active = false; clearInterval(t); };
+  }, [isManager, liveForPoll, authUser, eventId]);
 
   const startMs = eventStart(event)?.getTime() ?? NaN;
   const endMs = eventEnd(event)?.getTime() ?? (isNaN(startMs) ? NaN : startMs + 3 * HOUR);
@@ -113,6 +138,39 @@ export function LiveEventSection({ eventId, event, isGoing, authUser }: LiveEven
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Yönetici paneli — SADECE canlıda + yöneticide görünür (katılımcı görmez) */}
+      {isLive && isManager && (
+        <div className="mt-4 rounded-2xl border border-[#f34723]/20 bg-[#f34723]/5 p-4">
+          <p className="mb-3 flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#f34723]">
+            <UserCheck className="h-3.5 w-3.5" /> Yönetici paneli
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl bg-card p-3.5 text-center shadow-sm">
+              <p className="text-3xl font-black tabular-nums leading-none text-foreground">{stats?.checkinCount ?? '—'}</p>
+              <p className="mt-1.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Check-in</p>
+            </div>
+            <div className="rounded-2xl bg-card p-3.5 text-center shadow-sm">
+              <p className="text-3xl font-black tabular-nums leading-none text-foreground">
+                {stats && stats.ratingCount > 0 ? stats.avgSpeakerRating.toFixed(1) : '—'}
+              </p>
+              <div className="mt-1.5 flex items-center justify-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Star
+                    key={n}
+                    className={`h-3.5 w-3.5 ${stats && stats.ratingCount > 0 && Math.round(stats.avgSpeakerRating) >= n
+                      ? 'fill-[#f34723] text-[#f34723]'
+                      : 'text-muted-foreground/30'}`}
+                  />
+                ))}
+              </div>
+              <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                Konuşmacı puanı{stats && stats.ratingCount > 0 ? ` (${stats.ratingCount})` : ''}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </section>

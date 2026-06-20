@@ -76,6 +76,38 @@ const FilterButton = ({ title, options, selected, onSelectedChange }: {
     );
 };
 
+// Tamamlanan gönüllülük ilanı, tamamlanma anından sonra bu süre kadar
+// "Tamamlandı" rozetiyle listede kalır; sonra düşer (etkinliklerdeki gibi).
+const COMPLETED_VISIBLE_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 saat
+
+// `completedAt` Firestore Timestamp ({seconds}), ms (number) ya da ISO string
+// olarak gelebilir. Hepsini ms'e çevirir; çözülemezse null döner.
+function completedAtMs(value: unknown): number | null {
+    if (value == null) return null;
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : null;
+    }
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (!trimmed) return null;
+        const parsed = Date.parse(trimmed);
+        return Number.isNaN(parsed) ? null : parsed;
+    }
+    if (typeof value === 'object') {
+        const seconds = (value as { seconds?: unknown }).seconds;
+        if (typeof seconds === 'number' && Number.isFinite(seconds)) {
+            return seconds * 1000;
+        }
+        // Firestore client Timestamp: toMillis()
+        const toMillis = (value as { toMillis?: unknown }).toMillis;
+        if (typeof toMillis === 'function') {
+            const ms = (value as { toMillis: () => number }).toMillis();
+            return Number.isFinite(ms) ? ms : null;
+        }
+    }
+    return null;
+}
+
 // Türkçe karşılaştırma için normalize (büyük/küçük harf + boşluk).
 const normTr = (s: unknown): string =>
     typeof s === 'string' ? s.trim().toLocaleLowerCase('tr') : '';
@@ -177,6 +209,9 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
     const match = computeMatch(opp, profile);
     const matchPercentage = match.percent;
 
+    // Tamamlanan ilan: tamamlanma + 24 saat boyunca "Tamamlandı" rozetiyle kalır.
+    const isCompleted = (opp as Volunteering & { status?: string }).status === 'Tamamlandı';
+
     const daysRemaining = differenceInDays(parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
     const countdownText = daysRemaining > 0 ? t('volunteering_root.remainingDays').replace('{days}', String(daysRemaining)) : (daysRemaining === 0 ? t('volunteering_root.lastDay') : t('volunteering_root.expired'));
 
@@ -225,9 +260,15 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <span className="font-bold text-primary text-[11px]">{opp.points} {t('volunteering_root.points')}</span>
-                                <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
-                                    {countdownText}
-                                </Badge>
+                                {isCompleted ? (
+                                    <Badge variant="secondary" className="text-[10px] font-bold">
+                                        Tamamlandı
+                                    </Badge>
+                                ) : (
+                                    <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
+                                        {countdownText}
+                                    </Badge>
+                                )}
                             </div>
                         </div>
 
@@ -407,9 +448,19 @@ export default function VolunteeringPage() {
     const filteredOpps = useMemo(() => {
         if (!oppsData) return [];
         const today = new Date(); today.setHours(0, 0, 0, 0);
-        // Sadece onaylanmış (Aktif) + süresi dolmamış ilanlar
+        const now = Date.now();
+        // Sadece onaylanmış (Aktif) + süresi dolmamış ilanlar.
+        // İstisna: 'Tamamlandı' ilan, tamamlanma anından 24 saat boyunca
+        // "Tamamlandı" rozetiyle listede kalır; sonra düşer (etkinliklerdeki gibi).
         let filtered = oppsData.filter(opp => {
-            const status = (opp as Volunteering & { status?: string }).status;
+            const oppExtra = opp as Volunteering & { status?: string; completedAt?: unknown };
+            const status = oppExtra.status;
+            if (status === 'Tamamlandı') {
+                const completedMs = completedAtMs(oppExtra.completedAt);
+                // completedAt yoksa (zaman bilinmiyor) yeni tamamlanmış sayılıp tutulur.
+                if (completedMs == null) return true;
+                return now - completedMs < COMPLETED_VISIBLE_WINDOW_MS;
+            }
             if (status && status !== 'Aktif') return false;
             try {
                 const end = parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date());
