@@ -3,6 +3,7 @@ import { notFound, useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { openExternalUrl } from '@/lib/capacitor';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { DistanceBadge } from '@/components/shared/distance-badge';
@@ -350,40 +351,13 @@ export default function VolunteeringDetailPage() {
   const handleAddToWallet = async () => {
     if (!authUser) return;
     try {
+      // Passport (çalışan) ile aynı yol: ?token= query + openExternalUrl
+      // (sistem tarayıcısı → .pkpass → Apple Wallet "Ekle" sayfası).
       const idToken = await authUser.getIdToken();
-      const { Capacitor } = await import('@capacitor/core');
-      if (Capacitor.isNativePlatform()) {
-        // Önce durum kontrolü — sertifika eksikse Safari'de ham JSON hatası
-        // göstermeyelim; temiz mesaj verelim.
-        const probe = await fetch(`/api/passkit/volunteer/${opportunity.id}`, { headers: { authorization: `Bearer ${idToken}` } });
-        if (!probe.ok) {
-          toast({ title: 'Apple Wallet yakında', description: 'hangel ekibi Wallet sertifikasını yapılandırıyor; çok yakında aktif olacak.' });
-          return;
-        }
-        // Capacitor WebView'da blob URL Wallet'ı tetiklemez. pkpass'i sistem
-        // tarayıcısında (SFSafariViewController) aç → "Apple Wallet'a Ekle" çıkar.
-        const url = `${window.location.origin}/api/passkit/volunteer/${opportunity.id}?token=${encodeURIComponent(idToken)}`;
-        const { Browser } = await import('@capacitor/browser');
-        await Browser.open({ url });
-        return;
-      }
-      // Web (özellikle iOS Safari): .pkpass blob+download ile İNMEZ — Safari
-      // "bu dosyayı indiremiyor" der. Wallet pkpass'i ancak doğrudan bir GET
-      // navigasyonundan teslim alır. Önce probe ile sertifika/yetki durumunu
-      // kontrol et (ham JSON hata sayfası göstermemek için), sonra tarayıcıyı
-      // pkpass URL'ine doğrudan yönlendir (?token= query route'ça destekleniyor).
-      const probe = await fetch(`/api/passkit/volunteer/${opportunity.id}`, {
-        headers: { authorization: `Bearer ${idToken}` },
-      });
-      if (probe.status === 503) {
-        toast({ title: 'Apple Wallet yakında', description: 'hangel ekibi Wallet sertifikasını yapılandırıyor; çok yakında aktif olacak.' });
-        return;
-      }
-      if (!probe.ok) throw new Error('PassKit hazır değil');
-      // Doğrudan navigasyon → iOS Safari application/vnd.apple.pkpass'i Wallet'a verir.
-      window.location.href = `/api/passkit/volunteer/${opportunity.id}?token=${encodeURIComponent(idToken)}`;
+      const url = new URL(`/api/passkit/volunteer/${opportunity.id}?token=${encodeURIComponent(idToken)}`, window.location.origin).toString();
+      await openExternalUrl(url);
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Apple Wallet hazırlanamadı', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
+      toast({ variant: 'destructive', title: 'Apple Wallet açılamadı', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
     }
   };
 
