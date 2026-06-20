@@ -42,6 +42,9 @@ import {
     Command,
     Rows,
     RotateCcw,
+    Link2,
+    ScanFace,
+    Wand2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -50,6 +53,7 @@ import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { A11Y_CHANGED_EVENT } from '@/components/shared/accessibility-applier';
+import { applyBlindFriendlyPreset, SMART_A11Y_STATE_EVENT } from '@/components/shared/smart-accessibility';
 
 const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: { children: React.ReactNode, icon: React.ElementType, label: string, iconColor: string, description?: string }) => (
     <div className="flex items-center p-4 text-sm sm:text-base border-b last:border-b-0">
@@ -74,6 +78,10 @@ export default function AccessibilitySettingsPage() {
     const db = useFirestore();
     const [isSaving, setIsSaving] = useState(false);
 
+    // Akıllı Erişilebilirlik — ekran okuyucu otomatik algılama
+    const [autoDetect, setAutoDetect] = useState(true);
+    const [screenReaderDetected, setScreenReaderDetected] = useState(false);
+
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
         return doc(db, COLLECTIONS.users, authUser.uid);
@@ -89,6 +97,8 @@ export default function AccessibilitySettingsPage() {
     const [colorFilter, setColorFilter] = useState('yok');
     const [dyslexiaFont, setDyslexiaFont] = useState(false);
     const [textAlignment, setTextAlignment] = useState('left');
+    const [linkUnderline, setLinkUnderline] = useState(false);
+    const [screenReaderMode, setScreenReaderMode] = useState(false);
     const [separateText, setSeparateText] = useState(false);
     const [showContrastInfo, setShowContrastInfo] = useState(true);
     const [reflowMode, setReflowMode] = useState(true);
@@ -143,6 +153,8 @@ export default function AccessibilitySettingsPage() {
                 if (s.colorFilter) setColorFilter(s.colorFilter);
                 if (s.dyslexiaFont !== undefined) setDyslexiaFont(s.dyslexiaFont);
                 if (s.textAlignment) setTextAlignment(s.textAlignment);
+                if (s.linkUnderline !== undefined) setLinkUnderline(s.linkUnderline);
+                if (s.screenReaderMode !== undefined) setScreenReaderMode(s.screenReaderMode);
                 if (s.separateText !== undefined) setSeparateText(s.separateText);
                 if (s.showContrastInfo !== undefined) setShowContrastInfo(s.showContrastInfo);
                 if (s.reflowMode !== undefined) setReflowMode(s.reflowMode);
@@ -187,6 +199,50 @@ export default function AccessibilitySettingsPage() {
         }
     }, []);
 
+    // Akıllı Erişilebilirlik: otomatik algılama tercihi + canlı ekran okuyucu durumu
+    useEffect(() => {
+        try {
+            setAutoDetect(localStorage.getItem('hangel:a11y-auto-detect') !== 'off');
+        } catch { /* private mode */ }
+        const onState = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            if (detail && typeof detail.screenReaderOn === 'boolean') {
+                setScreenReaderDetected(detail.screenReaderOn);
+            }
+        };
+        window.addEventListener(SMART_A11Y_STATE_EVENT, onState);
+        return () => window.removeEventListener(SMART_A11Y_STATE_EVENT, onState);
+    }, []);
+
+    // Otomatik algılama açık/kapalı — tercihi anında sakla.
+    const handleAutoDetectChange = (next: boolean) => {
+        setAutoDetect(next);
+        try {
+            if (next) {
+                localStorage.removeItem('hangel:a11y-auto-detect');
+            } else {
+                localStorage.setItem('hangel:a11y-auto-detect', 'off');
+            }
+        } catch { /* private mode */ }
+    };
+
+    // "Şimdi kör-dostu profili uygula" — preset'i yazar ve yerel state'i eşitler.
+    const handleApplyBlindPreset = () => {
+        applyBlindFriendlyPreset();
+        setHighContrast(true);
+        setFontSize('huge');
+        setReduceMotion(true);
+        setLargeTouchTargets(true);
+        setFullKeyboard(true);
+        setFocusFrame('high');
+        setLinkUnderline(true);
+        setScreenReaderMode(true);
+        toast({
+            title: '🧡 Kör-dostu profil uygulandı',
+            description: 'Yüksek kontrast, büyük yazı, hareket azaltma ve daha fazlası açıldı.',
+        });
+    };
+
     // Tüm tercihleri ilk açılıştaki güvenli/varsayılan değerlerine getirir;
     // localStorage'tan tercihleri temizler ve aynı tab'a A11Y_CHANGED event'i
     // yayar — kullanıcı dilerse sonra "Kaydet"e basıp Firestore'a da yazar.
@@ -200,6 +256,8 @@ export default function AccessibilitySettingsPage() {
         setColorFilter('yok');
         setDyslexiaFont(false);
         setTextAlignment('left');
+        setLinkUnderline(false);
+        setScreenReaderMode(false);
         setSeparateText(false);
         setShowContrastInfo(true);
         setReflowMode(true);
@@ -244,7 +302,7 @@ export default function AccessibilitySettingsPage() {
         if (isSaving) return;
         setIsSaving(true);
         const settings = {
-            highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, separateText, showContrastInfo, reflowMode,
+            highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, linkUnderline, screenReaderMode, separateText, showContrastInfo, reflowMode,
             reduceMotion, largeTouchTargets, longPressDuration, fullKeyboard, focusStrength, dragDropAlt, limitShortcuts,
             readingLevel, stepByStep, termConsistency, focusMode, termDefinitions, errorPrevention,
             screenReader, dynamicAnnouncements, mediaDescriptions, logicalOrder, audioFeedback, visualAlerts, muteAutoAudio, ignoreDecorative,
@@ -295,6 +353,68 @@ export default function AccessibilitySettingsPage() {
                     <p className="text-muted-foreground text-lg font-medium leading-relaxed">
                         {t('dashboard.settingsAccessibility.subheading')}
                     </p>
+                </div>
+            </div>
+
+            {/* --- ✨ Akıllı Erişilebilirlik (öne çıkan, yenilikçi) --- */}
+            <div className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 sm:p-8 shadow-sm">
+                <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
+                <div className="relative space-y-5">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-white">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Yeni · Akıllı</span>
+                    </div>
+                    <div className="flex items-start gap-4">
+                        <div className="shrink-0 rounded-2xl bg-white/80 p-3 shadow-sm dark:bg-white/10">
+                            <ScanFace className="h-7 w-7 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <h2 className="text-2xl font-black tracking-tight leading-tight">Akıllı Erişilebilirlik</h2>
+                            <p className="text-sm font-medium leading-relaxed text-muted-foreground">
+                                hangel, ekran okuyucu (VoiceOver / TalkBack) kullandığını algılar ve ayarları
+                                senin için otomatik düzenlemeyi teklif eder. Tek dokunuşla yüksek kontrast,
+                                büyük yazı ve hareket azaltma açılır — hiçbir menüde kaybolmadan.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Canlı durum rozeti */}
+                    <div
+                        className={cn(
+                            "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold",
+                            screenReaderDetected
+                                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                                : "bg-muted text-muted-foreground"
+                        )}
+                        role="status"
+                    >
+                        <span className={cn("h-2 w-2 rounded-full", screenReaderDetected ? "bg-emerald-500" : "bg-muted-foreground/50")} aria-hidden="true" />
+                        {screenReaderDetected ? "Ekran okuyucu algılandı" : "Ekran okuyucu algılanmadı"}
+                    </div>
+
+                    <div className="rounded-2xl border border-black/5 bg-background/70 p-4 backdrop-blur-sm dark:border-white/10">
+                        <div className="flex items-center gap-4">
+                            <div className="rounded-lg bg-primary/10 p-1.5 shrink-0">
+                                <Wand2 className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 mr-4 space-y-0.5">
+                                <label htmlFor="autoDetectA11y" className="block font-medium cursor-pointer">Otomatik algıla ve sor</label>
+                                <p className="text-xs leading-snug text-muted-foreground">
+                                    Açıkken hangel, ekran okuyucu kullandığını fark ederse ayarları senin için
+                                    düzenlemeyi teklif eder. Bir kez yanıtladığında tekrar sormaz.
+                                </p>
+                            </div>
+                            <Switch id="autoDetectA11y" checked={autoDetect} onCheckedChange={handleAutoDetectChange} />
+                        </div>
+                        <Button
+                            variant="outline"
+                            onClick={handleApplyBlindPreset}
+                            className="mt-4 w-full rounded-xl border-primary/30 text-primary hover:bg-primary/10 hover:text-primary font-bold"
+                        >
+                            <Wand2 className="mr-2 h-4 w-4" />
+                            Kör-dostu profili şimdi uygula
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -366,6 +486,9 @@ export default function AccessibilitySettingsPage() {
                             </SettingsItem>
                             <SettingsItem label="Disleksi Dostu Yazı Tipi" icon={Type} iconColor="bg-indigo-500" description="OpenDyslexic yazı tipini aktif eder.">
                                 <Switch checked={dyslexiaFont} onCheckedChange={setDyslexiaFont} />
+                            </SettingsItem>
+                            <SettingsItem label="Bağlantıların Altını Çiz" icon={Link2} iconColor="bg-indigo-500" description="Renkten bağımsız olarak linkleri ayırt edilebilir kılar. (WCAG 1.4.1)">
+                                <Switch checked={linkUnderline} onCheckedChange={setLinkUnderline} />
                             </SettingsItem>
                         </div>
                     </CardContent>
@@ -473,6 +596,9 @@ export default function AccessibilitySettingsPage() {
                             </SettingsItem>
                             <SettingsItem label="ARIA ve Anonslar" icon={Ear} iconColor="bg-blue-500">
                                 <Switch checked={screenReader} onCheckedChange={setScreenReader} />
+                            </SettingsItem>
+                            <SettingsItem label="Ekran Okuyucu Modu" icon={ScanFace} iconColor="bg-blue-500" description="Kalın odak halkası ve büyük dokunma hedefleriyle ekran okuyucuyla gezinmeyi kolaylaştırır.">
+                                <Switch checked={screenReaderMode} onCheckedChange={setScreenReaderMode} />
                             </SettingsItem>
                         </div>
                     </CardContent>

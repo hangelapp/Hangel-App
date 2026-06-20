@@ -71,6 +71,12 @@ export function applyA11ySettings() {
 
         // Otomatik sesleri kapat
         html.classList.toggle('a11y-mute-auto', !!s.muteAutoAudio);
+
+        // Bağlantıların altını çiz (renkten bağımsız ayırt edilebilirlik)
+        html.classList.toggle('a11y-link-underline', !!s.linkUnderline);
+
+        // Ekran okuyucu modu — kör-dostu görsel iyileştirmeler paketi
+        html.classList.toggle('a11y-screen-reader-mode', !!s.screenReaderMode);
     } catch {
         // ignore
     }

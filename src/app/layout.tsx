@@ -17,6 +17,7 @@ import AppBottomNav from '@/components/layout/bottom-nav';
 import { RatingPopup } from '@/components/shared/rating-popup';
 import { OfflineBanner } from '@/components/shared/offline-banner';
 import { AccessibilityApplier } from '@/components/shared/accessibility-applier';
+import { SmartAccessibility } from '@/components/shared/smart-accessibility';
 import { ThemeApplier } from '@/components/shared/theme-applier';
 import { LocationPermissionPrompt } from '@/components/shared/location-permission-prompt';
 import { CookieBanner } from '@/components/shared/cookie-banner';
@@ -119,6 +120,7 @@ export default function RootLayout({
             <AppBottomNav />
             <RatingPopup />
             <AccessibilityApplier />
+            <SmartAccessibility />
             <LocationPermissionPrompt />
             <CookieBanner />
             <DraftNgoBanner />

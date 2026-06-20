@@ -301,3 +301,24 @@ html.a11y-mute-auto audio[autoplay],
 html.a11y-mute-auto video[autoplay] {
   /* JS tarafında mute=true yapılmalı, CSS sadece görsel ipucu */
 }
+
+/* Bağlantıların altını çiz — rengi görmeyen kullanıcılar için linkleri ayırt
+   edilebilir kılar (WCAG 1.4.1: rengin tek ayırt edici olmaması). */
+html.a11y-link-underline a {
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+}
+
+/* Ekran okuyucu modu — Akıllı Erişilebilirlik'in kör-dostu görsel paketi.
+   Daha kalın odak halkası ve büyük dokunma hedefleri, ekran okuyucuyla
+   gezinen kullanıcıların kalan görüşüyle de rahat takip etmesini sağlar. */
+html.a11y-screen-reader-mode *:focus-visible {
+  outline: 3px solid hsl(var(--ring)) !important;
+  outline-offset: 3px !important;
+}
+html.a11y-screen-reader-mode button,
+html.a11y-screen-reader-mode a,
+html.a11y-screen-reader-mode [role="button"] {
+  min-height: 48px;
+  min-width: 48px;
+}
