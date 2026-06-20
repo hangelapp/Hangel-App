@@ -310,6 +310,26 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
   const isLoading =
     isUserLoading || userDocLoading || ngosLoading || brandsLoading || clubsLoading;
 
+  // URL kanonikleştirme: bir alt-sayfaya ?id olmadan girilirse (dış giriş, yer
+  // imi, geri tuşu) çözülen aktif kurumu URL'e yaz. Böylece aktif kurum HER ZAMAN
+  // URL'de açıkça görünür — sessiz/eski state karmaşası olmaz, seçici otoriter kalır.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (urlSelection) return;            // URL zaten net
+    if (isLoading) return;               // henüz çözülmedi
+    if (pathname === '/ngo-admin') return; // picker landing — ?id eklenmez
+    if (!active.id || !active.type) return;
+    try {
+      const params = new URLSearchParams(Array.from(searchParams?.entries() || []));
+      params.set('id', active.id);
+      params.set('type', active.type);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    } catch {
+      // ignore — storedSelection/fallback yine de geçerli
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlSelection, isLoading, pathname, active.id, active.type]);
+
   const setActive = useCallback((org: { id: string; type: EntityType }) => {
     const kind = typeToKind(org.type);
     if (!kind) return;
