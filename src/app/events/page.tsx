@@ -79,8 +79,9 @@ function EventsPageContent() {
   );
   const { data: firestoreEvents } = useCollection(eventsRef);
   const events = useMemo<Event[]>(() => {
-    const all = (firestoreEvents ?? []) as (Event & { status?: string })[];
-    return all.filter((e) => !HIDDEN_EVENT_STATUSES.has(e.status ?? '')) as Event[];
+    const all = (firestoreEvents ?? []) as (Event & { status?: string; completed?: boolean })[];
+    // Tamamlanan etkinlikler aktif listeden ve canlıdan düşer ("Tamamla = kapat").
+    return all.filter((e) => !HIDDEN_EVENT_STATUSES.has(e.status ?? '') && e.completed !== true) as Event[];
   }, [firestoreEvents]);
 
   // Filters from URL
