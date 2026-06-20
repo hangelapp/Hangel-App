@@ -9,6 +9,7 @@ import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
 import { LiveEventSection } from '@/components/events/live-event-section';
 import { EventEvaluateButton } from '@/components/events/event-evaluate-button';
 import { openExternalUrl } from '@/lib/capacitor';
+import { ToastAction } from '@/components/ui/toast';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -235,7 +236,10 @@ export default function EventDetailPage() {
       }
       toast({
         title: data.status === 'going' ? 'Kayıt alındı' : 'Kaydın iptal edildi',
-        description: data.status === 'going' ? 'Etkinliğe katılıyorsun.' : 'RSVP iptal edildi.',
+        description: data.status === 'going' ? 'Etkinliğe katılıyorsun. Takvimine ekle 👇' : 'RSVP iptal edildi.',
+        action: data.status === 'going' && resolvedEventId
+          ? <ToastAction altText="Takvime ekle" onClick={() => openExternalUrl(new URL(`/api/events/${resolvedEventId}/ics`, window.location.origin).toString())}>📅 Ekle</ToastAction>
+          : undefined,
       });
       // Katılımda telefon ekranında canlı etkinlik (Live Activity) başlat (iOS native; web no-op).
       if (data.status === 'going' && resolvedEventId) {
