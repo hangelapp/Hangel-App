@@ -6,6 +6,7 @@ import { Cookie, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { contractsData } from '@/lib/contracts';
 import { useUser } from '@/firebase';
+import { isNativeApp } from '@/lib/capacitor';
 
 const STORAGE_KEY = 'hangel.cookie-consent';
 
@@ -17,6 +18,8 @@ export function CookieBanner() {
 
     useEffect(() => {
         if (isUserLoading) return;
+        // Capacitor app içinde çerez/izin popup'ı gösterme — zaten uygulamadayız.
+        if (isNativeApp()) { setVisible(false); return; }
         if (user) { setVisible(false); return; }
         try {
             const stored = window.localStorage.getItem(STORAGE_KEY);
