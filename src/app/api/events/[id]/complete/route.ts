@@ -16,6 +16,7 @@ import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { notifyUser } from '@/lib/notify-user';
+import { buildCertCode } from '@/lib/certificate-code';
 
 export const runtime = 'nodejs';
 
@@ -47,7 +48,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const eventRef = db.collection(COLLECTIONS.events).doc(eventId);
   const eventSnap = await eventRef.get();
   if (!eventSnap.exists) return errJson('event_not_found', 'Etkinlik bulunamadı', 404);
-  const ev = eventSnap.data() as { name?: string; organizerId?: string; organizer?: string; createdBy?: string };
+  const ev = eventSnap.data() as { name?: string; organizerId?: string; organizer?: string; createdBy?: string; startDate?: string };
 
   // Yetki — organizatör veya super-admin
   let authorized = isSuperAdmin || ev.createdBy === uid;
@@ -78,6 +79,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const eventName = ev.name || 'Etkinlik';
   const ngoId = ev.organizerId || '';
   const ngoName = ev.organizer || 'hangel';
+  const eventDate = ev.startDate || new Date().toISOString().slice(0, 10);
   let newlyCertified = 0; let alreadyDone = 0;
 
   for (const targetUid of uids) {
@@ -85,9 +87,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const certRef = db.collection(COLLECTIONS.certificates).doc(certId);
     if ((await certRef.get()).exists) { alreadyDone++; continue; } // idempotent
 
+    // Doğrulama kodu (H… ) — /c/{kod} sayfasından kontrol edilir. Client PDF aynı
+    // girdiden (date + certId) AYNI kodu üretir → DB eşleşmesi çalışır.
     const cert = {
-      id: certId, userId: targetUid, eventId, eventName, role: 'participant',
-      ngoId, ngoName, type: 'event',
+      id: certId, userId: targetUid, eventId, eventName, title: eventName, role: 'participant',
+      ngoId, ngoName, type: 'event', date: eventDate,
+      code: buildCertCode({ date: eventDate, country: 'TR', kind: 'event', idSeed: certId }),
       completedAt: FieldValue.serverTimestamp(), issuedBy: uid,
     };
     await certRef.set(cert);

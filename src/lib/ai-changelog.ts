@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "87da9e5d",
+    "date": "2026-06-21",
+    "subject": "script: gönüllülük ilanları etki backfill (puan+TL, eşleşmeyene Genel Gönüllülük)"
+  },
+  {
+    "hash": "55771087",
+    "date": "2026-06-21",
+    "subject": "fix(certificates+live): /my-badges sertifikası yeni tasarım + Türkçe glyph + iOS; adsız cert gizli; canlı geri sayım HH:MM:SS"
+  },
+  {
     "hash": "dc6e7db8",
     "date": "2026-06-21",
     "subject": "feat(marketing+live-activity): tek tık \"Tümünü Yayınla\" + Panel Ayarları başlığı; etkinlik kapanınca Live Activity söner"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "40934b55",
     "date": "2026-06-20",
     "subject": "feat(org): coral doğrulama tiki (VerifiedBadge) — STK profilinde"
-  },
-  {
-    "hash": "331b260e",
-    "date": "2026-06-20",
-    "subject": "feat: kütük no tireleri otomatik + hoş geldin puanı (hangel rozeti)"
-  },
-  {
-    "hash": "2a8f7509",
-    "date": "2026-06-20",
-    "subject": "chore(audit): 'yarat-' (oluşturma fiili) → 'üret/oluştur' (Apple/dil kuralı)"
   }
 ];

@@ -6,7 +6,17 @@
  */
 import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { eventStart, eventPhase, formatCountdown, type EventLike } from '@/lib/event-time';
+import { eventStart, eventPhase, type EventLike } from '@/lib/event-time';
+
+// Geri sayım: saat:dakika:saniye (saat 24'ü aşabilir → 50:23:11).
+function clock(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+}
 
 export function EventCountdown({ event, className }: { event: EventLike; className?: string }) {
   const [now, setNow] = useState(0);
@@ -37,7 +47,7 @@ export function EventCountdown({ event, className }: { event: EventLike; classNa
   }
   return (
     <span className={cn('font-bold tabular-nums', className)}>
-      Başlamasına {formatCountdown(start.getTime() - now)} kaldı
+      Başlamasına {clock(start.getTime() - now)}
     </span>
   );
 }
@@ -81,7 +91,7 @@ export function DualCountdown({ start, startTime, end, endTime, className }: { s
         )}
       </span>
       <span className={cn('font-mono text-xl font-black tabular-nums', live ? 'text-red-600' : 'text-foreground')}>
-        {formatCountdown((live ? endMs : startMs) - now)}
+        {clock((live ? endMs : startMs) - now)}
       </span>
     </div>
   );

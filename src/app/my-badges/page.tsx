@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { isNativeApp } from '@/lib/capacitor';
 import { EtkiTabContent } from '@/components/profile/etki-tab-content';
 import { generateEventCertificate, eventCertificateFileName } from '@/lib/event-certificate';
+import { generateVolunteerCertificate } from '@/lib/volunteer-certificate';
 
 const levelColors: Record<BadgeLevel, { bg: string; text: string }> = {
   'Bakır':  { bg: 'bg-orange-700/15',  text: 'text-orange-800 dark:text-orange-300' },
@@ -184,13 +185,31 @@ export default function MyBadgesPage() {
     );
     const { data: userData } = useDoc(userDocRef);
 
-    // Sertifikalar: users/{uid}/certificates alt koleksiyonu (profile/page.tsx ile birebir).
-    type CertificateDoc = { id?: string; title: string; organization: string; date: string };
+    // Sertifikalar: users/{uid}/certificates alt koleksiyonu. Etkinlik sertifikaları
+    // title yerine eventName/ngoName/completedAt tutar → ortak şekle normalize edilir,
+    // tür (event/volunteer) belirlenir (gönüllülük ve etkinlik sertifikası farklı).
+    type RawCertDoc = {
+        id?: string;
+        title?: string; eventName?: string;
+        organization?: string; ngoName?: string;
+        date?: string; completedAt?: { seconds?: number } | string | number;
+        type?: string;
+    };
+    type CertificateDoc = { id?: string; title: string; organization: string; date: string; kind: 'event' | 'volunteer' };
     const certificatesRef = useMemoFirebase(
         () => (db && authUser ? collection(db, COLLECTIONS.users, authUser.uid, COLLECTIONS.certificates) : null),
         [db, authUser?.uid],
     );
-    const { data: certificatesData } = useCollection<CertificateDoc>(certificatesRef);
+    const { data: certificatesData } = useCollection<RawCertDoc>(certificatesRef);
+
+    // Firestore Timestamp / sayı / ISO → "YYYY-MM-DD".
+    const tsToDateStr = (v: RawCertDoc['completedAt']): string => {
+        if (!v) return '';
+        if (typeof v === 'string') return v.slice(0, 10);
+        if (typeof v === 'number') return new Date(v).toISOString().slice(0, 10);
+        if (typeof v === 'object' && typeof v.seconds === 'number') return new Date(v.seconds * 1000).toISOString().slice(0, 10);
+        return '';
+    };
 
     // Onaylı gönüllülük katılımları → sertifika.
     // Veri modeli: applications koleksiyonunda type === 'Gönüllülük' ve
@@ -213,13 +232,21 @@ export default function MyBadgesPage() {
                 title: app.title,
                 organization: app.org || '',
                 date: app.date || '',
+                kind: 'volunteer' as const,
             }));
     }, [approvedAppsData]);
 
     // Manuel girilen sertifikalar (users/{uid}/certificates) + onaylı katılımlar.
     // Aynı başlık+kuruluş tekrarını önlemek için dedupe uygula.
     const certificates = useMemo<CertificateDoc[]>(() => {
-        const manual = certificatesData ?? [];
+        // Etkinlik sertifikaları eventName/ngoName/completedAt tutar → ortak şekle indir.
+        const manual: CertificateDoc[] = (certificatesData ?? []).map((c) => ({
+            id: c.id,
+            title: (c.title || c.eventName || '').trim(),
+            organization: (c.organization || c.ngoName || '').trim(),
+            date: c.date || tsToDateStr(c.completedAt),
+            kind: (c.type === 'volunteering' || c.type === 'volunteer') ? 'volunteer' : 'event',
+        }));
         const seen = new Set(manual.map(c => `${c.title}|${c.organization}`));
         const merged: CertificateDoc[] = [...manual];
         for (const c of approvedCertificates) {
@@ -269,16 +296,28 @@ export default function MyBadgesPage() {
 
     // Sertifika çıktısı: yeni Apple-kimlikli, iOS-GÜVENLİ üretici (SVG→canvas→jsPDF,
     // sistem fontuyla Türkçe ğ/ş/ı/İ doğru render). İndir + Görüntüle aynı Blob'u paylaşır.
-    const buildCertBlob = (cert: { title: string; organization: string; date: string; id?: string }) =>
-        generateEventCertificate({
+    const buildCertBlob = (cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer' }) => {
+        const certificateId = cert.id || cert.title;
+        // Gönüllülük ve etkinlik sertifikaları AYRI tasarım + AYRI metin kullanır.
+        // verifyUrl GEÇMEZ → üretici, H-kodlu doğrulama linkini (/c/{kod}) kendi kurar.
+        if (cert.kind === 'volunteer') {
+            return generateVolunteerCertificate({
+                taskTitle: cert.title,
+                organizerName: cert.organization,
+                userName: recipientName,
+                date: cert.date,
+                certificateId,
+            });
+        }
+        return generateEventCertificate({
             eventName: cert.title,
             eventDate: cert.date,
             userName: recipientName,
             organizerName: cert.organization,
             role: 'participant',
-            certificateId: cert.id || cert.title,
-            verifyUrl: typeof window !== 'undefined' ? window.location.origin : undefined,
+            certificateId,
         });
+    };
 
     const certFileName = (cert: { title: string; id?: string }) =>
         eventCertificateFileName({ eventName: cert.title, certificateId: cert.id || cert.title });
@@ -293,7 +332,7 @@ export default function MyBadgesPage() {
         });
 
     // Native: write to Documents/ + share; Web: blob indir.
-    const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string; id?: string }) => {
+    const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer' }) => {
         try {
             const blob = await buildCertBlob(cert);
             const filename = certFileName(cert);
@@ -335,10 +374,10 @@ export default function MyBadgesPage() {
     };
 
     // Modal popup preview için cert PDF blob URL'i ve seçili cert.
-    const [previewState, setPreviewState] = useState<{ url: string; cert: { title: string; organization: string; date: string; id?: string } } | null>(null);
+    const [previewState, setPreviewState] = useState<{ url: string; cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer' } } | null>(null);
 
     // Native: write temp + open via Browser; Web: iframe preview modal.
-    const handleViewCertificate = async (cert: { title: string; organization: string; date: string; id?: string }) => {
+    const handleViewCertificate = async (cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer' }) => {
         try {
             const blob = await buildCertBlob(cert);
             if (isNativeApp()) {

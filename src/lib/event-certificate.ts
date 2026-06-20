@@ -8,6 +8,7 @@
 
 import { roleLabelTr, roleCertificatePhraseTr } from '@/lib/event-roles';
 import type { EventUserRole } from '@/lib/event-roles';
+import { buildCertCode, certVerifyUrl } from '@/lib/certificate-code';
 
 // A5 yatay boyutları (mm) — sertifika klasik landscape.
 export const CERT_WIDTH_MM = 210;
@@ -79,6 +80,8 @@ export type EventCertificateInput = {
   role: EventUserRole;
   certificateId: string;
   verifyUrl?: string;
+  code?: string;
+  country?: string;
 };
 
 /**
@@ -148,10 +151,12 @@ export async function generateEventCertificate(input: EventCertificateInput): Pr
   const CORAL = '#f34723';
   const CORAL_DARK = '#c5391b';
   const INK = '#1f1f1f';
-  const certUrl = verifyUrl || `https://hangel.org.tr/certificate/${certificateId}`;
+  const code = input.code || buildCertCode({ date: eventDate, country: input.country || 'TR', kind: 'event', idSeed: certificateId });
+  const verify = verifyUrl || certVerifyUrl(code);
+  const verifyShort = verify.replace(/^https?:\/\//, '');
   const [logoUri, qrUri] = await Promise.all([
     typeof window !== 'undefined' ? urlToDataUri(HANGEL_LOGO_PATH) : Promise.resolve(null),
-    generateQrDataUri(certUrl, 600),
+    generateQrDataUri(verify, 600),
   ]);
   const roleLabel = roleLabelTr(role);
   const phrase = `${eventName} etkinliğinde ${roleCertificatePhraseTr(role)}.`;
@@ -190,9 +195,9 @@ export async function generateEventCertificate(input: EventCertificateInput): Pr
   <text x="60" y="${PX_H - 58}" font-size="15" font-weight="500" fill="#515154">${escXml(formatTrDate(eventDate))}</text>
 
   ${qrUri ? `<image x="${PX_W - 60 - 76}" y="${PX_H - 110}" width="76" height="76" href="${qrUri}" xlink:href="${qrUri}"/>
-  <text x="${PX_W - 60 - 38}" y="${PX_H - 22}" font-size="9" fill="#aeaeb2" text-anchor="middle">Doğrulamak için tarayın</text>` : ''}
+  <text x="${PX_W - 60 - 38}" y="${PX_H - 22}" font-size="9" fill="#aeaeb2" text-anchor="middle">Kontrol: ${escXml(verifyShort)}</text>` : ''}
 
-  <text x="${PX_W / 2}" y="${PX_H - 21}" text-anchor="middle"><tspan font-size="12" font-weight="700" fill="${CORAL}">hangel.org.tr</tspan><tspan font-size="10" fill="#c7c7cc" dx="9">Sertifika No: ${escXml(certificateId)}</tspan></text>
+  <text x="${PX_W / 2}" y="${PX_H - 21}" text-anchor="middle"><tspan font-size="12" font-weight="700" fill="${CORAL}">hangel.org.tr</tspan><tspan font-size="10" fill="#c7c7cc" dx="9">Sertifika Kodu: ${escXml(code)}</tspan></text>
 </svg>`;
 
   const jpeg = await rasterizeSvgToJpeg(svg, PX_W, PX_H, 2);
