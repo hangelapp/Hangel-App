@@ -111,11 +111,13 @@ export async function POST(req: NextRequest) {
   }
   const entityName = (entitySnap.data() as { name?: string }).name || COL_TO_LABEL[kind];
 
-  // Caller "Genel Yönetici" olmalı (entity.adminUserId == caller.uid) — yoksa
-  // managed*Id'si olsa bile co-admin atama yetkisi yok. Super-admin atlanır.
+  // Caller "Genel Yönetici" olmalı: kuruluş sahibi (adminUserId == caller.uid)
+  // VEYA {kind}RoleTitle == 'Genel Yönetici'. Super-admin atlanır.
   if (!isSuperAdmin) {
     const entityAdminUid = (entitySnap.data() as { adminUserId?: string }).adminUserId;
-    if (entityAdminUid && entityAdminUid !== decoded.uid) {
+    const callerRoleTitle = callerData[KIND_TO_ROLE_TITLE[kind]];
+    const isGeneral = (!!entityAdminUid && entityAdminUid === decoded.uid) || callerRoleTitle === 'Genel Yönetici';
+    if (!isGeneral) {
       return NextResponse.json({ error: 'Yalnızca Genel Yönetici yetkili davet edebilir' }, { status: 403 });
     }
   }
