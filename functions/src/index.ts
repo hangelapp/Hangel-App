@@ -137,6 +137,10 @@ export { weeklyEmailDigest } from './email-digest';
 // See ./sms-reminder.ts
 export { eventOneHourSmsReminder } from './sms-reminder';
 
+// Etkinlik başlangıç saatinde organizatöre "başlıyor, başlatmak ister misin?"
+// bildirimi (push + uygulama-içi). Her 5 dk. See ./event-start-prompt.ts
+export { eventStartOrganizerPrompt } from './event-start-prompt';
+
 // Daily 11:00 Europe/Istanbul nudge for users who registered ~24h / ~72h ago
 // but never completed onboarding. Writes notifications doc (push via
 // onNotificationCreated) and stamps the user doc for idempotency.
