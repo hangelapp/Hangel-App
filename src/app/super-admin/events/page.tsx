@@ -38,6 +38,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { EventAttendanceButton } from '@/components/events/event-attendance-button';
+import type { EventContributor } from '@/lib/types';
 import {
   collection,
   doc,
@@ -93,6 +95,7 @@ interface EventDoc {
   providesCertificate?: boolean;
   location?: { type?: string; address?: string; city?: string; district?: string; neighborhood?: string };
   description?: string;
+  contributors?: EventContributor[];
   status?: EventStatus;
   createdAt?: number;
   createdBy?: string | null;
@@ -123,6 +126,7 @@ interface EventEditForm {
   neighborhood: string;
   address: string;
   description: string;
+  contributors: EventContributor[];
 }
 
 function StatusBadge({ status }: { status?: EventStatus }) {
@@ -266,7 +270,7 @@ function EditEventDialog({
     name: '', organizer: '', organizerLogoUrl: '', imageUrl: '', type: '', tags: '', language: '',
     startDate: '', endDate: '', time: '', capacityMax: '', participationCondition: 'Herkese Açık',
     providesCertificate: false, status: 'Beklemede', locationType: 'Fiziksel', city: '', district: '',
-    neighborhood: '', address: '', description: '',
+    neighborhood: '', address: '', description: '', contributors: [],
   });
 
   // Re-seed the form whenever a new event is opened for editing.
@@ -293,6 +297,7 @@ function EditEventDialog({
         neighborhood: event.location?.neighborhood ?? '',
         address: event.location?.address ?? '',
         description: event.description ?? '',
+        contributors: Array.isArray(event.contributors) ? event.contributors : [],
       });
     }
   }, [event, open]);
@@ -480,6 +485,32 @@ function EditEventDialog({
               placeholder="Etkinlik açıklaması"
               rows={4}
             />
+          </div>
+          {/* Konuşmacılar / ekip — canlı mod + sertifika + yaka kartına yansır */}
+          <div className="space-y-2">
+            <Label className="font-semibold">Konuşmacılar / Ekip</Label>
+            {form.contributors.map((c, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Input
+                  placeholder="Ad Soyad"
+                  value={c.name ?? ''}
+                  onChange={(e) => set('contributors', form.contributors.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                />
+                <Input
+                  placeholder="Ünvan (ör. Prof. Dr.)"
+                  value={c.title ?? ''}
+                  onChange={(e) => set('contributors', form.contributors.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))}
+                />
+                <Button type="button" variant="ghost" size="sm" className="shrink-0 text-destructive hover:text-destructive"
+                  onClick={() => set('contributors', form.contributors.filter((_, j) => j !== i))}>
+                  Sil
+                </Button>
+              </div>
+            ))}
+            <Button type="button" variant="outline" size="sm" className="rounded-xl font-bold"
+              onClick={() => set('contributors', [...form.contributors, { name: '', title: '', role: 'speaker' }])}>
+              + Konuşmacı ekle
+            </Button>
           </div>
         </div>
         <DialogFooter className="gap-2">
@@ -730,6 +761,9 @@ export default function SuperAdminEventsPage() {
         'location.neighborhood': form.neighborhood.trim(),
         'location.address': form.address.trim(),
         description: form.description.trim(),
+        contributors: form.contributors
+          .map((c) => ({ name: (c.name || '').trim(), title: (c.title || '').trim(), role: c.role || 'speaker', ...(c.userId ? { userId: c.userId } : {}) }))
+          .filter((c) => c.name),
       });
       toast({ title: 'Etkinlik Güncellendi', description: 'Değişiklikler kaydedildi.' });
       setIsEditOpen(false);
@@ -757,6 +791,15 @@ export default function SuperAdminEventsPage() {
     >
       <Edit3 className="mr-2 h-4 w-4" /> Düzenle
     </Button>
+  );
+
+  const participantsButton = (event: EventDoc) => (
+    <EventAttendanceButton
+      eventId={event.id}
+      eventName={event.name || 'Etkinlik'}
+      authUser={authUser ?? null}
+      className="flex-1 sm:flex-grow-0 rounded-xl font-bold"
+    />
   );
 
   const deactivateButton = (event: EventDoc) => {
@@ -906,6 +949,7 @@ export default function SuperAdminEventsPage() {
                   Onayla
                 </Button>
                 {editButton(event)}
+                {participantsButton(event)}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -957,6 +1001,7 @@ export default function SuperAdminEventsPage() {
               <EventRow key={event.id} event={event}>
                 <EventAttendees eventId={event.id} />
                 {editButton(event)}
+                {participantsButton(event)}
                 {deactivateButton(event)}
                 {deleteButton(event)}
               </EventRow>
@@ -977,6 +1022,7 @@ export default function SuperAdminEventsPage() {
               <EventRow key={event.id} event={event}>
                 <EventAttendees eventId={event.id} />
                 {editButton(event)}
+                {participantsButton(event)}
                 {deactivateButton(event)}
                 {deleteButton(event)}
               </EventRow>
@@ -1011,6 +1057,7 @@ export default function SuperAdminEventsPage() {
                   Yeniden Yayınla
                 </Button>
                 {editButton(event)}
+                {participantsButton(event)}
                 {deleteButton(event)}
               </EventRow>
             ))
