@@ -129,6 +129,8 @@ export async function generateEventPass(input: EventPassInput): Promise<Buffer> 
   const isVolunteer = input.kind === 'volunteer';
   const titleLabel = isVolunteer ? 'GÖNÜLLÜLÜK' : 'ETKİNLİK';
   const role = (input.role && input.role.trim()) || (isVolunteer ? 'Gönüllü' : 'Katılımcı');
+  // Apple kimliği — iki tasarım görsel olarak AYRIŞIR: etkinlik=coral, gönüllülük=emerald.
+  const accentBg = isVolunteer ? 'rgb(17, 122, 94)' : 'rgb(243, 71, 35)';
 
   // hangel logosu pass logosu olarak zaten var (PASS_ASSETS). STK logosunu —
   // yalnız geçerli PNG ise — sağ thumbnail olarak ekle (pass'i bozmadan).
@@ -139,21 +141,20 @@ export async function generateEventPass(input: EventPassInput): Promise<Buffer> 
     bundle['thumbnail@2x.png'] = ngoThumb;
   }
 
-  // İkincil satır: STATÜ/rol + SAAT (timeLabel varsa) ya da tarih.
+  // İkincil satır — öne çıkan "ne zaman": tarih (+ saat varsa).
   const secondaryFields: Record<string, unknown>[] = [
-    { key: 'role', label: 'STATÜ', value: role },
+    {
+      key: 'date', label: 'NE ZAMAN', value: input.startDate.toISOString(),
+      dateStyle: 'PKDateStyleMedium', timeStyle: input.timeLabel ? 'PKDateStyleNone' : 'PKDateStyleShort',
+    },
   ];
   if (input.timeLabel) {
     secondaryFields.push({ key: 'time', label: 'SAAT', value: input.timeLabel });
-  } else {
-    secondaryFields.push({
-      key: 'date', label: 'TARİH', value: input.startDate.toISOString(),
-      dateStyle: 'PKDateStyleMedium', timeStyle: 'PKDateStyleShort',
-    });
   }
 
-  // Yardımcı satır: düzenleyen STK + konum.
+  // Yardımcı satır: statü/rol + düzenleyen + konum.
   const auxiliaryFields: Record<string, unknown>[] = [
+    { key: 'role', label: 'STATÜ', value: role },
     { key: 'ngo', label: 'DÜZENLEYEN', value: input.ngoName },
   ];
   if (input.location) {
@@ -181,11 +182,12 @@ export async function generateEventPass(input: EventPassInput): Promise<Buffer> 
     ...bundle,
     'pass.json': Buffer.from(JSON.stringify({
       ...SHARED_PASS_DEFAULTS,
+      backgroundColor: accentBg,
       serialNumber: input.serialNumber,
       description: `hangel — ${input.eventTitle}`,
       eventTicket: {
         headerFields: [
-          { key: 'hdr', label: titleLabel, value: input.startDate.toISOString(), dateStyle: 'PKDateStyleShort', timeStyle: 'PKDateStyleNone' },
+          { key: 'hdr', label: 'TARİH', value: input.startDate.toISOString(), dateStyle: 'PKDateStyleShort', timeStyle: 'PKDateStyleNone' },
         ],
         primaryFields: [
           { key: 'event', label: titleLabel, value: input.eventTitle },
