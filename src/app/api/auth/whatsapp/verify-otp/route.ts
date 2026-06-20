@@ -27,6 +27,8 @@ import crypto from 'crypto';
 export const runtime = 'nodejs';
 
 const MAX_ATTEMPTS = 5;
+// hangel rozeti — yeni kayıtta tek seferlik hoş geldin impact puanı.
+const WELCOME_POINTS = 10;
 
 function hashPhone(phone: string): string {
     return crypto.createHash('sha256').update(phone).digest('hex').slice(0, 32);
@@ -151,6 +153,8 @@ export async function POST(req: NextRequest) {
                     phoneHash,
                 },
                 stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
+                // hangel rozeti — hoş geldin puanı (yeni kayıtta tek sefer).
+                impactScore: WELCOME_POINTS,
                 signupMethod: 'whatsapp',
                 createdAt: FieldValue.serverTimestamp(),
                 joinDate: new Date().toISOString().split('T')[0],

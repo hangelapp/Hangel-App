@@ -43,9 +43,17 @@ export default function RegisterOrganizationPage() {
     setLoading(true); setResults([]); setMatch(null);
     try {
       if (orgType === 'dernek') {
-        const snap = await getDoc(doc(db, COLLECTIONS.registryDernekler, q));
-        if (!snap.exists()) { toast({ variant: 'destructive', title: 'Bulunamadı', description: 'Bu kütük numarasıyla dernek yok (örn. 06-154-120).' }); }
-        else { const d = snap.data(); setMatch({ id: q, name: d.name, il: d.il, faaliyetAlani: d.faaliyetAlani, foundedYear: d.foundedYear, adres: d.adres, kutukNo: q }); setStep('confirm'); }
+        // Tireleri otomatik ekle: "34262102" → "34-262-102". Hem tireli hem tiresiz girişi dene.
+        const digits = q.replace(/\D/g, '');
+        const dashed = digits.length === 8 ? `${digits.slice(0, 2)}-${digits.slice(2, 5)}-${digits.slice(5, 8)}` : q;
+        const candidates = Array.from(new Set([dashed, q, digits]));
+        let found: Record<string, unknown> | null = null; let foundId = '';
+        for (const c of candidates) {
+          const snap = await getDoc(doc(db, COLLECTIONS.registryDernekler, c));
+          if (snap.exists()) { found = snap.data(); foundId = c; break; }
+        }
+        if (!found) { toast({ variant: 'destructive', title: 'Bulunamadı', description: 'Bu kütük numarasıyla dernek yok. Numarayı kontrol et (örn. 06-154-120 veya 06154120).' }); }
+        else { setMatch({ id: foundId, name: found.name as string, il: found.il as string, faaliyetAlani: found.faaliyetAlani as string, foundedYear: found.foundedYear as number, adres: found.adres as string, kutukNo: foundId }); setStep('confirm'); }
       } else if (orgType === 'vakif') {
         const ql = q.toLocaleLowerCase('tr');
         const snap = await getDocs(query(collection(db, COLLECTIONS.registryVakiflar), orderBy('nameLower'), where('nameLower', '>=', ql), where('nameLower', '<=', ql + ''), limit(8)));
