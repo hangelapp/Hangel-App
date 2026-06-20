@@ -24,7 +24,21 @@ export function GET() {
                     appID: 'NKZNY8NU8S.com.hangel.ios.app',
                     paths: ['*'],
                 },
+                {
+                    // App Clip universal link kapsamı (check-in/kayıt/clip URL'leri).
+                    appID: 'NKZNY8NU8S.com.hangel.ios.app.Clip',
+                    paths: ['/clip/*', '/e/*', '/checkin/*', '/event/*'],
+                },
             ],
+        },
+        // Şifre/anahtar otomatik doldurma.
+        webcredentials: {
+            apps: ['NKZNY8NU8S.com.hangel.ios.app'],
+        },
+        // App Clip YETKİLENDİRME — bu anahtar olmadan App Clip domain'de çalışmaz.
+        // Çağrı URL'leri App Store Connect'teki "App Clip Experience"larda tanımlanır.
+        appclips: {
+            apps: ['NKZNY8NU8S.com.hangel.ios.app.Clip'],
         },
     };
     return new NextResponse(JSON.stringify(body), {
