@@ -20,6 +20,7 @@ import { tr } from 'date-fns/locale';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import { EventMapDialog } from '@/components/events/event-map-dialog';
+import { EventCardCountdownBadge } from '@/components/events/event-countdown';
 import { EmptyState } from '@/components/shared/empty-state';
 import { COLLECTIONS } from '@/firebase/collections';
 import { eventPhase } from '@/lib/event-time';
@@ -410,11 +411,11 @@ function EventsPageContent() {
                   <div className="absolute top-2 left-2">
                     <Badge className="bg-white/90 backdrop-blur-md text-primary border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">{event.type}</Badge>
                   </div>
-                  {isEnded && (
-                    <div className="absolute top-2 right-2">
-                      <Badge className="bg-foreground/85 backdrop-blur-md text-background border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">Etkinlik bitti</Badge>
-                    </div>
-                  )}
+                  <div className="absolute top-2 right-2">
+                    {isEnded
+                      ? <Badge className="bg-foreground/85 backdrop-blur-md text-background border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">Etkinlik bitti</Badge>
+                      : <EventCardCountdownBadge event={event} />}
+                  </div>
                 </div>
                 <CardContent className="p-3 flex-1 space-y-2">
                   <h2 className="text-sm font-bold font-headline leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">{eventName}</h2>

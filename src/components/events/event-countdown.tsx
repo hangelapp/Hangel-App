@@ -41,3 +41,32 @@ export function EventCountdown({ event, className }: { event: EventLike; classNa
     </span>
   );
 }
+
+/**
+ * Etkinlik kartı için kompakt geri sayım rozeti — SADECE başlangıca <24 saat
+ * kalınca görünür ("3sa 12dk" / "45 dk"). Dakika hassasiyeti (30 sn'de bir tik).
+ */
+const DAY_MS = 24 * 3600_000;
+export function EventCardCountdownBadge({ event, className }: { event: EventLike; className?: string }) {
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const start = eventStart(event);
+  if (!start || !now) return null;
+  const diff = start.getTime() - now;
+  if (diff <= 0 || diff > DAY_MS) return null; // sadece <24s ve henüz başlamadıysa
+
+  const totalMin = Math.floor(diff / 60_000);
+  const h = Math.floor(totalMin / 60), m = totalMin % 60;
+  const label = h > 0 ? `${h}sa ${m}dk` : `${m} dk`;
+
+  return (
+    <span className={cn('inline-flex items-center gap-1 rounded-lg bg-primary/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-primary-foreground shadow-sm backdrop-blur-md', className)}>
+      ⏳ {label}
+    </span>
+  );
+}

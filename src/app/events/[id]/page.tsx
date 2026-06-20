@@ -466,14 +466,13 @@ export default function EventDetailPage() {
 
   // Etkinlik bitti mi? completed=true VEYA bitiş zamanı geçti → yeni RSVP kapanır.
   const isEventFinished = event.completed === true || eventPhase(event) === 'ended';
+  // Kapasite doldu mu? (max>0 ve current>=max) — dolunca kayıt kapanır (bekleme listesi yok).
+  const isEventFull = !!event.capacity && event.capacity.max > 0 && (event.capacity.current ?? 0) >= event.capacity.max;
+  const rsvpClosed = isEventFinished || isEventFull;
 
   // Etkinlik ekibi — userId → User eşlemesi (fotoğraf için).
   // NOT: `Map` adı lucide-react'ten import edildiği için global Map constructor gölgeleniyor → düz Record kullan.
   const contributors = event.contributors ?? [];
-  // Yönetici mi? (canlı yayını başlat/bitir yetkisi) — super-admin veya organizatör STK/kulüp.
-  const _ud = userData as { role?: string; managedNgoId?: string; managedClubId?: string } | null;
-  const isEventManager = _ud?.role === 'super-admin'
-    || (!!event.organizerId && (_ud?.managedNgoId === event.organizerId || _ud?.managedClubId === event.organizerId));
   const contributorUserById: Record<string, UserType> = {};
   for (const u of contributorUsers ?? []) {
     contributorUserById[u.id] = u;
@@ -552,7 +551,7 @@ export default function EventDetailPage() {
                   {/* En alttaki öğe: Etkinliğe Katıl CTA (bitti ise kapalı) */}
                   <Button
                     size="lg"
-                    disabled={isRsvpLoading || (!isGoing && isEventFinished)}
+                    disabled={isRsvpLoading || (!isGoing && rsvpClosed)}
                     onClick={() => submitRsvp(isGoing ? 'cancel' : 'going')}
                     variant={isGoing ? 'outline' : 'default'}
                     className={isGoing
@@ -561,7 +560,7 @@ export default function EventDetailPage() {
                   >
                     {isRsvpLoading
                       ? <Loader2 className="h-5 w-5 animate-spin" />
-                      : (isGoing ? 'Katıldın ✓ — Vazgeç' : (isEventFinished ? 'Etkinlik bitti' : 'Etkinliğe Katıl'))}
+                      : (isGoing ? 'Katıldın ✓ — Vazgeç' : (isEventFinished ? 'Etkinlik bitti' : (isEventFull ? 'Kontenjan doldu' : 'Etkinliğe Katıl')))}
                   </Button>
                 </div>
               </div>
@@ -599,7 +598,7 @@ export default function EventDetailPage() {
             {/* Canlı etkinlik modu — geri sayım / Canlı Başlat-Bitir / konuşmacıya canlı puan */}
             {resolvedEventId && (
               <div className="mt-4">
-                <LiveEventSection eventId={resolvedEventId} event={event} isManager={isEventManager} isGoing={isGoing} authUser={authUser ?? null} />
+                <LiveEventSection eventId={resolvedEventId} event={event} isGoing={isGoing} authUser={authUser ?? null} />
               </div>
             )}
 
@@ -882,11 +881,11 @@ export default function EventDetailPage() {
             ) : (
               <Button
                 size="lg"
-                disabled={isRsvpLoading || isEventFinished}
+                disabled={isRsvpLoading || rsvpClosed}
                 onClick={() => submitRsvp('going')}
                 className="flex-1 h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
               >
-                {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isEventFinished ? 'Etkinlik bitti' : 'Etkinliğe Katıl')}
+                {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isEventFinished ? 'Etkinlik bitti' : (isEventFull ? 'Kontenjan doldu' : 'Etkinliğe Katıl'))}
               </Button>
             )}
             {isGoing && (
