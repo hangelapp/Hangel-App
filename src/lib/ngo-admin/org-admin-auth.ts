@@ -39,7 +39,17 @@ export interface OrgAdminCtx {
 
 export type OrgAdminResult = { ok: true; ctx: OrgAdminCtx } | { ok: false; error: string; status: number };
 
-export async function resolveOrgAdminCtx(req: Request): Promise<OrgAdminResult> {
+/**
+ * @param override Aktif kuruluş seçicisinden gelen hedef (orgId + kind). Verilirse
+ *   bu kuruluş bağlamı kullanılır (çoklu kurum yöneten kullanıcılar için kritik —
+ *   yoksa hep caller'ın managed*Id'si dönerdi). Yetkilendirme: super-admin her
+ *   kuruluş; aksi halde caller o kuruluşu yönetmeli (managed{kind}Id == orgId)
+ *   veya sahibi olmalı.
+ */
+export async function resolveOrgAdminCtx(
+  req: Request,
+  override?: { orgId?: string | null; kind?: OrgKind | null },
+): Promise<OrgAdminResult> {
   const authHeader = req.headers.get('authorization') || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
   if (!token) return { ok: false, error: 'Token gerekli', status: 401 };
@@ -59,9 +69,16 @@ export async function resolveOrgAdminCtx(req: Request): Promise<OrgAdminResult> 
 
   let kind: OrgKind | null = null;
   let orgId: string | null = null;
-  if (c.managedNgoId) { kind = 'ngo'; orgId = c.managedNgoId as string; }
-  else if (c.managedBrandId) { kind = 'brand'; orgId = c.managedBrandId as string; }
-  else if (c.managedClubId) { kind = 'club'; orgId = c.managedClubId as string; }
+  const validKind = override?.kind && (['ngo', 'brand', 'club'] as const).includes(override.kind);
+  if (override?.orgId && validKind) {
+    kind = override.kind as OrgKind;
+    orgId = override.orgId;
+  } else {
+    // Override yoksa caller'ın tek yönettiği kuruluş.
+    if (c.managedNgoId) { kind = 'ngo'; orgId = c.managedNgoId as string; }
+    else if (c.managedBrandId) { kind = 'brand'; orgId = c.managedBrandId as string; }
+    else if (c.managedClubId) { kind = 'club'; orgId = c.managedClubId as string; }
+  }
 
   if (!kind || !orgId) return { ok: false, error: 'Yönetilen kuruluş bulunamadı', status: 403 };
 
@@ -69,6 +86,13 @@ export async function resolveOrgAdminCtx(req: Request): Promise<OrgAdminResult> 
   if (!orgSnap.exists) return { ok: false, error: 'Kuruluş bulunamadı', status: 404 };
   const o = orgSnap.data() as { name?: string; adminUserId?: string };
   const ownerUserId = o.adminUserId ?? null;
+  const managedThisOrg = c[KIND_TO_MANAGED[kind]] === orgId;
+
+  // Açık hedef (override) verildiyse non-super caller'ın o kuruluşu yönetebildiğini doğrula.
+  if (override?.orgId && validKind && !isSuperAdmin && !managedThisOrg && ownerUserId !== decoded.uid) {
+    return { ok: false, error: 'Bu kuruluş için yetkiniz yok', status: 403 };
+  }
+
   const roleTitle = c[KIND_TO_ROLE_TITLE[kind]] as string | undefined;
   const isGeneral = isSuperAdmin || (ownerUserId !== null && ownerUserId === decoded.uid) || roleTitle === 'Genel Yönetici';
 

@@ -7,21 +7,21 @@ import { NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
-import { resolveOrgAdminCtx, KIND_TO_MANAGED, KIND_TO_ROLE_TITLE, KIND_TO_INVITE_ID, KIND_TO_ACCUSATIVE } from '@/lib/ngo-admin/org-admin-auth';
+import { resolveOrgAdminCtx, KIND_TO_MANAGED, KIND_TO_ROLE_TITLE, KIND_TO_INVITE_ID, KIND_TO_ACCUSATIVE, type OrgKind } from '@/lib/ngo-admin/org-admin-auth';
 import { isValidOrgRole } from '@/lib/ngo-admin/roles';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
-  const r = await resolveOrgAdminCtx(req);
+  let body: { targetUserId?: string; role?: string; orgId?: string; kind?: OrgKind };
+  try { body = await req.json(); } catch { return NextResponse.json({ errorCode: 'BAD_JSON', message: 'Geçersiz istek.' }, { status: 400 }); }
+
+  const r = await resolveOrgAdminCtx(req, { orgId: body.orgId, kind: body.kind });
   if (!r.ok) return NextResponse.json({ errorCode: 'FORBIDDEN', message: r.error }, { status: r.status });
   const { ctx } = r;
   if (!ctx.isGeneral) {
     return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Yalnızca Genel Yönetici rol değiştirebilir.' }, { status: 403 });
   }
-
-  let body: { targetUserId?: string; role?: string };
-  try { body = await req.json(); } catch { return NextResponse.json({ errorCode: 'BAD_JSON', message: 'Geçersiz istek.' }, { status: 400 }); }
   const targetUserId = (body.targetUserId || '').trim();
   const role = (body.role || '').trim();
   if (!targetUserId) return NextResponse.json({ errorCode: 'BAD_REQUEST', message: 'targetUserId zorunlu.' }, { status: 400 });

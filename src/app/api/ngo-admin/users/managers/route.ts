@@ -8,7 +8,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
-import { resolveOrgAdminCtx, KIND_TO_MANAGED, KIND_TO_ROLE_TITLE, KIND_TO_INVITE_ID } from '@/lib/ngo-admin/org-admin-auth';
+import { resolveOrgAdminCtx, KIND_TO_MANAGED, KIND_TO_ROLE_TITLE, KIND_TO_INVITE_ID, type OrgKind } from '@/lib/ngo-admin/org-admin-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,7 +25,11 @@ interface AdminRow {
 }
 
 export async function GET(req: Request) {
-  const r = await resolveOrgAdminCtx(req);
+  const { searchParams } = new URL(req.url);
+  const r = await resolveOrgAdminCtx(req, {
+    orgId: searchParams.get('orgId'),
+    kind: searchParams.get('kind') as OrgKind | null,
+  });
   if (!r.ok) return NextResponse.json({ errorCode: 'FORBIDDEN', message: r.error }, { status: r.status });
   const { ctx } = r;
 

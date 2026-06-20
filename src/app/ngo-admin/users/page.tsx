@@ -78,7 +78,11 @@ export default function UsersPage() {
     setIsLoading(true);
     try {
       const token = await authUser.getIdToken();
-      const res = await fetch('/api/ngo-admin/users/managers', { headers: { Authorization: `Bearer ${token}` } });
+      // Aktif kuruluşu gönder — çoklu kurum yöneten kullanıcıda doğru liste gelsin.
+      const params = new URLSearchParams();
+      if (activeId && activeKind) { params.set('orgId', activeId); params.set('kind', activeKind); }
+      const qs = params.toString();
+      const res = await fetch(`/api/ngo-admin/users/managers${qs ? `?${qs}` : ''}`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error(`list ${res.status}`);
       const data = (await res.json()) as { managers?: AdminRow[]; viewer?: ViewerInfo };
       setAdminRows(Array.isArray(data.managers) ? data.managers : []);
@@ -90,9 +94,9 @@ export default function UsersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [authUser]);
+  }, [authUser, activeId, activeKind]);
 
-  useEffect(() => { void fetchManagers(); }, [fetchManagers, activeId]);
+  useEffect(() => { void fetchManagers(); }, [fetchManagers]);
 
   const isGeneralAdmin = !!viewer?.isGeneral;
   const ownerUserId = viewer?.ownerUserId ?? null;
@@ -119,7 +123,7 @@ export default function UsersPage() {
     if (!canManageRow(row)) return;
     setUpdatingRole(row.userId);
     try {
-      await callRoute('/api/ngo-admin/users/set-role', { targetUserId: row.userId, role: newRole });
+      await callRoute('/api/ngo-admin/users/set-role', { targetUserId: row.userId, role: newRole, orgId: activeId, kind: activeKind });
       setRoleEdits(prev => { const next = { ...prev }; delete next[row.userId]; return next; });
       toast({
         title: t('ngo_admin_users.toastRoleUpdatedTitle'),
@@ -138,7 +142,7 @@ export default function UsersPage() {
     if (!canManageRow(row)) return;
     setRevoking(row.userId);
     try {
-      await callRoute('/api/ngo-admin/users/remove', { targetUserId: row.userId });
+      await callRoute('/api/ngo-admin/users/remove', { targetUserId: row.userId, orgId: activeId, kind: activeKind });
       toast({
         variant: 'destructive',
         title: t('ngo_admin_users.toastRevokedTitle'),
