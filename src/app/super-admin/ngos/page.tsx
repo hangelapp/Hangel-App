@@ -239,16 +239,15 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRemove, onChangeRole }
                         {isUpdatingThis ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
                         Güncelle
                       </Button>
-                      {!row.isOwner && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
-                          aria-label="Yetkiyi Kaldır"
-                          onClick={() => onRemove(ngo.id, row.userId, row.invitationId, row.name)}>
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
+                      {/* Super-admin paneli — sahip dahil herkes kaldırılabilir. */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
+                        aria-label="Yetkiyi Kaldır"
+                        onClick={() => onRemove(ngo.id, row.userId, row.invitationId, row.name)}>
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
                   );
                 })}
@@ -590,6 +589,11 @@ export default function NgosPage() {
           patch.role = 'user';
         }
         await updateDoc(doc(db, COLLECTIONS.users, userId), patch);
+      }
+      // 3) Sahip kaldırılıyorsa STK'nın adminUserId'sini de temizle (sahipsiz kalsın, eski sahip yetkide kalmasın).
+      const ngoSnap = await getDoc(doc(db, COLLECTIONS.ngos, ngoId));
+      if (ngoSnap.exists() && (ngoSnap.data() as { adminUserId?: string }).adminUserId === userId) {
+        await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), { adminUserId: null });
       }
       toast({
         title: 'Yetki Kaldırıldı',

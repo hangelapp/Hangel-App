@@ -87,12 +87,31 @@ export async function GET(req: Request) {
     });
   });
 
+  // Kuruluş sahibi (adminUserId) listede yoksa ekle — managedId/davet kaydı olmasa
+  // bile sahip her zaman görünmeli (eski kurumlarda sahip yalnız adminUserId ile bağlı).
+  if (ctx.ownerUserId && !rows.has(ctx.ownerUserId)) {
+    const oSnap = await db.collection(COLLECTIONS.users).doc(ctx.ownerUserId).get().catch(() => null);
+    if (oSnap?.exists) {
+      const u = oSnap.data() as Record<string, unknown>;
+      rows.set(ctx.ownerUserId, {
+        userId: ctx.ownerUserId,
+        name: (u.name as string) || (u.displayName as string)
+          || `${(u.firstName as string) || ''} ${(u.lastName as string) || ''}`.trim() || 'Üye',
+        avatarUrl: (u.avatarUrl as string) || null,
+        role: (u[roleField] as string) || (u.roleTitle as string) || 'Genel Yönetici',
+        since: 0,
+        isPrimary: true,
+        isOwner: true,
+      });
+    }
+  }
+
   const managers = Array.from(rows.values()).sort(
     (a, b) => (b.isOwner ? 1 : 0) - (a.isOwner ? 1 : 0) || b.since - a.since,
   );
 
   return NextResponse.json({
     managers,
-    viewer: { uid: ctx.uid, isGeneral: ctx.isGeneral, ownerUserId: ctx.ownerUserId, kind: ctx.kind, orgName: ctx.orgName },
+    viewer: { uid: ctx.uid, isGeneral: ctx.isGeneral, isSuperAdmin: ctx.isSuperAdmin, ownerUserId: ctx.ownerUserId, kind: ctx.kind, orgName: ctx.orgName },
   });
 }

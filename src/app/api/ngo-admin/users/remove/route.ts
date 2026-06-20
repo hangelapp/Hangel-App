@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
-import { resolveOrgAdminCtx, KIND_TO_MANAGED, KIND_TO_ROLE_TITLE, KIND_TO_INVITE_ID, KIND_TO_ACCUSATIVE, type OrgKind } from '@/lib/ngo-admin/org-admin-auth';
+import { resolveOrgAdminCtx, KIND_TO_COL, KIND_TO_MANAGED, KIND_TO_ROLE_TITLE, KIND_TO_INVITE_ID, KIND_TO_ACCUSATIVE, type OrgKind } from '@/lib/ngo-admin/org-admin-auth';
 
 export const runtime = 'nodejs';
 
@@ -23,10 +23,11 @@ export async function POST(req: Request) {
   }
   const targetUserId = (body.targetUserId || '').trim();
   if (!targetUserId) return NextResponse.json({ errorCode: 'BAD_REQUEST', message: 'targetUserId zorunlu.' }, { status: 400 });
-  if (targetUserId === ctx.ownerUserId) {
+  // Sahip + kendisi yalnız normal Genel Yönetici için korunur; super-admin kaldırabilir.
+  if (targetUserId === ctx.ownerUserId && !ctx.isSuperAdmin) {
     return NextResponse.json({ errorCode: 'OWNER_PROTECTED', message: 'Kuruluş sahibinin yetkisi kaldırılamaz.' }, { status: 400 });
   }
-  if (targetUserId === ctx.uid) {
+  if (targetUserId === ctx.uid && !ctx.isSuperAdmin) {
     return NextResponse.json({ errorCode: 'SELF', message: 'Kendi yetkinizi bu ekrandan kaldıramazsınız.' }, { status: 400 });
   }
 
@@ -38,7 +39,8 @@ export async function POST(req: Request) {
   const tSnap = await db.collection(COLLECTIONS.users).doc(targetUserId).get();
   if (!tSnap.exists) return NextResponse.json({ errorCode: 'NOT_FOUND', message: 'Kullanıcı bulunamadı.' }, { status: 404 });
   const t = tSnap.data() as Record<string, unknown>;
-  if (t[managedField] !== ctx.orgId) {
+  // Sahip managedField'siz olabilir → ona izin ver; diğerleri için üyelik şart.
+  if (t[managedField] !== ctx.orgId && targetUserId !== ctx.ownerUserId) {
     return NextResponse.json({ errorCode: 'NOT_MEMBER', message: 'Bu kullanıcı kuruluşun yöneticisi değil.' }, { status: 400 });
   }
 
@@ -49,6 +51,11 @@ export async function POST(req: Request) {
   const managesOther = (ctx.kind !== 'ngo' && t.managedNgoId) || (ctx.kind !== 'brand' && t.managedBrandId) || (ctx.kind !== 'club' && t.managedClubId);
   if (t.role !== 'super-admin' && !managesOther) userPatch.role = 'user';
   batch.update(db.collection(COLLECTIONS.users).doc(targetUserId), userPatch);
+
+  // Sahip kaldırılıyorsa kuruluşun adminUserId'sini de temizle (sahipsiz kalmasın diye boşalt).
+  if (targetUserId === ctx.ownerUserId) {
+    batch.set(db.collection(KIND_TO_COL[ctx.kind]).doc(ctx.orgId), { adminUserId: null }, { merge: true });
+  }
 
   // 2) Bu kuruluşa ait, hedefe ait davet kayıtlarını revoke et.
   const invs = await db.collection(COLLECTIONS.userInvitations)

@@ -26,7 +26,8 @@ export async function POST(req: Request) {
   const role = (body.role || '').trim();
   if (!targetUserId) return NextResponse.json({ errorCode: 'BAD_REQUEST', message: 'targetUserId zorunlu.' }, { status: 400 });
   if (!isValidOrgRole(role)) return NextResponse.json({ errorCode: 'BAD_ROLE', message: 'Geçersiz rol.' }, { status: 400 });
-  if (targetUserId === ctx.ownerUserId) {
+  // Sahibin rolünü yalnız super-admin değiştirebilir (org Genel Yönetici değil).
+  if (targetUserId === ctx.ownerUserId && !ctx.isSuperAdmin) {
     return NextResponse.json({ errorCode: 'OWNER_PROTECTED', message: 'Kuruluş sahibinin rolü değiştirilemez.' }, { status: 400 });
   }
 
@@ -38,13 +39,15 @@ export async function POST(req: Request) {
   const tSnap = await db.collection(COLLECTIONS.users).doc(targetUserId).get();
   if (!tSnap.exists) return NextResponse.json({ errorCode: 'NOT_FOUND', message: 'Kullanıcı bulunamadı.' }, { status: 404 });
   const t = tSnap.data() as Record<string, unknown>;
-  if (t[managedField] !== ctx.orgId) {
+  // Sahip (adminUserId) managedField'siz olabilir — ona izin ver; diğerleri için üyelik şart.
+  if (t[managedField] !== ctx.orgId && targetUserId !== ctx.ownerUserId) {
     return NextResponse.json({ errorCode: 'NOT_MEMBER', message: 'Bu kullanıcı kuruluşun yöneticisi değil.' }, { status: 400 });
   }
 
   const batch = db.batch();
-  // 1) Hedef kullanıcı: kind-özel rol başlığı + generic roleTitle eşitle.
-  batch.update(db.collection(COLLECTIONS.users).doc(targetUserId), { [roleField]: role, roleTitle: role });
+  // 1) Hedef kullanıcı: kind-özel rol başlığı + generic roleTitle eşitle + (sahip
+  //    managedField'siz olabilir) managedField'i da set et → düzgün üye olarak görünür.
+  batch.update(db.collection(COLLECTIONS.users).doc(targetUserId), { [roleField]: role, roleTitle: role, [managedField]: ctx.orgId });
 
   // 2) Bu kuruluşa ait, hedefe ait, revoke edilmemiş davet kayıtlarının rolünü güncelle (audit + liste tutarlılığı).
   const invs = await db.collection(COLLECTIONS.userInvitations)

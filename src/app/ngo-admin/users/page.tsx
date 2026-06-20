@@ -38,6 +38,7 @@ interface AdminRow {
 interface ViewerInfo {
   uid: string;
   isGeneral: boolean;
+  isSuperAdmin?: boolean;
   ownerUserId: string | null;
   orgName?: string;
 }
@@ -102,9 +103,11 @@ export default function UsersPage() {
   const ownerUserId = viewer?.ownerUserId ?? null;
   const orgName = viewer?.orgName || activeEntity?.data?.name || t('ngo_admin_users.revokeConfirmEntityFallback');
 
-  // Sahip ve oturum açan kullanıcının kendi satırı korunur; yalnız Genel Yönetici yönetir.
+  // Super-admin HERKESİ yönetir (sahip + kendisi dahil). Normal Genel Yönetici'de
+  // sahip ve kendi satırı korunur (super-admin / org-panel ayrımı).
+  const isSuperAdmin = !!viewer?.isSuperAdmin;
   const canManageRow = (row: AdminRow): boolean =>
-    isGeneralAdmin && !row.isOwner && row.userId !== authUser?.uid;
+    isGeneralAdmin && (isSuperAdmin || (!row.isOwner && row.userId !== authUser?.uid));
 
   const callRoute = async (path: string, payload: Record<string, unknown>) => {
     if (!authUser) throw new Error('Oturum bulunamadı.');
