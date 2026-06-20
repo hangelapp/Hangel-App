@@ -385,7 +385,7 @@ export default function NgosPage() {
     let list = items;
 
     if (statusFilter === 'approved') list = list.filter(i => i.source === 'ngos' && i.status === 'Aktif');
-    else if (statusFilter === 'pending') list = list.filter(i => i.status === 'Beklemede');
+    else if (statusFilter === 'pending') list = list.filter(i => i.status === 'Beklemede' || i.status === 'taslak');
     else if (statusFilter === 'passive') list = list.filter(i => i.source === 'ngos' && i.status === 'Pasif');
     else if (statusFilter === 'rejected') list = list.filter(i => i.status === 'Reddedildi');
 
@@ -416,10 +416,22 @@ export default function NgosPage() {
   const stats = useMemo(() => {
     const approved = (ngos || []).filter((n) => ((n as NGO & { status?: string }).status || 'Aktif') === 'Aktif').length;
     const passive = (ngos || []).filter((n) => (n as NGO & { status?: string }).status === 'Pasif').length;
-    const pending = (applications || []).filter((a) => a.status === 'Beklemede').length;
+    const draftNgos = (ngos || []).filter((n) => (n as NGO & { status?: string }).status === 'taslak').length;
+    const pending = (applications || []).filter((a) => a.status === 'Beklemede').length + draftNgos;
     const rejected = (applications || []).filter((a) => a.status === 'Reddedildi').length;
     return { total: approved + passive + pending + rejected, approved, pending, passive, rejected };
   }, [ngos, applications]);
+
+  // Taslak (ön kayıt) kuruluşu onayla: Aktif + doğrulanmış → coral tik + marketplace'te görünür.
+  const handleApproveDraft = async (id: string, name: string) => {
+    try {
+      await updateDoc(doc(db, COLLECTIONS.ngos, id), { status: 'Aktif', verified: true, documentsComplete: true, approvedAt: serverTimestamp() });
+      toast({ title: 'Kuruluş onaylandı', description: `${name} artık yayında — coral doğrulama tiki aktif ve listelerde görünür.` });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      toast({ variant: 'destructive', title: 'Onaylanamadı', description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e instanceof Error ? e.message : 'Hata') });
+    }
+  };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     const isPassive = currentStatus === 'Pasif';
@@ -724,8 +736,10 @@ export default function NgosPage() {
               const isPassive = ngo.status === 'Pasif';
               const isPending = ngo.status === 'Beklemede';
               const isRejected = ngo.status === 'Reddedildi';
+              const isDraft = ngo.status === 'taslak';
               const isApproved = ngo.source === 'ngos' && ngo.status === 'Aktif';
               const statusBadge = isApproved ? <Badge className="bg-green-600 text-white text-[9px] font-black uppercase">YAYINDA</Badge>
+                : isDraft ? <Badge className="bg-sky-600 text-white text-[9px] font-black uppercase">TASLAK · ÖN KAYIT</Badge>
                 : isPending ? <Badge className="bg-amber-500 text-white text-[9px] font-black uppercase">ONAY BEKLİYOR</Badge>
                 : isPassive ? <Badge variant="secondary" className="text-[9px] font-black uppercase">PASİF</Badge>
                 : isRejected ? <Badge variant="destructive" className="text-[9px] font-black uppercase">REDDEDİLDİ</Badge>
@@ -749,10 +763,17 @@ export default function NgosPage() {
                           <Link href={`/super-admin/ngos/${ngo.id}/edit`}><Edit3 className="mr-1.5 h-3.5 w-3.5" />Düzelt</Link>
                         </Button>
                         <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRemove={handleRemoveManager} onChangeRole={handleChangeAdminRole} />
-                        <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3"
-                                onClick={() => handleToggleStatus(ngo.id, ngo.status)}>
-                          {isPassive ? <><Power className="mr-1.5 h-3.5 w-3.5" /> Aktif</> : <><PowerOff className="mr-1.5 h-3.5 w-3.5" /> Pasife</>}
-                        </Button>
+                        {isDraft ? (
+                          <Button size="sm" className="rounded-xl font-bold h-9 px-3 bg-green-600 hover:bg-green-700 text-white"
+                                  onClick={() => handleApproveDraft(ngo.id, ngo.name)}>
+                            <CheckCircle className="mr-1.5 h-3.5 w-3.5" /> Onayla
+                          </Button>
+                        ) : (
+                          <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3"
+                                  onClick={() => handleToggleStatus(ngo.id, ngo.status)}>
+                            {isPassive ? <><Power className="mr-1.5 h-3.5 w-3.5" /> Aktif</> : <><PowerOff className="mr-1.5 h-3.5 w-3.5" /> Pasife</>}
+                          </Button>
+                        )}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/10 rounded-xl" aria-label="Sil">
