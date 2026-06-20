@@ -19,6 +19,9 @@ import { notifyUser } from '@/lib/notify-user';
 
 export const runtime = 'nodejs';
 
+// Katılım puanı — "Tamamla" (organizatör onayı) anında verilir, kayıtta değil.
+const COMPLETION_POINTS = 20;
+
 function errJson(errorCode: string, message: string, status: number) {
   return NextResponse.json({ errorCode, message }, { status });
 }
@@ -82,18 +85,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     };
     await certRef.set(cert);
     await db.collection(COLLECTIONS.users).doc(targetUid).collection(COLLECTIONS.certificates).doc(certId).set(cert);
+    // Katılım puanı (tamamlama anında).
+    await db.collection(COLLECTIONS.users).doc(targetUid).update({ impactScore: FieldValue.increment(COMPLETION_POINTS) }).catch(() => undefined);
 
+    const thanks = `${ngoName} yönetim ekibi olarak ${eventName} etkinliğimize katılımınız için teşekkür ederiz 🧡`;
     try {
       await notifyUser({
         userId: targetUid,
         type: 'badge_earned',
         title: 'Sertifikan hazır 🎓',
-        body: `${eventName} etkinliğine katılımın için teşekkürler 🧡 Sertifikan profiline yüklendi — görüntüleyip indirebilirsin.`,
+        body: `${thanks} Katılım sertifikanız profilinize yüklendi — görüntüleyip indirebilirsiniz.`,
         link: '/my-badges',
         data: { eventId, kind: 'event-certificate', certificateId: certId },
         storeAsMessage: true,
         messageSubject: 'Sertifikan Hazır 🎓',
-        messageContent: `${eventName} etkinliğine katılımın için teşekkürler! Katılım sertifikan hazır. "Rozetler ve Sertifikalar" sayfandan görüntüleyip PDF olarak indirebilirsin.`,
+        messageContent: `${thanks}\n\nKatılım sertifikanız hazır — "Rozetler ve Sertifikalar" sayfanızdan görüntüleyip PDF olarak indirebilirsiniz. (+${COMPLETION_POINTS} impact puanı)`,
       });
     } catch (e) {
       console.warn('[events/complete] notify failed', targetUid, e);

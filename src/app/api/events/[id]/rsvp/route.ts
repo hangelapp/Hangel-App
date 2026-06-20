@@ -42,8 +42,6 @@ function errJson(errorCode: string, message: string, status: number) {
   return NextResponse.json({ errorCode, message }, { status });
 }
 
-// İlk kez "going" RSVP'sinde kullanıcının impact puanına eklenir (etkinliğe katılım ödülü).
-const EVENT_RSVP_POINTS = 20;
 
 export async function POST(
   req: Request,
@@ -185,16 +183,11 @@ export async function POST(
       } catch (notifyErr) {
         console.warn('[api/events/rsvp] notify failed', notifyErr);
       }
-      // İlk 'going' kaydında etkinlik katılım puanı (impact). Best-effort.
-      try {
-        await getAdminFirestore().collection(COLLECTIONS.users).doc(uid)
-          .update({ impactScore: FieldValue.increment(EVENT_RSVP_POINTS) });
-      } catch (pointsErr) {
-        console.warn('[api/events/rsvp] points failed', pointsErr);
-      }
+      // NOT: Katılım puanı artık KAYITTA değil, "Etkinliği Tamamla" akışında
+      // (organizatör onayından sonra) verilir → /api/events/[id]/complete.
     }
 
-    return NextResponse.json({ status: result.status, count: result.count, points: result.newlyGoing ? EVENT_RSVP_POINTS : 0 });
+    return NextResponse.json({ status: result.status, count: result.count });
   } catch (err) {
     if (err instanceof RsvpError) {
       return errJson(err.errorCode, err.message, err.status);
