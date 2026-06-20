@@ -23,6 +23,7 @@ import { useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
 import { isNativeApp } from '@/lib/capacitor';
 import { EtkiTabContent } from '@/components/profile/etki-tab-content';
+import { generateEventCertificate, eventCertificateFileName } from '@/lib/event-certificate';
 
 const levelColors: Record<BadgeLevel, { bg: string; text: string }> = {
   'Bakır':  { bg: 'bg-orange-700/15',  text: 'text-orange-800 dark:text-orange-300' },
@@ -227,7 +228,8 @@ export default function MyBadgesPage() {
             seen.add(key);
             merged.push(c);
         }
-        return merged;
+        // Adsız sertifikaları gösterme (boş başlıklı kayıt = açılamaz/anlamsız).
+        return merged.filter((c) => (c.title || '').trim().length > 0);
     }, [certificatesData, approvedCertificates]);
 
     // Aktivite kaynakları: areaPoints'i kullanıcının gerçek bağış / gönüllülük / davetinden hesapla.
@@ -265,72 +267,40 @@ export default function MyBadgesPage() {
     // PDF alıcı adı: profile/page.tsx currentUser.name kullanıyor; burada userData.name / authUser.displayName.
     const recipientName = (userData as { name?: string } | undefined)?.name || authUser?.displayName || t('dashboard.badges.anonVolunteer');
 
-    // Sertifika PDF'ini oluştur (jsPDF dinamik import). İndir ve Görüntüle aynı çıktıyı paylaşır.
-    const buildCertificatePdf = async (cert: { title: string; organization: string; date: string }) => {
-        const { default: jsPDF } = await import('jspdf');
-        const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
+    // Sertifika çıktısı: yeni Apple-kimlikli, iOS-GÜVENLİ üretici (SVG→canvas→jsPDF,
+    // sistem fontuyla Türkçe ğ/ş/ı/İ doğru render). İndir + Görüntüle aynı Blob'u paylaşır.
+    const buildCertBlob = (cert: { title: string; organization: string; date: string; id?: string }) =>
+        generateEventCertificate({
+            eventName: cert.title,
+            eventDate: cert.date,
+            userName: recipientName,
+            organizerName: cert.organization,
+            role: 'participant',
+            certificateId: cert.id || cert.title,
+            verifyUrl: typeof window !== 'undefined' ? window.location.origin : undefined,
+        });
 
-        // Border
-        pdf.setDrawColor(234, 88, 12);
-        pdf.setLineWidth(2);
-        pdf.rect(10, 10, pageW - 20, pageH - 20);
-        pdf.setLineWidth(0.5);
-        pdf.rect(14, 14, pageW - 28, pageH - 28);
+    const certFileName = (cert: { title: string; id?: string }) =>
+        eventCertificateFileName({ eventName: cert.title, certificateId: cert.id || cert.title });
 
-        // Title
-        pdf.setFontSize(32);
-        pdf.setTextColor(234, 88, 12);
-        pdf.text(t('dashboard.badges.certificateWord').toLocaleUpperCase('tr'), pageW / 2, 48, { align: 'center' });
+    // Blob → base64 (native Filesystem.writeFile için). FileReader webview'de çalışır.
+    const blobToBase64 = (blob: Blob): Promise<string> =>
+        new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(((reader.result as string) || '').split(',')[1] || '');
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(blob);
+        });
 
-        pdf.setFontSize(11);
-        pdf.setTextColor(110, 110, 110);
-        pdf.text(t('dashboard.badges.certIssuedBy'), pageW / 2, 60, { align: 'center' });
-
-        // Recipient — "Sayın {ad}" tek satır.
-        pdf.setFontSize(22);
-        pdf.setTextColor(20, 20, 20);
-        pdf.text(`${t('dashboard.badges.certForPerson')} ${recipientName}`, pageW / 2, 86, { align: 'center', maxWidth: pageW - 60 });
-
-        // Body — "{STK} tarafından düzenlenen aşağıdaki çalışmayı başarıyla tamamlamıştır:"
-        pdf.setFontSize(13);
-        pdf.setTextColor(60, 60, 60);
-        const body = `${cert.organization} ${t('dashboard.badges.certCompletion')}`;
-        const bodyLines = pdf.splitTextToSize(body, pageW - 60);
-        pdf.text(bodyLines, pageW / 2, 108, { align: 'center' });
-
-        // Title of cert — vurgulu
-        pdf.setFontSize(20);
-        pdf.setTextColor(234, 88, 12);
-        const titleLines = pdf.splitTextToSize(cert.title, pageW - 60);
-        pdf.text(titleLines, pageW / 2, 132, { align: 'center' });
-
-        // Date / org footer
-        pdf.setFontSize(11);
-        pdf.setTextColor(80, 80, 80);
-        pdf.text(`${t('dashboard.badges.certIssuer')}: ${cert.organization}`, pageW / 2, 162, { align: 'center' });
-        pdf.text(`${t('dashboard.badges.certDate')}: ${cert.date}`, pageW / 2, 170, { align: 'center' });
-
-        pdf.setFontSize(9);
-        pdf.setTextColor(120, 120, 120);
-        pdf.text('hangel.org', pageW / 2, pageH - 18, { align: 'center' });
-
-        return pdf;
-    };
-
-    const certFileName = (cert: { title: string }) =>
-        `sertifika-${cert.title.replace(/[^\w-]+/g, '-').toLowerCase()}.pdf`;
-
-    // Native: write to Documents/ + share; Web: pdf.save().
-    const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string }) => {
+    // Native: write to Documents/ + share; Web: blob indir.
+    const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string; id?: string }) => {
         try {
-            const pdf = await buildCertificatePdf(cert);
+            const blob = await buildCertBlob(cert);
             const filename = certFileName(cert);
             if (isNativeApp()) {
                 const { Filesystem, Directory } = await import('@capacitor/filesystem');
                 const { Share } = await import('@capacitor/share');
-                const base64 = pdf.output('datauristring').split(',')[1];
+                const base64 = await blobToBase64(blob);
                 const written = await Filesystem.writeFile({
                     path: filename,
                     data: base64,
@@ -349,7 +319,14 @@ export default function MyBadgesPage() {
                 toast({ title: t('dashboard.badges.certSavedTitle'), description: `${filename} ${t('dashboard.badges.certSavedSuffix')}` });
                 return;
             }
-            pdf.save(filename);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => { try { URL.revokeObjectURL(url); } catch { /* ignore */ } }, 1500);
             toast({ title: t('dashboard.badges.certDownloadedTitle'), description: `${cert.title} ${t('dashboard.badges.certDownloadedSuffix')}` });
         } catch (error) {
             console.error('Certificate PDF download failed:', error);
@@ -358,17 +335,17 @@ export default function MyBadgesPage() {
     };
 
     // Modal popup preview için cert PDF blob URL'i ve seçili cert.
-    const [previewState, setPreviewState] = useState<{ url: string; cert: { title: string; organization: string; date: string } } | null>(null);
+    const [previewState, setPreviewState] = useState<{ url: string; cert: { title: string; organization: string; date: string; id?: string } } | null>(null);
 
     // Native: write temp + open via Browser; Web: iframe preview modal.
-    const handleViewCertificate = async (cert: { title: string; organization: string; date: string }) => {
+    const handleViewCertificate = async (cert: { title: string; organization: string; date: string; id?: string }) => {
         try {
-            const pdf = await buildCertificatePdf(cert);
+            const blob = await buildCertBlob(cert);
             if (isNativeApp()) {
                 const { Filesystem, Directory } = await import('@capacitor/filesystem');
                 const { Browser } = await import('@capacitor/browser');
                 const filename = certFileName(cert);
-                const base64 = pdf.output('datauristring').split(',')[1];
+                const base64 = await blobToBase64(blob);
                 const written = await Filesystem.writeFile({
                     path: filename,
                     data: base64,
@@ -378,7 +355,7 @@ export default function MyBadgesPage() {
                 return;
             }
             // Web: iframe modal preview (popup yerine in-app dialog).
-            const blobUrl = pdf.output('bloburl') as unknown as string;
+            const blobUrl = URL.createObjectURL(blob);
             // Önceki blob'u serbest bırak (memory leak önle).
             if (previewState?.url) {
                 try { URL.revokeObjectURL(previewState.url); } catch { /* ignore */ }
@@ -731,11 +708,11 @@ export default function MyBadgesPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
-                                        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleViewCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}>
+                                        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleViewCertificate(cert)}>
                                             <Eye className="h-4 w-4 sm:mr-2" />
                                             <span className="hidden sm:inline">{t('dashboard.badges.viewCta')}</span>
                                         </Button>
-                                        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleDownloadCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}>
+                                        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleDownloadCertificate(cert)}>
                                             <Download className="h-4 w-4 sm:mr-2" />
                                             <span className="hidden sm:inline">{t('dashboard.badges.downloadCta')}</span>
                                         </Button>

@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "dc6e7db8",
+    "date": "2026-06-21",
+    "subject": "feat(marketing+live-activity): tek tık \"Tümünü Yayınla\" + Panel Ayarları başlığı; etkinlik kapanınca Live Activity söner"
+  },
+  {
+    "hash": "eab8a2d9",
+    "date": "2026-06-21",
+    "subject": "feat(super-admin/events): katılımcı listesi + Düzenle'de konuşmacılar"
+  },
+  {
     "hash": "1d115591",
     "date": "2026-06-21",
     "subject": "build(ios): widget+denetim Swift dosyalarını HangelLiveActivities target'ına ekle"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "2a8f7509",
     "date": "2026-06-20",
     "subject": "chore(audit): 'yarat-' (oluşturma fiili) → 'üret/oluştur' (Apple/dil kuralı)"
-  },
-  {
-    "hash": "0d348c75",
-    "date": "2026-06-20",
-    "subject": "feat(org): çok-tipli kuruluş ön kayıt (dernek/vakıf/kulüp) + İngilizce route"
-  },
-  {
-    "hash": "be94f1de",
-    "date": "2026-06-20",
-    "subject": "fix(ngo-admin): aktif kuruluşu URL'de kanonikleştir (giriş karmaşasını bitir)"
   }
 ];

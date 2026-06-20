@@ -13,11 +13,21 @@ import React, { useEffect, useState } from 'react';
 import { Star, Loader2, UserCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { celebrate } from '@/lib/celebrate';
-import { eventStart, eventEnd, formatCountdown } from '@/lib/event-time';
+import { eventStart, eventEnd } from '@/lib/event-time';
 import type { EventContributor } from '@/lib/types';
 
 const HOUR = 3600_000;
 const PRELIVE_WINDOW = 2 * HOUR; // başlangıca bu kadar kala geri sayım görünür
+
+// Canlı etkinlik geri sayımı: saat:dakika:saniye (saat 24'ü aşabilir → 50:23:11).
+function fmtClock(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+}
 
 interface LiveEventSectionProps {
   eventId: string;
@@ -106,12 +116,12 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
             </span>
             <span className="text-sm font-black uppercase tracking-[0.15em] text-red-600">Canlı</span>
           </span>
-          <span className="font-mono text-sm font-bold tabular-nums text-muted-foreground">Bitişe {formatCountdown(endMs - now)}</span>
+          <span className="font-mono text-sm font-bold tabular-nums text-muted-foreground">Bitişe {fmtClock(endMs - now)}</span>
         </div>
       ) : (
         <div className="flex items-baseline justify-between gap-3">
           <span className="text-sm font-bold text-muted-foreground">Başlamasına</span>
-          <span className="font-mono text-2xl font-black tabular-nums text-foreground">{formatCountdown(startMs - now)}</span>
+          <span className="font-mono text-2xl font-black tabular-nums text-foreground">{fmtClock(startMs - now)}</span>
         </div>
       )}
 
