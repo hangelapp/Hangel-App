@@ -170,6 +170,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const { toast } = useToast();
     // 2./3. girişte bilgi yönlendirmesi mantığı sadece bir kez çalışsın diye guard
     const loginCountHandledRef = useRef(false);
+    // Kurumsal yetki talebi (pendingOrgClaims) çözümü oturumda bir kez denenir.
+    const orgClaimsCheckedRef = useRef(false);
 
     // Bağış STK seçimi yapmamış kullanıcılar için pop-up uyarı
     const [showNgoSelectionPrompt, setShowNgoSelectionPrompt] = useState(false);
@@ -380,6 +382,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authUser, isUserLoading, pathname, router, isMounted, userData, userDataLoading]);
+
+    // Kurumsal yetki talebi çözümü: kullanıcının telefonuna eşleşen bekleyen
+    // kurumsal yetkilendirme (onayda kayıtlı değilken oluşturulan pendingOrgClaims)
+    // varsa otomatik yetkili yapılır. Oturumda bir kez (Admin SDK route).
+    useEffect(() => {
+        if (orgClaimsCheckedRef.current) return;
+        if (!authUser) return;
+        orgClaimsCheckedRef.current = true;
+        (async () => {
+            try {
+                const token = await authUser.getIdToken();
+                const res = await fetch('/api/auth/claim-org-roles', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && ((data as { claimed?: number })?.claimed ?? 0) > 0) {
+                    toast({
+                        title: '🤝 Yetkilendirildiniz',
+                        description: 'Bir kuruluşun yöneticisi olarak eklendiniz. Yönetim paneline erişebilirsiniz.',
+                    });
+                }
+            } catch { /* best-effort */ }
+        })();
+    }, [authUser, toast]);
 
     // 2./3. girişte kişisel/gönüllülük bilgisi yönlendirmesi (PDF page 25)
     // - İlk login (loginCount yok / 0) → loginCount: 1 yaz, redirect yapma

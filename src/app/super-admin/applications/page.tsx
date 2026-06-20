@@ -551,34 +551,37 @@ export default function ApplicationsPage() {
           }
         }
 
-        // Kulüp başvurusu: başkan olarak kayıt olan kullanıcıyı kulübün doğal
-        // yöneticisi (Kulüp Başkanı) yap. adminUserId zaten club doc'unda set edildi;
-        // burada userInvitations kaydı + kullanıcı doc rol başlığı yazılır.
-        // Super-admin bu rolü /super-admin/clubs üzerinden sonradan değiştirebilir.
-        if (entityId && app.entityType === 'CLUB' && userId) {
-          const presidentName =
-            (app as { clubPresidentName?: string }).clubPresidentName ||
-            app.authorized?.name ||
-            app.name ||
-            'Kulüp Başkanı';
+        // Yetkili kişiyi (telefon/e-posta/uid) çöz: kayıtlıysa anında kuruluşun
+        // yetkilisi (Genel Yönetici / Kulüp Başkanı) yap; değilse telefon-bazlı
+        // bekleyen talep oluştur — kişi telefonuyla kayıt/giriş yapınca otomatik
+        // atanır. (Admin SDK route; tüm tür wiring'i orada yapılır.)
+        if (entityId) {
           try {
-            await addDoc(collection(db, COLLECTIONS.userInvitations), {
-              clubId: entityId,
-              inviteeUserId: userId,
-              inviteeName: presidentName,
-              role: 'Kulüp Başkanı',
-              status: 'accepted',
-              invitedBy: 'system-approval',
-              invitedAt: serverTimestamp(),
-              autoAcceptedBy: 'system-approval',
-            });
-            updateDocumentNonBlocking(doc(db, COLLECTIONS.users, userId), {
-              managedClubId: entityId,
-              clubRoleTitle: 'Kulüp Başkanı',
-              roleTitle: 'Kulüp Başkanı',
-            });
+            const token = await authUser?.getIdToken();
+            const kind = app.entityType === 'BRAND' ? 'brand' : app.entityType === 'CLUB' ? 'club' : 'ngo';
+            const isClub = kind === 'club';
+            const a = app as {
+              authorized?: { phone?: string; phoneCountryCode?: string; email?: string; name?: string };
+              authorizedPhone?: string; authorizedEmail?: string; authorizedUserId?: string;
+              clubPresidentName?: string; clubPresidentPhone?: string; clubPresidentPhoneCountryCode?: string; clubPresidentEmail?: string;
+              email?: string; name?: string;
+            };
+            const phone = (isClub ? a.clubPresidentPhone : a.authorized?.phone) || a.authorizedPhone || '';
+            const phoneCountryCode = (isClub ? a.clubPresidentPhoneCountryCode : a.authorized?.phoneCountryCode) || '+90';
+            const email = (isClub ? a.clubPresidentEmail : a.authorized?.email) || a.authorizedEmail || a.email || '';
+            const role = isClub ? 'Kulüp Başkanı' : 'Genel Yönetici';
+            if (token) {
+              await fetch('/api/super-admin/org/assign-or-claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                  entityId, entityKind: kind, role, phone, phoneCountryCode, email,
+                  existingUserId: userId || a.authorizedUserId || null, entityName: a.name || '',
+                }),
+              });
+            }
           } catch (e) {
-            console.error('Kulüp başkanı atama başarısız:', e);
+            console.error('Yetkili atama/claim başarısız:', e);
           }
         }
 

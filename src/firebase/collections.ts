@@ -284,6 +284,13 @@ export const COLLECTIONS = {
   // targetKinds[], isPublic, publicListed, status, createdBy, createdAt).
   marketingAssets: 'marketingAssets',
 
+  // Kurumsal başvuru yetkili kişisi telefonu kayıtlı bir kullanıcıya ait değilse,
+  // o kişi telefonuyla kayıt olduğunda otomatik yetkili yapılır. Bekleyen talepler
+  // burada tutulur. Yalnız Admin SDK erişir (client kuralı yok). Doc: { phoneE164,
+  // entityId, entityKind: ngo|brand|club, role, entityName, status: pending|resolved,
+  // createdAt, resolvedUserId?, resolvedAt? }.
+  pendingOrgClaims: 'pendingOrgClaims',
+
   // Internal / dev only
   _devOutbox: '_devOutbox',
 } as const;
