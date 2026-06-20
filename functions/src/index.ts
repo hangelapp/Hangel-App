@@ -141,6 +141,10 @@ export { eventOneHourSmsReminder } from './sms-reminder';
 // bildirimi (push + uygulama-içi). Her 5 dk. See ./event-start-prompt.ts
 export { eventStartOrganizerPrompt } from './event-start-prompt';
 
+// Katılımcı hatırlatmaları — "going" RSVP'lere 1 gün / 1 saat / 10 dk kala push.
+// Her 5 dk, idempotent (event.reminders.{day|hour|tenMin}). See ./event-reminders.ts
+export { eventAttendeeReminders } from './event-reminders';
+
 // Daily 11:00 Europe/Istanbul nudge for users who registered ~24h / ~72h ago
 // but never completed onboarding. Writes notifications doc (push via
 // onNotificationCreated) and stamps the user doc for idempotency.
