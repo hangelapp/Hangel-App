@@ -6,6 +6,7 @@ import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/l
 import { startEventCountdownActivity } from '@/lib/native-live-activity';
 import { EventCountdown } from '@/components/events/event-countdown';
 import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
+import { LiveEventSection } from '@/components/events/live-event-section';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -408,6 +409,10 @@ export default function EventDetailPage() {
   // Etkinlik ekibi — userId → User eşlemesi (fotoğraf için).
   // NOT: `Map` adı lucide-react'ten import edildiği için global Map constructor gölgeleniyor → düz Record kullan.
   const contributors = event.contributors ?? [];
+  // Yönetici mi? (canlı yayını başlat/bitir yetkisi) — super-admin veya organizatör STK/kulüp.
+  const _ud = userData as { role?: string; managedNgoId?: string; managedClubId?: string } | null;
+  const isEventManager = _ud?.role === 'super-admin'
+    || (!!event.organizerId && (_ud?.managedNgoId === event.organizerId || _ud?.managedClubId === event.organizerId));
   const contributorUserById: Record<string, UserType> = {};
   for (const u of contributorUsers ?? []) {
     contributorUserById[u.id] = u;
@@ -525,6 +530,13 @@ export default function EventDetailPage() {
             >
               {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isGoing ? 'Katıldın ✓ — Vazgeç' : 'Etkinliğe Katıl')}
             </Button>
+
+            {/* Canlı etkinlik modu — geri sayım / Canlı Başlat-Bitir / konuşmacıya canlı puan */}
+            {resolvedEventId && (
+              <div className="mt-4">
+                <LiveEventSection eventId={resolvedEventId} event={event} isManager={isEventManager} isGoing={isGoing} authUser={authUser ?? null} />
+              </div>
+            )}
 
             {/* İçerik: tabs + kapasite + aksiyonlar */}
             <div className="space-y-8">

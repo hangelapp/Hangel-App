@@ -199,6 +199,8 @@ export const COLLECTIONS = {
   // events/{eventId}/checkins/{uid} — gönüllünün etkinliğe katılım kaydı.
   // method: 'qr' | 'nfc' | 'manual', checkedOutAt: geofence exit ile dolar.
   eventCheckins: 'checkins',
+  // events/{eventId}/speakerRatings/{uid} — canlı modda konuşmacı puanları (sadece going).
+  eventSpeakerRatings: 'speakerRatings',
 
   // Mikro Gönüllülük — Faz 3
   // 5-30 dk kısa görevler. STK admin oluşturur, kullanıcı konuma göre

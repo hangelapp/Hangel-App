@@ -193,6 +193,11 @@ export type Event = {
   organizerLogoUrl?: string; // Etkinliği düzenleyen kulübün/STK'nın logosu (Live Activity + yaka kartı)
   contributors?: EventContributor[]; // Konuşmacı / sanatçı / moderatör listesi (isim + ünvan + rol)
   agenda?: EventAgendaItem[]; // Etkinlik akış programı (saat + başlık)
+  // Canlı etkinlik modu — organizatör "Canlı yayını başlat" deyince true olur.
+  live?: boolean;
+  liveStartedAt?: unknown;
+  liveEndedAt?: unknown;
+  completed?: boolean; // "Etkinliği Tamamla" sonrası true → aktif/canlı listeden düşer.
 };
 
 /** Etkinlikte görevli kişi — konuşmacı, sanatçı, moderatör. hangel üyesiyse userId bağlanır. */
