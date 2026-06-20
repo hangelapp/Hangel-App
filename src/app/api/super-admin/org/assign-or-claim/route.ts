@@ -8,7 +8,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
-import { type OrgKind } from '@/lib/ngo-admin/org-admin-auth';
+import { type OrgKind, FOUNDER_EMAIL } from '@/lib/ngo-admin/org-admin-auth';
 import { resolveUserByContact, wireOrgManager, createPendingClaim } from '@/lib/ngo-admin/org-manager';
 
 export const runtime = 'nodejs';
@@ -20,8 +20,8 @@ async function isSuperAdmin(req: Request): Promise<boolean> {
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
   if (!token) return false;
   try {
-    const decoded = (await getAdminAuth().verifyIdToken(token)) as { uid: string; role?: string };
-    if (decoded.role === 'super-admin') return true;
+    const decoded = (await getAdminAuth().verifyIdToken(token)) as { uid: string; role?: string; email?: string };
+    if (decoded.role === 'super-admin' || (decoded.email || '').toLowerCase() === FOUNDER_EMAIL) return true;
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     return snap.exists && (snap.data() as { role?: string }).role === 'super-admin';
   } catch {

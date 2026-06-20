@@ -9,6 +9,10 @@
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 
+// Kurucu (founder) — rol claim'i oynak olsa bile her zaman super-admin sayılır
+// (storage.rules + use-super-admin-permissions ile aynı e-posta).
+export const FOUNDER_EMAIL = 'ismailhilmi@hangel.org';
+
 export type OrgKind = 'ngo' | 'brand' | 'club';
 
 export const KIND_TO_COL: Record<OrgKind, string> = {
@@ -54,7 +58,7 @@ export async function resolveOrgAdminCtx(
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
   if (!token) return { ok: false, error: 'Token gerekli', status: 401 };
 
-  let decoded: { uid: string; role?: string };
+  let decoded: { uid: string; role?: string; email?: string };
   try {
     decoded = (await getAdminAuth().verifyIdToken(token)) as typeof decoded;
   } catch {
@@ -65,7 +69,8 @@ export async function resolveOrgAdminCtx(
   const callerSnap = await db.collection(COLLECTIONS.users).doc(decoded.uid).get();
   if (!callerSnap.exists) return { ok: false, error: 'Kullanıcı bulunamadı', status: 404 };
   const c = callerSnap.data() as Record<string, unknown>;
-  const isSuperAdmin = decoded.role === 'super-admin' || c.role === 'super-admin';
+  const isFounder = (decoded.email || '').toLowerCase() === FOUNDER_EMAIL;
+  const isSuperAdmin = decoded.role === 'super-admin' || c.role === 'super-admin' || isFounder;
 
   let kind: OrgKind | null = null;
   let orgId: string | null = null;

@@ -30,7 +30,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { collection, doc, query, where } from 'firebase/firestore';
 import {
   useFirestore,
@@ -142,6 +142,7 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
   // --- 1) URL params — Next.js usePathname/useSearchParams ensures we re-read
   // on every route change (router.push, link clicks, deep links, popstate).
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const urlSelection = useMemo<{ id: string; type: EntityType } | null>(() => {
@@ -321,9 +322,17 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
       }
     }
     setStoredSelection(normalized);
-    // urlSelection artık usePathname/useSearchParams ile otomatik güncellenir —
-    // setUrlSelection state'i yok. router.push(...) sonrası Next.js hooks tetiklenir.
-  }, []);
+    // KRİTİK: URL ?id/type ÖNCELİKLİ (selection = urlSelection || storedSelection).
+    // URL'i de güncellemezsek eski ?id seçimi ezer ve üstteki kurum değişmez.
+    try {
+      const params = new URLSearchParams(Array.from(searchParams?.entries() || []));
+      params.set('id', normalized.id);
+      params.set('type', normalized.type);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    } catch {
+      // ignore — localStorage fallback yine de geçerli
+    }
+  }, [router, pathname, searchParams]);
 
   const withEntityParams = useCallback(
     (href: string) => {
