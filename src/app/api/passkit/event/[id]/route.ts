@@ -16,14 +16,25 @@ import { generateEventPass } from '@/lib/passkit/generator';
 import { randomBytes } from 'crypto';
 
 interface EventDoc {
+  name?: string;
   title?: string;
+  organizer?: string;
   ngoName?: string;
-  location?: string;
-  startDate?: { toDate?: () => Date };
-  endDate?: { toDate?: () => Date };
-  coordinates?: { lat: number; lng: number };
+  // Etkinlikte tarih STRING ("YYYY-MM-DD HH:mm"), konum OBJE — gönüllülükle aynı kalıp.
+  startDate?: string;
+  endDate?: string;
+  location?: { type?: string; address?: string; city?: string; district?: string; coordinates?: { lat?: number; lon?: number; lng?: number } };
   organizerLogoUrl?: string;
   contributors?: Array<{ userId?: string; role?: string }>;
+}
+
+/** "YYYY-MM-DD HH:mm" (yerel) → Date. Geçersizse null. */
+function parseLocalDate(s?: string): Date | null {
+  if (!s || typeof s !== 'string') return null;
+  const m = s.trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+  if (!m) { const d = new Date(s); return isNaN(d.getTime()) ? null : d; }
+  const [, y, mo, d, hh, mm] = m;
+  return new Date(Number(y), Number(mo) - 1, Number(d), Number(hh || '0'), Number(mm || '0'), 0, 0);
 }
 
 /** Date → "HH:mm" (Europe/Istanbul). Geçersizse boş. */
@@ -80,8 +91,18 @@ export async function GET(
   }
 
   const e = eventSnap.data() as EventDoc;
-  const startDate = e.startDate?.toDate?.() ?? new Date();
-  const endDate = e.endDate?.toDate?.();
+  const startDate = parseLocalDate(e.startDate) ?? new Date();
+  const endDate = parseLocalDate(e.endDate) ?? undefined;
+  // Konum: OBJE → string etiket (gönüllülükle aynı). PassKit field value string olmalı.
+  const loc = e.location;
+  const locationLabel = loc?.type === 'Online'
+    ? 'Online'
+    : [loc?.city, loc?.district].filter(Boolean).join(', ');
+  const fullAddress = [loc?.address, loc?.district, loc?.city].filter(Boolean).join(', ') || locationLabel;
+  const coords = loc?.coordinates;
+  const coordinates = coords && typeof coords.lat === 'number'
+    ? { lat: coords.lat, lng: (coords.lng ?? coords.lon) as number }
+    : undefined;
   // Başlangıç–bitiş saati etiketi.
   const startHm = hm(startDate);
   const endHm = hm(endDate);
@@ -98,18 +119,18 @@ export async function GET(
   try {
     const buffer = await generateEventPass({
       serialNumber,
-      eventTitle: e.title ?? 'hangel Etkinliği',
-      ngoName: e.ngoName ?? '',
-      location: e.location ?? '',
+      eventTitle: e.name ?? e.title ?? 'hangel Etkinliği',
+      ngoName: e.organizer ?? e.ngoName ?? '',
+      location: locationLabel,
       startDate,
       endDate,
-      coordinates: e.coordinates,
+      coordinates,
       ticketId: serialNumber,
       authenticationToken,
       kind: 'event',
       role,
       userName,
-      address: e.location ?? '',
+      address: fullAddress,
       timeLabel,
       ngoLogoUrl: e.organizerLogoUrl,
       qrPayload: `https://hangel.org.tr/events/${eventId}`,
