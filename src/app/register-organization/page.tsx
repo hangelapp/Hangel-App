@@ -5,7 +5,7 @@
  *
  * Dernek (kütük no) · Vakıf (isimle ara) · Spor Kulübü (manuel). Sözleşme onayı →
  * /api/ngo/claim → taslak kuruluş + managedNgoId. Taslak marketplace'te gizli;
- * sahibine "evrakını tamamla" ikazı çıkar. (Apple kimliği; "yaratma" yok.)
+ * sahibine "evrakını tamamla" ikazı çıkar. (Apple kimliği; "üretme" yok.)
  */
 
 import React, { useState } from 'react';

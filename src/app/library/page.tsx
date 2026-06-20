@@ -139,7 +139,7 @@ export default function LibraryPage() {
       const itemsText = (items ?? []).map(i => `${i.title} ${stripHtml(i.content || '')}`).join(' ');
       return `${title} ${description ?? ''} ${itemsText}`.toLowerCase();
     };
-    const inventoryStatic = { title: 'hangel Sosyal Etki Envanteri', description: 'Dünya genelinde sosyal etki yaratan kuruluşların envanteri.' };
+    const inventoryStatic = { title: 'hangel Sosyal Etki Envanteri', description: 'Dünya genelinde sosyal etki üreten kuruluşların envanteri.' };
     const filmsStatic = { title: 'Filmler', description: 'Sosyal etki temalı film ve belgesel seçkisi.' };
     const dataStatic = { title: 'Veri Kütüphanesi', description: 'Resmi kurumlar ve araştırma merkezlerinden veri setleri.' };
 

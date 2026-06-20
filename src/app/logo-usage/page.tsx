@@ -120,7 +120,7 @@ const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, ti
 // Alt marka kartları tanıtım/bilgi sayfalarına yönlendirir (işlevsel sayfalara değil).
 const appArchitecture: ReadonlyArray<{ href: string; icon: LogoIconName; label: string; description: string }> = [
     { href: "/imece", icon: 'HeartHandshake', label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
-    { href: "/social-impact", icon: 'HandCoins', label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
+    { href: "/social-impact", icon: 'HandCoins', label: "hangel bağış", description: "Alışverişle sosyal fayda üretme modeli." },
     { href: "/clubs", icon: 'School', label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
     { href: "/corporate", icon: 'Store', label: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler." },
     { href: "/social-entrepreneurship", icon: 'Building2', label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },

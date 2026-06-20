@@ -217,7 +217,7 @@ export default function ContactPage() {
                     <TabsContent value="brand">
                          <CardHeader>
                             <CardTitle>Marka & İşletme İşbirliği Formu</CardTitle>
-                            <CardDescription>Markanızla sosyal etki yaratmak veya QR ödeme sistemine dahil olmak için bize ulaşın.</CardDescription>
+                            <CardDescription>Markanızla sosyal etki üretmek veya QR ödeme sistemine dahil olmak için bize ulaşın.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <BrandContactForm />

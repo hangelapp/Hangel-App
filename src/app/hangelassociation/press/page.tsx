@@ -75,7 +75,7 @@ const APP_RELEASES: ReadonlyArray<PressRelease> = [
         location: 'İstanbul',
         title: 'hangel "bağış" modeliyle alışverişi sosyal faydaya dönüştürüyor',
         body: [
-            'hangel uygulaması, kullanıcıların günlük alışverişlerini doğrudan sosyal fayda yaratan bağışlara dönüştüren yeni "bağış" modelini duyurdu. Anlaşmalı markalardan yapılan her alışveriş, kullanıcının seçtiği sosyal projeye katkıya dönüşüyor.',
+            'hangel uygulaması, kullanıcıların günlük alışverişlerini doğrudan sosyal fayda üreten bağışlara dönüştüren yeni "bağış" modelini duyurdu. Anlaşmalı markalardan yapılan her alışveriş, kullanıcının seçtiği sosyal projeye katkıya dönüşüyor.',
             'Model, şeffaf bağış takibi sunarak kullanıcıların yarattıkları etkiyi gerçek zamanlı görmesine olanak tanıyor. Her bağışın hangi projeye, ne kadar katkı sağladığı uygulama içinde izlenebiliyor.',
         ],
         contact: 'Basın İletişim: basin@hangel.org · hangel.org.tr',

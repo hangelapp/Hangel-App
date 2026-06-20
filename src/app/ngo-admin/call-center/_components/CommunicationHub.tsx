@@ -34,7 +34,7 @@ const WA_TEMPLATES: Array<{ id: string; title: string; body: string }> = [
   { id: 'event-invite', title: 'Etkinlik Daveti', body: 'Merhaba {{ad}}, [etkinlik adı] etkinliğimize [tarih] [saat]\'te sizi bekliyoruz. Katılmak ister misiniz?' },
   { id: 'donation-thanks', title: 'Bağış Teşekkürü', body: 'Sevgili {{ad}}, yaptığınız bağış için teşekkür ederiz 🧡 Desteğinizle [proje] hayata geçiyor.' },
   { id: 'volunteer-call', title: 'Gönüllü Çağrısı', body: 'Merhaba {{ad}}, [şehir] bölgesinde gönüllülerimize ihtiyacımız var. Katkıda bulunmak ister misiniz?' },
-  { id: 'donation-call', title: 'Bağış Çağrısı', body: 'Merhaba {{ad}}, [kampanya] kampanyamıza desteğinizi bekliyoruz. Küçük bir katkı büyük fark yaratır.' },
+  { id: 'donation-call', title: 'Bağış Çağrısı', body: 'Merhaba {{ad}}, [kampanya] kampanyamıza desteğinizi bekliyoruz. Küçük bir katkı büyük fark üretir.' },
   { id: 'survey', title: 'Anket / Geri Bildirim', body: 'Merhaba {{ad}}, kısa anketimize katılarak görüşlerinizi paylaşır mısınız? Yalnızca 2 dakika sürer.' },
   { id: 'training', title: 'Eğitim Duyurusu', body: 'Merhaba {{ad}}, [konu] hakkında ücretsiz eğitimimiz [tarih] tarihinde. Kayıt için bu mesajı yanıtlayın.' },
   { id: 'campaign', title: 'Kampanya Duyurusu', body: 'Merhaba {{ad}}, yeni [kampanya] kampanyamız başladı! Detaylar ve katılım için bize ulaşın.' },

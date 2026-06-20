@@ -56,7 +56,7 @@ const projectContents: Record<string, ProjectContent> = {
     'sanat': {
         title: "hangel Sanat.",
         subtitle: "Sanatın birleştirici gücüyle farkındalık.",
-        desc: "hangel Sanat; sanatı toplumsal dönüşümün aracı olarak kullanır. Sergiler, atölyeler ve kamusal sanat projeleriyle dezavantajlı grupların sesini görünür kılar; empatiyi, dayanışmayı ve birlikte üretmeyi güçlendirir. Sanatçıları toplumsal fayda projeleriyle buluşturarak kalıcı etki yaratıyoruz.",
+        desc: "hangel Sanat; sanatı toplumsal dönüşümün aracı olarak kullanır. Sergiler, atölyeler ve kamusal sanat projeleriyle dezavantajlı grupların sesini görünür kılar; empatiyi, dayanışmayı ve birlikte üretmeyi güçlendirir. Sanatçıları toplumsal fayda projeleriyle buluşturarak kalıcı etki üretiyoruz.",
         icon: Palette,
         imageUrl: "https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?q=80&w=2070&auto=format&fit=crop",
         hint: "art exhibition community"

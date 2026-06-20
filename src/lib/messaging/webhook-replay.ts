@@ -119,7 +119,7 @@ export function isTimestampFresh(value: string | null, now: number = Date.now())
 }
 
 /**
- * Replay koruması — `webhookReplayIds/{driver}__{eventId}` doc'unu atomik olarak yaratır.
+ * Replay koruması — `webhookReplayIds/{driver}__{eventId}` doc'unu atomik olarak üretir.
  * Doc varsa `ALREADY_EXISTS` fırlatır → çağıran 409 döner.
  *
  * `set` + `create()` semantiği (`create()` doc varsa fail eder) yerine, bizim sürümümüz

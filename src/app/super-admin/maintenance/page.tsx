@@ -122,7 +122,7 @@ export default function MaintenancePage() {
                 },
                 {
                     slug: 'film-life-is-beautiful', title: 'Life Is Beautiful / Hayat Güzeldir (1997)',
-                    content: '<p>İkinci Dünya Savaşı\'nda toplama kampındaki bir babanın oğlunu korumak için yarattığı oyun.</p><ul><li><strong>Yönetmen:</strong> Roberto Benigni</li><li><strong>Tür:</strong> Film</li><li><strong>Yıl:</strong> 1997</li><li><strong>Dil:</strong> İtalyanca</li><li><strong>Ülke:</strong> İtalya</li><li><strong>Kategori:</strong> Hayatta Kalma</li><li><strong>Duygu:</strong> Sevgi, Hayatta Kalma, Umut</li><li><strong>İçerik Türü:</strong> Kurgu</li></ul>',
+                    content: '<p>İkinci Dünya Savaşı\'nda toplama kampındaki bir babanın oğlunu korumak için ürettiği oyun.</p><ul><li><strong>Yönetmen:</strong> Roberto Benigni</li><li><strong>Tür:</strong> Film</li><li><strong>Yıl:</strong> 1997</li><li><strong>Dil:</strong> İtalyanca</li><li><strong>Ülke:</strong> İtalya</li><li><strong>Kategori:</strong> Hayatta Kalma</li><li><strong>Duygu:</strong> Sevgi, Hayatta Kalma, Umut</li><li><strong>İçerik Türü:</strong> Kurgu</li></ul>',
                 },
                 {
                     slug: 'film-the-kite-runner', title: 'The Kite Runner / Uçurtma Avcısı (2007)',

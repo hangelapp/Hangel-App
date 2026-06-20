@@ -99,7 +99,7 @@ const PAGE_DEFAULT_KEYS: Record<string, { title?: string; subtitle?: string; des
         description: 'Platformumuzu her geçen gün sizinle birlikte geliştiriyoruz. Deneyimlerinizi bizimle paylaşın.',
     },
     'corporate': {
-        title: 'Kamu ve Özel Sektör için Değer Yaratıyoruz.',
+        title: 'Kamu ve Özel Sektör için Değer Üretiyoruz.',
         subtitle: 'hangel Kurumsal Çözümler',
         description: 'Teknoloji, veri ve geniş topluluk ağımızı kullanarak kurumunuzun sosyal etki hedeflerine ulaşmasını sağlıyoruz. Üniversiteler, belediyeler, bakanlıklar ve şirketler için sürdürülebilir işbirliği modelleri sunuyoruz.',
     },

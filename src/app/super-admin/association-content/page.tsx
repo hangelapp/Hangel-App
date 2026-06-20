@@ -101,7 +101,7 @@ const DEFAULTS: ContentMap = {
     },
     projects: {
         title: 'Projelerimiz',
-        description: 'Sosyal etki yaratan girişimlerimiz.',
+        description: 'Sosyal etki üreten girişimlerimiz.',
         coverImageUrl: '',
     },
     entrepreneurshipLibrary: {
@@ -113,13 +113,13 @@ const DEFAULTS: ContentMap = {
     impactAtlas: {
         title: 'Sosyal Etki Atlası',
         subtitle: 'Türkiye sosyal etki haritası.',
-        description: 'Sivil toplum kuruluşlarının ve sosyal girişimlerin yarattığı etkiyi görselleştiren atlas projesi.',
+        description: 'Sivil toplum kuruluşlarının ve sosyal girişimlerin ürettiği etkiyi görselleştiren atlas projesi.',
         coverImageUrl: '',
     },
     employmentProtocol: {
         title: 'Etki Odaklı İstihdam Protokolü',
         subtitle: 'Sosyal fayda odaklı istihdam standartları.',
-        description: 'Şirketlerin sosyal etki yaratan istihdam politikalarını standartlaştıran protokol metni.',
+        description: 'Şirketlerin sosyal etki üreten istihdam politikalarını standartlaştıran protokol metni.',
         coverImageUrl: '',
     },
     contact: {

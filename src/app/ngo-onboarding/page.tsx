@@ -60,7 +60,7 @@ const TR = {
   heroTitle: 'Kurumunuz için sürdürülebilir geleceği bugün kurun.',
   heroSubtitle: 'Şeffaflık, kaynak ve gönüllü gücü. Hepsi tek panelde.',
   heroDescription:
-    'hangel, derneğinizi ve vakfınızı dijitalde güçlendiren bütünleşik bir yönetim platformudur. Şeffaflığınızı görünür kılın, düzenli kaynak yaratın, gönüllülerinizi yönetin; tek bir panelden.',
+    'hangel, derneğinizi ve vakfınızı dijitalde güçlendiren bütünleşik bir yönetim platformudur. Şeffaflığınızı görünür kılın, düzenli kaynak oluşturun, gönüllülerinizi yönetin; tek bir panelden.',
   heroImage:
     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2400&auto=format&fit=crop',
   heroPrimary: 'Ücretsiz Başvur',

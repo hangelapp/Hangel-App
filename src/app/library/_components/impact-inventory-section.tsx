@@ -43,7 +43,7 @@ export function ImpactInventorySection() {
   const { section } = useSectionDoc(SLUG, {
     slug: SLUG,
     title: 'hangel Sosyal Etki Envanteri',
-    description: 'Dünya genelinde sosyal etki yaratan kuruluşların envanteri.',
+    description: 'Dünya genelinde sosyal etki üreten kuruluşların envanteri.',
     icon: 'Database',
   });
 

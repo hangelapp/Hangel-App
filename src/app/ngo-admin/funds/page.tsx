@@ -80,7 +80,7 @@ const fallbackFunds: Fund[] = [
         status: 'Kapandı', 
         deadline: '2024-07-01', 
         areas: ['Kültür & Sanat'],
-        description: 'Kadınlar, gençler ve engelliler odaklı sosyal projeleri kültür ve sanat aracılığıyla destekler. Toplumsal farkındalık yaratan yaratıcı projelere öncelik verir.',
+        description: 'Kadınlar, gençler ve engelliler odaklı sosyal projeleri kültür ve sanat aracılığıyla destekler. Toplumsal farkındalık üreten yaratıcı projelere öncelik verir.',
         budget: '100.000 ₺ - 300.000 ₺',
         requirements: 'Kamu yararına çalışan dernek ve vakıflar.',
         url: 'https://www.sabancivakfi.org'

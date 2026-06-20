@@ -92,7 +92,7 @@ export function parseUserAgent(ua: string): ParsedUA {
 }
 
 /**
- * Auth user resolve olunca çağırılır. Mevcut session doc yoksa yaratır,
+ * Auth user resolve olunca çağırılır. Mevcut session doc yoksa üretir,
  * varsa lastActiveAt'ı günceller. NotFound hataları sessizce yutulur (rules
  * yetkisizliği veya offline).
  */

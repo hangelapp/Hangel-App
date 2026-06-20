@@ -29,7 +29,7 @@ export function OtpInput({
   }, [autoFocus]);
 
   // Aynı 6-haneli kod için onComplete tek sefer ateşlensin. Parent inline arrow
-  // onComplete prop'unu her render'da yeniden yarattığı için, deps değişimi
+  // onComplete prop'unu her render'da yeniden ürettiği için, deps değişimi
   // in-flight verify çağrısı sırasında effect'i tekrar tetikliyordu → toast spam.
   // firedForRef "şu değer için zaten ateşlendi" işareti tutar.
   const firedForRef = useRef<string | null>(null);

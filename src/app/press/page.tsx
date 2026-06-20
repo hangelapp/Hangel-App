@@ -166,7 +166,7 @@ const PRESS_RELEASES: { date: string; lang: 'TR' | 'EN'; title: string; body: st
         lang: 'TR',
         title: 'hangel\'in Vizyonu: Bireysel İyiliği Ölçülebilir Etkiye Dönüştürmek',
         body: [
-            'hangel, bireylerin gönüllülük, bağış ve topluluk katılımı yoluyla yarattığı sosyal etkiyi ölçülebilir, paylaşılabilir ve doğrulanabilir hale getirme vizyonuyla kurulmuştur. Platform, kullanıcının her bir nitelikli eylemini sosyal alan bazlı puan modeline aktararak hem birey hem de işbirliği yaptığı sivil toplum kuruluşu için şeffaf bir etki haritası üretir.',
+            'hangel, bireylerin gönüllülük, bağış ve topluluk katılımı yoluyla ürettiği sosyal etkiyi ölçülebilir, paylaşılabilir ve doğrulanabilir hale getirme vizyonuyla kurulmuştur. Platform, kullanıcının her bir nitelikli eylemini sosyal alan bazlı puan modeline aktararak hem birey hem de işbirliği yaptığı sivil toplum kuruluşu için şeffaf bir etki haritası üretir.',
             '',
             'Vizyonumuz, yardımseverliği tek seferlik bir jest olmaktan çıkarıp sürdürülebilir, izlenebilir bir alışkanlığa dönüştürmektir. Bu doğrultuda hangel, bireylerin destekledikleri kuruluşların gerçek faaliyetlerini görebildiği, gönüllülük saatlerinin onaylanan kayıt zincirine bağlandığı ve her bağışın hedef projeye ulaşımının doğrulanabildiği bir altyapı geliştirmektedir.',
             '',

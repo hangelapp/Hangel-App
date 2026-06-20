@@ -685,7 +685,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   Bağışçısı Olduğun STK'ları Seç
                 </AlertDialogTitle>
                 <AlertDialogDescription>
-                  Etki yaratabilmen ve sana özel öneriler alabilmen için bağışçısı olduğun{' '}
+                  Etki oluşturabilmen ve sana özel öneriler alabilmen için bağışçısı olduğun{' '}
                   <strong>en az 2 STK</strong> seçmelisin. Seçim 30 günde bir değiştirilebilir.
                 </AlertDialogDescription>
               </AlertDialogHeader>
