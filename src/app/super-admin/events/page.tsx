@@ -65,6 +65,8 @@ import {
 } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
 import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
+import { isLiveEvent } from '@/lib/event-time';
+import Link from 'next/link';
 
 type EventStatus = 'Beklemede' | 'Yayında' | 'Reddedildi' | 'Aktif' | 'Pasif';
 
@@ -80,9 +82,16 @@ interface EventDoc {
   imageUrl?: string;
   coverImageUrl?: string;
   type?: string;
+  tags?: string[];
+  language?: string;
   date?: string;
   startDate?: string;
-  location?: { type?: string; address?: string; city?: string; district?: string };
+  endDate?: string;
+  time?: string;
+  capacity?: { current?: number; max?: number };
+  participationCondition?: string;
+  providesCertificate?: boolean;
+  location?: { type?: string; address?: string; city?: string; district?: string; neighborhood?: string };
   description?: string;
   status?: EventStatus;
   createdAt?: number;
@@ -96,13 +105,24 @@ interface EventDoc {
 interface EventEditForm {
   name: string;
   organizer: string;
+  organizerLogoUrl: string;
+  imageUrl: string;
   type: string;
-  description: string;
+  tags: string; // virgülle ayrık
+  language: string;
   startDate: string;
+  endDate: string;
+  time: string;
+  capacityMax: string;
+  participationCondition: string;
+  providesCertificate: boolean;
+  status: EventStatus;
   locationType: string;
   city: string;
   district: string;
+  neighborhood: string;
   address: string;
+  description: string;
 }
 
 function StatusBadge({ status }: { status?: EventStatus }) {
@@ -166,23 +186,39 @@ function EventRow({
   const address = event.location?.address || '';
   const date = formatDate(event.date || event.startDate);
   const cover = event.coverImageUrl || event.imageUrl || event.organizerLogoUrl;
+  const orgLogo = event.organizerLogoUrl || event.organizerAvatarUrl;
+  const live = isLiveEvent(event);
+  const detailHref = `/events/${event.slug || event.id}`;
 
   return (
     <Card className="rounded-2xl border-black/5 hover:shadow-md transition-all">
       <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <Avatar className="h-14 w-14 border shadow-sm shrink-0 rounded-2xl">
-          <AvatarImage src={cover} alt={title} />
-          <AvatarFallback className="rounded-2xl bg-primary/10 text-primary">
-            <Calendar className="h-6 w-6" />
-          </AvatarFallback>
-        </Avatar>
+        <Link href={detailHref} target="_blank" rel="noopener noreferrer" className="shrink-0" title="Etkinlik sayfasını aç">
+          <Avatar className="h-14 w-14 border shadow-sm rounded-2xl">
+            <AvatarImage src={cover} alt={title} />
+            <AvatarFallback className="rounded-2xl bg-primary/10 text-primary">
+              <Calendar className="h-6 w-6" />
+            </AvatarFallback>
+          </Avatar>
+        </Link>
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-bold text-foreground truncate">{title}</p>
+            <Link href={detailHref} target="_blank" rel="noopener noreferrer" className="font-bold text-foreground truncate hover:text-primary hover:underline">
+              {title}
+            </Link>
+            {live && (
+              <Badge className="bg-red-600 text-white text-[10px] font-bold uppercase tracking-wider gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" /> Canlı
+              </Badge>
+            )}
             <StatusBadge status={event.status} />
           </div>
-          <p className="text-xs text-muted-foreground font-medium">
-            <span className="font-semibold">{organizer}</span>
+          <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+            <Avatar className="h-5 w-5 border shrink-0">
+              <AvatarImage src={orgLogo} alt={organizer} />
+              <AvatarFallback className="text-[8px] font-bold bg-muted">{(organizer || '?').charAt(0)}</AvatarFallback>
+            </Avatar>
+            <span className="font-semibold truncate">{organizer}</span>
           </p>
           <p className="text-[11px] text-muted-foreground flex items-center gap-3 flex-wrap">
             <span className="inline-flex items-center gap-1">
@@ -227,15 +263,10 @@ function EditEventDialog({
   saving: boolean;
 }) {
   const [form, setForm] = useState<EventEditForm>({
-    name: '',
-    organizer: '',
-    type: '',
-    description: '',
-    startDate: '',
-    locationType: 'Fiziksel',
-    city: '',
-    district: '',
-    address: '',
+    name: '', organizer: '', organizerLogoUrl: '', imageUrl: '', type: '', tags: '', language: '',
+    startDate: '', endDate: '', time: '', capacityMax: '', participationCondition: 'Herkese Açık',
+    providesCertificate: false, status: 'Beklemede', locationType: 'Fiziksel', city: '', district: '',
+    neighborhood: '', address: '', description: '',
   });
 
   // Re-seed the form whenever a new event is opened for editing.
@@ -244,20 +275,31 @@ function EditEventDialog({
       setForm({
         name: event.name ?? '',
         organizer: event.organizer ?? '',
+        organizerLogoUrl: event.organizerLogoUrl ?? event.organizerAvatarUrl ?? '',
+        imageUrl: event.imageUrl ?? event.coverImageUrl ?? '',
         type: event.type ?? '',
-        description: event.description ?? '',
+        tags: Array.isArray(event.tags) ? event.tags.join(', ') : '',
+        language: event.language ?? '',
         startDate: event.startDate ?? event.date ?? '',
+        endDate: event.endDate ?? '',
+        time: event.time ?? '',
+        capacityMax: event.capacity?.max != null ? String(event.capacity.max) : '',
+        participationCondition: event.participationCondition ?? 'Herkese Açık',
+        providesCertificate: !!event.providesCertificate,
+        status: event.status ?? 'Beklemede',
         locationType: event.location?.type ?? 'Fiziksel',
         city: event.location?.city ?? '',
         district: event.location?.district ?? '',
+        neighborhood: event.location?.neighborhood ?? '',
         address: event.location?.address ?? '',
+        description: event.description ?? '',
       });
     }
   }, [event, open]);
 
   if (!event) return null;
 
-  const set = (key: keyof EventEditForm, value: string) =>
+  const set = <K extends keyof EventEditForm>(key: K, value: EventEditForm[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
   return (
@@ -347,6 +389,88 @@ function EditEventDialog({
               placeholder="Açık adres"
             />
           </div>
+          <div className="space-y-1.5">
+            <Label className="font-semibold">Mahalle</Label>
+            <Input value={form.neighborhood} onChange={(e) => set('neighborhood', e.target.value)} placeholder="Mahalle" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="font-semibold">Bitiş (YYYY-MM-DD HH:mm)</Label>
+              <Input value={form.endDate} onChange={(e) => set('endDate', e.target.value)} placeholder="2026-06-20 18:00" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="font-semibold">Saat (HH:mm)</Label>
+              <Input value={form.time} onChange={(e) => set('time', e.target.value)} placeholder="15:05" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="font-semibold">Etiketler (virgülle)</Label>
+              <Input value={form.tags} onChange={(e) => set('tags', e.target.value)} placeholder="müzik, atölye" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="font-semibold">Dil</Label>
+              <Input value={form.language} onChange={(e) => set('language', e.target.value)} placeholder="Türkçe" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="font-semibold">Kontenjan (maks.)</Label>
+              <Input type="number" value={form.capacityMax} onChange={(e) => set('capacityMax', e.target.value)} placeholder="100" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="font-semibold">Durum</Label>
+              <Select value={form.status} onValueChange={(v) => set('status', v as EventStatus)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Beklemede">Beklemede</SelectItem>
+                  <SelectItem value="Yayında">Yayında</SelectItem>
+                  <SelectItem value="Aktif">Aktif</SelectItem>
+                  <SelectItem value="Pasif">Pasif</SelectItem>
+                  <SelectItem value="Reddedildi">Reddedildi</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="font-semibold">Katılım Koşulu</Label>
+              <Select value={form.participationCondition} onValueChange={(v) => set('participationCondition', v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Herkese Açık">Herkese Açık</SelectItem>
+                  <SelectItem value="Üyelere Özel">Üyelere Özel</SelectItem>
+                  <SelectItem value="Davetli">Davetli</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="font-semibold">Sertifika</Label>
+              <Select value={form.providesCertificate ? 'evet' : 'hayir'} onValueChange={(v) => set('providesCertificate', v === 'evet')}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="evet">Veriliyor</SelectItem>
+                  <SelectItem value="hayir">Verilmiyor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="font-semibold">Afiş Görseli (URL)</Label>
+            <Input value={form.imageUrl} onChange={(e) => set('imageUrl', e.target.value)} placeholder="https://…" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="font-semibold">Düzenleyen Kurum Logosu (URL)</Label>
+            <Input value={form.organizerLogoUrl} onChange={(e) => set('organizerLogoUrl', e.target.value)} placeholder="https://…" />
+          </div>
+          {(form.imageUrl || form.organizerLogoUrl) && (
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {form.imageUrl && <img src={form.imageUrl} alt="afiş" className="h-16 w-16 rounded-lg object-cover border" />}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {form.organizerLogoUrl && <img src={form.organizerLogoUrl} alt="logo" className="h-16 w-16 rounded-full object-cover border bg-white" />}
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="event-description" className="font-semibold">Açıklama</Label>
             <Textarea
@@ -581,17 +705,31 @@ export default function SuperAdminEventsPage() {
     }
     setIsSaving(true);
     try {
+      const startTrim = form.startDate.trim();
+      const dateOnly = startTrim.split(' ')[0] || startTrim;
+      const maxCap = parseInt(form.capacityMax, 10);
       await updateDoc(doc(db, COLLECTIONS.events, id), {
         name: form.name.trim(),
         organizer: form.organizer.trim(),
+        organizerLogoUrl: form.organizerLogoUrl.trim() || null,
+        imageUrl: form.imageUrl.trim() || null,
         type: form.type.trim(),
-        description: form.description.trim(),
-        startDate: form.startDate.trim(),
-        date: form.startDate.trim(),
+        tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
+        language: form.language.trim() || null,
+        startDate: startTrim,
+        date: dateOnly,
+        endDate: form.endDate.trim() || null,
+        time: form.time.trim() || null,
+        'capacity.max': Number.isFinite(maxCap) ? maxCap : null,
+        participationCondition: form.participationCondition,
+        providesCertificate: form.providesCertificate,
+        status: form.status,
         'location.type': form.locationType,
         'location.city': form.city.trim(),
         'location.district': form.district.trim(),
+        'location.neighborhood': form.neighborhood.trim(),
         'location.address': form.address.trim(),
+        description: form.description.trim(),
       });
       toast({ title: 'Etkinlik Güncellendi', description: 'Değişiklikler kaydedildi.' });
       setIsEditOpen(false);

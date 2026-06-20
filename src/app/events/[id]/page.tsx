@@ -4,6 +4,7 @@ import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@
 import { collection, doc, query, where, limit, documentId } from 'firebase/firestore';
 import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/lib/types';
 import { startEventCountdownActivity } from '@/lib/native-live-activity';
+import { EventCountdown } from '@/components/events/event-countdown';
 import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
@@ -312,7 +313,10 @@ export default function EventDetailPage() {
 
   const organizerEntity = (orgNgo && orgNgo[0]) || (orgClub && orgClub[0]) || null;
   const organizerCategory = (organizerEntity as (NGO | StudentClub) & { category?: string })?.category;
-  const organizerLogo = organizerEntity?.avatarUrl;
+  // Önce kayıt anında saklanan organizerLogoUrl; yoksa eşleşen kurum dokümanının avatarı.
+  const organizerLogo = (event as { organizerLogoUrl?: string; organizerAvatarUrl?: string }).organizerLogoUrl
+    || organizerEntity?.avatarUrl
+    || (event as { organizerAvatarUrl?: string }).organizerAvatarUrl;
 
   let organizerLink = '#';
   if (organizerEntity) {
@@ -465,9 +469,18 @@ export default function EventDetailPage() {
                 )}
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-headline tracking-tight leading-[1.05] break-words">{event.name}</h1>
-              <p className="text-base sm:text-lg font-semibold text-primary">
-                <Link href={organizerLink} className="hover:underline">{event.organizer}</Link>
-              </p>
+              <div className="flex items-center gap-2.5">
+                {organizerLogo && (
+                  <span className="h-9 w-9 rounded-full overflow-hidden border bg-white shrink-0 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={organizerLogo} alt={event.organizer} className="h-full w-full object-contain" />
+                  </span>
+                )}
+                <Link href={organizerLink} className="text-base sm:text-lg font-semibold text-primary hover:underline">{event.organizer}</Link>
+              </div>
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3">
+                <EventCountdown event={event} className="text-base" />
+              </div>
             </div>
 
             {/* Quick info chips — ferah, nötr palet + turuncu vurgu */}
