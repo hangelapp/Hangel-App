@@ -20,32 +20,26 @@ const db = admin.firestore();
 const bucket = admin.storage().bucket();
 const auth = new GoogleAuth({ credentials: sa, scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
 
-// 5 Çağrı Merkezi anonsu — umut veren, heyecanlandıran; kurumsal söylem.
+// Tek IVR metni (kullanıcı kesinleştirdi — DEĞİŞTİRME). Marka sesli olarak "hencıl"
+// okunsun diye TTS metninde "hencıl" yazıldı (görünen marka adı yine "hangel").
+const IVR_TEXT = `Merhaba, hencıl'e hoş geldiniz. Toplumsal sorunlarla kolektif bilinç ve iş birliğiyle mücadele etme yolculuğumuza katkı sunduğunuz için teşekkür ederiz. Kullanıcı Destek Birimi için 1'i, Sivil Toplum Kuruluşları Destek Birimi için 2'yi, Marka ve Kurumsal İş Birlikleri Birimi için 3'ü tuşlayınız. Kişisel Verilerin Korunması Politikamız ve diğer yasal bilgilendirmeler için hencıl.org adresini ziyaret edebilirsiniz. hencıl'i aradığınız için teşekkür eder, iyi günler dileriz.`;
+
+// 5 YETİŞKİN ("normal insan") sesi — aynı IVR metni, farklı Chirp3-HD sesleri.
 const SANTRAL = [
-  { voice: 'tr-TR-Chirp3-HD-Achernar', rate: 0.97,
-    text: `hangel'e hoş geldiniz! Burada hiçbir sorunla yalnız başına mücadele etmezsiniz. Birlikte umudu büyütüyoruz; sizi duymak için buradayız!` },
-  { voice: 'tr-TR-Chirp3-HD-Sulafat', rate: 0.98,
-    text: `Merhaba, hangel ailesine hoş geldiniz! Her çağrınız bir umut, her sesiniz bir dayanışma. Hemen yanınızdayız, lütfen hatta kalın!` },
-  { voice: 'tr-TR-Chirp3-HD-Vindemiatrix', rate: 0.97,
-    text: `hangel'desiniz! Toplumsal sorunlar için birlikteyiz, daha güzel bir yarın için buradayız. Sizi bağlıyoruz; umudunuz bizim umudumuz!` },
-  { voice: 'tr-TR-Chirp3-HD-Algenib', rate: 0.98,
-    text: `İyi ki aradınız! hangel'de yalnız değilsiniz; el ele, gönül gönüle. Birlikte güçlüyüz, birlikte umutluyuz!` },
-  { voice: 'tr-TR-Chirp3-HD-Autonoe', rate: 0.99,
-    text: `hangel'e hoş geldiniz! Bugün birlikte bir umuda dokunuyoruz. Birazdan size yardımcı olacağız; heyecanla bekliyoruz!` },
+  { voice: 'tr-TR-Chirp3-HD-Achernar', rate: 0.97, text: IVR_TEXT },     // kadın, yumuşak
+  { voice: 'tr-TR-Chirp3-HD-Sulafat', rate: 0.97, text: IVR_TEXT },      // kadın, sıcak
+  { voice: 'tr-TR-Chirp3-HD-Vindemiatrix', rate: 0.97, text: IVR_TEXT }, // kadın, nazik
+  { voice: 'tr-TR-Chirp3-HD-Autonoe', rate: 0.98, text: IVR_TEXT },      // kadın, parlak
+  { voice: 'tr-TR-Chirp3-HD-Charon', rate: 0.97, text: IVR_TEXT },       // erkek, güven verici
 ];
 
-// 5 Çocuk anonsu — Wavenet + yüksek pitch + "dili dönmeyen" sevimli yazım.
+// 5 ÇOCUK sesi — aynı IVR metni, Wavenet + yüksek pitch (çocuksu tını).
 const COCUK = [
-  { voice: 'tr-TR-Wavenet-A', rate: 1.05, pitch: 6.0,
-    text: `Mehaba! Ben hangel. Buyada kimse yalnız değil, hep biyiikteyiz!` },
-  { voice: 'tr-TR-Wavenet-C', rate: 1.06, pitch: 7.0,
-    text: `Umudu büyütüyoyuz! Çünkü biz hangel'iz, iyilik yapmayı çoook seveyiz!` },
-  { voice: 'tr-TR-Wavenet-A', rate: 1.05, pitch: 8.0,
-    text: `hangel'de el ele veyiyoyuz! Sen de gel, biyiikte oynayalım!` },
-  { voice: 'tr-TR-Wavenet-C', rate: 1.05, pitch: 6.0,
-    text: `Yalnız kalma, hangel'e gel! Buyada herkes aykadaş, herkes biyiikte!` },
-  { voice: 'tr-TR-Wavenet-D', rate: 1.06, pitch: 7.0,
-    text: `İyilik çoook güzel! Hadi biyiikte umudu büyütelim, hangel'le gülelim!` },
+  { voice: 'tr-TR-Wavenet-A', rate: 1.0, pitch: 6.0, text: IVR_TEXT },
+  { voice: 'tr-TR-Wavenet-C', rate: 1.0, pitch: 7.0, text: IVR_TEXT },
+  { voice: 'tr-TR-Wavenet-A', rate: 1.0, pitch: 8.0, text: IVR_TEXT },
+  { voice: 'tr-TR-Wavenet-C', rate: 1.0, pitch: 6.5, text: IVR_TEXT },
+  { voice: 'tr-TR-Wavenet-D', rate: 1.0, pitch: 7.0, text: IVR_TEXT },
 ];
 
 async function synth(token, item) {
