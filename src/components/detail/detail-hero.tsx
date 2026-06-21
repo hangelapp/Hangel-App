@@ -207,7 +207,8 @@ function OrganizerRow({
     <>
       {logoUrl && (
         <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/40 bg-white">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* Organizatör logosu rastgele harici host olabilir → next/image whitelist'ine
+              takılmamak için <img>. Küçük dekoratif logo; optimize gerekmez. */}
           <img src={logoUrl} alt={name} className="h-full w-full object-contain" />
         </span>
       )}

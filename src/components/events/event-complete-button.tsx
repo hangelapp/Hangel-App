@@ -35,8 +35,6 @@ interface Participant {
   comment: string;
 }
 
-const CORAL = '#f34723';
-
 export function EventCompleteButton({ eventId }: { eventId: string }) {
   const { user } = useUser();
   const { toast } = useToast();
@@ -160,7 +158,7 @@ export function EventCompleteButton({ eventId }: { eventId: string }) {
           <ScrollArea className="max-h-[46vh] pr-3">
             <div className="space-y-3">
               {participants.map((p) => (
-                <div key={p.uid} className="rounded-2xl border border-black/5 bg-muted/30 p-3">
+                <div key={p.uid} className="rounded-2xl border border-border bg-muted/30 p-3">
                   <div className="flex items-center gap-2.5">
                     <Avatar className="h-9 w-9">
                       {p.avatarUrl ? <AvatarImage src={p.avatarUrl} alt={p.name} /> : null}
@@ -168,11 +166,11 @@ export function EventCompleteButton({ eventId }: { eventId: string }) {
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold leading-tight">{p.name}</p>
-                      <p className="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      <p className="truncate text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         {roleLabelTr((p.role as EventUserRole) || 'participant')}
                       </p>
                     </div>
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex items-center">
                       {[1, 2, 3, 4, 5].map((n) => (
                         <button
                           key={n}
@@ -180,9 +178,9 @@ export function EventCompleteButton({ eventId }: { eventId: string }) {
                           aria-label={`${p.name} için ${n} yıldız`}
                           onClick={() => setRating(p.uid, n)}
                           disabled={busy}
-                          className="transition active:scale-90 disabled:opacity-50"
+                          className="flex h-11 w-9 items-center justify-center transition active:scale-90 disabled:opacity-50 hover:text-primary"
                         >
-                          <Star className="h-5 w-5" style={p.rating >= n ? { fill: CORAL, color: CORAL } : { color: '#cbd5e1' }} />
+                          <Star className={`h-5 w-5 ${p.rating >= n ? 'fill-primary text-primary' : 'text-muted-foreground/30'}`} />
                         </button>
                       ))}
                     </div>

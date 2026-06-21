@@ -9,6 +9,9 @@
  *  - Native + girişliyken Apple Health'ten kişisel bilgileri (kan grubu,
  *    cinsiyet, doğum tarihi, boy, kilo) okuyup users/{uid}.personalInfo'ya
  *    senkronlar (oturum başına bir kez, best-effort).
+ *  - Native + girişliyken ana ekran widget'larına gerçek kullanıcı verisini
+ *    (etki puanı, yaklaşan etkinlik, acil kan, bağış) yazar (oturum başına bir
+ *    kez, best-effort).
  *
  * İleride buraya: ATT prompt zamanlama, network status, app lifecycle gibi
  * native event'ler eklenecek.
@@ -21,12 +24,14 @@ import { Capacitor } from '@capacitor/core';
 import { useUser, useFirestore } from '@/firebase';
 import { initDeepLinkListener, ensureStatusBarVisible } from '@/lib/native-bridge';
 import { syncHealthToProfile } from '@/lib/sync-health';
+import { syncWidgetData } from '@/lib/sync-widget';
 
 export function NativeBridgeProvider() {
   const router = useRouter();
   const { user } = useUser();
   const db = useFirestore();
   const healthSyncedRef = useRef(false);
+  const widgetSyncedRef = useRef(false);
 
   useEffect(() => {
     const cleanup = initDeepLinkListener((path) => router.push(path));
@@ -42,6 +47,17 @@ export function NativeBridgeProvider() {
     if (!user || !db) return;
     healthSyncedRef.current = true;
     void syncHealthToProfile(db, user.uid);
+  }, [user, db]);
+
+  // Ana ekran widget'ları auto-fill: native + girişli + henüz senkronlanmadıysa,
+  // oturum başına bir kez. Tamamen sessiz (best-effort); veri yoksa widget
+  // placeholder kalır.
+  useEffect(() => {
+    if (widgetSyncedRef.current) return;
+    if (!Capacitor.isNativePlatform()) return;
+    if (!user || !db) return;
+    widgetSyncedRef.current = true;
+    void syncWidgetData(db, user.uid);
   }, [user, db]);
 
   return null;

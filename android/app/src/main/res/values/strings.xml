@@ -22,4 +22,18 @@
     <string name="widget_brand_label">hangel</string>
     <string name="widget_brand_description">hangel ana ekranını aç — umudu birlikte büyütüyoruz.</string>
     <string name="widget_brand_tagline">umudu büyütüyoruz</string>
+
+    <!-- Etki Puanım widget'ı (dinamik, iOS ImpactScoreWidget paritesi) -->
+    <string name="widget_impact_label">Etki Puanım</string>
+    <string name="widget_impact_description">Toplam etki puanını ve seviyeni gösterir.</string>
+    <string name="widget_impact_kicker">Etki Puanım</string>
+    <string name="widget_impact_unit">puan</string>
+    <string name="widget_impact_default_rank">Gönüllü</string>
+
+    <!-- Yaklaşan Etkinlik widget'ı (dinamik, iOS UpcomingEventWidget paritesi) -->
+    <string name="widget_upcoming_label">Yaklaşan Etkinlik</string>
+    <string name="widget_upcoming_description">Bir sonraki etkinliğine kalan süreyi gösterir.</string>
+    <string name="widget_upcoming_kicker">Yaklaşan Etkinlik</string>
+    <string name="widget_upcoming_empty">Yaklaşan etkinlik yok</string>
+    <string name="widget_upcoming_empty_sub">Planlanan etkinlik yok</string>
 </resources>

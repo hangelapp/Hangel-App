@@ -64,6 +64,34 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_brand_info" />
         </receiver>
+
+        <!-- Etki Puanım widget'ı (DİNAMİK): SharedPreferences("hangel_widget")'tan
+             etki puanı + rütbe okur. HangelWidget.setData(...) yeniler. -->
+        <receiver
+            android:name="com.hangel.app.widgets.ImpactScoreWidget"
+            android:exported="false"
+            android:label="@string/widget_impact_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_impact_score_info" />
+        </receiver>
+
+        <!-- Yaklaşan Etkinlik widget'ı (DİNAMİK): SharedPreferences("hangel_widget")'tan
+             etkinlik adı + başlangıç + şehir okur, kalan süreyi gösterir. -->
+        <receiver
+            android:name="com.hangel.app.widgets.UpcomingEventWidget"
+            android:exported="false"
+            android:label="@string/widget_upcoming_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_upcoming_event_info" />
+        </receiver>
     </application>
 
     <!-- Permissions -->

@@ -42,6 +42,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { COLLECTIONS } from '@/firebase/collections';
 import { eventPhase } from '@/lib/event-time';
+import { DetailHero } from '@/components/detail/detail-hero';
 
 type WeatherDay = { date: string; tempMax: number; tempMin: number; label: string; emoji: string };
 
@@ -508,77 +509,49 @@ export default function EventDetailPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 lg:pt-12">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] gap-8 lg:gap-16 items-start">
 
-          {/* ───────── SOL KOLON: Afiş hero — bilgiler + CTA afişin ÜZERİNDE (overlay) ───────── */}
+          {/* ───────── SOL KOLON: Afiş hero — ORTAK DetailHero + CTA overlay ───────── */}
           <div className="lg:sticky lg:top-8">
             <div className="relative">
-              {/* Üst sol: Geri butonu */}
-              <div className="absolute top-3 left-3 z-20">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-10 w-10" aria-label="Geri">
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </div>
-              {/* Üst sağ: Share */}
-              <div className="absolute top-3 right-3 z-20">
-                <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} buttonClassName="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-10 w-10" />
-              </div>
-
-              {/* A4 portre poster — büyük, net; alt kısma karanlık gradyan + beyaz bilgi + CTA overlay */}
-              <div className="relative aspect-[210/297] w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-black/10 border border-black/5 bg-muted">
-                <Image
-                  src={safeImageUrl}
-                  alt={event.name}
-                  fill
-                  className="object-cover"
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 460px"
-                  data-ai-hint="event poster a4 portrait"
-                />
-
-                {/* Aşağıdan yukarı koyu scrim — beyaz metin okunabilirliği için */}
-                <div
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5"
-                  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0) 100%)' }}
-                />
-
-                {/* Overlay bilgi seti — afişin altına yaslı; en altta katıl CTA'sı */}
-                <div className="absolute inset-x-0 bottom-0 z-10 p-5 sm:p-7 flex flex-col gap-3.5 text-white">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge className="bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3 py-1">{event.type}</Badge>
-                    {organizerCategory && (
-                      <Badge className="bg-white/15 backdrop-blur-sm text-white border-white/30 text-[10px] font-medium rounded-full px-3 py-1">{organizerCategory}</Badge>
-                    )}
-                  </div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-headline tracking-tight leading-[1.08] break-words drop-shadow-sm">{event.name}</h1>
-                  <div className="flex items-center gap-2.5">
-                    {organizerLogo && (
-                      <span className="h-9 w-9 rounded-full overflow-hidden border border-white/40 bg-white shrink-0 flex items-center justify-center">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={organizerLogo} alt={event.organizer} className="h-full w-full object-contain" />
-                      </span>
-                    )}
-                    <Link href={organizerLink} className="text-base sm:text-lg font-semibold text-white hover:underline drop-shadow-sm">{event.organizer}</Link>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm font-medium text-white/90">
-                    <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" />{formatDateTime(event.startDate).split(',')[0]}</span>
-                    <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4" />{formatDateTime(event.startDate).split(',')[1]?.trim() || '—'}</span>
-                    <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" />{event.location.type === 'Online' ? 'Online' : `${event.location.district}, ${event.location.city}`}</span>
-                  </div>
-                  {/* En alttaki öğe: Etkinliğe Katıl CTA (bitti ise kapalı) */}
+              <DetailHero
+                imageUrl={safeImageUrl}
+                imageAlt={event.name}
+                aspect="210 / 297"
+                rounded
+                priority
+                sizes="(max-width: 1024px) 100vw, 460px"
+                typeLabel={event.type}
+                secondaryLabel={organizerCategory}
+                organizerLogoUrl={organizerLogo}
+                organizerName={event.organizer}
+                organizerHref={organizerLink}
+                title={event.name}
+                dateLabel={formatDateTime(event.startDate).split(',')[0]}
+                timeLabel={formatDateTime(event.startDate).split(',')[1]?.trim() || undefined}
+                locationLabel={event.location.type === 'Online' ? 'Online' : `${event.location.district}, ${event.location.city}`}
+                backSlot={
+                  <Button onClick={() => router.back()} variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-11 w-11" aria-label="Geri">
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                }
+                shareSlot={
+                  <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} buttonClassName="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-11 w-11" />
+                }
+                ctaSlot={
                   <Button
                     size="lg"
                     disabled={isRsvpLoading || (!isGoing && rsvpClosed)}
                     onClick={() => submitRsvp(isGoing ? 'cancel' : 'going')}
                     variant={isGoing ? 'outline' : 'default'}
                     className={isGoing
-                      ? 'w-full h-13 rounded-2xl text-base sm:text-lg font-black mt-1 bg-white/10 text-white border-white/40 hover:bg-white/20 backdrop-blur-sm'
-                      : 'w-full h-13 rounded-2xl text-base sm:text-lg font-black mt-1 shadow-xl shadow-black/30'}
+                      ? 'w-full h-12 rounded-2xl text-base sm:text-lg font-black bg-white/10 text-white border-white/40 hover:bg-white/20 backdrop-blur-sm'
+                      : 'w-full h-12 rounded-2xl text-base sm:text-lg font-black shadow-xl shadow-black/30'}
                   >
                     {isRsvpLoading
                       ? <Loader2 className="h-5 w-5 animate-spin" />
                       : (isGoing ? 'Katıldın ✓ — Vazgeç' : (isEventFinished ? 'Etkinlik bitti' : (isEventFull ? 'Kontenjan doldu' : 'Etkinliğe Katıl')))}
                   </Button>
-                </div>
-              </div>
+                }
+              />
 
               {/* Geri sayım — afişin hemen altında, görünür kalır */}
               <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3">
@@ -636,7 +609,7 @@ export default function EventDetailPage() {
                                     <div className="flex flex-col gap-2">
                                         <span>{event.location.type === 'Online' ? 'Online' : `${event.location.address}`}</span>
                                         {event.location.type !== 'Online' && (
-                                            <Button variant="outline" size="sm" className="w-fit h-7 rounded-lg text-[10px] font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location.address + ' ' + event.location.district + ' ' + event.location.city)}`, '_blank')}>
+                                            <Button variant="outline" size="sm" className="w-fit h-9 rounded-xl text-xs font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location.address + ' ' + event.location.district + ' ' + event.location.city)}`, '_blank')}>
                                                 <Map className="h-3 w-3" /> Adres Tarifi Al
                                             </Button>
                                         )}
@@ -649,7 +622,7 @@ export default function EventDetailPage() {
                                 {event.location.type !== 'Online' && weather && weather.length > 0 && (
                                     <div className="py-4 px-4 sm:px-6">
                                         <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3">Hava durumu</p>
-                                        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-1 px-1">
+                                        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6">
                                             {weather.map((d) => (
                                                 <div key={d.date} className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl border border-border bg-card min-w-[88px] shrink-0 text-center">
                                                     <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{formatDateTime(d.date).split(',')[0]}</span>
@@ -695,7 +668,7 @@ export default function EventDetailPage() {
                                 <CardTitle>Açıklama</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-muted-foreground leading-relaxed font-medium">{event.description}</p>
+                                <p className="text-foreground/85 leading-relaxed font-medium">{event.description}</p>
                             </CardContent>
                         </Card>
 
@@ -723,7 +696,7 @@ export default function EventDetailPage() {
                                                     <p className="text-xs text-muted-foreground font-medium truncate">{c.title}</p>
                                                 )}
                                             </div>
-                                            <Badge variant="secondary" className="shrink-0 text-[10px] font-bold uppercase tracking-wider">
+                                            <Badge variant="secondary" className="shrink-0 text-xs font-bold uppercase tracking-wider">
                                                 {roleLabelTr(c.role)}
                                             </Badge>
                                         </div>
@@ -827,9 +800,9 @@ export default function EventDetailPage() {
                 {/* Yaka Kartı */}
                 <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button size="lg" variant="secondary" className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2">🪪 Yaka Kartı</Button>
+                    <Button size="lg" variant="secondary" className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2">🪪 Yaka Kartı</Button>
                 </AlertDialogTrigger>
-            <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-[2.5rem]">
+            <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-3xl">
                 <AlertDialogHeader>
                 <AlertDialogTitle className="text-2xl font-black tracking-tight">Kaydınız Alındı!</AlertDialogTitle>
                 <AlertDialogDescription className="text-base font-medium">
@@ -970,7 +943,7 @@ export default function EventDetailPage() {
                       toast({ variant: 'destructive', title: 'Apple Wallet açılamadı', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
                     }
                   }}
-                  className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2"
+                  className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2"
                   aria-label="Apple Wallet'a Ekle"
                   title="Apple Wallet'a Ekle"
                 >
@@ -986,7 +959,7 @@ export default function EventDetailPage() {
                     const url = new URL(`/api/events/${resolvedEventId}/ics`, window.location.origin).toString();
                     void openExternalUrl(url);
                   }}
-                  className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2"
+                  className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2"
                   aria-label="Takvime ekle"
                   title="Takvime ekle"
                 >
@@ -1022,7 +995,7 @@ export default function EventDetailPage() {
                       alert(e instanceof Error ? e.message : 'NFC hatası');
                     }
                   }}
-                  className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2"
+                  className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2"
                   aria-label="NFC ile Check-in"
                   title="NFC ile Check-in"
                 >
@@ -1033,10 +1006,10 @@ export default function EventDetailPage() {
                 {/* Etkinlik bittiyse: sertifika + değerlendir */}
                 {isEventFinished && (
                   <>
-                    <Button size="lg" variant="outline" className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2" asChild>
+                    <Button size="lg" variant="outline" className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2" asChild>
                       <Link href="/my-badges">🎓 Sertifika</Link>
                     </Button>
-                    <EventEvaluateButton eventId={resolvedEventId || ''} eventName={event.name} authUser={authUser ?? null} className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2" />
+                    <EventEvaluateButton eventId={resolvedEventId || ''} eventName={event.name} authUser={authUser ?? null} className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2" />
                   </>
                 )}
               </div>

@@ -65,8 +65,8 @@ const AdCarousel = () => {
                             fill
                             className="object-cover"
                             />
-                            <div className="absolute inset-0 bg-black/40" />
-                            <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+                            <div className="absolute inset-0 flex flex-col justify-end p-4 text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
                                 <h3 className="font-bold text-xl">{ad.title}</h3>
                                 <p className="text-base">{ad.description}</p>
                             </div>
@@ -413,13 +413,13 @@ export default function TimelinePage() {
                                         </Link>
                                         <div className="flex items-center gap-1 shrink-0">
                                             {post.sponsored && (
-                                                <Badge variant="outline" className="text-[10px] h-5">
+                                                <Badge variant="outline" className="text-[11px] h-6 px-2">
                                                     <Star className="h-3 w-3 mr-1" /> {t('timelinePage.sponsoredBadge')}
                                                 </Badge>
                                             )}
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label={t('timelinePage.moreOptionsAria')}>
+                                                    <Button variant="ghost" size="icon" className="h-11 w-11 rounded-full" aria-label={t('timelinePage.moreOptionsAria')}>
                                                         <MoreHorizontal className="h-5 w-5" />
                                                     </Button>
                                                 </DropdownMenuTrigger>

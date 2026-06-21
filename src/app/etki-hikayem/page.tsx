@@ -101,7 +101,7 @@ function buildSlides(d: Wrapped, periodWord: string): Slide[] {
       kicker: 'En çok katkı verdiğin alan',
       big: d.topArea,
       title: '',
-      subtitle: `${periodWord} en çok burada fark yarattın.`,
+      subtitle: `${periodWord} en çok burada iz bıraktın.`,
       gradient: 'from-violet-500 via-violet-700 to-violet-950',
     });
   }
@@ -273,11 +273,11 @@ function StoryReveal({
       <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
         <div key={slideIndex} className="space-y-5 max-w-md animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500">
           {slide.kicker && (
-            <p className="text-xs font-black uppercase tracking-[0.25em] opacity-90">{slide.kicker}</p>
+            <p className="text-xs font-black uppercase tracking-[0.25em] opacity-95">{slide.kicker}</p>
           )}
-          <p className="text-5xl sm:text-7xl font-black leading-none tracking-tighter break-words">{slide.big}</p>
+          <p className="text-4xl sm:text-6xl md:text-7xl font-black leading-none tracking-tighter text-balance break-words">{slide.big}</p>
           {slide.title && <p className="text-2xl font-bold">{slide.title}</p>}
-          {slide.subtitle && <p className="text-sm opacity-90 leading-relaxed">{slide.subtitle}</p>}
+          {slide.subtitle && <p className="text-sm opacity-95 leading-relaxed">{slide.subtitle}</p>}
         </div>
       </div>
 
@@ -320,20 +320,22 @@ function SummaryView({
         <p className="text-sm text-white/60 mt-1">Kartını indir ya da paylaş; ilhamı büyüt.</p>
       </div>
 
-      <WrappedCard
-        data={{
-          name,
-          avatarUrl,
-          periodLabel: data.periodLabel,
-          periodKind: period,
-          totalVolunteerHours: data.totalVolunteerHours,
-          donationCount: data.donationCount,
-          eventCount: data.eventCount,
-          impactScore: data.impactScore,
-          estimatedLivesTouched: data.estimatedLivesTouched,
-          topArea: data.topArea,
-        }}
-      />
+      <div className="mx-auto w-full max-w-[calc(100vw-24px)] overflow-hidden sm:max-w-md">
+        <WrappedCard
+          data={{
+            name,
+            avatarUrl,
+            periodLabel: data.periodLabel,
+            periodKind: period,
+            totalVolunteerHours: data.totalVolunteerHours,
+            donationCount: data.donationCount,
+            eventCount: data.eventCount,
+            impactScore: data.impactScore,
+            estimatedLivesTouched: data.estimatedLivesTouched,
+            topArea: data.topArea,
+          }}
+        />
+      </div>
 
       <div className="max-w-md mx-auto mt-4 text-center">
         <button onClick={onReplay} className="text-sm font-bold text-white/70 hover:text-white underline-offset-4 hover:underline">

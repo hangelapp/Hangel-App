@@ -238,7 +238,7 @@ export default function MarketPage() {
 
   return (
     <div className="flex flex-col h-full bg-secondary/30 backdrop-blur-sm relative">
-      <div className="p-4 space-y-4 border-b bg-background sticky top-12 z-20 shrink-0">
+      <div className="p-4 space-y-4 border-b border-border bg-background sticky top-12 z-10 shrink-0">
         <div className="flex items-center gap-2">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -288,24 +288,24 @@ export default function MarketPage() {
 
         <Tabs defaultValue="all" onValueChange={setBrandType} className="w-full">
           <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <TabsTrigger value="all" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabAll')}</TabsTrigger>
-            <TabsTrigger value="brand" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabCommercial')}</TabsTrigger>
-            <TabsTrigger value="cooperative" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabCooperative')}</TabsTrigger>
-            <TabsTrigger value="social" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabSocial')}</TabsTrigger>
-            <TabsTrigger value="economic" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabEconomic')}</TabsTrigger>
+            <TabsTrigger value="all" className="shrink-0 sm:shrink whitespace-nowrap text-xs px-3">{t('marketPage.tabAll')}</TabsTrigger>
+            <TabsTrigger value="brand" className="shrink-0 sm:shrink whitespace-nowrap text-xs px-3">{t('marketPage.tabCommercial')}</TabsTrigger>
+            <TabsTrigger value="cooperative" className="shrink-0 sm:shrink whitespace-nowrap text-xs px-3">{t('marketPage.tabCooperative')}</TabsTrigger>
+            <TabsTrigger value="social" className="shrink-0 sm:shrink whitespace-nowrap text-xs px-3">{t('marketPage.tabSocial')}</TabsTrigger>
+            <TabsTrigger value="economic" className="shrink-0 sm:shrink whitespace-nowrap text-xs px-3">{t('marketPage.tabEconomic')}</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-[100px] sm:w-1/4 border-r overflow-y-auto bg-background/50">
+        <aside className="hidden sm:block sm:w-1/4 lg:w-1/5 border-r border-border overflow-y-auto bg-background/50">
           <nav className="flex flex-col py-2">
             {allCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={cn(
-                  "text-left text-[11px] sm:text-sm px-3 py-1.5 whitespace-nowrap truncate transition-all",
+                  "text-left text-sm px-3 min-h-[44px] flex items-center whitespace-nowrap truncate transition-all",
                   activeCategory === cat
                     ? "bg-primary/10 text-primary border-l-4 border-primary font-black"
                     : "text-muted-foreground hover:bg-accent/50"
@@ -353,21 +353,21 @@ export default function MarketPage() {
               } : undefined}
             />
           ) : (
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {brandsToShow.map((brand) => {
                 const safeDonationRate = Math.max(0, Math.min(100, brand.donationRate || 0));
                 return (
                   <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
                     <div className="flex flex-col items-center text-center space-y-2">
                       <div className="relative w-full aspect-square">
-                        <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 overflow-hidden shadow-sm group-hover:shadow-xl transition-all relative">
+                        <div className="w-full h-full rounded-2xl bg-card border border-border overflow-hidden shadow-sm group-hover:shadow-md transition-all relative">
                           <BrandLogo brand={brand} />
                         </div>
-                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
+                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[11px] font-black text-white border-2 border-background">
                           %{safeDonationRate}
                         </div>
                       </div>
-                      <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
+                      <p className="text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
                     </div>
                   </Link>
                 );

@@ -51,7 +51,7 @@ export function EventAttendanceButton({ eventId, eventName, authUser, className 
           <Users className="mr-2 h-4 w-4" /> Katılımcılar
         </Button>
       </DialogTrigger>
-      <DialogContent className="rounded-[2rem] sm:max-w-md max-h-[80vh] overflow-y-auto">
+      <DialogContent className="rounded-3xl sm:max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold leading-tight">{eventName} — Katılımcılar</DialogTitle>
         </DialogHeader>
@@ -62,11 +62,11 @@ export function EventAttendanceButton({ eventId, eventName, authUser, className 
             <div className="flex gap-3">
               <div className="flex-1 rounded-2xl bg-muted/40 p-3 text-center">
                 <p className="text-2xl font-black tabular-nums">{going.length}</p>
-                <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Kayıtlı</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Kayıtlı</p>
               </div>
               <div className="flex-1 rounded-2xl bg-emerald-500/10 p-3 text-center">
                 <p className="text-2xl font-black tabular-nums text-emerald-600">{checkedInCount}</p>
-                <p className="text-[11px] font-bold uppercase tracking-wide text-emerald-600">Check-in</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-emerald-600">Check-in</p>
               </div>
             </div>
             {going.length === 0 ? (

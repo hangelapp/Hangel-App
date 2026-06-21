@@ -82,9 +82,9 @@ const InfoRow = ({ icon: Icon, label, value, href }: { icon: React.ElementType; 
 };
 
 const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType; value: string | number; label: string }) => (
-    <div className="text-center p-2">
+    <div className="text-center p-3">
         <Icon className="h-7 w-7 text-primary mx-auto mb-2" />
-        <p className="text-xl font-bold">{value}</p>
+        <p className="text-xl font-bold tabular-nums">{value}</p>
         <p className="text-xs text-muted-foreground">{label}</p>
     </div>
 );
@@ -156,7 +156,7 @@ export function EtkiTabContent({
                     <CardTitle>{impactCardTitle}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-6xl font-bold text-primary">{user.impactScore.toLocaleString('tr-TR')}</p>
+                    <p className="text-5xl font-bold tabular-nums text-primary sm:text-6xl">{user.impactScore.toLocaleString('tr-TR')}</p>
                     <p className="text-xs text-muted-foreground mt-2">
                         <CheckCircle className="h-3 w-3 inline mr-1" /> {earnedBadgeCount} rozet · {certificateCount} sertifika
                     </p>
@@ -165,7 +165,7 @@ export function EtkiTabContent({
 
             <Card>
                 <CardHeader><CardTitle>Özet İstatistikler</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <CardContent className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
                     <StatCard icon={HandCoins} value={`${(stats.totalDonation ?? 0).toLocaleString('tr-TR')} ₺`} label="Toplam Bağış" />
                     <StatCard icon={Sparkles} value={`${displayImpactValue.toLocaleString('tr-TR')} ₺`} label="Sosyal Etki Mali Değeri" />
                     <StatCard icon={Handshake} value={`${stats.volunteerHours ?? 0} Saat`} label="Gönüllülük" />

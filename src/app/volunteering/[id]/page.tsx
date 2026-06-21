@@ -38,6 +38,8 @@ import { useVerifiedAction } from '@/hooks/use-verified-action';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { startVolunteerTaskActivity } from '@/lib/native-live-activity';
 import { socialImpactValueTRY, formatTRY, socialImpactExplanation } from '@/lib/social-impact';
+import { DetailHero } from '@/components/detail/detail-hero';
+import { DetailStickyBar } from '@/components/detail/detail-body';
 
 type WeatherDay = { date: string; tempMax: number; tempMin: number; label: string; emoji: string };
 
@@ -138,9 +140,9 @@ export default function VolunteeringDetailPage() {
   }, [opportunity, matchingProfile, hasProfile]);
 
   const matchTone = matchPercentage >= 75
-    ? { text: 'text-green-700', bar: 'bg-green-500' }
+    ? { text: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500' }
     : matchPercentage >= 50
-      ? { text: 'text-amber-700', bar: 'bg-amber-500' }
+      ? { text: 'text-amber-600 dark:text-amber-400', bar: 'bg-amber-500' }
       : { text: 'text-muted-foreground', bar: 'bg-muted-foreground/40' };
 
   useEffect(() => {
@@ -301,6 +303,17 @@ export default function VolunteeringDetailPage() {
   })();
 
   const organizerLogo = opportunity.organizerLogoUrl || ngo?.avatarUrl;
+
+  // ── DetailHero künye verileri — etkinlik künyesiyle aynı dil ──
+  // Tür rozeti: görev tipi (taskType) > commitment; ikincil rozet: konum türü.
+  const heroTypeLabel = opp.taskType || opportunity.commitment || 'Gönüllülük';
+  // Aktivite başlangıç tarih/saat (varsa) künyede gösterilir; yoksa başvuru bitişine düşme YOK (hero sade kalır).
+  const heroDateTime = formatDateWithTime(opp.dates?.eventStart, opp.dates?.eventStartTime);
+  const heroDateLabel = heroDateTime !== '—' ? heroDateTime.split(',')[0] : undefined;
+  const heroTimeLabel = heroDateTime !== '—' ? (heroDateTime.split(',')[1]?.trim() || undefined) : undefined;
+  const heroLocationLabel = locType === 'Online'
+    ? 'Online'
+    : [opportunity.location.district, opportunity.location.city].filter(Boolean).join(', ') || undefined;
 
   // Sosyal Etki Mali Değeri
   const impactValueTRY = formatTRY(socialImpactValueTRY(opportunity.hours?.total ?? 0));
@@ -548,32 +561,31 @@ export default function VolunteeringDetailPage() {
 
   return (
     <div className="animate-in fade-in-0 bg-background min-h-screen">
-        {/* ── HERO — büyük, sakin görsel; üstte minimal nav ── */}
-        <div className="relative h-[42vh] min-h-[320px] max-h-[520px] w-full bg-muted overflow-hidden">
-            {ngo?.coverPhotoUrl
-                ? <Image src={ngo.coverPhotoUrl} alt={`${ngo.name} Kapak`} fill priority className="object-cover" />
-                : <div className="absolute inset-0 bg-gradient-to-br from-muted to-secondary" />}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/20" />
-
-            <div className="absolute top-5 left-0 right-0 z-10 flex items-center justify-between px-5 md:px-8">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-white bg-black/25 hover:bg-black/45 hover:text-white rounded-full backdrop-blur-md h-10 w-10" aria-label="Geri">
+        {/* ── HERO — ORTAK DetailHero: künye (tür rozeti + tarih/konum + başlık) ── */}
+        <DetailHero
+            imageUrl={ngo?.coverPhotoUrl}
+            imageAlt={`${organizerName} — ${opportunity.title}`}
+            rounded={false}
+            priority
+            sizes="100vw"
+            typeLabel={heroTypeLabel}
+            secondaryLabel={locType}
+            organizerLogoUrl={organizerLogo}
+            organizerName={organizerName}
+            organizerHref={`/ngos/${opportunity.ngoId}`}
+            title={opportunity.title}
+            dateLabel={heroDateLabel}
+            timeLabel={heroTimeLabel}
+            locationLabel={heroLocationLabel}
+            backSlot={
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full backdrop-blur-md h-11 w-11" aria-label="Geri">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük İlanı`} />
-            </div>
-
-            {/* Hero başlık — büyük, kalın, tracking-tight */}
-            <div className="absolute bottom-0 left-0 right-0 z-10 px-5 md:px-8 pb-7 md:pb-10">
-                <div className="mx-auto max-w-5xl">
-                    <Link href={`/ngos/${opportunity.ngoId}`} className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium tracking-wide transition-colors">
-                        {organizerName}
-                    </Link>
-                    <h1 className="mt-2 text-white text-[2rem] sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.05] max-w-3xl">
-                        {opportunity.title}
-                    </h1>
-                </div>
-            </div>
-        </div>
+            }
+            shareSlot={
+                <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük İlanı`} buttonClassName="text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full backdrop-blur-md h-11 w-11" />
+            }
+        />
 
         {/* ── GÖVDE — ferah, iki kolonlu (web) / tek kolon (mobil) ── */}
         <div className="mx-auto max-w-5xl px-5 md:px-8 pt-10 md:pt-14 pb-32">
@@ -596,7 +608,7 @@ export default function VolunteeringDetailPage() {
                     {/* Açıklama — büyük, okunur özet */}
                     <section className="space-y-4">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Genel bakış</h2>
-                        <p className="text-lg leading-relaxed text-muted-foreground whitespace-pre-line">
+                        <p className="text-lg leading-relaxed text-foreground/85 whitespace-pre-line">
                             {opportunity.description}
                         </p>
                     </section>
@@ -628,7 +640,7 @@ export default function VolunteeringDetailPage() {
                                     {socialImpactExplanation()}
                                 </PopoverContent>
                             </Popover>
-                            <p className="text-3xl md:text-4xl font-bold tracking-tight text-green-700">{impactValueTRY}</p>
+                            <p className="text-3xl md:text-4xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{impactValueTRY}</p>
                             <p className="mt-1 text-sm text-muted-foreground">Sosyal Etki Mali Değeri</p>
                         </div>
                     </section>
@@ -674,7 +686,7 @@ export default function VolunteeringDetailPage() {
                                 <dd className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-base">
                                     <span><span className="text-muted-foreground">İhtiyaç</span> <span className="font-semibold">{neededCount}</span></span>
                                     <span><span className="text-muted-foreground">Başvuran</span> <span className="font-semibold">{applicationsCount}</span></span>
-                                    <span><span className="text-muted-foreground">Onaylanan</span> <span className="font-semibold text-emerald-700">{approvedCount}</span></span>
+                                    <span><span className="text-muted-foreground">Onaylanan</span> <span className="font-semibold text-emerald-600 dark:text-emerald-400">{approvedCount}</span></span>
                                 </dd>
                             </div>
                         </dl>
@@ -729,9 +741,9 @@ export default function VolunteeringDetailPage() {
                     {applicationStatus && (
                         <div className={cn(
                             'rounded-2xl border p-5 flex items-center gap-4',
-                            applicationStatus === 'Onaylandı' ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                                : applicationStatus === 'Reddedildi' ? 'bg-red-50 border-red-200 text-red-800'
-                                    : 'bg-amber-50 border-amber-200 text-amber-800',
+                            applicationStatus === 'Onaylandı' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                                : applicationStatus === 'Reddedildi' ? 'bg-destructive/10 border-destructive/30 text-destructive'
+                                    : 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300',
                         )}>
                             {applicationStatus === 'Onaylandı' ? <CheckCircle2 className="h-6 w-6 shrink-0" />
                                 : applicationStatus === 'Reddedildi' ? <XCircle className="h-6 w-6 shrink-0" />
@@ -815,7 +827,7 @@ export default function VolunteeringDetailPage() {
                                     <span className="text-sm">Yaka kartı</span>
                                 </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-[2.5rem]">
+                            <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-3xl">
                                 <AlertDialogHeader>
                                     <AlertDialogTitle className="text-2xl font-black tracking-tight">Gönüllü Yaka Kartın</AlertDialogTitle>
                                     <AlertDialogDescription className="text-base font-medium">
@@ -1029,10 +1041,9 @@ export default function VolunteeringDetailPage() {
             </div>
         </div>
 
-        <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl px-5 md:px-8 py-4 border-t border-border mt-auto">
-          <div className="mx-auto max-w-5xl">
+        <DetailStickyBar>
              {applicationStatus === 'Beklemede' ? (
-                <div className="w-full h-14 rounded-full flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-base font-semibold px-4 text-center">
+                <div className="w-full h-14 rounded-full flex items-center justify-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-base font-semibold px-4 text-center">
                     <Clock className="h-5 w-5 shrink-0" /> Başvurun alındı, onay bekliyorsunuz
                 </div>
              ) : applicationStatus === 'Onaylandı' ? (
@@ -1053,8 +1064,7 @@ export default function VolunteeringDetailPage() {
                   {isApplying ? <Loader2 className="animate-spin h-5 w-5" /> : daysRemaining < 0 ? 'Başvuru Süresi Doldu' : `${countdownText}, Hemen Başvur`}
                 </Button>
              )}
-          </div>
-        </div>
+        </DetailStickyBar>
     </div>
   );
 }

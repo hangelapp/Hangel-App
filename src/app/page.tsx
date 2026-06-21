@@ -37,7 +37,7 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 
   if (hasError || !brand.logoUrl) {
     return (
-      <div className="w-full h-full rounded-lg bg-white flex items-center justify-center p-1">
+      <div className="w-full h-full rounded-xl bg-card flex items-center justify-center p-1">
         <span className="text-muted-foreground font-bold text-sm">{brand.name.charAt(0)}</span>
       </div>
     );
@@ -59,15 +59,15 @@ const BrandCard = ({ brand }: { brand: Brand }) => {
     const typeLabel = t(`landing.brandTypes.${brand.type}`) || t('landing.brandTypes.brand');
     return (
     <Link href={`/market/${brand.slug}`} className="group block h-full">
-      <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white border border-gray-100 h-full flex flex-col p-6 items-center text-center">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
+      <Card className="rounded-2xl hover:shadow-md transition-shadow bg-card border border-border h-full flex flex-col p-6 items-center text-center">
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">
             {typeLabel}
         </p>
-        <div className="w-24 h-24 rounded-2xl bg-muted overflow-hidden mb-4 border">
+        <div className="w-24 h-24 rounded-2xl bg-muted overflow-hidden mb-4 border border-border">
           <BrandLogo brand={brand} />
         </div>
         <div className="flex-1 flex flex-col items-center">
-            <h4 className="font-bold text-lg leading-tight">{brand.name}</h4>
+            <h4 className="font-bold text-lg leading-tight text-card-foreground">{brand.name}</h4>
         </div>
         <Badge variant="secondary" className="mt-2 bg-primary/10 text-primary border-none text-base font-bold">
           %{brand.donationRate} {t('landing.brandCard.donationSuffix')}
@@ -110,14 +110,14 @@ const ProductShowcaseSection = ({
     const cta1Text = cta1 ?? t('landing.showcase.defaultCta');
     return (
     <section id={id} className={cn(
-        "relative min-h-screen flex flex-col items-center justify-center pt-24 pb-12 text-center overflow-hidden border-b border-black/5",
-        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
+        "relative min-h-screen flex flex-col items-center justify-center pt-24 pb-12 text-center overflow-hidden border-b border-border",
+        theme === 'dark' ? "bg-black text-white" : "bg-background text-foreground",
         className
     )}>
-        <div className="relative z-10 space-y-4 px-6 max-w-4xl">
-            {subtitle && <p className={cn("text-xl md:text-2xl font-semibold opacity-90 tracking-tight", theme === 'dark' ? "text-[#00A8E8]" : "text-primary")}>{subtitle}</p>}
-            <h2 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">{title}</h2>
-            {description && <p className="text-lg md:text-xl opacity-80 max-w-3xl mx-auto leading-relaxed font-medium">{description}</p>}
+        <div className="relative z-10 space-y-4 px-6 max-w-2xl md:max-w-4xl">
+            {subtitle && <p className={cn("text-lg sm:text-xl md:text-2xl font-semibold opacity-90 tracking-tight text-balance", theme === 'dark' ? "text-[#00A8E8]" : "text-primary")}>{subtitle}</p>}
+            <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight text-balance">{title}</h2>
+            {description && <p className="text-base sm:text-lg md:text-xl opacity-80 max-w-xl md:max-w-3xl mx-auto leading-relaxed font-medium text-balance">{description}</p>}
             
              <div className="flex items-center justify-center gap-6 pt-4">
                 <Link href={cta1Href!} className={cn("hover:underline flex items-center text-lg font-medium", theme === 'dark' ? "text-[#2997ff]" : "text-primary")}>
@@ -149,7 +149,7 @@ const ProductShowcaseSection = ({
 const ProjectCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint }: { title: string; subtitle?: string; cta?: string; ctaHref: string; imageUrl: string; imageHint?: string }) => (
     <Link href={ctaHref} className="group block h-full">
         <div className={cn(
-            "relative rounded-[1.75rem] p-6 text-left flex flex-col overflow-hidden h-[450px] text-white",
+            "relative rounded-3xl p-6 text-left flex flex-col overflow-hidden h-[450px] text-white",
         )}>
             <div className="absolute inset-0 z-0">
                  <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" data-ai-hint={imageHint} />
@@ -284,14 +284,14 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
 
     return (
         <Link href={`/volunteering/${opportunity.id}`} className="block h-full">
-            <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-black/50 backdrop-blur-sm border-white/10 h-full flex flex-col p-6 text-white">
+            <Card className="rounded-3xl hover:shadow-md transition-shadow bg-black/50 backdrop-blur-sm border-white/10 h-full flex flex-col p-6 text-white">
                 <div className="flex justify-between items-start mb-4">
                     <div className="p-3 bg-white/10 rounded-xl text-white/80">
                          <HeartHandshake className="h-6 w-6" />
                     </div>
                     <div className="text-right">
                          <p className="font-bold text-sm leading-tight">{opportunity.points} {t('landing.volunteeringCard.points')}</p>
-                         <p className="text-[9px] text-white/50 uppercase tracking-widest">{t('landing.volunteeringCard.impactPoints')}</p>
+                         <p className="text-xs text-white/50 uppercase tracking-widest">{t('landing.volunteeringCard.impactPoints')}</p>
                     </div>
                 </div>
                 <div className="flex-1 flex flex-col justify-between">
@@ -301,7 +301,7 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
                     </div>
                     <div className="flex justify-center mt-2">
                         <span className={cn(
-                            "text-[10px] font-bold uppercase tracking-[0.1em]",
+                            "text-xs font-bold uppercase tracking-[0.1em]",
                             daysRemaining !== null && daysRemaining < 3 ? "text-primary" : "text-white/60"
                         )}>
                             {countdownText}
@@ -320,12 +320,12 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
 };
 
 const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, linkText, linkText2, href2 }: { title: string, description: string, href: string, imageUrl: string, imageHint: string, linkText: string, linkText2?: string, href2?: string }) => (
-    <div className="h-full rounded-2xl bg-[#f5f5f7] overflow-hidden group flex flex-col shadow-lg hover:shadow-xl transition-shadow">
+    <div className="h-full rounded-2xl bg-muted overflow-hidden group flex flex-col shadow-sm hover:shadow-md transition-shadow">
         <div className="relative w-full aspect-video">
             <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={imageHint} />
         </div>
         <div className="p-6 text-left flex flex-col flex-1">
-            <h3 className="font-semibold text-lg">{title}</h3>
+            <h3 className="font-semibold text-lg text-foreground">{title}</h3>
             <p className="text-sm text-muted-foreground mt-2 flex-1">{description}</p>
             <div className="mt-4 flex items-center gap-6">
                 <Link href={href} className="text-sm font-semibold text-primary hover:underline flex items-center">
@@ -342,12 +342,12 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, 
 );
 
 const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: string, description: string, link: string, linkText: string, icon: React.ElementType }) => (
-    <div className="bg-[#f5f5f7] rounded-3xl p-8 flex flex-col h-full text-left">
-        <div className="p-3 bg-white rounded-2xl w-fit shadow-sm mb-6">
+    <div className="bg-muted rounded-3xl p-8 flex flex-col h-full text-left">
+        <div className="p-3 bg-card rounded-2xl w-fit shadow-sm mb-6">
             <Icon className="h-6 w-6 text-primary" />
         </div>
-        <h3 className="font-semibold text-xl text-[#1d1d1f]">{title}</h3>
-        <p className="text-sm text-[#1d1d1f]/80 mt-3 flex-grow">{description}</p>
+        <h3 className="font-semibold text-xl text-foreground">{title}</h3>
+        <p className="text-sm text-muted-foreground mt-3 flex-grow">{description}</p>
         <div className="mt-10">
             <Link href={link} className="text-sm font-semibold text-primary hover:underline flex items-center group">
                 {linkText} <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
@@ -536,7 +536,7 @@ export default function LoginPage() {
     // "ana sayfa amacı açıklanmıyor" reddine sebep oluyordu.)
     if (!mounted) return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center">
-            <h1 className="text-4xl font-black tracking-tight text-[#1d1d1f]">hangel</h1>
+            <h1 className="text-4xl font-black tracking-tight text-foreground">hangel</h1>
             <p className="mt-4 text-lg font-semibold text-foreground/80 max-w-2xl">
                 Türkiye&apos;nin sosyal etki platformu
             </p>
@@ -588,11 +588,11 @@ export default function LoginPage() {
             </Sheet>
             <Header onMenuClick={() => setIsMenuOpen(true)} />
             <main>
-                <section className="h-screen flex flex-col p-6 pb-8 bg-white border-b border-black/5">
+                <section className="min-h-screen flex flex-col px-6 pt-24 pb-[calc(4rem+env(safe-area-inset-bottom))] bg-background border-b border-border">
                     <div className="flex-1 flex flex-col justify-center items-center text-center">
-                        <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground max-w-4xl">{get('home.heroSubtitle', 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.')}</h2>
-                        <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">{get('home.heroTitle', 'yok öyle yalnız başına mücadele etmek.')}</h1>
-                        <p className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">{get('home.heroTagline', '#wearehangel')}</p>
+                        <h2 className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-medium text-muted-foreground max-w-2xl md:max-w-4xl text-balance leading-tight">{get('home.heroSubtitle', 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.')}</h2>
+                        <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight text-foreground max-w-xl md:max-w-4xl text-balance mt-3">{get('home.heroTitle', 'yok öyle yalnız başına mücadele etmek.')}</h1>
+                        <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-muted-foreground mt-6 max-w-2xl md:max-w-4xl text-balance">{get('home.heroTagline', '#wearehangel')}</p>
                         <div className="mt-12">
                             <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
                                 <Link href="/login/selection?action=register">{get('home.heroCta', 'Hemen Katıl')}</Link>
@@ -606,7 +606,7 @@ export default function LoginPage() {
                  <ProductShowcaseSection
                     id="bagis"
                     theme="light"
-                    className="bg-[#f1f1f1]"
+                    className="bg-muted"
                     title={get('home.donationTitle', 'hangel Bağış')}
                     subtitle={get('home.donationSubtitle', 'Alışverişi iyiliğe dönüştürün.')}
                     description={get('home.donationDescription', "Yüzlerce markadan yaptığınız alışverişlerle, hiçbir ek ücret ödemeden seçtiğiniz STK'ya destek olun. Bilinçli tüketiciliğin en kolay yolu.")}
@@ -634,8 +634,8 @@ export default function LoginPage() {
                                 ))}
                             </CarouselContent>
                             <div className="flex justify-end gap-2 mt-4 px-4">
-                                <CarouselPrevious className="static translate-y-0 h-10 w-10 border-black/10" />
-                                <CarouselNext className="static translate-y-0 h-10 w-10 border-black/10" />
+                                <CarouselPrevious className="static translate-y-0 h-11 w-11 border-border" />
+                                <CarouselNext className="static translate-y-0 h-11 w-11 border-border" />
                             </div>
                         </Carousel>
                         <div className="text-center mt-8">
@@ -676,8 +676,8 @@ export default function LoginPage() {
                                 ))}
                             </CarouselContent>
                             <div className="flex justify-end gap-2 mt-4 px-4">
-                                <CarouselPrevious className="static translate-y-0 h-10 w-10 border-white/20 text-white bg-transparent hover:bg-white hover:text-black" />
-                                <CarouselNext className="static translate-y-0 h-10 w-10 border-white/20 text-white bg-transparent hover:bg-white hover:text-black" />
+                                <CarouselPrevious className="static translate-y-0 h-11 w-11 border-white/20 text-white bg-transparent hover:bg-white hover:text-black" />
+                                <CarouselNext className="static translate-y-0 h-11 w-11 border-white/20 text-white bg-transparent hover:bg-white hover:text-black" />
                             </div>
                         </Carousel>
                         <div className="text-center mt-8">
@@ -690,10 +690,10 @@ export default function LoginPage() {
                     </div>
                 </ProductShowcaseSection>
                 
-                <section id="kurumlar-grid" className="py-16 md:py-24 bg-white">
+                <section id="kurumlar-grid" className="py-16 md:py-24 bg-background">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-12 space-y-2">
-                            <h2 className="text-4xl font-bold tracking-tight">{t('landing.discoverTitle')}</h2>
+                            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-balance">{t('landing.discoverTitle')}</h2>
                             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('landing.discoverDescription')}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -704,10 +704,10 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                <section id="projeler" className="py-16 md:py-24 bg-white">
+                <section id="projeler" className="py-16 md:py-24 bg-background">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center mb-12 space-y-4">
-                            <h2 className="text-4xl font-bold tracking-tight">{t('landing.associationTitle')}</h2>
+                            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-balance">{t('landing.associationTitle')}</h2>
                             <p className="text-muted-foreground mt-2">{t('landing.associationDescription')}</p>
                             <Link href="/hangelassociation" className="text-primary hover:underline flex items-center justify-center text-lg font-medium group">
                                 {t('landing.associationCta')} <ChevronRight className="h-5 w-5 ml-0.5" />
@@ -736,8 +736,8 @@ export default function LoginPage() {
                                 ))}
                             </CarouselContent>
                              <div className="hidden lg:flex justify-end gap-2 mt-8 px-6">
-                                <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10" />
-                                <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10" />
+                                <CarouselPrevious className="static translate-y-0 h-12 w-12 border-border" />
+                                <CarouselNext className="static translate-y-0 h-12 w-12 border-border" />
                             </div>
                         </Carousel>
                     </div>
@@ -780,10 +780,10 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                <section id="degerler" className="py-16 md:py-24 bg-white">
+                <section id="degerler" className="py-16 md:py-24 bg-background">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-16 space-y-4">
-                            <h2 className="text-4xl font-bold tracking-tight">{get('home.valuesTitle', 'Değerlerimizle Fark Oluşturuyoruz')}</h2>
+                            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-balance">{get('home.valuesTitle', 'Değerlerimizle Fark Oluşturuyoruz')}</h2>
                             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">{get('home.valuesDescription', 'Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.')}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -821,7 +821,7 @@ export default function LoginPage() {
                 {/* Uygulama amacı — Google OAuth "ana sayfa amacı" şartı + Ads scope
                     gerekçesi. Hero'dan alınıp sayfa sonuna sönük bölüm olarak indirildi
                     (içerik kaldırılmadı; OAuth doğrulaması için sayfada kalmalı). */}
-                <section className="bg-white border-t border-black/5 px-6 py-10">
+                <section className="bg-background border-t border-border px-6 py-10">
                     <p className="mx-auto max-w-3xl text-center text-sm text-muted-foreground leading-relaxed">
                         hangel; sivil toplum kuruluşlarını (STK), gönüllüleri, öğrenci kulüplerini ve markaları
                         tek bir platformda buluşturan bir sosyal etki platformudur. Kullanıcılar bağış yapar ve

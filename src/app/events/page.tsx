@@ -242,7 +242,7 @@ function EventsPageContent() {
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0 bg-secondary/30 backdrop-blur-sm min-h-screen">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold font-headline">{t('eventsPage.title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold font-headline leading-tight text-balance">{t('eventsPage.title')}</h1>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input placeholder={t('eventsPage.searchPlaceholder')} className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
@@ -325,7 +325,11 @@ function EventsPageContent() {
               <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('eventsPageExtra.cityLabel')}</Label>
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {cities.map(city => (
-                  <div key={city} className="flex items-center gap-2">
+                  <label
+                    key={city}
+                    htmlFor={`city-${city}`}
+                    className="flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-xl px-2 hover:bg-muted/60"
+                  >
                     <Checkbox
                       id={`city-${city}`}
                       checked={cityFilter.includes(city)}
@@ -333,8 +337,8 @@ function EventsPageContent() {
                         setCityFilter(prev => checked ? [...prev, city] : prev.filter(c => c !== city));
                       }}
                     />
-                    <label htmlFor={`city-${city}`} className="text-sm cursor-pointer">{city}</label>
-                  </div>
+                    <span className="text-sm">{city}</span>
+                  </label>
                 ))}
                 {cities.length === 0 && <p className="text-xs text-muted-foreground">{t('eventsPageExtra.noEventDataYet')}</p>}
               </div>
@@ -350,7 +354,7 @@ function EventsPageContent() {
                     type="date"
                     value={dateFrom}
                     onChange={e => setDateFrom(e.target.value)}
-                    className="h-9 text-sm"
+                    className="h-11 text-sm"
                   />
                 </div>
                 <div className="space-y-1">
@@ -359,7 +363,7 @@ function EventsPageContent() {
                     type="date"
                     value={dateTo}
                     onChange={e => setDateTo(e.target.value)}
-                    className="h-9 text-sm"
+                    className="h-11 text-sm"
                   />
                 </div>
               </div>

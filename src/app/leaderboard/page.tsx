@@ -246,7 +246,7 @@ export default function LeaderboardPage() {
               value={r.key}
               disabled={!r.available}
               className={cn(
-                'relative rounded-xl text-xs sm:text-sm',
+                'relative min-h-[44px] rounded-xl text-xs sm:text-sm',
                 !r.available && 'cursor-not-allowed opacity-60'
               )}
             >
@@ -254,7 +254,7 @@ export default function LeaderboardPage() {
               {!r.available && (
                 <Badge
                   variant="secondary"
-                  className="ml-1 hidden h-4 px-1 text-[9px] sm:inline-flex"
+                  className="ml-1 hidden h-5 px-1.5 text-xs leading-none sm:inline-flex"
                 >
                   {t('leaderboardPage.soon')}
                 </Badge>
@@ -270,9 +270,9 @@ export default function LeaderboardPage() {
           {METRICS.map((m) => {
             const Icon = m.icon;
             return (
-              <TabsTrigger key={m.key} value={m.key} className="rounded-xl text-xs sm:text-sm">
-                <Icon className="mr-1.5 h-4 w-4" />
-                <span className="line-clamp-1">{t(`leaderboardPage.${m.labelKey}`)}</span>
+              <TabsTrigger key={m.key} value={m.key} className="min-h-[44px] rounded-xl px-1.5 text-xs sm:text-sm">
+                <Icon className="mr-1 hidden h-4 w-4 shrink-0 sm:inline-block" />
+                <span className="line-clamp-2 leading-tight sm:line-clamp-1">{t(`leaderboardPage.${m.labelKey}`)}</span>
               </TabsTrigger>
             );
           })}
@@ -286,7 +286,7 @@ export default function LeaderboardPage() {
                 {SCOPES.map((s) => {
                   const Icon = s.icon;
                   return (
-                    <TabsTrigger key={s.key} value={s.key} className="rounded-xl text-xs">
+                    <TabsTrigger key={s.key} value={s.key} className="min-h-[44px] rounded-xl text-xs">
                       <Icon className="mr-1 hidden h-3.5 w-3.5 sm:inline-block" />
                       <span className="line-clamp-1">{t(`leaderboardPage.${s.labelKey}`)}</span>
                     </TabsTrigger>

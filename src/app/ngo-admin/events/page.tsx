@@ -103,20 +103,20 @@ function StatusBadge({ status }: { status?: EventStatus }) {
     const s = status || 'Beklemede';
     if (s === 'Beklemede') {
         return (
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] font-bold uppercase tracking-wider">
+            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800/40 text-xs font-bold uppercase tracking-wider whitespace-nowrap">
                 <Hourglass className="mr-1 h-3 w-3" /> {t('ngo_admin_events.statusPending')}
             </Badge>
         );
     }
     if (s === 'Reddedildi') {
         return (
-            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-[10px] font-bold uppercase tracking-wider">
+            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800/40 text-xs font-bold uppercase tracking-wider whitespace-nowrap">
                 <XCircle className="mr-1 h-3 w-3" /> {t('ngo_admin_events.statusRejected')}
             </Badge>
         );
     }
     return (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px] font-bold uppercase tracking-wider">
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800/40 text-xs font-bold uppercase tracking-wider whitespace-nowrap">
             <CheckCircle2 className="mr-1 h-3 w-3" /> {t('ngo_admin_events.statusPublished')}
         </Badge>
     );
@@ -517,7 +517,7 @@ export default function EventManagementPage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
+        <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-3 sm:p-4 md:p-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngo_admin_events.backAria')}>
@@ -532,9 +532,9 @@ export default function EventManagementPage() {
 
             {/* Restrictive banner when not a club */}
             {!initialLoading && activeEntity && !isClub && (
-                <Card className="border-2 border-amber-200 bg-amber-50/60 rounded-2xl">
+                <Card className="border-2 border-amber-200 bg-amber-50/60 dark:border-amber-800/40 dark:bg-amber-900/20 rounded-2xl">
                     <CardHeader className="flex flex-row items-start gap-3 p-4">
-                        <div className="p-2 rounded-xl bg-amber-100 text-amber-700">
+                        <div className="p-2 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
                             <ShieldAlert className="h-5 w-5" />
                         </div>
                         <div>
@@ -549,9 +549,9 @@ export default function EventManagementPage() {
 
             <Tabs defaultValue="my-events">
                 <TabsList className="grid w-full grid-cols-3 max-w-lg">
-                    <TabsTrigger value="my-events"><Calendar className="mr-2 h-4 w-4" /> {t('ngo_admin_events.tabMyEvents')}</TabsTrigger>
-                    <TabsTrigger value="venues"><Landmark className="mr-2 h-4 w-4" /> {t('ngo_admin_events.tabVenues')}</TabsTrigger>
-                    <TabsTrigger value="booking"><CheckCircle2 className="mr-2 h-4 w-4" /> {t('ngo_admin_events.tabBooking')}</TabsTrigger>
+                    <TabsTrigger value="my-events" className="gap-1.5 px-2"><Calendar className="h-4 w-4 shrink-0" /> <span className="truncate">{t('ngo_admin_events.tabMyEvents')}</span></TabsTrigger>
+                    <TabsTrigger value="venues" className="gap-1.5 px-2"><Landmark className="h-4 w-4 shrink-0" /> <span className="truncate">{t('ngo_admin_events.tabVenues')}</span></TabsTrigger>
+                    <TabsTrigger value="booking" className="gap-1.5 px-2"><CheckCircle2 className="h-4 w-4 shrink-0" /> <span className="truncate">{t('ngo_admin_events.tabBooking')}</span></TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="venues" className="mt-6 space-y-8">
@@ -703,8 +703,8 @@ export default function EventManagementPage() {
                                 >
                                     <Upload className="h-8 w-8" />
                                     <span className="text-xs font-medium">Afiş yükle</span>
-                                    <span className="text-[10px] text-muted-foreground/70">PNG / JPG / WEBP · max 5 MB</span>
-                                    <span className="text-[10px] text-muted-foreground/60 px-3 text-center">A4 portre tasarladığın dosyayı direkt yükle</span>
+                                    <span className="text-xs text-muted-foreground/70">PNG / JPG / WEBP · max 5 MB</span>
+                                    <span className="text-xs text-muted-foreground/60 px-3 text-center">A4 portre tasarladığın dosyayı direkt yükle</span>
                                 </button>
                             )}
                         </div>
@@ -756,14 +756,15 @@ export default function EventManagementPage() {
                         {/* Etkinlik Türü — çoktan seçmeli */}
                         <div className="space-y-2">
                             <Label>Etkinlik Türü (birden fazla seçebilirsiniz)</Label>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 border rounded-xl bg-card max-h-44 overflow-y-auto">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 border border-border rounded-xl bg-card max-h-44 overflow-y-auto overflow-x-hidden">
                                 {EVENT_TYPE_OPTIONS.map((opt) => (
-                                    <label key={opt} className="flex items-center gap-2 text-sm cursor-pointer">
+                                    <label key={opt} className="flex items-center gap-2 text-sm cursor-pointer min-w-0">
                                         <Checkbox
+                                            className="shrink-0"
                                             checked={evTypes.includes(opt)}
                                             onCheckedChange={(c) => setEvTypes((prev) => (c === true ? [...prev, opt] : prev.filter((x) => x !== opt)))}
                                         />
-                                        <span>{opt}</span>
+                                        <span className="truncate">{opt}</span>
                                     </label>
                                 ))}
                             </div>
@@ -813,7 +814,7 @@ export default function EventManagementPage() {
                                         <div key={idx} className="p-3 border rounded-xl bg-card space-y-2">
                                             {/* hangel üyesi mi? Telefonla sorgula */}
                                             <div className="space-y-1">
-                                                <Label className="text-[11px] text-muted-foreground">hangel üye telefonu (opsiyonel)</Label>
+                                                <Label className="text-xs text-muted-foreground">hangel üye telefonu (opsiyonel)</Label>
                                                 <div className="flex items-end gap-2">
                                                     <Input
                                                         type="tel"
@@ -837,12 +838,12 @@ export default function EventManagementPage() {
                                                     </Button>
                                                 </div>
                                                 {lookup.status === 'member' && (
-                                                    <Badge variant="secondary" className="mt-1 gap-1 text-emerald-700 bg-emerald-50 border-emerald-200">
+                                                    <Badge variant="secondary" className="mt-1 gap-1 text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-900/30 dark:border-emerald-800/40">
                                                         <CheckCircle2 className="h-3 w-3" /> hangel üyesi
                                                     </Badge>
                                                 )}
                                                 {lookup.status === 'notfound' && (
-                                                    <p className="text-[11px] text-amber-600 mt-1">Üye bulunamadı, ismi elle girin.</p>
+                                                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Üye bulunamadı, ismi elle girin.</p>
                                                 )}
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -861,7 +862,7 @@ export default function EventManagementPage() {
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
                                                 <div className="space-y-1">
-                                                    <Label className="text-[11px] text-muted-foreground">Rol</Label>
+                                                    <Label className="text-xs text-muted-foreground">Rol</Label>
                                                     <Select
                                                         value={c.role}
                                                         onValueChange={(v) => updateContributor(idx, { role: v as EventContributorRole })}

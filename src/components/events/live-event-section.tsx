@@ -119,17 +119,17 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
   };
 
   return (
-    <section className="rounded-[1.75rem] border border-black/5 bg-card p-5 shadow-sm">
+    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       {/* Üst satır: düzenleyen kurum logosu/adı — canlı modda ekranda görünür */}
       {(event.organizerLogoUrl || event.organizer) && (
         <div className="mb-4 flex items-center gap-2.5">
           {event.organizerLogoUrl ? (
-            <span className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-black/5 bg-white">
+            <span className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-border bg-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={event.organizerLogoUrl} alt={event.organizer || 'Düzenleyen'} className="h-full w-full object-contain" />
             </span>
           ) : (
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-black text-primary">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-black text-primary">
               {(event.organizer || '?').slice(0, 2).toLocaleUpperCase('tr')}
             </span>
           )}
@@ -162,7 +162,7 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
             <span className="font-mono text-4xl font-black tabular-nums leading-none text-foreground">{fmtClock(startMs - now)}</span>
             <span className="flex flex-col items-end pb-0.5 text-right">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Başlamasına</span>
-              {startClock && <span className="text-[11px] font-semibold tabular-nums text-muted-foreground/80">başlangıç {startClock}</span>}
+              {startClock && <span className="text-xs font-semibold tabular-nums text-muted-foreground/80">başlangıç {startClock}</span>}
             </span>
           </div>
           {/* İlerleme çizgisi — başlangıca yaklaştıkça %100'e dolar */}
@@ -181,11 +181,12 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
               <p className="truncate font-bold leading-tight">{c.name}</p>
               {c.title && <p className="truncate text-xs font-medium text-muted-foreground">{c.title}</p>}
               {isGoing ? (
-                <div className="mt-2.5 flex items-center gap-1.5">
+                <div className="mt-1.5 flex flex-wrap items-center gap-0.5">
                   {[1, 2, 3, 4, 5].map((n) => (
                     <button key={n} type="button" aria-label={`${n} yıldız`} disabled={ratingBusy === idx}
-                      onClick={() => rate(idx, n)} className="transition active:scale-90 disabled:opacity-50">
-                      <Star className={`h-7 w-7 ${(myRatings[idx] ?? 0) >= n ? 'fill-[#f34723] text-[#f34723]' : 'text-muted-foreground/40'}`} />
+                      onClick={() => rate(idx, n)}
+                      className="flex h-11 w-11 items-center justify-center rounded-full transition active:scale-90 disabled:opacity-50 hover:bg-primary/10">
+                      <Star className={`h-7 w-7 ${(myRatings[idx] ?? 0) >= n ? 'fill-primary text-primary' : 'text-muted-foreground/40'}`} />
                     </button>
                   ))}
                   {ratingBusy === idx && <Loader2 className="ml-1 h-4 w-4 animate-spin text-muted-foreground" />}
@@ -200,14 +201,14 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
 
       {/* Yönetici paneli — SADECE canlıda + yöneticide görünür (katılımcı görmez) */}
       {isLive && isManager && (
-        <div className="mt-4 rounded-2xl border border-[#f34723]/20 bg-[#f34723]/5 p-4">
-          <p className="mb-3 flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#f34723]">
+        <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+          <p className="mb-3 flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-primary">
             <UserCheck className="h-3.5 w-3.5" /> Yönetici paneli
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl bg-card p-3.5 text-center shadow-sm">
               <p className="text-3xl font-black tabular-nums leading-none text-foreground">{stats?.checkinCount ?? '—'}</p>
-              <p className="mt-1.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Check-in</p>
+              <p className="mt-1.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">Check-in</p>
             </div>
             <div className="rounded-2xl bg-card p-3.5 text-center shadow-sm">
               <p className="text-3xl font-black tabular-nums leading-none text-foreground">
@@ -218,12 +219,12 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
                   <Star
                     key={n}
                     className={`h-3.5 w-3.5 ${stats && stats.ratingCount > 0 && Math.round(stats.avgSpeakerRating) >= n
-                      ? 'fill-[#f34723] text-[#f34723]'
+                      ? 'fill-primary text-primary'
                       : 'text-muted-foreground/30'}`}
                   />
                 ))}
               </div>
-              <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 Konuşmacı puanı{stats && stats.ratingCount > 0 ? ` (${stats.ratingCount})` : ''}
               </p>
             </div>

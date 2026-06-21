@@ -122,7 +122,7 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
                 </span>
                 <span className="flex flex-col items-start gap-0.5">
                     <span className="font-bold text-sm leading-tight text-left">{title}</span>
-                    <span className="text-[11px] text-muted-foreground font-medium">{count} {orgCountSuffix}</span>
+                    <span className="text-xs text-muted-foreground font-medium">{count} {orgCountSuffix}</span>
                 </span>
             </span>
         </AccordionTrigger>
@@ -137,9 +137,9 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
             ) : (
                 <div className="space-y-2 pt-1">
                     <div className="flex justify-end">
-                        <Button asChild variant="outline" size="sm" className="h-7 rounded-xl text-xs">
+                        <Button asChild variant="outline" size="sm" className="h-9 rounded-xl text-xs">
                             <Link href={editHref}>
-                                <Edit className="mr-1.5 h-3 w-3" /> {editVerb}
+                                <Edit className="mr-1.5 h-3.5 w-3.5" /> {editVerb}
                             </Link>
                         </Button>
                     </div>
@@ -148,7 +148,7 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
                             <Link
                                 key={item.id}
                                 href={item.href}
-                                className="flex items-center gap-3 p-3 rounded-2xl border border-black/5 bg-muted/20 hover:bg-accent/40 transition-colors"
+                                className="flex items-center gap-3 p-3 rounded-2xl border border-border/60 bg-muted/20 hover:bg-accent/40 transition-colors"
                             >
                                 <Avatar className="h-10 w-10 shrink-0">
                                     <AvatarImage src={item.logoUrl} alt={item.name || ''} />
@@ -542,17 +542,17 @@ export default function ProfilePage() {
                  <div className="w-full mt-2 space-y-1">
                     <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                         <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{ width: `${tierProgress}%`, backgroundColor: '#E34234' }}
+                            className="h-full rounded-full bg-primary transition-all duration-500"
+                            style={{ width: `${tierProgress}%` }}
                         />
                     </div>
-                    <p className="text-[10px] font-bold tracking-wide">
+                    <p className="text-xs font-bold tracking-wide">
                         <span className="text-muted-foreground">{tierCurrent.toLocaleString('tr-TR')}/{tierDelta.toLocaleString('tr-TR')}</span>
                         {' · '}
                         {isEarned ? (
                             <span className="text-green-600">{t('profilePage.completed')}</span>
                         ) : (
-                            <span style={{ color: '#E34234' }}>{pointsRemaining.toLocaleString('tr-TR')} {t('profilePage.remaining')}</span>
+                            <span className="text-primary">{pointsRemaining.toLocaleString('tr-TR')} {t('profilePage.remaining')}</span>
                         )}
                     </p>
                  </div>
@@ -585,14 +585,14 @@ export default function ProfilePage() {
                     <h1 className="text-3xl font-bold">{currentUser.name}</h1>
                 </div>
                 <Tabs defaultValue="impact" className="w-full">
-                    <div className="flex justify-center">
-                        <TabsList className="h-auto p-1 flex-wrap">
-                            <TabsTrigger value="impact">{t('dashboard.profile.tabImpact')}</TabsTrigger>
-                            <TabsTrigger value="about">{t('dashboard.profile.tabAbout')}</TabsTrigger>
-                            <TabsTrigger value="volunteering">{t('dashboard.profile.tabVolunteering')}</TabsTrigger>
-                            <TabsTrigger value="connections">{t('profilePage.tabConnections')}</TabsTrigger>
-                            <TabsTrigger value="badges-certificates">{t('dashboard.profile.tabBadges')}</TabsTrigger>
-                            <TabsTrigger value="story">{t('dashboard.profile.tabStory')}</TabsTrigger>
+                    <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex sm:justify-center">
+                        <TabsList className="inline-flex h-auto w-max gap-1 p-1 sm:w-auto">
+                            <TabsTrigger value="impact" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabImpact')}</TabsTrigger>
+                            <TabsTrigger value="about" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabAbout')}</TabsTrigger>
+                            <TabsTrigger value="volunteering" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabVolunteering')}</TabsTrigger>
+                            <TabsTrigger value="connections" className="min-h-[44px] whitespace-nowrap text-xs">{t('profilePage.tabConnections')}</TabsTrigger>
+                            <TabsTrigger value="badges-certificates" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabBadges')}</TabsTrigger>
+                            <TabsTrigger value="story" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabStory')}</TabsTrigger>
                         </TabsList>
                     </div>
                     
@@ -700,7 +700,7 @@ export default function ProfilePage() {
                                 </CardHeader>
                                 <CardContent className="pt-2 flex flex-wrap gap-1.5">
                                     {((userData as { preferences?: { intents?: string[] } }).preferences!.intents!).map((intent) => (
-                                        <span key={intent} className="text-[11px] px-2.5 py-1 rounded-full bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 font-semibold">
+                                        <span key={intent} className="text-xs px-2.5 py-1 rounded-full bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 font-semibold dark:bg-fuchsia-500/15 dark:text-fuchsia-300 dark:border-fuchsia-500/30">
                                             {t(`welcome.intents.${intent}`)}
                                         </span>
                                     ))}
@@ -876,8 +876,8 @@ export default function ProfilePage() {
                             <CardHeader><CardTitle className='text-lg'>{t('profilePage.earnedBadgesTitle')}</CardTitle></CardHeader>
                             <CardContent>
                                 {visibleBadges.length > 0 ? (
-                                    <div className="grid grid-cols-3 gap-4">
-                                        {visibleBadges.slice(0, 6).map((badge) => <BadgeDisplay key={badge.id} badge={badge} />)}
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
+                                        {visibleBadges.slice(0, 8).map((badge) => <BadgeDisplay key={badge.id} badge={badge} />)}
                                     </div>
                                 ) : (
                                     <EmptyState

@@ -157,11 +157,11 @@ const NavLink = ({ href, icon, label, comingSoon, beta }: { href: string, icon: 
       <span className={cn('flex-1 font-medium', comingSoon && 'text-muted-foreground')}>{label}</span>
       {comingSoon ? (
         // İnce narçiçeği "Yakında" rozeti.
-        <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F4624A]">
+        <span className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-primary">
           <Clock className="h-3 w-3" /> Yakında
         </span>
       ) : beta ? (
-        <span className="flex items-center gap-1.5 text-[10px] font-bold lowercase tracking-widest text-blue-600">
+        <span className="flex items-center gap-1.5 text-xs font-bold lowercase tracking-widest text-blue-600 dark:text-blue-400">
           beta <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </span>
       ) : (
@@ -361,19 +361,19 @@ function NgoDashboardPageContent() {
     const identity = KIND_IDENTITY[activeKind];
 
   return (
-    <div className="space-y-6 animate-in fade-in-0 pb-8 px-4 sm:px-6">
+    <div className="space-y-6 animate-in fade-in-0 pb-8 px-3 sm:px-4 md:px-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-white shadow-sm border border-black/5 flex items-center justify-center">
+        <div className="flex items-center gap-3 sm:gap-4">
+            <div className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-2xl bg-card shadow-sm border border-border flex items-center justify-center">
                 {logoUrl
                     // eslint-disable-next-line @next/next/no-img-element
                     ? <img src={logoUrl} alt={entityName} className="h-full w-full object-contain p-1.5" />
-                    : <Building2 className="h-8 w-8 text-primary" />}
+                    : <Building2 className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />}
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-2xl font-bold font-headline">{entityName}</h1>
-                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-primary">{identity.label}</span>
+                    <h1 className="text-xl sm:text-2xl font-bold font-headline">{entityName}</h1>
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-black uppercase tracking-wider text-primary">{identity.label}</span>
                 </div>
                 <p className="text-muted-foreground text-sm">{identity.subtitle}</p>
             </div>
@@ -386,7 +386,7 @@ function NgoDashboardPageContent() {
 
       {/* Getting Started: yeni NGO admin'lerine 4 kritik adımı net göster.
           Her kart bir admin sayfasına link. */}
-      <Card className="shadow-sm overflow-hidden rounded-[2rem] border-primary/20 bg-primary/5">
+      <Card className="shadow-sm overflow-hidden rounded-3xl border-primary/20 bg-primary/5">
         <CardHeader className="p-5 pb-3">
             <CardTitle className="text-base flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
@@ -396,32 +396,32 @@ function NgoDashboardPageContent() {
         </CardHeader>
         <CardContent className="p-5 pt-0">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <Link href="/ngo-admin/manage-profile" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
+                <Link href="/ngo-admin/manage-profile" className="p-3 rounded-xl bg-card hover:bg-accent transition-colors border border-border flex flex-col gap-1.5 min-h-[44px]">
                     <Building2 className="h-5 w-5 text-primary" />
                     <span className="text-xs font-bold leading-tight">{t('ngo_admin_dashboard.quickStartProfileTitle')}</span>
-                    <span className="text-[10px] text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartProfileHint')}</span>
+                    <span className="text-xs text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartProfileHint')}</span>
                 </Link>
-                <Link href="/ngo-admin/events" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
+                <Link href="/ngo-admin/events" className="p-3 rounded-xl bg-card hover:bg-accent transition-colors border border-border flex flex-col gap-1.5 min-h-[44px]">
                     <Calendar className="h-5 w-5 text-primary" />
                     <span className="text-xs font-bold leading-tight">{t('ngo_admin_dashboard.quickStartEventTitle')}</span>
-                    <span className="text-[10px] text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartEventHint')}</span>
+                    <span className="text-xs text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartEventHint')}</span>
                 </Link>
-                <Link href="/ngo-admin/posts" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
+                <Link href="/ngo-admin/posts" className="p-3 rounded-xl bg-card hover:bg-accent transition-colors border border-border flex flex-col gap-1.5 min-h-[44px]">
                     <Newspaper className="h-5 w-5 text-primary" />
                     <span className="text-xs font-bold leading-tight">{t('ngo_admin_dashboard.quickStartPostTitle')}</span>
-                    <span className="text-[10px] text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartPostHint')}</span>
+                    <span className="text-xs text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartPostHint')}</span>
                 </Link>
-                <Link href="/ngo-admin/volunteer/new" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
+                <Link href="/ngo-admin/volunteer/new" className="p-3 rounded-xl bg-card hover:bg-accent transition-colors border border-border flex flex-col gap-1.5 min-h-[44px]">
                     <HeartHandshake className="h-5 w-5 text-primary" />
                     <span className="text-xs font-bold leading-tight">{t('ngo_admin_dashboard.quickStartVolunteerTitle')}</span>
-                    <span className="text-[10px] text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartVolunteerHint')}</span>
+                    <span className="text-xs text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartVolunteerHint')}</span>
                 </Link>
             </div>
         </CardContent>
       </Card>
 
-      <Card className="shadow-sm overflow-hidden rounded-[2rem] border-black/5">
-        <CardHeader className="border-b border-black/5 bg-muted/30 p-6">
+      <Card className="shadow-sm overflow-hidden rounded-3xl border-border">
+        <CardHeader className="border-b border-border bg-muted/30 p-5 sm:p-6">
             <CardTitle className="text-lg">{t('ngo_admin_dashboard.performanceTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -431,15 +431,15 @@ function NgoDashboardPageContent() {
                     <p className="text-sm mt-1">{t('ngo_admin_dashboard.noEntityHint')}</p>
                 </div>
             ) : (
-            <div className="divide-y divide-black/5">
+            <div className="divide-y divide-border">
                 {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
-                    <div className="flex items-center justify-between p-6 transition-colors hover:bg-accent/30">
+                    <div className="flex items-center justify-between p-5 sm:p-6 transition-colors hover:bg-accent/30">
                         <div className="flex items-center gap-4">
                             <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-2xl">
-                                <DollarSign className="h-6 w-6 text-green-600" />
+                                <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">{t('ngo_admin_dashboard.totalResources')}</p>
+                                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-0.5">{t('ngo_admin_dashboard.totalResources')}</p>
                                 <p className="text-2xl font-black tracking-tighter">{stats.totalDonation?.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }) || '0,00 ₺'}</p>
                             </div>
                         </div>
@@ -447,13 +447,13 @@ function NgoDashboardPageContent() {
                 )}
 
                 {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
-                    <div className="flex items-center justify-between p-6 transition-colors hover:bg-accent/30">
+                    <div className="flex items-center justify-between p-5 sm:p-6 transition-colors hover:bg-accent/30">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-blue-100 dark:bg-green-900/30 rounded-2xl">
-                                <Users className="h-6 w-6 text-blue-600" />
+                            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
+                                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">{t('ngo_admin_dashboard.activeCommunity')}</p>
+                                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-0.5">{t('ngo_admin_dashboard.activeCommunity')}</p>
                                 <p className="text-2xl font-black tracking-tighter">+{stats.volunteers?.toLocaleString('tr-TR') || stats.followers?.toLocaleString('tr-TR') || '0'}</p>
                             </div>
                         </div>
@@ -468,8 +468,8 @@ function NgoDashboardPageContent() {
             <h2 className="text-xl font-bold font-headline px-1">{t('ngo_admin_dashboard.managementTools')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filteredGroups.map(group => (
-                    <Card key={group.title} className="shadow-sm overflow-hidden rounded-[2rem] border-black/5">
-                        <CardHeader className="bg-muted/20 py-4 px-6 border-b border-black/5">
+                    <Card key={group.title} className="shadow-sm overflow-hidden rounded-3xl border-border">
+                        <CardHeader className="bg-muted/20 py-4 px-6 border-b border-border">
                             <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{group.title}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">

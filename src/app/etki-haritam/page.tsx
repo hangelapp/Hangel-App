@@ -322,7 +322,7 @@ export default function EtkiHaritamPage() {
           {/* Harita */}
           <Card className="overflow-hidden rounded-3xl border-border/60">
             <CardContent className="p-0">
-              <div className="h-[60vh] min-h-[360px] w-full">
+              <div className="h-[50dvh] min-h-[360px] w-full sm:h-[60dvh]">
                 <ImpactMap
                   cities={cities}
                   selectedCity={selectedCity}

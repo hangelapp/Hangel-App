@@ -59,7 +59,7 @@ export function LeaderboardMyRank({ me, totalShown, unit }: MyRankProps) {
         </div>
         <div className="shrink-0 rounded-2xl bg-primary px-3 py-1.5 text-right text-primary-foreground">
           <p className="text-sm font-bold tabular-nums sm:text-base">{value}</p>
-          <p className="text-[10px] uppercase tracking-wide opacity-80">{unit}</p>
+          <p className="text-xs uppercase tracking-tight opacity-90">{unit}</p>
         </div>
       </div>
     </div>

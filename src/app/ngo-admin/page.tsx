@@ -284,19 +284,19 @@ export default function AdminPage() {
   const showDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
 
   return (
-    <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12 p-4">
+    <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12 p-3 sm:p-4 md:p-6">
       <div className="space-y-1 px-1">
-        <h1 className="text-3xl font-bold font-headline">{t('ngoAdminLanding.title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold font-headline">{t('ngoAdminLanding.title')}</h1>
         <p className="text-muted-foreground text-sm">{t('ngoAdminLanding.subtitle')}</p>
       </div>
 
       {showDebug && (
-        <Card className="bg-amber-50 border-amber-300/40 rounded-2xl">
+        <Card className="bg-amber-50 border-amber-300/40 dark:bg-amber-900/20 dark:border-amber-800/40 rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold">DEBUG — /admin tanılama (?debug=1)</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="text-[10px] font-mono whitespace-pre-wrap break-all leading-relaxed">
+            <pre className="text-xs font-mono whitespace-pre-wrap break-all leading-relaxed">
 {JSON.stringify({
   authUserUid: authUser?.uid || '(null)',
   userDoc: userData ? { managedNgoId: userData.managedNgoId, managedBrandId: userData.managedBrandId, managedClubId: userData.managedClubId } : '(loading)',
@@ -314,8 +314,8 @@ export default function AdminPage() {
         </Card>
       )}
 
-      <Card className="shadow-sm border-black/5 rounded-[2rem] overflow-hidden">
-        <CardHeader className="bg-muted/20 p-8 border-b border-black/5">
+      <Card className="shadow-sm border-border rounded-3xl overflow-hidden">
+        <CardHeader className="bg-muted/20 p-5 sm:p-8 border-b border-border">
             <CardTitle className="text-xl font-bold">{t('ngoAdminLanding.managedTitle')}</CardTitle>
             <CardDescription>{t('ngoAdminLanding.managedDesc')}</CardDescription>
         </CardHeader>
@@ -329,7 +329,7 @@ export default function AdminPage() {
               <p className="text-xs">{t('ngoAdminLanding.emptyDesc')}</p>
             </div>
           ) : (
-            <div className="divide-y divide-black/5">
+            <div className="divide-y divide-border">
             {managedItems.map((item) => {
                 const Icon = iconMap[item.icon] || Building2;
                 return (
@@ -348,32 +348,32 @@ export default function AdminPage() {
                         }
                     }}
                 >
-                    <div className="flex items-center p-6">
-                        <div className="relative mr-6">
-                            <Avatar className="h-16 w-16 border-2 border-white shadow-lg bg-white">
+                    <div className="flex items-center p-4 sm:p-6">
+                        <div className="relative mr-4 sm:mr-6 shrink-0">
+                            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-background shadow-md bg-card">
                                 <AvatarImage src={item.logoUrl} alt={item.name} className="object-contain p-1" />
                                 <AvatarFallback className="bg-primary/10 text-primary font-bold">{item.name[0]}</AvatarFallback>
                             </Avatar>
-                            <div className="absolute -bottom-1 -right-1 p-1.5 bg-background rounded-lg shadow-md border border-black/5">
+                            <div className="absolute -bottom-1 -right-1 p-1.5 bg-background rounded-lg shadow-md border border-border">
                                 <Icon className="h-3.5 w-3.5 text-primary" />
                             </div>
                         </div>
-                        <div className="flex-1 space-y-0.5">
-                            <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{item.name}</p>
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                            <p className="font-bold text-base sm:text-lg text-foreground truncate group-hover:text-primary transition-colors">{item.name}</p>
                             <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest bg-[#f5f5f7] border-none text-muted-foreground">{item.type}</Badge>
-                                <Badge variant="outline" className={cn("text-[9px] font-black uppercase tracking-widest px-2 py-0.5", statusVariantMap[item.status as keyof typeof statusVariantMap])}>
+                                <Badge variant="outline" className="text-xs font-black uppercase tracking-widest bg-muted border-none text-muted-foreground">{item.type}</Badge>
+                                <Badge variant="outline" className={cn("text-xs font-black uppercase tracking-widest px-2 py-0.5", statusVariantMap[item.status as keyof typeof statusVariantMap])}>
                                     {item.status === 'approved' ? t('ngoAdminLanding.statusActive') : t('ngoAdminLanding.statusPending')}
                                 </Badge>
                                 {item.role && (
-                                    <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest bg-primary/5 border-primary/20 text-primary">
+                                    <Badge variant="outline" className="text-xs font-black uppercase tracking-widest bg-primary/5 border-primary/20 text-primary">
                                         {item.role}
                                     </Badge>
                                 )}
                             </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <span className="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">{t('ngoAdminLanding.manageBtn')}</span>
+                        <div className="flex items-center gap-4 shrink-0 pl-3">
+                            <span className="hidden sm:inline text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">{t('ngoAdminLanding.manageBtn')}</span>
                             <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
                         </div>
                     </div>
@@ -384,15 +384,15 @@ export default function AdminPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-primary/5 border-primary/20 rounded-[2.5rem] p-10 text-center space-y-6">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+      <Card className="bg-primary/5 border-primary/20 rounded-3xl p-6 sm:p-10 text-center space-y-6">
+          <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mx-auto shadow-sm">
               <PlusCircle className="h-8 w-8 text-primary" />
           </div>
           <div className="space-y-2">
-              <h3 className="text-2xl font-bold">{t('ngoAdminLanding.addEntityTitle')}</h3>
+              <h3 className="text-xl sm:text-2xl font-bold">{t('ngoAdminLanding.addEntityTitle')}</h3>
               <p className="text-muted-foreground max-w-md mx-auto">{t('ngoAdminLanding.addEntityDesc')}</p>
           </div>
-          <Button asChild size="lg" className="rounded-full px-10 h-14 font-bold shadow-xl shadow-primary/20">
+          <Button asChild size="lg" className="rounded-full px-8 sm:px-10 h-14 font-bold shadow-md shadow-primary/20">
               <Link href="/login/selection?action=register&type=corporate">{t('ngoAdminLanding.addEntityCta')}</Link>
           </Button>
       </Card>

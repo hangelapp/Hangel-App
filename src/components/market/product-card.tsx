@@ -29,11 +29,11 @@ export function ProductCard({ product }: { product: CanonicalProduct }) {
   const [fav, setFav] = useState(false);
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border/60 bg-white transition-shadow hover:shadow-md">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-md">
       {/* Görsel */}
       <Link
         href={`/products/${product.id}`}
-        className="relative block aspect-[3/4] w-full overflow-hidden bg-white"
+        className="relative block aspect-[3/4] w-full overflow-hidden bg-card"
       >
         {product.imageLink ? (
           <img
@@ -49,7 +49,7 @@ export function ProductCard({ product }: { product: CanonicalProduct }) {
           </div>
         )}
         {donationRate !== null && (
-          <Badge className="absolute left-1.5 top-1.5 gap-0.5 rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+          <Badge className="absolute left-1.5 top-1.5 gap-0.5 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-white shadow-sm">
             <HeartHandshake className="h-3 w-3" aria-hidden="true" />
             %{donationRate} bağış
           </Badge>
@@ -61,7 +61,7 @@ export function ProductCard({ product }: { product: CanonicalProduct }) {
         type="button"
         onClick={() => setFav((v) => !v)}
         aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
-        className="absolute right-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white"
+        className="absolute right-1.5 top-1.5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-card/90 shadow-sm ring-1 ring-border backdrop-blur transition-colors hover:bg-card"
       >
         <Heart
           className={cn(
@@ -90,7 +90,7 @@ export function ProductCard({ product }: { product: CanonicalProduct }) {
           {hasSale ? (
             <>
               {discountPct > 0 && (
-                <span className="rounded bg-emerald-50 px-1 py-0.5 text-[11px] font-extrabold text-emerald-600">
+                <span className="rounded-md bg-emerald-500/15 px-1.5 py-0.5 text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400">
                   %{discountPct}
                 </span>
               )}
@@ -113,7 +113,7 @@ export function ProductCard({ product }: { product: CanonicalProduct }) {
           href={product.productUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-flex h-8 w-full items-center justify-center rounded-md bg-primary text-xs font-bold text-white transition-colors hover:bg-primary/90"
+          className="mt-2 inline-flex h-11 w-full items-center justify-center rounded-xl bg-primary text-xs font-bold text-white transition-colors hover:bg-primary/90"
         >
           Ürüne Git
         </a>

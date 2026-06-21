@@ -303,7 +303,7 @@ function OrgSwitcher() {
             <span className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-bold">{current?.name ?? 'Varlık Seç'}</span>
               {current && (
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                   {KIND_LABEL[current.kind]}
                 </span>
               )}
@@ -327,7 +327,7 @@ function OrgSwitcher() {
               <Icon className="h-4 w-4 shrink-0 text-primary" />
               <span className="flex min-w-0 flex-col">
                 <span className="truncate text-sm font-bold">{org.name}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                   {KIND_LABEL[org.kind]}
                 </span>
               </span>
@@ -525,14 +525,14 @@ function SideMenuBody({ onNavigate }: { onNavigate?: () => void }) {
                   <span className="flex-1 truncate">{displayLabel}</span>
                   {item.comingSoon && (
                     <Badge
-                      className="ml-auto gap-1 px-1.5 py-0 text-[11px] font-bold uppercase tracking-widest border-transparent bg-primary/15 text-primary hover:bg-primary/15"
+                      className="ml-auto gap-1 px-1.5 py-0 text-xs font-bold uppercase tracking-widest border-transparent bg-primary/15 text-primary hover:bg-primary/15"
                     >
                       <Clock className="h-2.5 w-2.5" /> Yakında
                     </Badge>
                   )}
                   {item.beta && !item.comingSoon && (
                     <Badge
-                      className="ml-auto px-1.5 py-0 text-[11px] font-bold lowercase tracking-widest border-transparent bg-blue-500/15 text-blue-600 hover:bg-blue-500/15"
+                      className="ml-auto px-1.5 py-0 text-xs font-bold lowercase tracking-widest border-transparent bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/15"
                     >
                       beta
                     </Badge>
@@ -607,27 +607,28 @@ function EntityIdentityBanner() {
 
   return (
     <>
-      <div className="mb-6 rounded-2xl border bg-card p-4 flex items-center gap-3 shadow-sm">
-        <div className="h-12 w-12 shrink-0 rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
+      <div className="mb-4 sm:mb-6 rounded-2xl border border-border bg-card p-3 sm:p-4 flex items-center gap-3 shadow-sm">
+        <div className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
           {hasLogo ? (
 
             <img src={current.logoUrl} alt={current.name} className="h-full w-full object-cover" />
           ) : (
-            <Icon className="h-6 w-6 text-primary" />
+            <Icon className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
           )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-base sm:text-lg font-black truncate">{current.name}</h2>
-            <Badge variant="outline" className="text-[10px] uppercase tracking-widest font-bold">
+            <Badge variant="outline" className="text-xs uppercase tracking-widest font-bold">
               {entityTypeLabel(current.kind, current.subType)}
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground truncate">{entityPossessive(current.kind, current.subType)} Yönetim Paneli</p>
         </div>
         <Button asChild size="sm" variant="ghost" className="shrink-0 text-xs">
-          <Link href={publicHref} target="_blank" rel="noopener noreferrer">
-            Kamu Profili
+          <Link href={publicHref} target="_blank" rel="noopener noreferrer" aria-label="Kamu Profili">
+            <Globe className="h-4 w-4 sm:hidden" />
+            <span className="hidden sm:inline">Kamu Profili</span>
           </Link>
         </Button>
       </div>
@@ -641,6 +642,7 @@ function EntityIdentityBanner() {
 function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
   // Show back button on all ngo admin pages, including the dashboard
   const showBackButton = true;
@@ -653,18 +655,41 @@ function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh">
-      <div className="p-4 sm:p-6 lg:p-8">
-        {showBackButton && (
-          <Button
-            onClick={() => router.back()}
-            variant="ghost"
-            size="icon"
-            className="mb-4 -ml-2"
-            aria-label="Geri"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
-        )}
+      <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+        <div className="mb-4 flex items-center gap-1">
+          {showBackButton && (
+            <Button
+              onClick={() => router.back()}
+              variant="ghost"
+              size="icon"
+              className="-ml-2"
+              aria-label="Geri"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+          )}
+          {/* Mobil menü tetikleyici — masaüstündeki kalıcı kenar çubuğu yerine
+              lg altında drawer açar. Menüsü gizli sayfalarda (dashboard/landing)
+              gösterilmez; oralarda zaten kart navigasyonu var. */}
+          {!hideSideMenu && (
+            <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="lg:hidden gap-2 rounded-xl"
+                  aria-label="Menüyü aç"
+                >
+                  <Menu className="h-4 w-4" />
+                  <span className="text-xs font-bold">Menü</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[85vw] max-w-xs overflow-y-auto p-4 pt-12">
+                <SideMenuBody onNavigate={() => setMobileNavOpen(false)} />
+              </SheetContent>
+            </Sheet>
+          )}
+        </div>
         <div className="flex gap-6">
           {!hideSideMenu && <SideMenu />}
           <main className="flex-1 min-w-0">

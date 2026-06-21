@@ -56,15 +56,16 @@ export function EventEvaluateButton({ eventId, eventName, authUser, className }:
           ⭐ {done ? 'Değerlendirildi' : 'Değerlendir'}
         </Button>
       </DialogTrigger>
-      <DialogContent className="rounded-[2rem] sm:max-w-md">
+      <DialogContent className="rounded-3xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold leading-tight">{eventName} nasıldı?</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
-              <button key={n} type="button" onClick={() => setRating(n)} className="transition active:scale-90" aria-label={`${n} yıldız`}>
-                <Star className={`h-10 w-10 ${rating >= n ? 'fill-[#f34723] text-[#f34723]' : 'text-muted-foreground/30'}`} />
+              <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} yıldız`}
+                className="flex h-12 w-12 items-center justify-center rounded-full transition active:scale-90 hover:bg-primary/10">
+                <Star className={`h-9 w-9 ${rating >= n ? 'fill-primary text-primary' : 'text-muted-foreground/30'}`} />
               </button>
             ))}
           </div>

@@ -72,7 +72,7 @@ export function LeaderboardRow({ user, unit, valueKey, isMe }: RowProps) {
       </div>
       <div className="shrink-0 rounded-2xl bg-primary/10 px-3 py-1.5 text-right">
         <p className="text-sm font-bold tabular-nums text-primary sm:text-base">{value}</p>
-        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{unit}</p>
+        <p className="text-xs uppercase tracking-tight text-muted-foreground">{unit}</p>
       </div>
     </div>
   );

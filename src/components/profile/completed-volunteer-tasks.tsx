@@ -205,7 +205,7 @@ export function CompletedVolunteerTasks({
                                                     {title}
                                                 </p>
                                             )}
-                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[11px] text-muted-foreground">
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted-foreground">
                                                 {dateText && (
                                                     <span className="inline-flex items-center gap-1">
                                                         <Sparkles className="h-3 w-3" />
@@ -229,7 +229,7 @@ export function CompletedVolunteerTasks({
                                         <p className="font-bold tabular-nums">
                                             {fmtTRY(row.value)}
                                         </p>
-                                        <p className="text-[10px] text-muted-foreground">
+                                        <p className="text-xs text-muted-foreground">
                                             {row.hours} × {Math.round(row.rate).toLocaleString('tr-TR')} ₺
                                         </p>
                                     </div>

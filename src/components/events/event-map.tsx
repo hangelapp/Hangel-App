@@ -77,13 +77,13 @@ export function EventMap({ events }: { events: Event[] }) {
                     >
                       {ev.name || 'Etkinlik'}
                       {ev.startDate && (
-                        <span className="text-[10px] text-muted-foreground block">{ev.startDate}</span>
+                        <span className="text-xs text-muted-foreground block">{ev.startDate}</span>
                       )}
                     </Link>
                   </li>
                 ))}
                 {group.events.length > 8 && (
-                  <li className="text-[10px] text-muted-foreground">+{group.events.length - 8} etkinlik daha</li>
+                  <li className="text-xs text-muted-foreground">+{group.events.length - 8} etkinlik daha</li>
                 )}
               </ul>
             </div>

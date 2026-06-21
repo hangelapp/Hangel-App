@@ -113,8 +113,8 @@ export function ImpactMap({
           >
             <Tooltip direction="top" offset={[0, -radius]} opacity={1}>
               <div className="text-center">
-                <p className="font-bold text-[13px] text-foreground">{c.city}</p>
-                <p className="text-[11px] text-muted-foreground">{c.total} katkı</p>
+                <p className="text-sm font-bold text-foreground">{c.city}</p>
+                <p className="text-xs text-muted-foreground">{c.total} katkı</p>
               </div>
             </Tooltip>
           </CircleMarker>

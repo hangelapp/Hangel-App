@@ -105,7 +105,7 @@ export default function PublicProfilePage() {
 
       <div className="p-4 bg-background">
         <div className="flex gap-4 items-center -mt-16">
-          <Avatar className="h-20 w-20 shrink-0 bg-white border-4 border-background shadow-lg">
+          <Avatar className="h-20 w-20 shrink-0 bg-card border-4 border-background shadow-lg">
             <AvatarImage src={profile.avatarUrl} alt={profile.name ?? 'Profil'} />
             <AvatarFallback>{(profile.name ?? '?').charAt(0)}</AvatarFallback>
           </Avatar>

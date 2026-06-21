@@ -98,7 +98,7 @@ export function EventCheckinQR({ eventId }: { eventId: string }) {
             ) : (
               <div className="h-56 w-56 animate-pulse rounded-2xl bg-muted" />
             )}
-            <p className="break-all text-center text-[11px] text-muted-foreground">{scanUrl(mode ?? 'checkin')}</p>
+            <p className="break-all text-center text-xs text-muted-foreground">{scanUrl(mode ?? 'checkin')}</p>
           </div>
 
           {/* Sayaç + yenile */}
@@ -126,7 +126,7 @@ export function EventCheckinQR({ eventId }: { eventId: string }) {
                   <div key={p.uid} className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2 ${green ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30' : 'border-border'}`}>
                     <div className="min-w-0">
                       <p className={`truncate text-sm font-semibold ${green ? 'text-emerald-700 dark:text-emerald-400' : ''}`}>{p.name}</p>
-                      {p.email && <p className="truncate text-[11px] text-muted-foreground">{p.email}</p>}
+                      {p.email && <p className="truncate text-xs text-muted-foreground">{p.email}</p>}
                     </div>
                     {mode === 'checkin' && (
                       p.checkedIn

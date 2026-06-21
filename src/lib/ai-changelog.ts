@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "e333047f",
+    "date": "2026-06-21",
+    "subject": "feat(android): ana ekran widget'ları — \"hangel Hızlı Erişim\" + marka (iOS pariteleri)"
+  },
+  {
+    "hash": "d64d16b8",
+    "date": "2026-06-21",
+    "subject": "fix(org): marka + öğrenci kulübü yetkili panelleri de tek kaynağa bağlandı"
+  },
+  {
     "hash": "6b0211e8",
     "date": "2026-06-21",
     "subject": "fix(org): üç yetkili paneli tek kaynağa bağlandı (STK) — owner/manager tutarlılığı"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "8e0e605a",
     "date": "2026-06-21",
     "subject": "feat(ios): Pazar Yeri widget+denetim + widget kesilme fix + kenar-kaydırma geri jesti"
-  },
-  {
-    "hash": "35df1ba9",
-    "date": "2026-06-21",
-    "subject": "feat: marketing-kit hedef kitle sekmeleri (hangel/STK/Marka/Kulüp) + profil↔my-badges sertifika senkronu"
-  },
-  {
-    "hash": "fa01d7cc",
-    "date": "2026-06-21",
-    "subject": "feat(certificates): uluslararası yapısal kod (H-ülke-şehir-tür-tarih) + küçük köşe QR + düzenleyen logosu"
   }
 ];

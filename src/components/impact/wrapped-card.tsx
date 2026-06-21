@@ -106,7 +106,7 @@ export function WrappedCard({ data }: { data: WrappedCardData }) {
 
   return (
     <div className="space-y-4">
-      <div className="max-w-md mx-auto">
+      <div className="mx-auto w-full max-w-md overflow-hidden">
         <div
           ref={cardRef}
           className="relative w-full aspect-[9/16] rounded-[2.5rem] overflow-hidden text-white shadow-2xl"
@@ -114,15 +114,17 @@ export function WrappedCard({ data }: { data: WrappedCardData }) {
             background: 'radial-gradient(130% 100% at 50% 0%, #f34723 0%, #b3270f 38%, #1a0703 78%, #000000 100%)',
           }}
         >
-          {/* Glow yumuşatıcılar */}
-          <div className="absolute top-0 right-0 w-72 h-72 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3 opacity-50" style={{ backgroundColor: '#ff7a52' }} />
-          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 opacity-30" style={{ backgroundColor: '#f34723' }} />
+          {/* Glow yumuşatıcılar — kontrast için düşük opaklık (<=20%), mobilde küçük */}
+          <div className="absolute top-0 right-0 w-48 h-48 sm:w-72 sm:h-72 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3 opacity-20" style={{ backgroundColor: '#ff7a52' }} />
+          <div className="absolute bottom-0 left-0 w-44 h-44 sm:w-64 sm:h-64 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 opacity-[0.18]" style={{ backgroundColor: '#f34723' }} />
+          {/* Koyu alt zemin — metin okunabilirliği için scrim */}
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent" />
 
           <div className="relative h-full flex flex-col p-7">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black uppercase tracking-[0.3em] opacity-80">hangel</span>
-              <span className="text-[10px] font-medium opacity-60">etki hikayem</span>
+              <span className="text-xs font-black uppercase tracking-[0.3em] opacity-95">hangel</span>
+              <span className="text-xs font-medium opacity-90">etki hikayem</span>
             </div>
 
             {/* Kullanıcı + dönem */}
@@ -133,18 +135,18 @@ export function WrappedCard({ data }: { data: WrappedCardData }) {
                   {(data.name || '?').charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <p className="text-sm font-bold tracking-tight">{data.name}</p>
-              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/80 bg-white/15 rounded-full px-3 py-1">
+              <p className="text-sm font-bold tracking-tight text-white">{data.name}</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-white bg-white/20 rounded-full px-3 py-1">
                 {data.periodKind === 'month' ? 'Bu Ay' : 'Bu Yıl'} · {data.periodLabel}
               </p>
             </div>
 
             {/* Hero — dokunulan can */}
-            <div className="flex flex-col items-center mt-5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-white/70">Dokunduğun Tahmini Can</p>
+            <div className="relative flex flex-col items-center mt-5">
+              <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/90">Dokunduğun Tahmini Can</p>
               <p
-                className="text-7xl font-black tracking-tighter tabular-nums leading-none mt-1"
-                style={{ textShadow: '0 4px 30px rgba(0,0,0,0.35)' }}
+                className="text-7xl font-black tracking-tighter tabular-nums leading-none mt-1 text-white"
+                style={{ textShadow: '0 4px 30px rgba(0,0,0,0.5)' }}
               >
                 {fmt(data.estimatedLivesTouched)}
               </p>
@@ -160,15 +162,15 @@ export function WrappedCard({ data }: { data: WrappedCardData }) {
 
             {/* En çok katkı alanı */}
             {data.topArea && (
-              <div className="mt-3 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 mx-auto border border-white/15">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">En Çok Katkı</span>
-                <span className="text-[11px] font-black">{data.topArea}</span>
+              <div className="mt-3 flex items-center justify-center gap-2 bg-white/15 backdrop-blur-md rounded-full px-4 py-2 mx-auto border border-white/20">
+                <span className="text-xs font-bold uppercase tracking-widest text-white/90">En Çok Katkı</span>
+                <span className="text-xs font-black text-white">{data.topArea}</span>
               </div>
             )}
 
             {/* Footer */}
             <div className="mt-auto pt-4 text-center">
-              <p className="text-[10px] font-medium tracking-[0.25em] text-white/60">hangel.org.tr</p>
+              <p className="text-xs font-medium tracking-[0.25em] text-white/80">hangel.org.tr</p>
             </div>
           </div>
         </div>
@@ -189,9 +191,9 @@ export function WrappedCard({ data }: { data: WrappedCardData }) {
 
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-2xl px-3 py-2.5 border border-white/15">
-      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/70">{label}</p>
-      <p className="text-base font-black tabular-nums leading-tight mt-0.5 truncate">{value}</p>
+    <div className="bg-white/15 backdrop-blur-md rounded-2xl px-3 py-2.5 border border-white/20">
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/90 truncate">{label}</p>
+      <p className="text-base font-black tabular-nums leading-tight mt-0.5 truncate text-white">{value}</p>
     </div>
   );
 }

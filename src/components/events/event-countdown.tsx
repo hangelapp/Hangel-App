@@ -150,7 +150,7 @@ export function EventCardCountdownBadge({ event, className }: { event: EventLike
   const label = h > 0 ? `${h}sa ${m}dk` : `${m} dk`;
 
   return (
-    <span className={cn('inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-[11px] font-black uppercase tracking-wide tabular-nums text-primary-foreground shadow-md ring-1 ring-black/5 backdrop-blur-md', className)}>
+    <span className={cn('inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-black uppercase tracking-wide tabular-nums text-primary-foreground shadow-md ring-1 ring-black/5 backdrop-blur-md', className)}>
       ⏳ {label}
     </span>
   );

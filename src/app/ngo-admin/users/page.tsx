@@ -161,7 +161,7 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in-0">
+    <div className="space-y-6 animate-in fade-in-0 p-3 sm:p-4 md:p-6">
       <div className="flex items-center gap-2">
         <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngo_admin_users.backAria')}>
             <ArrowLeft className="h-6 w-6" />
@@ -199,7 +199,7 @@ export default function UsersPage() {
         </CardHeader>
         <CardContent className="space-y-4">
             {!authUser ? (
-                <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                <div className="text-center py-12 border-2 border-dashed border-border rounded-2xl">
                     <User className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
                     <p className="text-muted-foreground">{t('ngo_admin_users.authRequired')}</p>
                 </div>
@@ -218,7 +218,7 @@ export default function UsersPage() {
                     const editedRole = roleEdits[row.userId] ?? row.role;
                     const isKnownRole = (ROLE_OPTIONS as readonly string[]).includes(editedRole);
                     return (
-                    <div key={row.userId} className="flex justify-between items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                    <div key={row.userId} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 p-3 border border-border rounded-2xl hover:bg-accent/50 transition-colors">
                         <div className="flex items-center gap-3 min-w-0">
                             <Avatar className="h-9 w-9 border">
                                 <AvatarImage src={row.avatarUrl || undefined} alt={row.name} />
@@ -228,7 +228,7 @@ export default function UsersPage() {
                                 <div className="flex items-center gap-2">
                                     <p className="font-medium truncate">{row.name}</p>
                                     {isOwnerRow && (
-                                        <Badge variant="outline" className="text-[10px] font-bold px-2 py-0 bg-amber-100 text-amber-800 border-amber-300/50 dark:bg-amber-900/40 dark:text-amber-300">
+                                        <Badge variant="outline" className="text-xs font-bold px-2 py-0 bg-amber-100 text-amber-800 border-amber-300/50 dark:bg-amber-900/40 dark:text-amber-300">
                                             {t('ngo_admin_users.ownerBadge')}
                                         </Badge>
                                     )}
@@ -236,13 +236,13 @@ export default function UsersPage() {
                                 {since && <p className="text-xs text-muted-foreground">{since}</p>}
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center justify-end gap-2 shrink-0">
                             {manageable ? (
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-1.5 min-w-0">
                                     <Select
                                         value={isKnownRole ? editedRole : undefined}
                                         onValueChange={(v) => setRoleEdits(prev => ({ ...prev, [row.userId]: v }))}>
-                                        <SelectTrigger className="h-8 w-auto min-w-[150px] text-xs font-bold" aria-label={t('ngo_admin_users.selectRoleAria')}>
+                                        <SelectTrigger className="h-11 w-auto max-w-[120px] sm:max-w-none sm:min-w-[150px] text-xs font-bold" aria-label={t('ngo_admin_users.selectRoleAria')}>
                                             <SelectValue placeholder={row.role} />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -252,7 +252,7 @@ export default function UsersPage() {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="h-8 px-2.5 text-xs font-bold"
+                                        className="h-11 px-2.5 text-xs font-bold"
                                         disabled={isRowUpdating || editedRole === row.role}
                                         onClick={() => { void handleUpdateRole(row, editedRole); }}>
                                         {isRowUpdating && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
@@ -260,7 +260,7 @@ export default function UsersPage() {
                                     </Button>
                                 </div>
                             ) : (
-                                <Badge variant="outline" className={cn("text-[10px] font-bold px-2 py-0", row.isPrimary && "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300/50")}>
+                                <Badge variant="outline" className={cn("text-xs font-bold px-2 py-0 whitespace-nowrap", row.isPrimary && "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300/50")}>
                                     {row.role}
                                 </Badge>
                             )}
@@ -270,7 +270,7 @@ export default function UsersPage() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                            className="h-11 w-11 text-muted-foreground hover:text-destructive"
                                             disabled={isRowRevoking}
                                             aria-label={t('ngo_admin_users.revokeAria')}
                                         >
@@ -299,7 +299,7 @@ export default function UsersPage() {
                     </div>
                     );
                 }) : (
-                    <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                    <div className="text-center py-12 border-2 border-dashed border-border rounded-2xl">
                         <User className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
                         <p className="text-muted-foreground">{t('ngo_admin_users.noAdmins')}</p>
                     </div>
