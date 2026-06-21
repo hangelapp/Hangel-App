@@ -20,32 +20,36 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useTranslation } from '@/components/providers/language-provider';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
+  // En doğru domain: targetDomain → link → contact.website → marka adından türet.
   const domain = (() => {
-    try { if (brand.link) return new URL(brand.link).hostname; } catch {}
+    const clean = (h: string) => h.replace(/^www\./, '');
+    if (brand.targetDomain) return clean(brand.targetDomain.replace(/^https?:\/\//, '').split('/')[0]);
+    try { if (brand.link) return clean(new URL(brand.link).hostname); } catch {}
+    const web = brand.contact?.website;
+    try { if (web) return clean(new URL(web.startsWith('http') ? web : `https://${web}`).hostname); } catch {}
     return `${brand.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com.tr`;
   })();
 
-  // FIX: Firestore brands collection'da hala logo.clearbit.com URL'leri var.
-  // Render etmeden önce auto-replace — Google favicon'a çevir. Clearbit
-  // servisi kapandı (DNS resolve etmiyor), her render console error spam.
-  const sanitizedLogoUrl = (() => {
+  // Keskin logo kaynak zinciri — kötü/bulanık logoyu otomatik en iyisiyle değiştirir:
+  //  1) markanın yüklediği gerçek logo (clearbit DEĞİLse) — en iyi
+  //  2) unavatar.io — çoklu kaynaktan GERÇEK marka logosunu getirir (keskin; yoksa 404)
+  //  3) Google favicon sz=256 — güvenli son çare (eski sz=128 bulanıktı)
+  // Clearbit kapandı (DNS yok) → DB'deki logo.clearbit.com URL'leri atlanır.
+  const realLogo = (() => {
     const url = brand.logoUrl || '';
-    if (url.includes('logo.clearbit.com/')) {
-      const cbDomain = url.split('logo.clearbit.com/')[1]?.split(/[?#]/)[0] || domain;
-      return `https://www.google.com/s2/favicons?domain=${cbDomain}&sz=128`;
-    }
-    return url;
+    return !url || url.includes('logo.clearbit.com/') ? '' : url;
   })();
 
-  const [imgSrc, setImgSrc] = useState(sanitizedLogoUrl);
-  const [hasError, setHasError] = useState(false);
-  const [fallbackIndex, setFallbackIndex] = useState(0);
+  const sources = [
+    realLogo,
+    `https://unavatar.io/${domain}?fallback=false`,
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=256`,
+  ].filter(Boolean);
 
-  const fallbacks = [
-    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-  ].filter(url => url !== sanitizedLogoUrl);
+  const [srcIndex, setSrcIndex] = useState(0);
+  const [hasError, setHasError] = useState(sources.length === 0);
 
-  if (hasError || !imgSrc) {
+  if (hasError || !sources[srcIndex]) {
     return (
       <div className="absolute inset-0 rounded-2xl bg-primary/10 flex items-center justify-center p-2">
         <span className="text-primary font-black text-xl">{brand.name.charAt(0)}</span>
@@ -53,25 +57,24 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
     );
   }
 
-  const tryNextFallback = () => {
-    if (fallbackIndex < fallbacks.length) {
-      setImgSrc(fallbacks[fallbackIndex]);
-      setFallbackIndex(i => i + 1);
-    } else {
+  const tryNext = () => {
+    setSrcIndex((i) => {
+      if (i < sources.length - 1) return i + 1;
       setHasError(true);
-    }
+      return i;
+    });
   };
 
   return (
     <img
-      src={imgSrc}
+      src={sources[srcIndex]}
       alt={brand.name}
       className="absolute inset-0 w-full h-full object-contain p-3"
       onLoad={(e) => {
         const img = e.currentTarget;
-        if (img.naturalWidth < 10 || img.naturalHeight < 10) tryNextFallback();
+        if (img.naturalWidth < 16 || img.naturalHeight < 16) tryNext();
       }}
-      onError={tryNextFallback}
+      onError={tryNext}
       loading="lazy"
       referrerPolicy="no-referrer"
     />
