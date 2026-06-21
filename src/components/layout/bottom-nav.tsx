@@ -70,11 +70,12 @@ export default function AppBottomNav() {
   const gridColsClass = visibleItems.length === 5 ? 'grid-cols-5' : 'grid-cols-4';
 
   return (
+    // iOS 26 tab-bar: translucent blur material (glass-prominent) + üst hairline.
+    // safe-area-inset-bottom nav'ın KENDİSİNE padding olarak verilir → içerik
+    // home-indicator'a girmez, dokunma alanı home-indicator üstünde kalır.
     <nav className="fixed bottom-0 left-0 right-0 z-40 glass-prominent border-t border-glass-black-8 dark:border-glass-white-8 pb-[env(safe-area-inset-bottom)]">
-      {/* Why: h-16 (64px) - pt-1 (4px) - pb-2 (8px) = 52px content area > 44px Apple touch target.
-          Her Link tap area en az 44x44 — accessibility-friendly.
-          Glass: iOS 26 dock pattern'i — alttaki sayfa içeriği refractive sızar. */}
-      <div className={cn("mx-auto grid h-16 max-w-md items-center px-1 pb-2 pt-1 lg:max-w-2xl", gridColsClass)}>
+      {/* h-16 (64px) content; her sekme min 44x44 Apple dokunma hedefi. */}
+      <div className={cn("mx-auto grid h-16 max-w-md items-center px-1 pt-1 pb-1 lg:max-w-2xl", gridColsClass)}>
         {visibleItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           const Icon = item.icon;
@@ -83,14 +84,15 @@ export default function AppBottomNav() {
             <Link
               href={item.href}
               key={item.label}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                // min-h-[48px] = Apple touch target — small icon ile birlikte
-                "flex flex-col items-center justify-center gap-0.5 min-h-[48px] py-1.5 px-0.5 text-center transition-all duration-200 ease-spring active:scale-[0.96] active:bg-glass-black-5 dark:active:bg-glass-white-8 rounded-xl",
+                // ≥44x44 Apple dokunma hedefi (min-w + min-h).
+                "flex flex-col items-center justify-center gap-0.5 min-w-[44px] min-h-[44px] py-1.5 px-0.5 text-center transition-all duration-200 ease-spring active:scale-[0.96] active:bg-glass-black-5 dark:active:bg-glass-white-8 rounded-xl",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
               <Icon className="h-5 w-5" />
-              <span className="text-[10px] font-semibold leading-tight">
+              <span className="text-xs font-semibold leading-tight">
                 {item.label}
               </span>
             </Link>

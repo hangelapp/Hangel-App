@@ -48,10 +48,16 @@ import {
   LineChart,
   Loader2,
   Wallet,
+  Menu,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -338,7 +344,7 @@ function OrgSwitcher() {
 // inbox: bu kuruma yeni gelen mesajlar. donations: bu kuruma yeni bağışlar.
 // volunteer: bu kuruma yapılan yeni Beklemede başvurular.
 function MenuItemLink({
-  item, entityId, active, baseClasses, content, hrefResolved,
+  item, entityId, active, baseClasses, content, hrefResolved, onNavigate,
 }: {
   item: MenuItem;
   entityId: string | null;
@@ -346,6 +352,7 @@ function MenuItemLink({
   baseClasses: string;
   content: React.ReactNode;
   hrefResolved: string;
+  onNavigate?: () => void;
 }) {
   const db = useFirestore();
   const { user } = useUser();
@@ -449,10 +456,10 @@ function MenuItemLink({
     );
   }
   return (
-    <Link href={hrefResolved} onClick={markSeen} className={baseClasses}>
+    <Link href={hrefResolved} onClick={() => { markSeen(); onNavigate?.(); }} className={baseClasses}>
       {content}
       {showBadge && (
-        <Badge className="ml-auto bg-red-600 hover:bg-red-600 text-white font-black text-[9px] px-1.5 py-0 h-4 min-w-[16px] flex items-center justify-center rounded-full">
+        <Badge className="ml-auto bg-red-600 hover:bg-red-600 text-white font-black text-[11px] px-1.5 py-0 h-5 min-w-[20px] flex items-center justify-center rounded-full">
           {count > 99 ? '99+' : count}
         </Badge>
       )}
@@ -460,7 +467,9 @@ function MenuItemLink({
   );
 }
 
-function SideMenu() {
+// Nav gövdesi — hem masaüstü kenar çubuğunda hem mobil drawer'da kullanılır.
+// onNavigate: mobil drawer'da bir öğeye tıklayınca drawer'ı kapatmak için.
+function SideMenuBody({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { kind: entityKind, subType, withEntityParams, id: entityId } = useActiveEntity();
   // Mevcut kullanıcının rol başlığı (rol-bazlı nav kısıtlaması için).
@@ -473,82 +482,92 @@ function SideMenu() {
   const groups = entityKind === 'brand' ? BRAND_MENU : entityKind === 'club' ? CLUB_MENU : NGO_MENU;
 
   return (
-    <aside className="hidden lg:block w-64 shrink-0">
-      <nav className="sticky top-6 space-y-6">
-        <OrgSwitcher />
-        {groups.map((group, gi) => (
-          <div key={gi} className="space-y-2">
-            {group.title && (
-              <h3 className="px-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                {group.title}
-              </h3>
-            )}
-            <ul className="space-y-1">
-              {/* Aktif öğeler üstte, 'Yakında' (comingSoon) etiketliler altta.
-                  Array.sort stabil olduğu için her grupta orijinal sıra korunur,
-                  yalnız comingSoon'lar sona kayar. */}
-              {[...group.items]
-                .sort((a, b) => Number(Boolean(a.comingSoon)) - Number(Boolean(b.comingSoon)))
-                .map((item) => {
-                // Restrict the active events link to clubs only (disabled "Yakında" items still render)
-                if (item.href === '/ngo-admin/events' && !item.comingSoon && entityKind !== 'club') {
-                  return null;
-                }
-                // Rol-bazlı kısıtlama: dar başlıklı yetkili kapsamı dışındaki modülü görmez.
-                if (item.scope && !roleTitleHasScope(roleTitle, item.scope)) {
-                  return null;
-                }
-                const Icon = item.icon;
-                // QR etiketi tipe göre: "Dernek/Vakıf/Spor Kulübü/Marka/Öğrenci Kulübü Profil QR Kodu".
-                const displayLabel = item.href === '/ngo-admin/qr'
-                  ? `${entityTypeLabel(entityKind, subType)} Profil QR Kodu`
-                  : item.label;
-                const active = pathname === item.href || pathname?.startsWith(item.href + '/');
-                const baseClasses = cn(
-                  'flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-bold transition-colors',
-                  active
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-foreground hover:bg-accent',
-                  item.comingSoon && !active && 'opacity-70',
-                );
-                const content = (
-                  <>
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span className="flex-1 truncate">{displayLabel}</span>
-                    {item.comingSoon && (
-                      <Badge
-                        className="ml-auto gap-1 px-1.5 py-0 text-[9px] font-bold uppercase tracking-widest border-transparent bg-[#F4624A]/15 text-[#F4624A] hover:bg-[#F4624A]/15"
-                      >
-                        <Clock className="h-2.5 w-2.5" /> Yakında
-                      </Badge>
-                    )}
-                    {item.beta && !item.comingSoon && (
-                      <Badge
-                        className="ml-auto px-1.5 py-0 text-[9px] font-bold lowercase tracking-widest border-transparent bg-blue-500/15 text-blue-600 hover:bg-blue-500/15"
-                      >
-                        beta
-                      </Badge>
-                    )}
-                  </>
-                );
+    <nav className="space-y-6">
+      <OrgSwitcher />
+      {groups.map((group, gi) => (
+        <div key={gi} className="space-y-2">
+          {group.title && (
+            <h3 className="px-3 text-xs font-black uppercase tracking-widest text-muted-foreground">
+              {group.title}
+            </h3>
+          )}
+          <ul className="space-y-1">
+            {/* Aktif öğeler üstte, 'Yakında' (comingSoon) etiketliler altta.
+                Array.sort stabil olduğu için her grupta orijinal sıra korunur,
+                yalnız comingSoon'lar sona kayar. */}
+            {[...group.items]
+              .sort((a, b) => Number(Boolean(a.comingSoon)) - Number(Boolean(b.comingSoon)))
+              .map((item) => {
+              // Restrict the active events link to clubs only (disabled "Yakında" items still render)
+              if (item.href === '/ngo-admin/events' && !item.comingSoon && entityKind !== 'club') {
+                return null;
+              }
+              // Rol-bazlı kısıtlama: dar başlıklı yetkili kapsamı dışındaki modülü görmez.
+              if (item.scope && !roleTitleHasScope(roleTitle, item.scope)) {
+                return null;
+              }
+              const Icon = item.icon;
+              // QR etiketi tipe göre: "Dernek/Vakıf/Spor Kulübü/Marka/Öğrenci Kulübü Profil QR Kodu".
+              const displayLabel = item.href === '/ngo-admin/qr'
+                ? `${entityTypeLabel(entityKind, subType)} Profil QR Kodu`
+                : item.label;
+              const active = pathname === item.href || pathname?.startsWith(item.href + '/');
+              const baseClasses = cn(
+                'flex items-center gap-3 rounded-2xl px-3 min-h-[44px] py-2.5 text-sm font-bold transition-colors',
+                active
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-foreground hover:bg-accent',
+                item.comingSoon && !active && 'opacity-70',
+              );
+              const content = (
+                <>
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="flex-1 truncate">{displayLabel}</span>
+                  {item.comingSoon && (
+                    <Badge
+                      className="ml-auto gap-1 px-1.5 py-0 text-[11px] font-bold uppercase tracking-widest border-transparent bg-primary/15 text-primary hover:bg-primary/15"
+                    >
+                      <Clock className="h-2.5 w-2.5" /> Yakında
+                    </Badge>
+                  )}
+                  {item.beta && !item.comingSoon && (
+                    <Badge
+                      className="ml-auto px-1.5 py-0 text-[11px] font-bold lowercase tracking-widest border-transparent bg-blue-500/15 text-blue-600 hover:bg-blue-500/15"
+                    >
+                      beta
+                    </Badge>
+                  )}
+                </>
+              );
 
-                return (
-                  <li key={item.href}>
-                    <MenuItemLink
-                      item={item}
-                      entityId={entityId}
-                      active={active}
-                      baseClasses={baseClasses}
-                      content={content}
-                      hrefResolved={withEntityParams(item.href)}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </nav>
+              return (
+                <li key={item.href}>
+                  <MenuItemLink
+                    item={item}
+                    entityId={entityId}
+                    active={active}
+                    baseClasses={baseClasses}
+                    content={content}
+                    hrefResolved={withEntityParams(item.href)}
+                    onNavigate={onNavigate}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+// Masaüstü kalıcı kenar çubuğu (lg ve üstü). Mobilde drawer kullanılır.
+function SideMenu() {
+  return (
+    <aside className="hidden lg:block w-64 shrink-0">
+      <div className="sticky top-6">
+        <SideMenuBody />
+      </div>
     </aside>
   );
 }
@@ -561,8 +580,8 @@ function EntityIdentityBanner() {
 
   if (isLoading) {
     return (
-      <div className="mb-6 rounded-2xl border bg-card p-4 flex items-center gap-3">
-        <div className="h-12 w-12 rounded-2xl bg-muted animate-pulse" />
+      <div className="mb-4 sm:mb-6 rounded-2xl border border-border bg-card p-3 sm:p-4 flex items-center gap-3">
+        <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-muted animate-pulse" />
         <div className="flex-1 space-y-2">
           <div className="h-4 w-32 bg-muted rounded animate-pulse" />
           <div className="h-3 w-20 bg-muted rounded animate-pulse" />

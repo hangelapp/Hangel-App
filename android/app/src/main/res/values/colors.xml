@@ -7,4 +7,20 @@
     <color name="colorPrimary">#F34723</color>
     <color name="colorPrimaryDark">#C8381A</color>
     <color name="colorAccent">#F34723</color>
+
+    <!-- Home-screen App Widget renkleri (iOS WidgetKit ile parite). -->
+    <!-- Marka coral'i (iOS .hangelOrange = #F34723). -->
+    <color name="hangel_coral">#F34723</color>
+    <!-- Yumuşak coral zemin (iOS tint.opacity(0.14) ≈ %14 alfa). -->
+    <color name="hangel_coral_soft">#24F34723</color>
+    <!-- Acil kan kırmızısı (iOS .hangelEmergency). -->
+    <color name="hangel_emergency">#E11D2E</color>
+    <!-- Yumuşak acil-kırmızı zemin (%14 alfa). -->
+    <color name="hangel_emergency_soft">#24E11D2E</color>
+    <!-- Widget kart yüzeyi + tipografi. -->
+    <color name="widget_surface">#FFFFFFFF</color>
+    <color name="widget_text_primary">#FF1C1C1E</color>
+    <color name="widget_text_secondary">#FF8A8A8E</color>
+    <color name="widget_on_brand">#FFFFFFFF</color>
+    <color name="widget_on_brand_soft">#CCFFFFFF</color>
 </resources>

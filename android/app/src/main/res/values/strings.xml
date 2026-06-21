@@ -4,4 +4,22 @@
     <string name="title_activity_main">Hangel</string>
     <string name="package_name">com.hangel.app</string>
     <string name="custom_url_scheme">com.hangel.app</string>
+
+    <!-- ===== Home-screen App Widget metinleri (iOS WidgetKit ile parite) ===== -->
+    <!-- Marka wordmark (kullanıcıya görünen her yerde lowercase). -->
+    <string name="widget_wordmark">hangel</string>
+
+    <!-- hangel Hızlı Erişim widget'ı -->
+    <string name="widget_quick_access_label">hangel Hızlı Erişim</string>
+    <string name="widget_quick_access_description">Bağış, gönüllülük, etkinlikler ve acil kana tek dokunuşla eriş.</string>
+    <string name="widget_quick_access_kicker">Hızlı Erişim</string>
+    <string name="widget_action_donation">Bağış</string>
+    <string name="widget_action_volunteering">Gönüllülük</string>
+    <string name="widget_action_events">Etkinlikler</string>
+    <string name="widget_action_blood">Acil Kan</string>
+
+    <!-- hangel markalı widget -->
+    <string name="widget_brand_label">hangel</string>
+    <string name="widget_brand_description">hangel ana ekranını aç — umudu birlikte büyütüyoruz.</string>
+    <string name="widget_brand_tagline">umudu büyütüyoruz</string>
 </resources>

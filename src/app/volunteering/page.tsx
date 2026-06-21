@@ -35,14 +35,14 @@ const FilterButton = ({ title, options, selected, onSelectedChange }: {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 px-2.5 gap-1 rounded-full shrink-0">
-                    <span className="text-[11px] font-medium whitespace-nowrap">{title}</span>
+                <Button variant="outline" size="sm" className="h-9 px-3 gap-x-1.5 rounded-full shrink-0">
+                    <span className="text-xs font-medium whitespace-nowrap">{title}</span>
                     {selected.length > 0 && (
-                        <span className="ml-0.5 inline-flex items-center justify-center h-3.5 min-w-3.5 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold">
+                        <span className="inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
                             {selected.length}
                         </span>
                     )}
-                    <ChevronDown className="h-3 w-3 opacity-60" />
+                    <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="max-h-80 overflow-y-auto" align="start">
@@ -215,57 +215,52 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
     const daysRemaining = differenceInDays(parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
     const countdownText = daysRemaining > 0 ? t('volunteering_root.remainingDays').replace('{days}', String(daysRemaining)) : (daysRemaining === 0 ? t('volunteering_root.lastDay') : t('volunteering_root.expired'));
 
-    // Profil uyumu satırı kullanıcı talebine göre tek renk: narçiçeği (#E34234).
-    const matchAccent = '#E34234';
-
     return (
         <Card className="overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-primary/20 h-full">
             <Link href={`/volunteering/${opp.id}`} className="block group h-full">
                 <CardContent className="p-3 flex flex-col justify-between h-full">
                     <div>
-                        <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-x-2 gap-y-1">
+                            <div className="flex items-center gap-x-2.5 gap-y-1 flex-1 min-w-0">
                                 {ngo && (
-                                    <Avatar className="h-9 w-9 border shrink-0">
+                                    <Avatar className="h-10 w-10 border shrink-0">
                                         <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
                                         <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-[11px] font-medium text-muted-foreground truncate leading-tight">{opp.organization}</p>
+                                    <p className="text-xs font-medium text-muted-foreground truncate leading-tight">{opp.organization}</p>
                                     <h3 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors line-clamp-2">{opp.title}</h3>
                                     {appStatus && (
-                                        <span className={`inline-flex items-center gap-1 mt-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                                            appStatus === 'Onaylandı' ? 'bg-emerald-100 text-emerald-700'
-                                                : appStatus === 'Reddedildi' ? 'bg-red-100 text-red-700'
-                                                    : 'bg-amber-100 text-amber-700'}`}>
+                                        <span className={`inline-flex items-center gap-x-1 mt-1 rounded-full px-2 py-0.5 text-xs font-bold ${
+                                            appStatus === 'Onaylandı' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
+                                                : appStatus === 'Reddedildi' ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'
+                                                    : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300'}`}>
                                             {appStatus === 'Onaylandı' ? '✓ Onaylandı' : appStatus === 'Reddedildi' ? 'Kabul edilmedi' : 'Başvuruldu'}
                                         </span>
                                     )}
                                 </div>
                             </div>
-                            {/* Sağ üst köşe: İncele butonu (kibar tasarım) */}
-                            <span
-                                className="shrink-0 inline-flex items-center justify-center rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
-                                style={{ color: matchAccent, border: `1px solid ${matchAccent}` }}
-                            >
+                            {/* Sağ üst köşe: İncele butonu — mercan (primary) tema token'ı,
+                                hardcoded renk/inline-style yerine; koyu temada otomatik uyumlu. */}
+                            <span className="shrink-0 inline-flex items-center justify-center rounded-full px-3 py-1.5 min-h-[28px] text-xs font-bold text-primary border border-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                                 {t('volunteering_root.reviewBtn')}
                             </span>
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-2 flex-wrap gap-1.5">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <span className="flex items-center gap-1"><MapPin size={12} /> {opp.location.city} ({opp.location.type})</span>
-                                <span className="flex items-center gap-1"><Calendar size={12} /> {opp.commitment}</span>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mt-2 flex-wrap gap-x-2 gap-y-1">
+                            <div className="flex items-center gap-x-2 gap-y-1 flex-wrap min-w-0">
+                                <span className="flex items-center gap-x-1 min-w-0"><MapPin size={12} className="shrink-0" /> <span className="truncate">{opp.location.city} ({opp.location.type})</span></span>
+                                <span className="flex items-center gap-x-1 min-w-0"><Calendar size={12} className="shrink-0" /> <span className="truncate">{opp.commitment}</span></span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-primary text-[11px]">{opp.points} {t('volunteering_root.points')}</span>
+                            <div className="flex items-center gap-x-1.5 gap-y-1 shrink-0">
+                                <span className="font-bold text-primary text-xs">{opp.points} {t('volunteering_root.points')}</span>
                                 {isCompleted ? (
-                                    <Badge variant="secondary" className="text-[10px] font-bold">
+                                    <Badge variant="secondary" className="text-xs font-bold">
                                         Tamamlandı
                                     </Badge>
                                 ) : (
-                                    <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
+                                    <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-xs font-bold">
                                         {countdownText}
                                     </Badge>
                                 )}
@@ -277,14 +272,14 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
                                 className="mt-2 space-y-1"
                                 title={`${t('volunteering_root.breakdownAbility')}: ${match.breakdown.ability.matched}/${match.breakdown.ability.total} • ${t('volunteering_root.breakdownSensitivity')}: ${match.breakdown.interest.matched}/${match.breakdown.interest.total} • ${t('volunteering_root.breakdownLocation')}: ${match.breakdown.location}`}
                             >
-                                <div className="flex justify-between text-[10px] uppercase tracking-wider">
+                                <div className="flex justify-between text-xs uppercase tracking-wider">
                                     <span className="font-bold text-muted-foreground">{t('volunteering_root.profileEligibility')}</span>
-                                    <span className="font-black" style={{ color: matchAccent }}>%{matchPercentage}</span>
+                                    <span className="font-black text-primary">%{matchPercentage}</span>
                                 </div>
                                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                     <div
-                                        className="h-full rounded-full transition-all duration-500 ease-out"
-                                        style={{ width: `${matchPercentage}%`, backgroundColor: matchAccent }}
+                                        className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                                        style={{ width: `${matchPercentage}%` }}
                                     />
                                 </div>
                             </div>
@@ -539,24 +534,24 @@ export default function VolunteeringPage() {
   return (
     <div className="space-y-4 animate-in fade-in-0">
       <div className="p-4 space-y-4">
-        <div className="space-y-3 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-2">
+        <div className="space-y-3 sticky top-12 bg-background/95 backdrop-blur-xl z-10 py-2">
           <h1 className="text-2xl font-bold font-headline">{t('volunteeringPage.title')}</h1>
           <div className="flex gap-2">
-              <div className="relative flex-grow">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input placeholder={t('volunteeringPage.searchPlaceholder')} className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+              <div className="relative flex-grow min-w-0">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                  <Input placeholder={t('volunteeringPage.searchPlaceholder')} className="pl-10 h-11 w-full" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
               </div>
               <Button
                 variant="outline"
                 size="icon"
-                className="h-11 w-11 relative"
+                className="h-11 w-11 relative shrink-0"
                 aria-label={t('volunteeringPage.filterAria')}
                 title={t('volunteeringPage.filterAria')}
                 onClick={() => setFilterOpen(true)}
               >
                 <Filter size={20} />
                 {activeFilterCount > 0 && (
-                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold">
+                  <span className="absolute -top-2 -right-2 inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold ring-2 ring-background">
                     {activeFilterCount}
                   </span>
                 )}

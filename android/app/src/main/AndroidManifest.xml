@@ -37,6 +37,33 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- ===== Home-screen App Widget'ları (iOS WidgetKit ile parite) ===== -->
+        <!-- hangel Hızlı Erişim: 4 hızlı eylem, her biri hangel.org.tr App Link açar. -->
+        <receiver
+            android:name="com.hangel.app.widgets.QuickAccessWidget"
+            android:exported="false"
+            android:label="@string/widget_quick_access_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quick_access_info" />
+        </receiver>
+
+        <!-- hangel markalı widget: wordmark + tagline → hangel.org.tr ana sayfa. -->
+        <receiver
+            android:name="com.hangel.app.widgets.BrandWidget"
+            android:exported="false"
+            android:label="@string/widget_brand_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_brand_info" />
+        </receiver>
     </application>
 
     <!-- Permissions -->

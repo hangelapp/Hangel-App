@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- hangel Hızlı Erişim widget meta verisi.
+     minWidth ~250dp + minHeight ~110dp → 4x1 ve 2x2 boyutlarını sunar.
+     Statik içerik → updatePeriodMillis 0 (sistem güncellemesi yok; PendingIntent'ler kalıcı).
+     resizeMode horizontal|vertical, widgetCategory home_screen. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="180dp"
+    android:minResizeHeight="110dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/widget_quick_access"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:description="@string/widget_quick_access_description" />

@@ -1,0 +1,11 @@
+<!-- hangel widget ikonu: kaldırılmış el (Gönüllülük). tint runtime'da coral. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="@color/hangel_coral">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M13,1.5c-0.83,0 -1.5,0.67 -1.5,1.5v6.5h-1V4c0,-0.83 -0.67,-1.5 -1.5,-1.5S7.5,3.17 7.5,4v5.5h-1V5.5C6.5,4.67 5.83,4 5,4S3.5,4.67 3.5,5.5V15c0,3.87 3.13,7 7,7h1c3.87,0 7,-3.13 7,-7V6c0,-0.83 -0.67,-1.5 -1.5,-1.5S15.5,5.17 15.5,6v3.5h-1V3c0,-0.83 -0.67,-1.5 -1.5,-1.5z" />
+</vector>

@@ -218,15 +218,15 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
     const { language, changeLanguage, t } = useTranslation();
     const { user, isUserLoading } = useUser();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-30 bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="md:hidden h-8 w-8" onClick={onMenuClick} aria-label={t('a11y.openMenu')}>
+                    <Button variant="ghost" size="icon" className="md:hidden h-11 w-11" onClick={onMenuClick} aria-label={t('a11y.openMenu')}>
                         <Menu className="h-5 w-5" />
                     </Button>
                     <HangelLogo className="text-xl" />
                 </div>
-                <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#1d1d1f]/80">
+                <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
                     <Link href="#bagis" className="hover:text-primary transition-colors flex items-center gap-2">
                         <ShoppingBag className="h-4 w-4" />
                         <span>{t('landing.donationLabel')}</span>
@@ -238,7 +238,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                 </nav>
                 <div className="flex items-center gap-2">
                     <Select value={language} onValueChange={changeLanguage}>
-                        <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-8 px-2 text-xs font-normal text-[#1d1d1f]/80 hover:text-primary transition-colors focus:ring-0">
+                        <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-11 px-2 text-xs font-normal text-muted-foreground hover:text-primary transition-colors focus:ring-0">
                             <Globe className="h-3.5 w-3.5" />
                             <SelectValue />
                         </SelectTrigger>
@@ -249,15 +249,15 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                         </SelectContent>
                     </Select>
                     {/* Acil ikonu — herkes (anon + auth) /emergency/about tanıtım sayfasına gider. */}
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80" title={t('a11y.emergency')} aria-label={t('a11y.emergency')}>
+                    <Button asChild variant="ghost" size="icon" className="h-11 w-11 text-destructive/80" title={t('a11y.emergency')} aria-label={t('a11y.emergency')}>
                         <Link href="/emergency/about"><Siren className="h-5 w-5" /></Link>
                     </Button>
                     {isUserLoading ? (
-                        <div className="w-9 h-9 rounded-full bg-muted animate-pulse ml-1" />
+                        <div className="w-11 h-11 rounded-full bg-muted animate-pulse ml-1" />
                     ) : user ? (
                         <UserNav />
                     ) : (
-                        <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
+                        <Button asChild size="sm" className="h-11 rounded-full px-5 text-xs font-bold">
                             <Link href="/login/selection?action=login">{t('nav.login')}</Link>
                         </Button>
                     )}

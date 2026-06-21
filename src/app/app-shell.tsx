@@ -592,15 +592,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (isLoggedOut && isGuestDiscoveryPage && !isPublicPage && !isNgoSitePage) {
         return (
             <div className="min-h-dvh bg-background">
-                <header className="sticky top-0 z-40 flex h-12 items-center justify-between gap-2 border-b bg-background/80 px-4 backdrop-blur-lg" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+                <header className="sticky top-0 z-30 flex h-12 items-center justify-between gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-lg" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
                     <Link href="/" aria-label="hangel ana sayfa">
                         <HangelLogo className="text-xl" href={null} />
                     </Link>
                     <div className="flex items-center gap-2">
-                        <Button asChild variant="ghost" size="sm" className="h-8 rounded-full px-4 text-xs font-bold">
+                        <Button asChild variant="ghost" size="sm" className="h-11 rounded-full px-4 text-xs font-bold">
                             <Link href={`/login/selection?action=login&next=${encodeURIComponent(pathname)}`}>{t('nav.login')}</Link>
                         </Button>
-                        <Button asChild size="sm" className="h-8 rounded-full px-4 text-xs font-bold">
+                        <Button asChild size="sm" className="h-11 rounded-full px-4 text-xs font-bold">
                             <Link href={`/login/selection?action=register&next=${encodeURIComponent(pathname)}`}>Kayıt ol</Link>
                         </Button>
                     </div>
@@ -678,6 +678,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
             <VerifyEmailBanner />
+            {/* Üst: header h-12 (3rem) + safe-area-inset-top — içerik header altına girmez.
+                Alt: bottom-nav h-16 (4rem) + safe-area-inset-bottom + 1rem nefes payı =
+                5rem + safe-area → içerik tab-bar'a ve home-indicator'a girmez. */}
             <main className="flex-1" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
               <ProfileNudgeBanner />
               <AutoBreadcrumb />

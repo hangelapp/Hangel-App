@@ -27,11 +27,23 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   // Why: iOS 26 header pattern'i (sayfa üstünde flat, scroll'da prominent).
   const [isScrolled, setIsScrolled] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
+  // Scroll handler rAF ile throttle edilir — her scroll event'inde setState
+  // çağrılmaz, frame başına en fazla bir kez okunur (jank önlenir).
   useEffect(() => {
-    const handler = () => setIsScrolled(window.scrollY > 8);
-    handler();
-    window.addEventListener('scroll', handler, { passive: true });
-    return () => window.removeEventListener('scroll', handler);
+    let ticking = false;
+    const update = () => {
+      setIsScrolled(window.scrollY > 8);
+      ticking = false;
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(update);
+      }
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // Okunmamış bildirim sayısı (kullanıcı giriş yaptığında)
@@ -75,7 +87,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
           <div className="flex items-center gap-1">
             <div className="hidden md:flex items-center mr-4">
                 <Select value={language} onValueChange={changeLanguage}>
-                    <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-auto p-0 text-[12px] font-normal text-[#1d1d1f] hover:text-primary transition-colors focus:ring-0">
+                    <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-auto p-0 text-xs font-normal text-foreground hover:text-primary transition-colors focus:ring-0">
                         <Globe className="h-3.5 w-3.5" />
                         <SelectValue />
                     </SelectTrigger>
@@ -109,7 +121,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
                 <Link href="/notifications">
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold flex items-center justify-center leading-none">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
@@ -130,7 +142,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
             ) : user ? (
                 <UserNav />
             ) : (
-                <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
+                <Button asChild size="sm" className="h-11 rounded-full px-5 text-xs font-bold">
                     <Link href="/login/selection?action=login">{t('nav.login')}</Link>
                 </Button>
             )}

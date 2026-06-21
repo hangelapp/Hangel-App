@@ -1,0 +1,11 @@
+<!-- hangel widget ikonu: kan damlası (Acil Kan). tint runtime'da acil kırmızı. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="@color/hangel_emergency">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12,2c-0.4,0.6 -6,8.4 -6,12.5C6,18.1 8.7,21 12,21s6,-2.9 6,-6.5C18,10.4 12.4,2.6 12,2zM12,19c-2.2,0 -4,-1.9 -4,-4.5 0,-2.3 2.6,-6.4 4,-8.5 1.4,2.1 4,6.2 4,8.5C16,17.1 14.2,19 12,19z" />
+</vector>

@@ -52,33 +52,43 @@
   }
 
   .dark {
-    --background: #000000;
+    /* iOS 26 koyu yüzey tonları — gerçek siyah DEĞİL, hafif yükseltilmiş zemin.
+       Apple Dark Mode'da kademeli "elevated surface" hiyerarşisi:
+       background (en alt) < card/popover (yükseltilmiş) < accent (etkileşim).
+       Bu sayede yüzeyler birbirinden ayrışır ve OLED'de "kara delik" hissi olmaz. */
+    --background: #0b0b0c;
     --foreground: #f5f5f7;
 
-    --card: #1d1d1f;
+    --card: #1c1c1e;
     --card-foreground: #f5f5f7;
 
-    --popover: #0a0a0a;
-    --popover-foreground: #fafafa;
+    --popover: #1c1c1e;
+    --popover-foreground: #f5f5f7;
 
-    --primary: #f87158;
-    --primary-foreground: #fafafa;
+    --primary: #ff6a4d;
+    --primary-foreground: #1a0a06;
 
-    --secondary: #1a1a1a;
-    --secondary-foreground: #fafafa;
+    --secondary: #2c2c2e;
+    --secondary-foreground: #f5f5f7;
 
-    --muted: #262626;
-    --muted-foreground: #a3a3a3;
+    /* KONTRAST FIX (kritik): muted-foreground koyu temada okunabilir olmalı.
+       Eski #a3a3a3 (~%64 luma) #1c1c1e card üstünde AA'yı zar zor geçiyordu;
+       #262626 (eski muted bg) üstünde okunmuyordu. #b5b5be (~%72) card/background
+       üstünde ≥4.5:1 (AA) verir; muted bg de açıldı (#2c2c2e) ki üstünde net dursun. */
+    --muted: #2c2c2e;
+    --muted-foreground: #b5b5be;
 
-    --accent: #333333;
-    --accent-foreground: #fafafa;
+    --accent: #3a3a3c;
+    --accent-foreground: #f5f5f7;
 
-    --destructive: #e54848;
-    --destructive-foreground: #fafafa;
+    --destructive: #ff5a5a;
+    --destructive-foreground: #1a0606;
 
-    --border: #262626;
-    --input: #262626;
-    --ring: #f87158;
+    /* Sınır/giriş çizgileri görünür olmalı — eski #262626 background'a çok yakındı
+       (neredeyse görünmez). Hafif açılmış ton ile kartlar/inputlar belirginleşir. */
+    --border: #3a3a3c;
+    --input: #48484a;
+    --ring: #ff6a4d;
 
     /* Liquid Glass tokens (dark mode) — koyu zemin için siyah tint + ince beyaz iç çizgi. */
     --glass-bg: rgba(28, 28, 30, 0.65);
@@ -90,6 +100,35 @@
     --glass-highlight: rgba(255, 255, 255, 0.08);
   }
 }
+
+/* ====================================================================
+   hangel TASARIM ÖLÇEĞİ — Apple / iOS 26 kimliği (tek kaynak referans)
+   Diğer ajanlar/dosyalar BU ölçeğe birebir hizalanır.
+   --------------------------------------------------------------------
+   Z-INDEX ÖLÇEĞİ (Tailwind sınıfı olarak uygulanır, değer referansı burada):
+     içerik .................. z-0
+     yükseltilmiş/sticky panel z-10
+     header .................. z-30
+     bottom-nav .............. z-40
+     overlay/drawer/modal .... z-50
+     (Gelişigüzel z-[100] vb. KULLANILMAZ.)
+
+   RADIUS ÖLÇEĞİ (tek aile — karışık rounded-[1.75rem] YOK):
+     input/buton ............. rounded-xl  (0.75rem) .. rounded-2xl
+     birincil kart ........... rounded-2xl (1rem, --radius)
+     büyük hero .............. rounded-3xl (1.5rem)
+     pill/badge .............. rounded-full
+
+   GÖLGE ÖLÇEĞİ:
+     varsayılan kart ......... shadow-sm   (veya shadow-glass-soft)
+     yükseltilmiş ............ shadow-md   (veya shadow-glass-prominent)
+     modal/dialog ............ shadow-2xl  (veya shadow-glass-prominent)
+
+   FONT TABANI: 12px altı YOK. En küçük metin text-xs (12px).
+     İstisna: yalnızca minik sayısal rozet text-[11px] olabilir.
+
+   DOKUNMA HEDEFİ: tıklanabilir her öğe ≥44px (h-11 / min-h-[44px]).
+   ==================================================================== */
 
 @layer components {
   /* ------------------------------------------------------------------

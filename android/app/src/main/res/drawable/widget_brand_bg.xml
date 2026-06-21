@@ -1,0 +1,6 @@
+<!-- Markalı widget kabı: coral dolgulu yuvarlatılmış kart (hangel marka widget'ı). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/hangel_coral" />
+    <corners android:radius="20dp" />
+</shape>

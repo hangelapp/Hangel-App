@@ -251,7 +251,7 @@ function EventsPageContent() {
           <Button variant="outline" className="flex-1 relative" onClick={() => setIsFilterOpen(true)}>
             <Filter className="mr-2 h-4 w-4" /> {t('eventsPage.filterButton')}
             {activeFilterCount > 0 && (
-              <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-[10px] rounded-full">{activeFilterCount}</Badge>
+              <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-[11px] tabular-nums rounded-full">{activeFilterCount}</Badge>
             )}
           </Button>
           <DropdownMenu>
@@ -288,7 +288,7 @@ function EventsPageContent() {
                     key={type}
                     variant={typeFilter.includes(type) ? 'default' : 'outline'}
                     size="sm"
-                    className="rounded-full text-xs h-8"
+                    className="rounded-full text-xs h-11 px-4"
                     onClick={() => setTypeFilter(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])}
                   >
                     {type}
@@ -310,7 +310,7 @@ function EventsPageContent() {
                       key={value}
                       variant={locationTypeFilter === value ? 'default' : 'outline'}
                       size="sm"
-                      className="flex-1 rounded-full text-xs h-9"
+                      className="flex-1 rounded-full text-xs h-11"
                       onClick={() => setLocationTypeFilter(value)}
                     >
                       <Icon className="mr-1.5 h-3.5 w-3.5" /> {label}
@@ -391,15 +391,15 @@ function EventsPageContent() {
           } : { label: t('emptyStates.eventsAction'), href: '/ngos' }}
         />
       )}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
         {sortedEvents.map((event: Event) => {
           const detailHref = `/events/${event.slug || event.id}`;
           const eventName = event.name || EVENT_NAME_FALLBACK;
           // Etkinlik bitti: ya tamamlandı olarak işaretli ya da bitiş zamanı geçti.
           const isEnded = (event as Event & { completed?: boolean }).completed === true || eventPhase(event) === 'ended';
           return (
-            <Link key={event.id} href={detailHref} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-[1.5rem]">
-              <Card variant="glass" className="overflow-hidden flex flex-col h-full border-none shadow-md rounded-[1.5rem] hover:shadow-xl transition-shadow cursor-pointer">
+            <Link key={event.id} href={detailHref} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl">
+              <Card variant="glass" className="overflow-hidden flex flex-col h-full border-none shadow-sm rounded-2xl hover:shadow-md transition-shadow cursor-pointer">
                 <div className="relative aspect-[210/297] w-full bg-muted block">
                   <Image
                     src={event.imageUrl}
@@ -408,43 +408,45 @@ function EventsPageContent() {
                     className={`object-cover${isEnded ? ' grayscale-[0.35]' : ''}`}
                     data-ai-hint="event poster a4"
                   />
+                  {/* Alt scrim — beyaz rozet/metin görselin üstünde her zaman okunsun */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />
                   <div className="absolute top-2 left-2">
-                    <Badge className="bg-white/90 backdrop-blur-md text-primary border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">{event.type}</Badge>
+                    <Badge className="bg-white/90 backdrop-blur-md text-primary border-none font-black uppercase text-xs tracking-widest px-2 py-0.5 rounded-full shadow-sm">{event.type}</Badge>
                   </div>
                   <div className="absolute top-2.5 right-2.5">
                     {isEnded
-                      ? <Badge className="bg-foreground/95 backdrop-blur-md text-background border border-white/20 font-black uppercase text-[10px] tracking-widest px-2.5 py-1 rounded-xl shadow-lg ring-1 ring-black/10">Etkinlik bitti</Badge>
-                      : <EventCardCountdownBadge event={event} className="border border-white/25 text-[10px] px-2.5 py-1 rounded-xl shadow-lg ring-1 ring-black/10" />}
+                      ? <Badge className="bg-foreground/95 backdrop-blur-md text-background border border-white/20 font-black uppercase text-xs tracking-widest px-2.5 py-1 rounded-full shadow-md ring-1 ring-black/10">Etkinlik bitti</Badge>
+                      : <EventCardCountdownBadge event={event} className="border border-white/25 text-xs px-2.5 py-1 rounded-full shadow-md ring-1 ring-black/10" />}
                   </div>
                 </div>
                 <CardContent className="p-3 flex-1 space-y-2">
                   <h2 className="text-sm font-bold font-headline leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">{eventName}</h2>
-                  <p className="text-[10px] font-bold text-primary truncate">{event.organizer}</p>
-                  <div className="space-y-1 pt-1 border-t border-dashed">
-                    <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1.5">
-                        <Calendar className='h-3 w-3 text-primary'/>
-                        <span>{formatEventDate(event.startDate)}</span>
+                  <p className="text-xs font-bold text-primary truncate">{event.organizer}</p>
+                  <div className="space-y-1 pt-1 border-t border-dashed border-border">
+                    <div className="text-xs text-muted-foreground font-bold flex items-center gap-1.5">
+                        <Calendar className='h-3 w-3 text-primary shrink-0'/>
+                        <span className="truncate">{formatEventDate(event.startDate)}</span>
                     </div>
-                    <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1.5">
-                        <MapPin className='h-3 w-3 text-primary'/>
+                    <div className="text-xs text-muted-foreground font-bold flex items-center gap-1.5">
+                        <MapPin className='h-3 w-3 text-primary shrink-0'/>
                         <span className="truncate">{event.location?.type === 'Online' ? t('eventsPageExtra.onlineLabel') : event.location?.city}</span>
                     </div>
                   </div>
                 </CardContent>
                 <CardFooter className="px-3 pb-3 pt-0 mt-auto flex flex-col gap-2">
-                  <div className="flex justify-between items-center w-full">
-                    <div className="space-y-0">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{t('eventsPageExtra.capacityLabel')}</p>
-                        <p className="text-[10px] font-black">{event.capacity?.current}/{event.capacity?.max}</p>
+                  <div className="flex justify-between items-center w-full gap-2">
+                    <div className="space-y-0 min-w-0">
+                        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate">{t('eventsPageExtra.capacityLabel')}</p>
+                        <p className="text-xs font-black tabular-nums">{event.capacity?.current}/{event.capacity?.max}</p>
                     </div>
                     {isEnded ? (
-                      <Button size="sm" variant="secondary" disabled className="rounded-lg font-black text-[10px] h-7 px-3 pointer-events-none opacity-60">
+                      <span className="shrink-0 rounded-full bg-secondary font-black text-xs px-3 py-1.5 text-secondary-foreground opacity-70">
                         Bitti
-                      </Button>
+                      </span>
                     ) : (
-                      <Button size="sm" className="rounded-lg font-black text-[10px] h-7 px-3 pointer-events-none">
+                      <span className="shrink-0 rounded-full bg-primary font-black text-xs px-3 py-1.5 text-primary-foreground">
                         {t('eventsPageExtra.inspectBtn')}
-                      </Button>
+                      </span>
                     )}
                   </div>
                 </CardFooter>

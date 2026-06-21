@@ -1,0 +1,8 @@
+<!-- Widget kabı: beyaz, yuvarlatılmış köşe (Apple-temiz kart estetiği).
+     Android 12+ kendi sistem arka planını uygular; bu, eski sürümlerde de
+     net bir kart görünümü sağlar. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/widget_surface" />
+    <corners android:radius="20dp" />
+</shape>
