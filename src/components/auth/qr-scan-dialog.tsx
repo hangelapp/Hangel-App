@@ -71,21 +71,47 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       }
       rafRef.current = requestAnimationFrame(scan);
     };
-    try {
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error('no-getusermedia');
-      // Bazı WebView'ler facingMode obje constraint'ini reddeder → sırayla dene.
-      const tries: MediaStreamConstraints[] = [
+    // Akış almayı çok kademeli dener (bazı Android WebView'leri facingMode obje
+    // constraint'ini, bazıları string'i reddeder; son çare deviceId ile arka kamera).
+    const tryGetStream = async (): Promise<MediaStream> => {
+      const attempts: MediaStreamConstraints[] = [
         { video: { facingMode: { ideal: 'environment' } } },
+        { video: { facingMode: 'environment' } },
         { video: true },
       ];
-      let stream: MediaStream | null = null;
       let lastErr: unknown;
-      for (const c of tries) {
-        try { stream = await navigator.mediaDevices.getUserMedia(c); break; } catch (e) { lastErr = e; }
+      for (const c of attempts) {
+        try { return await navigator.mediaDevices.getUserMedia(c); } catch (e) { lastErr = e; }
       }
-      if (!stream) throw lastErr ?? new Error('no-stream');
+      // deviceId fallback: cihazları say, arka kamerayı seç.
+      try {
+        const devs = await navigator.mediaDevices.enumerateDevices();
+        const cams = devs.filter((d) => d.kind === 'videoinput');
+        const back = cams.find((d) => /back|rear|arka|environment/i.test(d.label)) || cams[cams.length - 1];
+        if (back?.deviceId) return await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: back.deviceId } } });
+      } catch (e) { lastErr = e; }
+      throw lastErr ?? new Error('no-stream');
+    };
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error('no-getusermedia');
+      let stream: MediaStream;
+      try {
+        stream = await tryGetStream();
+      } catch (e1) {
+        // İzin diyaloğu YENİ cevaplanmış olabilir (Android runtime izni) → kısa
+        // bekleyip BİR kez daha dene. Bu, "ilk açılışta kamera açılmıyor" vakasını çözer.
+        const n = (e1 as { name?: string } | null)?.name;
+        if (n === 'NotAllowedError' || n === 'NotReadableError' || n === 'AbortError') {
+          await new Promise((r) => setTimeout(r, 1000));
+          stream = await tryGetStream();
+        } else { throw e1; }
+      }
       streamRef.current = stream;
-      if (videoRef.current) { videoRef.current.srcObject = stream; await videoRef.current.play(); }
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        // play() bazı Android WebView'lerde reddeder → autoplay+muted devralır, FATAL DEĞİL.
+        try { await videoRef.current.play(); } catch { /* autoplay devralır */ }
+      }
       rafRef.current = requestAnimationFrame(scan);
     } catch (e) {
       setStatus('error');
@@ -126,7 +152,7 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             </div>
           ) : (
             <div className="relative h-[260px] w-full overflow-hidden rounded-xl bg-black">
-              <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
+              <video ref={videoRef} className="h-full w-full object-cover" autoPlay playsInline muted />
               <div className="pointer-events-none absolute inset-8 rounded-2xl border-2 border-white/80" />
               {status === 'approving' && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>
