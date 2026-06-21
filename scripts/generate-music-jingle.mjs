@@ -86,13 +86,13 @@ function toWav(buf) {
 
 // --- Jingle varyantları (sözsüz, ~3.5sn + reverb kuyruğu) ---
 const VARIANTS = [
-  { key: 'jingle0', name: 'hangel Jenerik — Karşılama (sözsüz)',
+  { key: 'muzik0', name: 'hangel Jenerik — Karşılama (sözsüz)',
     chord: [261.63, 329.63, 392.00], // C majör — umutlu yükselen arpej
     notes: [[523.25, 0.00], [659.25, 0.18], [783.99, 0.36], [1046.50, 0.56], [783.99, 0.95]] },
-  { key: 'jingle1', name: 'hangel Jenerik — Yumuşak (sözsüz)',
+  { key: 'muzik1', name: 'hangel Jenerik — Yumuşak (sözsüz)',
     chord: [349.23, 440.00, 523.25], // F majör — nazik iniş
     notes: [[698.46, 0.00], [523.25, 0.22], [440.00, 0.44], [698.46, 0.70]] },
-  { key: 'jingle2', name: 'hangel Jenerik — Aydınlık (sözsüz)',
+  { key: 'muzik2', name: 'hangel Jenerik — Aydınlık (sözsüz)',
     chord: [392.00, 493.88, 587.33], // G majör — parlak koşu
     notes: [[587.33, 0.00], [659.25, 0.13], [783.99, 0.26], [987.77, 0.42], [783.99, 0.58]] },
 ];
@@ -107,7 +107,7 @@ function render(v) {
 }
 
 async function main() {
-  const updates = { jingles: [] };
+  const updates = { muzik: [] };
   for (const v of VARIANTS) {
     const wav = toWav(render(v));
     fs.writeFileSync(`/tmp/${v.key}.wav`, wav); // yerel kopya (doğrulama)
@@ -116,7 +116,7 @@ async function main() {
     await file.save(wav, { contentType: 'audio/wav', metadata: { cacheControl: 'public,max-age=31536000' } });
     await file.makePublic();
     const url = `https://storage.googleapis.com/${BUCKET}/${path}`;
-    updates.jingles[Number(v.key.replace('jingle', ''))] = { url, name: `${v.name}.wav` };
+    updates.muzik[Number(v.key.replace('muzik', ''))] = { url, name: `${v.name}.wav` };
     console.log(`✅ ${v.key} → ${(wav.length / 1024).toFixed(0)}KB → ${url}`);
   }
   await db.collection('siteSettings').doc('jingles').set(updates, { merge: true });
