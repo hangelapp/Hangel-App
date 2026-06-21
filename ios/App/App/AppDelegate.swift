@@ -112,5 +112,9 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(HangelWatchConnectivityPlugin())
         bridge?.registerPluginInstance(HangelSilentPushPlugin())
         bridge?.registerPluginInstance(HangelBackgroundTasksPlugin())
+        // iOS kenar-kaydırma ile geri/ileri (Apple yerel jesti). SPA pushState
+        // geçmişi de WKWebView back/forward listesine girdiği için sayfalar arası
+        // sola-kaydır = geri, sağa-kaydır = ileri çalışır.
+        webView?.allowsBackForwardNavigationGestures = true
     }
 }

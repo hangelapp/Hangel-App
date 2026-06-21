@@ -104,3 +104,21 @@ struct VolunteeringControl: ControlWidget {
         .description("Yakındaki gönüllülük fırsatlarını açar.")
     }
 }
+
+// MARK: - 5) Pazar Yeri (alışveriş) denetimi
+
+@available(iOS 18.0, *)
+struct MarketplaceControl: ControlWidget {
+    static let kind = "com.hangel.ios.app.control.marketplace"
+
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(kind: Self.kind) {
+            ControlWidgetButton(action: hangelOpenURLIntent("hangel://market")) {
+                Label("Pazar Yeri", systemImage: "bag.fill")
+            }
+            .tint(.hangelOrange)
+        }
+        .displayName("hangel · Pazar Yeri")
+        .description("Alışverişle destek olabileceğin markaları açar.")
+    }
+}

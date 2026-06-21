@@ -74,17 +74,23 @@ private struct WidgetHeader: View {
     let systemImage: String
     var tint: Color = .hangelOrange
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 5) {
             Image(systemName: systemImage)
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(tint)
+                .layoutPriority(1)
+            // Kicker: tek satır + gerekirse küçülür (truncate/kesilme YOK).
             Text(kicker.uppercased())
-                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundStyle(tint)
-                .kerning(0.3)
+                .kerning(0.2)
                 .lineLimit(1)
+                .minimumScaleFactor(0.6)
             Spacer(minLength: 4)
+            // Wordmark: ASLA kesilmesin → fixedSize (tam metin garanti).
             HangelWordmark(size: 11)
+                .fixedSize()
+                .layoutPriority(1)
         }
     }
 }
@@ -301,6 +307,55 @@ struct BloodStatusWidget: Widget {
         }
         .configurationDisplayName("Acil Kan Durumu")
         .description("Yakın çevredeki açık acil kan çağrılarını gösterir.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
+// MARK: - 4) Pazar Yeri (alışveriş) widget'ı
+
+struct MarketplaceEntry: TimelineEntry { let date: Date }
+
+@available(iOS 16.1, *)
+struct MarketplaceProvider: TimelineProvider {
+    func placeholder(in context: Context) -> MarketplaceEntry { MarketplaceEntry(date: Date()) }
+    func getSnapshot(in context: Context, completion: @escaping (MarketplaceEntry) -> Void) {
+        completion(MarketplaceEntry(date: Date()))
+    }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<MarketplaceEntry>) -> Void) {
+        completion(Timeline(entries: [MarketplaceEntry(date: Date())], policy: .never))
+    }
+}
+
+@available(iOS 16.1, *)
+struct MarketplaceWidgetView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            WidgetHeader(kicker: "Pazar Yeri", systemImage: "bag.fill")
+            Spacer(minLength: 0)
+            Image(systemName: "bag.fill")
+                .font(.system(size: 30, weight: .semibold))
+                .foregroundStyle(Color.hangelOrange)
+            Text("Alışverişle destek ol")
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .lineLimit(2).minimumScaleFactor(0.8)
+            Text("Anlaşmalı markalardan al → sosyal fayda")
+                .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+        }
+        .padding(14)
+        .containerBackgroundCompat()
+        .widgetURL(URL(string: "hangel://market"))
+    }
+}
+
+@available(iOS 16.1, *)
+struct MarketplaceWidget: Widget {
+    let kind = "com.hangel.ios.app.widget.marketplace"
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: MarketplaceProvider()) { _ in
+            MarketplaceWidgetView()
+        }
+        .configurationDisplayName("Pazar Yeri")
+        .description("Alışverişle destek olabileceğin markalara hızlı erişim.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
