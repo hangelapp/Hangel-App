@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { COLLECTIONS } from '@/firebase/collections';
 import {
     Star, Briefcase, School, FileText, Languages,
-    HandCoins, Handshake, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Brain, Globe, HeartPulse, Users, Plane, Landmark, Cpu, Edit, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, CheckCircle, Leaf, X, Loader2, QrCode, Store, HeartHandshake,
+    HandCoins, Handshake, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Brain, Globe, HeartPulse, Users, Plane, Landmark, Cpu, Edit, Linkedin, Github, Palette, Instagram, Twitter, Award, ArrowLeft, ArrowDownUp, Filter, CheckCircle, Leaf, X, Loader2, QrCode, Store, HeartHandshake,
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -19,7 +19,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 // PERF: getImpactStory dynamic import (AI flow ~50KB, sadece kullanıcı
 // "Etki hikayemi oluştur" butonuna basınca yüklenir).
 // Eski sync import: import { getImpactStory } from '@/ai/flows/impact-story-flow';
@@ -34,7 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useTranslation } from '@/components/providers/language-provider';
 import { UnifiedStoryCard, type UnifiedStoryData } from './_components/unified-story-card';
-import { VolunteeringCertificates } from './_components/volunteering-certificates';
+import { CertificatesTab } from '@/components/profile/certificates-tab';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
@@ -177,7 +176,6 @@ export default function ProfilePage() {
     const [isStoryLoading, setIsStoryLoading] = useState(false);
     const [stories, setStories] = useState<string[]>([]);
     const [showStoryDesigns, setShowStoryDesigns] = useState(false);
-    const [viewingCert, setViewingCert] = useState<{ id?: string; title: string; organization: string; date: string } | null>(null);
 
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
@@ -405,104 +403,6 @@ export default function ProfilePage() {
     );
     void badgesData; // legacy subcollection — şu an kullanılmıyor (dashboard sync)
 
-
-    const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string }) => {
-        try {
-            const { default: jsPDF } = await import('jspdf');
-            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
-            const pageW = pdf.internal.pageSize.getWidth();
-            const pageH = pdf.internal.pageSize.getHeight();
-
-            // Border
-            pdf.setDrawColor(234, 88, 12);
-            pdf.setLineWidth(2);
-            pdf.rect(10, 10, pageW - 20, pageH - 20);
-            pdf.setLineWidth(0.5);
-            pdf.rect(14, 14, pageW - 28, pageH - 28);
-
-            // Title
-            pdf.setFontSize(32);
-            pdf.setTextColor(234, 88, 12);
-            pdf.text('SERTİFİKA', pageW / 2, 45, { align: 'center' });
-
-            pdf.setFontSize(12);
-            pdf.setTextColor(80, 80, 80);
-            pdf.text('Bu sertifika hangel platformu aracılığıyla verilmiştir.', pageW / 2, 58, { align: 'center' });
-
-            // Recipient
-            pdf.setFontSize(14);
-            pdf.setTextColor(60, 60, 60);
-            pdf.text('Sayın', pageW / 2, 78, { align: 'center' });
-
-            pdf.setFontSize(22);
-            pdf.setTextColor(20, 20, 20);
-            pdf.text(currentUser.name || 'Gönüllü', pageW / 2, 92, { align: 'center' });
-
-            // Body
-            pdf.setFontSize(13);
-            pdf.setTextColor(60, 60, 60);
-            const body = `${cert.organization} tarafından düzenlenen aşağıdaki çalışmayı başarıyla tamamladığını belgeler:`;
-            pdf.text(body, pageW / 2, 108, { align: 'center', maxWidth: pageW - 60 });
-
-            // Title of cert
-            pdf.setFontSize(20);
-            pdf.setTextColor(20, 20, 20);
-            pdf.text(cert.title, pageW / 2, 130, { align: 'center', maxWidth: pageW - 60 });
-
-            // Date / org footer
-            pdf.setFontSize(11);
-            pdf.setTextColor(80, 80, 80);
-            pdf.text(`Veren Kuruluş: ${cert.organization}`, pageW / 2, 160, { align: 'center' });
-            pdf.text(`Tarih: ${cert.date}`, pageW / 2, 168, { align: 'center' });
-
-            pdf.setFontSize(9);
-            pdf.setTextColor(120, 120, 120);
-            pdf.text('hangel.org', pageW / 2, pageH - 18, { align: 'center' });
-
-            const filename = `sertifika-${cert.title.replace(/\s+/g, '-').toLowerCase()}.pdf`;
-            pdf.save(filename);
-
-            toast({ title: t('profilePage.certDownloaded'), description: `${cert.title} ${t('profilePage.certDownloadedSuffix')}` });
-        } catch (error) {
-            console.error('Certificate PDF generation failed:', error);
-            toast({ variant: 'destructive', title: t('profilePage.certDownloadFail'), description: t('profilePage.pdfFailDesc') });
-        }
-    };
-
-    // JPG indirme — sertifikayı canvas'a çizip image/jpeg olarak indirir (ek bağımlılık yok).
-    const handleDownloadCertificateImage = (cert: { title: string; organization: string; date: string }) => {
-        try {
-            const W = 1240, H = 877;
-            const canvas = document.createElement('canvas');
-            canvas.width = W; canvas.height = H;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) throw new Error('canvas yok');
-            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
-            ctx.strokeStyle = '#ea580c'; ctx.lineWidth = 8; ctx.strokeRect(30, 30, W - 60, H - 60);
-            ctx.lineWidth = 2; ctx.strokeRect(50, 50, W - 100, H - 100);
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#ea580c'; ctx.font = 'bold 66px Arial'; ctx.fillText('SERTİFİKA', W / 2, 180);
-            ctx.fillStyle = '#505050'; ctx.font = '22px Arial'; ctx.fillText('Bu sertifika hangel platformu aracılığıyla verilmiştir.', W / 2, 230);
-            ctx.fillStyle = '#3c3c3c'; ctx.font = '26px Arial'; ctx.fillText('Sayın', W / 2, 320);
-            ctx.fillStyle = '#141414'; ctx.font = 'bold 46px Arial'; ctx.fillText(currentUser.name || 'Gönüllü', W / 2, 385);
-            ctx.fillStyle = '#3c3c3c'; ctx.font = '24px Arial';
-            ctx.fillText(`${cert.organization} tarafından düzenlenen aşağıdaki çalışmayı`, W / 2, 460);
-            ctx.fillText('başarıyla tamamladığını belgeler:', W / 2, 495);
-            ctx.fillStyle = '#141414'; ctx.font = 'bold 40px Arial'; ctx.fillText(cert.title, W / 2, 580);
-            ctx.fillStyle = '#505050'; ctx.font = '20px Arial';
-            ctx.fillText(`Veren Kuruluş: ${cert.organization}`, W / 2, 680);
-            ctx.fillText(`Tarih: ${cert.date}`, W / 2, 715);
-            ctx.fillStyle = '#787878'; ctx.font = '16px Arial'; ctx.fillText('hangel.org', W / 2, H - 60);
-            const a = document.createElement('a');
-            a.href = canvas.toDataURL('image/jpeg', 0.95);
-            a.download = `sertifika-${cert.title.replace(/\s+/g, '-').toLowerCase()}.jpg`;
-            a.click();
-            toast({ title: t('profilePage.certDownloaded'), description: `${cert.title} ${t('profilePage.certJpgSuffix')}` });
-        } catch (error) {
-            console.error('Certificate JPG generation failed:', error);
-            toast({ variant: 'destructive', title: t('profilePage.certDownloadFail'), description: t('profilePage.jpgFailDesc') });
-        }
-    };
 
     const handleGenerateStories = async () => {
         setIsStoryLoading(true);
@@ -996,52 +896,10 @@ export default function ProfilePage() {
                          <Card variant="glass">
                             <CardHeader><CardTitle className='text-lg'>{t('profilePage.myCertificates')}</CardTitle></CardHeader>
                             <CardContent>
-                            {certificates.length > 0 ? (
-                                <div className="space-y-4">
-                                    {certificates.map(cert => (
-                                        <div key={cert.id} className='relative p-4 rounded-lg border'>
-                                        <div className='pr-24'>
-                                            <p className='text-sm text-muted-foreground'>{cert.organization} - {cert.date}</p>
-                                            <p className='font-semibold mt-1'>{cert.title}</p>
-                                        </div>
-                                        <div className='absolute top-2 right-2 flex gap-1 bg-background/50 backdrop-blur-sm rounded-md p-1'>
-                                            <Button aria-label={t('profilePage.certViewAria')} size="icon" variant="ghost" className="h-7 w-7" onClick={() => setViewingCert({ id: cert.id, title: cert.title, organization: cert.organization, date: cert.date })}><Eye className="h-4 w-4"/></Button>
-                                            <Button aria-label={t('profilePage.certDownloadAria')} size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleDownloadCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}><Download className="h-4 w-4"/></Button>
-                                            <Button aria-label={t('profilePage.certShareAria')} size="icon" variant="ghost" className="h-7 w-7" onClick={async () => {
-                                                const shareData = { title: cert.title, text: `${cert.title} — ${cert.organization} (${cert.date})${t('profilePage.shareTextSuffix')}`, url: typeof window !== 'undefined' ? window.location.href : '' };
-                                                if (typeof navigator !== 'undefined' && navigator.share) {
-                                                    try { await navigator.share(shareData); } catch { /* user cancelled */ }
-                                                } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                                                    await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-                                                    toast({ title: t('profilePage.copied'), description: t('profilePage.copiedDesc') });
-                                                } else {
-                                                    toast({ title: t('profilePage.shareTitle'), description: t('profilePage.shareUnsupported') });
-                                                }
-                                            }}><Share2 className="h-4 w-4"/></Button>
-                                        </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <EmptyState
-                                    icon={FileText}
-                                    title={t('emptyStates.noCertificates')}
-                                    description={t('profilePage.noCertificatesDesc')}
-                                />
-                            )}
+                                {/* Tek kaynak: /profile ve /my-badges aynı sertifika sekmesini paylaşır. */}
+                                <CertificatesTab />
                             </CardContent>
                         </Card>
-                        {/* FEAT: Gönüllülük Sertifikaları — NGO logo + puan + yorum + A6 yaka kartı.
-                            Kaynak: pastVolunteering (review içerir) + approvedApplications + manual
-                            certificates (yedek). Logo lookup volunteer/supported NGO bundle'dan. */}
-                        <VolunteeringCertificates
-                            userName={currentUser.name || ''}
-                            pastVolunteering={pastVolunteering as Parameters<typeof VolunteeringCertificates>[0]['pastVolunteering']}
-                            approvedApplications={(approvedAppsData ?? []) as Parameters<typeof VolunteeringCertificates>[0]['approvedApplications']}
-                            manualCertificates={(certificatesData ?? []) as Parameters<typeof VolunteeringCertificates>[0]['manualCertificates']}
-                            volunteerNgos={(volunteerNgosData ?? []) as Parameters<typeof VolunteeringCertificates>[0]['volunteerNgos']}
-                            supportedNgos={(supportedNgosData ?? []) as Parameters<typeof VolunteeringCertificates>[0]['supportedNgos']}
-                        />
                     </TabsContent>
 
 
@@ -1123,37 +981,6 @@ export default function ProfilePage() {
 
                 </Tabs>
             </div>
-            <Dialog open={!!viewingCert} onOpenChange={(open) => { if (!open) setViewingCert(null); }}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>{t('profilePage.certPreviewTitle')}</DialogTitle>
-                        <DialogDescription>{viewingCert?.organization}</DialogDescription>
-                    </DialogHeader>
-                    {viewingCert && (
-                        <div className="rounded-lg border-2 border-primary/30 p-6 bg-gradient-to-br from-primary/5 to-background text-center space-y-3">
-                            <Award className="h-12 w-12 text-primary mx-auto" />
-                            <p className="text-xs uppercase tracking-widest text-muted-foreground">{t('profilePage.certWord')}</p>
-                            <p className="text-lg font-bold leading-tight">{viewingCert.title}</p>
-                            <p className="text-sm text-muted-foreground">{t('profilePage.certOwner')} <span className="font-medium text-foreground">{currentUser.name || '-'}</span></p>
-                            <p className="text-sm text-muted-foreground">{viewingCert.organization}</p>
-                            <p className="text-xs text-muted-foreground">{t('profilePage.certDate')} {viewingCert.date}</p>
-                        </div>
-                    )}
-                    <DialogFooter className="gap-2 sm:gap-2">
-                        <Button variant="secondary" onClick={() => setViewingCert(null)}>{t('profilePage.close')}</Button>
-                        {viewingCert && (
-                            <>
-                                <Button variant="outline" onClick={() => handleDownloadCertificateImage({ title: viewingCert.title, organization: viewingCert.organization, date: viewingCert.date })}>
-                                    <Download className="mr-2 h-4 w-4" /> {t('profilePage.jpgDownload')}
-                                </Button>
-                                <Button onClick={() => handleDownloadCertificate({ title: viewingCert.title, organization: viewingCert.organization, date: viewingCert.date })}>
-                                    <Download className="mr-2 h-4 w-4" /> {t('profilePage.pdfDownload')}
-                                </Button>
-                            </>
-                        )}
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

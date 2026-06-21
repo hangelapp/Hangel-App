@@ -12,7 +12,8 @@ export type MarketingCategory =
   | 'orumcek-stand'
   | 'diger';
 
-export type MarketingTargetKind = 'ngo' | 'brand' | 'club';
+// 'hangel' = hangel'in kendi tanıtım kullanımı (konferans sunumu / kamuya açık tanıtım).
+export type MarketingTargetKind = 'hangel' | 'ngo' | 'brand' | 'club';
 
 // 'taslak' = yalnız super-admin görür; 'yayinda' = onaylandı, hedef panellerde görünür.
 export type MarketingStatus = 'taslak' | 'yayinda';
@@ -69,7 +70,7 @@ export const MARKETING_STARTER_PACK: MarketingStarterItem[] = [
     fileName: 'hangel-kurumsal-sunum.pdf',
     contentType: 'application/pdf',
     thumbnailFile: 'hangel-kurumsal-sunum-kapak.png',
-    targetKinds: ['ngo', 'brand', 'club'],
+    targetKinds: ['hangel', 'ngo', 'brand', 'club'],
     isPublic: true,
   },
   {
@@ -180,6 +181,7 @@ export const MARKETING_CATEGORIES: {
 ];
 
 export const MARKETING_TARGET_KINDS: { value: MarketingTargetKind; label: string }[] = [
+  { value: 'hangel', label: 'hangel' },
   { value: 'ngo', label: 'STK’lar' },
   { value: 'brand', label: 'Markalar' },
   { value: 'club', label: 'Kulüpler' },

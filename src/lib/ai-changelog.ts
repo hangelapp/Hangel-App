@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "fa01d7cc",
+    "date": "2026-06-21",
+    "subject": "feat(certificates): uluslararası yapısal kod (H-ülke-şehir-tür-tarih) + küçük köşe QR + düzenleyen logosu"
+  },
+  {
     "hash": "ceb3a000",
     "date": "2026-06-21",
     "subject": "feat(ui): etkinlik/gönüllülük detay + STK liste Apple redesign + wallet fix (workflow)"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "3d331384",
     "date": "2026-06-20",
     "subject": "feat(events): super-admin tam düzenleme + organizatör logosu + geri sayım + canlı/tıklanabilir"
-  },
-  {
-    "hash": "9ab70b83",
-    "date": "2026-06-20",
-    "subject": "feat(org): coral doğrulama tiki STK liste kartında da göster"
   }
 ];

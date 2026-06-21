@@ -33,6 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Plus,
   Loader2,
@@ -99,6 +100,15 @@ const EMPTY_FORM: FormState = {
   status: 'taslak',
 };
 
+// Hedef kitle sekmeleri — sıra: hangel, STK'lar, Markalar, Kulüpler.
+// Seçili sekme listeyi targetKinds'a göre filtreler.
+const AUDIENCE_TABS: { value: MarketingTargetKind; label: string; helper: string }[] = [
+  { value: 'hangel', label: 'hangel', helper: 'hangel’in kendi tanıtımında kullanacağı materyaller (konferans sunumu, kamuya açık tanıtım).' },
+  { value: 'ngo', label: 'STK’lar', helper: 'STK’ların indirip kullanacağı materyaller.' },
+  { value: 'brand', label: 'Markalar', helper: 'Markaların indirip kullanacağı materyaller.' },
+  { value: 'club', label: 'Kulüpler', helper: 'Kulüplerin indirip kullanacağı materyaller.' },
+];
+
 export default function MarketingKitPage() {
   const db = useFirestore();
   const { user: currentUser } = useUser();
@@ -116,6 +126,7 @@ export default function MarketingKitPage() {
   const [deleting, setDeleting] = useState<MarketingAsset | null>(null);
   const [seeding, setSeeding] = useState(false);
   const [previewing, setPreviewing] = useState<MarketingAsset | null>(null);
+  const [activeKind, setActiveKind] = useState<MarketingTargetKind>('hangel');
 
   const permError = useMemo(() => {
     if (!assetsError) return null;
@@ -129,6 +140,25 @@ export default function MarketingKitPage() {
     if (!assets) return [];
     return [...assets].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   }, [assets]);
+
+  // Her sekme için materyal sayısı (targetKinds içeriyorsa sayılır).
+  const countsByKind = useMemo(() => {
+    const counts: Record<MarketingTargetKind, number> = { hangel: 0, ngo: 0, brand: 0, club: 0 };
+    for (const a of sorted) {
+      for (const k of a.targetKinds || []) {
+        if (k in counts) counts[k] += 1;
+      }
+    }
+    return counts;
+  }, [sorted]);
+
+  // Seçili hedef kitleye göre filtrelenmiş materyaller.
+  const visibleAssets = useMemo(
+    () => sorted.filter((a) => (a.targetKinds || []).includes(activeKind)),
+    [sorted, activeKind],
+  );
+
+  const activeTab = AUDIENCE_TABS.find((t) => t.value === activeKind) ?? AUDIENCE_TABS[0];
 
   const openCreate = () => {
     setEditing(null);
@@ -457,15 +487,34 @@ export default function MarketingKitPage() {
         </CardContent></Card>
       </div>
 
-      {sorted.length === 0 ? (
+      {/* Hedef kitle sekmeleri — seçili kitle listeyi filtreler. */}
+      <Tabs value={activeKind} onValueChange={(v) => setActiveKind(v as MarketingTargetKind)} className="space-y-3">
+        <TabsList className="h-auto flex-wrap justify-start gap-1 rounded-2xl p-1.5">
+          {AUDIENCE_TABS.map((t) => (
+            <TabsTrigger
+              key={t.value}
+              value={t.value}
+              className="rounded-xl px-4 py-2 text-sm font-bold data-[state=active]:shadow-sm"
+            >
+              {t.label}
+              <Badge variant="secondary" className="ml-2 h-5 min-w-5 justify-center px-1.5 text-[10px] font-black">
+                {countsByKind[t.value]}
+              </Badge>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <p className="text-sm font-medium text-muted-foreground">{activeTab.helper}</p>
+      </Tabs>
+
+      {visibleAssets.length === 0 ? (
         <Card className="rounded-[2rem] border-black/5 shadow-xl">
           <CardContent className="p-16 text-center text-muted-foreground italic">
-            Henüz materyal yok. “Yeni Materyal” ile ilk tanıtım dosyanızı ekleyin.
+            Bu kitle için henüz materyal yok — “Yeni Materyal” veya “Başlangıç Paketi” ekle.
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sorted.map((a) => {
+          {visibleAssets.map((a) => {
             const isImage = (a.contentType || '').startsWith('image/');
             const preview = a.thumbnailUrl || (isImage ? a.fileUrl : null);
             return (
