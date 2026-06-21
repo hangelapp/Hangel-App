@@ -153,7 +153,7 @@ export async function generateEventCertificate(input: EventCertificateInput): Pr
   const CORAL = '#f34723';
   const CORAL_DARK = '#c5391b';
   const INK = '#1f1f1f';
-  const code = input.code || buildCertCode({ date: eventDate, country: input.country, city: input.city, kind: 'event', idSeed: certificateId });
+  const code = input.code || buildCertCode({ country: input.country, kind: 'event', idSeed: certificateId });
   const verify = verifyUrl || certVerifyUrl(code);
   const verifyShort = verify.replace(/^https?:\/\//, '');
   const [logoUri, qrUri, orgLogoUri] = await Promise.all([

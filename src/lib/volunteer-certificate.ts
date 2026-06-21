@@ -92,7 +92,7 @@ export type VolunteerCertificateInput = {
 
 export async function generateVolunteerCertificate(input: VolunteerCertificateInput): Promise<Blob> {
   const { taskTitle, organizerName, userName, date, certificateId } = input;
-  const code = input.code || buildCertCode({ date, country: input.country, city: input.city, kind: 'volunteer', idSeed: certificateId });
+  const code = input.code || buildCertCode({ country: input.country, kind: 'volunteer', idSeed: certificateId });
   const verify = certVerifyUrl(code);
   const verifyShort = verify.replace(/^https?:\/\//, '');
 

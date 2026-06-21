@@ -21,7 +21,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { decodeCertCode } from '@/lib/certificate-code';
+import { decodeCertCode, normalizeCertCode, countryName, type CertKind } from '@/lib/certificate-code';
 import { getAdminFirestore, getAdminAuth } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -35,22 +35,22 @@ function errJson(body: { errorCode: ErrorCode; message: string }, status: number
 
 interface VerifyResult {
   valid: true;
-  kind?: 'event' | 'volunteer';
+  found?: boolean;        // kod Luhn-geçerli ama DB'de kayıt var mı
+  kind?: CertKind;
   country?: string;
   countryName?: string;
-  city?: string;
-  cityName?: string;
-  date?: string;
+  year?: number;
+  activityNo?: number;
+  personNo?: number;
   holderName?: string;
   subject?: string;
   organization?: string;
   issuedAt?: string;
 }
 
-/** Normalize a raw code for DB matching: trim + uppercase (tireler korunur — kanonik biçim tireli). */
-function normalizeCode(raw: string): string {
-  return raw.trim().toUpperCase().replace(/\s+/g, '');
-}
+const TYPE_TO_KIND: Record<string, CertKind> = {
+  event: 'event', volunteering: 'volunteer', volunteer: 'volunteer', donation: 'donation', blood: 'blood',
+};
 
 /** Firestore Timestamp-ish guard — pulls `toDate()` without an `any` cast. */
 function toIsoDate(value: unknown): string | undefined {
@@ -84,19 +84,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ valid: false });
   }
 
-  const result: VerifyResult = {
-    valid: true,
-    kind: decoded.kind,
-    country: decoded.country,
-    countryName: decoded.countryName,
-    city: decoded.city,
-    cityName: decoded.cityName,
-    date: decoded.date,
-  };
-
-  // Best-effort enrichment. Never let a DB failure break decode-only verification.
+  // Kod biçim+Luhn geçerli. Yapısal alanlar + sahibi DB'den gelir (found:false = kayıt yok).
+  const result: VerifyResult = { valid: true, found: false };
   try {
-    const normalizedCode = normalizeCode(rawCode);
+    const normalizedCode = normalizeCertCode(rawCode);
     const db = getAdminFirestore();
     const snap = await db
       .collection(COLLECTIONS.certificates)
@@ -106,44 +97,42 @@ export async function GET(req: Request) {
 
     if (!snap.empty) {
       const data = snap.docs[0].data() as {
-        userId?: string;
-        title?: string;
-        eventName?: string;
-        ngoName?: string;
+        userId?: string; title?: string; eventName?: string; ngoName?: string; type?: string;
+        certCountry?: string; certYear?: number; certActivityNo?: number; certPersonNo?: number;
         completedAt?: unknown;
       };
+      result.found = true;
+      if (data.type && TYPE_TO_KIND[data.type]) result.kind = TYPE_TO_KIND[data.type];
+      if (data.certCountry) { result.country = data.certCountry; result.countryName = countryName(data.certCountry); }
+      if (typeof data.certYear === 'number') result.year = data.certYear;
+      if (typeof data.certActivityNo === 'number') result.activityNo = data.certActivityNo;
+      if (typeof data.certPersonNo === 'number') result.personNo = data.certPersonNo;
 
       const subject = data.title || data.eventName;
       if (subject) result.subject = subject;
       if (data.ngoName) result.organization = data.ngoName;
-
       const issuedAt = toIsoDate(data.completedAt);
-      result.issuedAt = issuedAt ?? decoded.date;
+      if (issuedAt) result.issuedAt = issuedAt;
 
-      // Resolve holder display name: prefer users/{userId}.name, fall back to
-      // the Auth user's displayName. Never expose email/uid.
+      // Sahibi adı: users/{userId}.name → Auth displayName. E-posta/uid sızdırılmaz.
       if (data.userId) {
         let holderName: string | undefined;
         try {
           const userSnap = await db.collection(COLLECTIONS.users).doc(data.userId).get();
           const name = (userSnap.data() as { name?: string } | undefined)?.name;
           if (name && typeof name === 'string') holderName = name;
-        } catch {
-          holderName = undefined;
-        }
+        } catch { holderName = undefined; }
         if (!holderName) {
           try {
             const authUser = await getAdminAuth().getUser(data.userId);
             if (authUser.displayName) holderName = authUser.displayName;
-          } catch {
-            holderName = undefined;
-          }
+          } catch { holderName = undefined; }
         }
         if (holderName) result.holderName = holderName;
       }
     }
   } catch {
-    // Firestore/Auth unavailable — fall back to decode-only verification.
+    // DB erişilemezse: kod biçim/Luhn geçerli ama detay yok (found:false).
   }
 
   return NextResponse.json(result);

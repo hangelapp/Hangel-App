@@ -150,6 +150,9 @@ struct HangelLiveActivitiesBundle: WidgetBundle {
         BloodStatusWidget()
         MarketplaceWidget()
         DonationsWidget()
+        // Kilit ekranı (accessory) widget'ları — iOS 16+
+        ImpactScoreLockWidget()
+        UpcomingEventLockWidget()
         // Kontrol Merkezi denetimleri — iOS 18+ (koşullu)
         if #available(iOS 18.0, *) {
             EmergencyBloodControl()

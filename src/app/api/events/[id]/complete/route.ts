@@ -27,6 +27,17 @@ function errJson(errorCode: string, message: string, status: number) {
   return NextResponse.json({ errorCode, message }, { status });
 }
 
+// Atomik sıralı sayaç (counters/{name}.next) — faaliyet/kişi numaraları için.
+async function nextSeq(db: FirebaseFirestore.Firestore, name: string, start: number): Promise<number> {
+  const ref = db.collection('counters').doc(name);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const cur = snap.exists ? ((snap.data() as { next?: number }).next ?? start) : start;
+    tx.set(ref, { next: cur + 1 }, { merge: true });
+    return cur;
+  });
+}
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: eventId } = await params;
   if (!eventId) return errJson('invalid_event_id', 'Etkinlik kimliği gerekli', 400);
@@ -80,8 +91,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const ngoId = ev.organizerId || '';
   const ngoName = ev.organizer || 'hangel';
   const eventDate = ev.startDate || new Date().toISOString().slice(0, 10);
-  const eventCity = ev.location?.city || '';
   const eventLogo = ev.organizerLogoUrl || '';
+  const parsedYear = new Date(eventDate).getFullYear();
+  const eventYear = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
+  const certCountry = '90'; // TR (ileride etkinlik ülkesinden)
+
+  // Faaliyet no — yıl bazında sıralı; etkinliğe bir kez atanır (ilk tamamlamada).
+  let activityNo = (ev as { certActivityNo?: number }).certActivityNo ?? 0;
+  if (!(activityNo >= 1)) activityNo = await nextSeq(db, `cert-act-event-${eventYear}`, 1);
+  let personSeq = (ev as { certPersonSeq?: number }).certPersonSeq ?? 0;
+
   let newlyCertified = 0; let alreadyDone = 0;
 
   for (const targetUid of uids) {
@@ -89,12 +108,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const certRef = db.collection(COLLECTIONS.certificates).doc(certId);
     if ((await certRef.get()).exists) { alreadyDone++; continue; } // idempotent
 
-    // Doğrulama kodu (H… ) — /c/{kod} sayfasından kontrol edilir. Client PDF aynı
-    // girdiden (date + certId) AYNI kodu üretir → DB eşleşmesi çalışır.
+    // Sıralı kişi no + tiresiz Luhn'lı kod (H + ülke + tür + yıl + faaliyet + kişi + sağlama).
+    // Yapısal alanlar ayrıca saklanır → /c doğrulamada DB'den gösterilir.
+    personSeq += 1;
     const cert = {
       id: certId, userId: targetUid, eventId, eventName, title: eventName, role: 'participant',
       ngoId, ngoName, type: 'event', date: eventDate, organizerLogoUrl: eventLogo,
-      code: buildCertCode({ date: eventDate, city: eventCity, kind: 'event', idSeed: certId }),
+      code: buildCertCode({ kind: 'event', country: certCountry, year: eventYear, activityNo, personNo: personSeq }),
+      certCountry, certYear: eventYear, certActivityNo: activityNo, certPersonNo: personSeq,
       completedAt: FieldValue.serverTimestamp(), issuedBy: uid,
     };
     await certRef.set(cert);
@@ -133,7 +154,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     newlyCertified++;
   }
 
-  await eventRef.update({ completedAt: FieldValue.serverTimestamp(), completedBy: uid, completed: true }).catch(() => undefined);
+  await eventRef.update({ completedAt: FieldValue.serverTimestamp(), completedBy: uid, completed: true, certActivityNo: activityNo, certPersonSeq: personSeq }).catch(() => undefined);
 
   return NextResponse.json({ ok: true, total: uids.size, newlyCertified, alreadyDone });
 }

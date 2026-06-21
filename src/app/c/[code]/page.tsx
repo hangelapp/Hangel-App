@@ -1,27 +1,31 @@
 'use client';
 
 /**
- * /c/[code] — herkese açık (giriş gerektirmeyen) hangel sertifika doğrulama
- * sayfası. Kısa doğrulama linki: https://hangel.org.tr/c/{KOD}
+ * /c/[code] — herkese açık (giriş gerektirmeyen) hangel sertifika doğrulama sayfası.
+ * Kısa link: https://hangel.org.tr/c/{KOD}  (tiresiz, ör. H9022610076)
  *
- * Sertifikadaki QR / yazılı kod buraya gelir. Sayfa /api/certificate/verify'e
- * istek atar; kod geçerliyse yeşil onay + (varsa) sahibi/etkinlik/STK/tarih
- * bilgilerini, geçersizse kırmızı uyarı gösterir. Uygulama kabuğuna (app-shell)
- * veya oturuma bağımlı DEĞİLDİR — kimliksiz ziyaretçiler de kullanabilir.
+ * Üç durum:
+ *   • Geçerli + kayıtlı → yeşil onay + sahibi/etkinlik/STK/faaliyet/tarih (DB'den).
+ *   • Biçim/Luhn geçerli ama kayıt yok → nötr "kod biçimi geçerli, kayıt bulunamadı".
+ *   • Geçersiz (Luhn tutmaz) → kırmızı uyarı.
+ * Oturuma/app-shell'e bağımlı DEĞİLDİR.
  */
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, AlertCircle } from 'lucide-react';
+
+type Kind = 'event' | 'volunteer' | 'donation' | 'blood';
 
 interface VerifyResponse {
   valid: boolean;
-  kind?: 'event' | 'volunteer';
+  found?: boolean;
+  kind?: Kind;
   country?: string;
   countryName?: string;
-  city?: string;
-  cityName?: string;
-  date?: string;
+  year?: number;
+  activityNo?: number;
+  personNo?: number;
   holderName?: string;
   subject?: string;
   organization?: string;
@@ -32,18 +36,28 @@ const CORAL = '#f34723';
 const CORAL_DARK = '#c5391b';
 const INK = '#1f1f1f';
 
-function kindLabel(kind?: 'event' | 'volunteer'): string {
-  if (kind === 'volunteer') return 'Gönüllülük Sertifikası';
-  return 'Etkinlik Katılım Sertifikası';
+function kindLabel(kind?: Kind): string {
+  switch (kind) {
+    case 'volunteer': return 'Gönüllülük Sertifikası';
+    case 'donation': return 'Bağış Sertifikası';
+    case 'blood': return 'Kan Bağışı Sertifikası';
+    default: return 'Etkinlik Katılım Sertifikası';
+  }
+}
+function subjectLabel(kind?: Kind): string {
+  switch (kind) {
+    case 'volunteer': return 'Görev';
+    case 'donation': return 'Kampanya';
+    case 'blood': return 'Çağrı';
+    default: return 'Etkinlik';
+  }
 }
 
 function formatTrDate(value?: string): string | null {
   if (!value) return null;
-  // "YYYY-MM" → ay + yıl; "YYYY-MM-DD" → tam tarih.
-  const monthOnly = /^\d{4}-\d{2}$/.test(value);
-  const d = new Date(monthOnly ? `${value}-01` : value);
+  const d = new Date(value);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString('tr-TR', monthOnly ? { month: 'long', year: 'numeric' } : { day: 'numeric', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default function CertificateVerifyPage() {
@@ -57,11 +71,7 @@ export default function CertificateVerifyPage() {
   useEffect(() => {
     let cancelled = false;
     async function run() {
-      if (!code) {
-        setLoading(false);
-        setFailed(true);
-        return;
-      }
+      if (!code) { setLoading(false); setFailed(true); return; }
       try {
         const res = await fetch(`/api/certificate/verify?code=${encodeURIComponent(code)}`);
         const json = (await res.json()) as VerifyResponse;
@@ -73,15 +83,13 @@ export default function CertificateVerifyPage() {
       }
     }
     run();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [code]);
 
   const isValid = !!data?.valid;
-  const hasDetails = !!(data?.holderName || data?.subject || data?.organization);
-  const displayDate = formatTrDate(data?.issuedAt || data?.date);
-  const place = [data?.cityName, data?.countryName].filter(Boolean).join(' · ');
+  const found = !!data?.found;
+  const displayDate = formatTrDate(data?.issuedAt) || (data?.year ? String(data.year) : null);
+  const activityLine = data?.year && data?.activityNo ? `${data.year} · ${data.activityNo}. faaliyet` : null;
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-[#f5f5f7] px-4 py-10">
@@ -94,97 +102,62 @@ export default function CertificateVerifyPage() {
           {loading ? (
             <div className="flex flex-col items-center gap-4 py-10 text-center">
               <Loader2 className="h-9 w-9 animate-spin" style={{ color: CORAL }} />
-              <p className="text-sm" style={{ color: INK }}>
-                Doğrulanıyor…
-              </p>
+              <p className="text-sm" style={{ color: INK }}>Doğrulanıyor…</p>
             </div>
-          ) : isValid ? (
+          ) : isValid && found ? (
             <div className="flex flex-col items-center gap-5 text-center">
-              <div
-                className="flex h-16 w-16 items-center justify-center rounded-full"
-                style={{ backgroundColor: 'rgba(243, 71, 35, 0.10)' }}
-              >
+              <div className="flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: 'rgba(243, 71, 35, 0.10)' }}>
                 <CheckCircle2 className="h-10 w-10" style={{ color: CORAL }} strokeWidth={2.2} />
               </div>
-
               <div className="space-y-1">
-                <h2 className="text-2xl font-semibold" style={{ color: INK }}>
-                  Doğrulandı
-                </h2>
+                <h2 className="text-2xl font-semibold" style={{ color: INK }}>Doğrulandı</h2>
                 <p className="text-sm text-gray-500">Geçerli hangel sertifikası</p>
               </div>
-
-              <p
-                className="rounded-full px-4 py-1.5 text-sm font-medium"
-                style={{ backgroundColor: 'rgba(243, 71, 35, 0.08)', color: CORAL_DARK }}
-              >
+              <p className="rounded-full px-4 py-1.5 text-sm font-medium" style={{ backgroundColor: 'rgba(243, 71, 35, 0.08)', color: CORAL_DARK }}>
                 {kindLabel(data?.kind)}
               </p>
 
-              {hasDetails ? (
-                <dl className="mt-2 w-full divide-y divide-black/5 text-left">
-                  {data?.holderName ? (
-                    <div className="py-3">
-                      <dt className="text-xs uppercase tracking-wide text-gray-400">Sahibi</dt>
-                      <dd className="mt-0.5 text-base font-semibold" style={{ color: INK }}>
-                        {data.holderName}
-                      </dd>
-                    </div>
-                  ) : null}
-                  {data?.subject ? (
-                    <div className="py-3">
-                      <dt className="text-xs uppercase tracking-wide text-gray-400">
-                        {data?.kind === 'volunteer' ? 'Görev' : 'Etkinlik'}
-                      </dt>
-                      <dd className="mt-0.5 text-base" style={{ color: INK }}>
-                        {data.subject}
-                      </dd>
-                    </div>
-                  ) : null}
-                  {data?.organization ? (
-                    <div className="py-3">
-                      <dt className="text-xs uppercase tracking-wide text-gray-400">Düzenleyen</dt>
-                      <dd className="mt-0.5 text-base" style={{ color: INK }}>
-                        {data.organization}
-                      </dd>
-                    </div>
-                  ) : null}
-                  {place ? (
-                    <div className="py-3">
-                      <dt className="text-xs uppercase tracking-wide text-gray-400">Konum</dt>
-                      <dd className="mt-0.5 text-base" style={{ color: INK }}>
-                        {place}
-                      </dd>
-                    </div>
-                  ) : null}
-                  {displayDate ? (
-                    <div className="py-3">
-                      <dt className="text-xs uppercase tracking-wide text-gray-400">Tarih</dt>
-                      <dd className="mt-0.5 text-base" style={{ color: INK }}>
-                        {displayDate}
-                      </dd>
-                    </div>
-                  ) : null}
-                </dl>
-              ) : (
-                <div className="mt-1 space-y-2">
-                  <p className="text-base font-medium" style={{ color: INK }}>
-                    ✓ Geçerli kod
-                  </p>
-                  {place ? <p className="text-sm text-gray-500">{place}</p> : null}
-                  {displayDate ? (
-                    <p className="text-sm text-gray-500">{displayDate}</p>
-                  ) : null}
-                  <p className="text-sm text-gray-500">
-                    Bu kod geçerli bir hangel sertifika kodudur.
-                  </p>
-                </div>
-              )}
+              <dl className="mt-2 w-full divide-y divide-black/5 text-left">
+                {data?.holderName ? (
+                  <div className="py-3"><dt className="text-xs uppercase tracking-wide text-gray-400">Sahibi</dt>
+                    <dd className="mt-0.5 text-base font-semibold" style={{ color: INK }}>{data.holderName}</dd></div>
+                ) : null}
+                {data?.subject ? (
+                  <div className="py-3"><dt className="text-xs uppercase tracking-wide text-gray-400">{subjectLabel(data?.kind)}</dt>
+                    <dd className="mt-0.5 text-base" style={{ color: INK }}>{data.subject}</dd></div>
+                ) : null}
+                {data?.organization ? (
+                  <div className="py-3"><dt className="text-xs uppercase tracking-wide text-gray-400">Düzenleyen</dt>
+                    <dd className="mt-0.5 text-base" style={{ color: INK }}>{data.organization}</dd></div>
+                ) : null}
+                {data?.countryName ? (
+                  <div className="py-3"><dt className="text-xs uppercase tracking-wide text-gray-400">Ülke</dt>
+                    <dd className="mt-0.5 text-base" style={{ color: INK }}>{data.countryName}</dd></div>
+                ) : null}
+                {activityLine ? (
+                  <div className="py-3"><dt className="text-xs uppercase tracking-wide text-gray-400">Faaliyet</dt>
+                    <dd className="mt-0.5 text-base" style={{ color: INK }}>{activityLine}{data?.personNo ? ` · ${data.personNo}. kişi` : ''}</dd></div>
+                ) : null}
+                {displayDate ? (
+                  <div className="py-3"><dt className="text-xs uppercase tracking-wide text-gray-400">Tarih</dt>
+                    <dd className="mt-0.5 text-base" style={{ color: INK }}>{displayDate}</dd></div>
+                ) : null}
+              </dl>
 
-              <span
-                className="mt-1 inline-block rounded-lg bg-gray-100 px-3 py-1.5 font-mono text-sm tracking-wider"
-                style={{ color: INK }}
-              >
+              <span className="mt-1 inline-block rounded-lg bg-gray-100 px-3 py-1.5 font-mono text-sm tracking-wider" style={{ color: INK }}>
+                {code.toUpperCase()}
+              </span>
+            </div>
+          ) : isValid && !found ? (
+            <div className="flex flex-col items-center gap-5 py-2 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-50">
+                <AlertCircle className="h-10 w-10 text-amber-500" strokeWidth={2.2} />
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-2xl font-semibold" style={{ color: INK }}>Kod biçimi geçerli</h2>
+                <p className="text-sm text-gray-500">Bu kod doğru biçimde, ancak sistemde kaydı bulunamadı.</p>
+              </div>
+              <span className="inline-block rounded-lg bg-gray-100 px-3 py-1.5 font-mono text-sm tracking-wider" style={{ color: INK }}>
                 {code.toUpperCase()}
               </span>
             </div>
@@ -194,19 +167,12 @@ export default function CertificateVerifyPage() {
                 <XCircle className="h-10 w-10 text-red-500" strokeWidth={2.2} />
               </div>
               <div className="space-y-1">
-                <h2 className="text-2xl font-semibold" style={{ color: INK }}>
-                  Geçersiz kod
-                </h2>
+                <h2 className="text-2xl font-semibold" style={{ color: INK }}>Geçersiz kod</h2>
                 <p className="text-sm text-gray-500">
-                  {failed
-                    ? 'Doğrulama yapılamadı. Lütfen daha sonra tekrar deneyin.'
-                    : 'Bu kod geçerli bir hangel sertifikası değil. Lütfen kodu kontrol edin.'}
+                  {failed ? 'Doğrulama yapılamadı. Lütfen daha sonra tekrar deneyin.' : 'Bu kod geçerli bir hangel sertifikası değil. Lütfen kodu kontrol edin.'}
                 </p>
               </div>
-              <span
-                className="inline-block rounded-lg bg-gray-100 px-3 py-1.5 font-mono text-sm tracking-wider"
-                style={{ color: INK }}
-              >
+              <span className="inline-block rounded-lg bg-gray-100 px-3 py-1.5 font-mono text-sm tracking-wider" style={{ color: INK }}>
                 {code.toUpperCase()}
               </span>
             </div>
@@ -216,9 +182,7 @@ export default function CertificateVerifyPage() {
         <div className="mt-8 flex flex-col items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icon-512.png" alt="hangel" width={28} height={28} className="rounded-md" />
-          <span className="text-sm font-semibold" style={{ color: CORAL }}>
-            hangel.org.tr
-          </span>
+          <span className="text-sm font-semibold" style={{ color: CORAL }}>hangel.org.tr</span>
         </div>
       </div>
     </div>

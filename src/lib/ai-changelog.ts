@@ -3,6 +3,26 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "0fbf4550",
+    "date": "2026-06-21",
+    "subject": "feat(ios): Bağışlarım widget+denetim + Etki Raporu denetim + Temu-vari Pazar Yeri"
+  },
+  {
+    "hash": "96bc1231",
+    "date": "2026-06-21",
+    "subject": "fix(ios): widget/denetim deep-link'leri gerçek sayfalara yönlendir"
+  },
+  {
+    "hash": "8e0e605a",
+    "date": "2026-06-21",
+    "subject": "feat(ios): Pazar Yeri widget+denetim + widget kesilme fix + kenar-kaydırma geri jesti"
+  },
+  {
+    "hash": "35df1ba9",
+    "date": "2026-06-21",
+    "subject": "feat: marketing-kit hedef kitle sekmeleri (hangel/STK/Marka/Kulüp) + profil↔my-badges sertifika senkronu"
+  },
+  {
     "hash": "fa01d7cc",
     "date": "2026-06-21",
     "subject": "feat(certificates): uluslararası yapısal kod (H-ülke-şehir-tür-tarih) + küçük köşe QR + düzenleyen logosu"
@@ -106,25 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "e1d81d4c",
     "date": "2026-06-20",
     "subject": "feat(events): etkinlik elden geçirme — afiş overlay, hava durumu, mesafe, canlı sayaç, sertifika DM akışı"
-  },
-  {
-    "hash": "6865e0be",
-    "date": "2026-06-20",
-    "subject": "feat(events): canlı etkinlik modu — geri sayım + Canlı Başlat/Bitir + canlı konuşmacı puanı"
-  },
-  {
-    "hash": "8d75273a",
-    "date": "2026-06-20",
-    "subject": "feat(functions): etkinlik başlangıcında organizatöre \"başlatayım mı?\" bildirimi"
-  },
-  {
-    "hash": "b337592b",
-    "date": "2026-06-20",
-    "subject": "feat(super-admin): taslak (ön kayıt) STK'ları onayla → Aktif + doğrulanmış"
-  },
-  {
-    "hash": "3d331384",
-    "date": "2026-06-20",
-    "subject": "feat(events): super-admin tam düzenleme + organizatör logosu + geri sayım + canlı/tıklanabilir"
   }
 ];

@@ -1,109 +1,203 @@
-// HangelAppIntents — Siri Shortcuts (Faz 2).
+// HangelAppIntents — Siri + Spotlight + Kısayollar (App Intents).
 //
-// AppIntents framework iOS 16+. 4 shortcut:
-//   1. Yakındaki etkinlikleri göster
-//   2. Yakındaki gönüllülük fırsatlarını göster
-//   3. Görevlerimi göster
-//   4. Acil kan ihtiyaçlarını göster
+// AppIntents framework iOS 16+. Her intent uygulamayı `hangel://` custom
+// scheme ile ilgili tek-segment sayfaya açar. Mevcut deep-link köprüsü
+// (native-bridge.ts) tek-segment scheme'i `hangel://host` → `/host` olarak
+// Next.js router'a çevirir. Yani `hangel://events` → `/events` olur.
 //
-// Her shortcut app'i açar ve `hangel://` custom scheme ile ilgili path'e
-// yönlendirir. Mevcut deep-link bridge (NativeBridgeProvider, Faz 0) bu
-// scheme'i pathname'e çevirip Next.js router'a yönlendirir.
+// `OpensIntent` + `OpenURLIntent` ile uygulamayı açıp ilgili URL'e gitmek
+// iOS 16.4+ ister. En geniş uyum için intent'ler iOS 16+ işaretli; perform
+// gövdesindeki `OpenURLIntent` kullanımı iOS 16.4+ ile sınırlandırıldı.
+// 16.0–16.3 cihazlarda `openAppWhenRun` uygulamayı yine de açar.
 //
-// iOS 16+ otomatik olarak AppShortcutsProvider listesini Settings → Siri &
-// Search → Hangel ve Spotlight'ta görünür yapar.
+// iOS otomatik olarak AppShortcutsProvider listesini Ayarlar → Siri & Arama
+// ve Spotlight'ta görünür yapar.
 
 import Foundation
 #if canImport(AppIntents)
 import AppIntents
-import UIKit
 
-@available(iOS 16, *)
-public struct ShowNearbyEventsIntent: AppIntent {
-    public static var title: LocalizedStringResource = "Yakındaki etkinlikleri göster"
-    public static var description = IntentDescription("Konumunuza göre yakındaki gönüllülük etkinliklerini açar.")
-    public static var openAppWhenRun: Bool = true
-    public init() {}
-    @MainActor public func perform() async throws -> some IntentResult {
-        if let url = URL(string: "hangel://events/nearby") { await UIApplication.shared.open(url) }
-        return .result()
+// MARK: - Intents
+
+@available(iOS 16.0, *)
+struct HangelCheckinIntent: AppIntent {
+    static var title: LocalizedStringResource = "hangel - Etkinlik check-in"
+    static var description = IntentDescription("Etkinliklere check-in yapmak için hangel'ı açar.")
+    static var openAppWhenRun: Bool = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult & OpensIntent {
+        if #available(iOS 16.4, *) {
+            return .result(opensIntent: OpenURLIntent(URL(string: "hangel://events")!))
+        }
+        return .result(opensIntent: OpenURLIntent())
     }
 }
 
-@available(iOS 16, *)
-public struct ShowVolunteerOpportunitiesIntent: AppIntent {
-    public static var title: LocalizedStringResource = "Yakındaki gönüllülük fırsatlarını göster"
-    public static var description = IntentDescription("Konumunuza göre açık gönüllülük fırsatlarını gösterir.")
-    public static var openAppWhenRun: Bool = true
-    public init() {}
-    @MainActor public func perform() async throws -> some IntentResult {
-        if let url = URL(string: "hangel://volunteering") { await UIApplication.shared.open(url) }
-        return .result()
+@available(iOS 16.0, *)
+struct HangelBloodIntent: AppIntent {
+    static var title: LocalizedStringResource = "hangel - Acil kan"
+    static var description = IntentDescription("Acil kan ihtiyaçlarını görmek için hangel'ı açar.")
+    static var openAppWhenRun: Bool = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult & OpensIntent {
+        if #available(iOS 16.4, *) {
+            return .result(opensIntent: OpenURLIntent(URL(string: "hangel://blood")!))
+        }
+        return .result(opensIntent: OpenURLIntent())
     }
 }
 
-@available(iOS 16, *)
-public struct ShowMyTasksIntent: AppIntent {
-    public static var title: LocalizedStringResource = "Görevlerimi göster"
-    public static var description = IntentDescription("Aktif gönüllülük görevlerinizi listeler.")
-    public static var openAppWhenRun: Bool = true
-    public init() {}
-    @MainActor public func perform() async throws -> some IntentResult {
-        if let url = URL(string: "hangel://settings/my-tasks") { await UIApplication.shared.open(url) }
-        return .result()
+@available(iOS 16.0, *)
+struct HangelDonateIntent: AppIntent {
+    static var title: LocalizedStringResource = "hangel - Sosyal etki"
+    static var description = IntentDescription("Sosyal etki sayfasını açar.")
+    static var openAppWhenRun: Bool = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult & OpensIntent {
+        if #available(iOS 16.4, *) {
+            return .result(opensIntent: OpenURLIntent(URL(string: "hangel://social-impact")!))
+        }
+        return .result(opensIntent: OpenURLIntent())
     }
 }
 
-@available(iOS 16, *)
-public struct ShowBloodRequestsIntent: AppIntent {
-    public static var title: LocalizedStringResource = "Acil kan ihtiyaçlarını göster"
-    public static var description = IntentDescription("Yakın çevredeki acil kan çağrılarını gösterir.")
-    public static var openAppWhenRun: Bool = true
-    public init() {}
-    @MainActor public func perform() async throws -> some IntentResult {
-        if let url = URL(string: "hangel://emergency/blood") { await UIApplication.shared.open(url) }
-        return .result()
+@available(iOS 16.0, *)
+struct HangelVolunteeringIntent: AppIntent {
+    static var title: LocalizedStringResource = "hangel - Gönüllülük"
+    static var description = IntentDescription("Gönüllülük fırsatlarını görmek için hangel'ı açar.")
+    static var openAppWhenRun: Bool = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult & OpensIntent {
+        if #available(iOS 16.4, *) {
+            return .result(opensIntent: OpenURLIntent(URL(string: "hangel://volunteering")!))
+        }
+        return .result(opensIntent: OpenURLIntent())
     }
 }
 
-@available(iOS 16, *)
-public struct HangelShortcuts: AppShortcutsProvider {
-    public static var appShortcuts: [AppShortcut] {
+@available(iOS 16.0, *)
+struct HangelMarketIntent: AppIntent {
+    static var title: LocalizedStringResource = "hangel - Pazar"
+    static var description = IntentDescription("hangel pazarını açar.")
+    static var openAppWhenRun: Bool = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult & OpensIntent {
+        if #available(iOS 16.4, *) {
+            return .result(opensIntent: OpenURLIntent(URL(string: "hangel://market")!))
+        }
+        return .result(opensIntent: OpenURLIntent())
+    }
+}
+
+@available(iOS 16.0, *)
+struct HangelMyDonationsIntent: AppIntent {
+    static var title: LocalizedStringResource = "hangel - Bağışlarım"
+    static var description = IntentDescription("Bağışlarınızı görmek için hangel'ı açar.")
+    static var openAppWhenRun: Bool = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult & OpensIntent {
+        if #available(iOS 16.4, *) {
+            return .result(opensIntent: OpenURLIntent(URL(string: "hangel://my-donations")!))
+        }
+        return .result(opensIntent: OpenURLIntent())
+    }
+}
+
+@available(iOS 16.0, *)
+struct HangelImpactReportIntent: AppIntent {
+    static var title: LocalizedStringResource = "hangel - Etki raporu"
+    static var description = IntentDescription("Etki hikayenizi görmek için hangel'ı açar.")
+    static var openAppWhenRun: Bool = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult & OpensIntent {
+        if #available(iOS 16.4, *) {
+            return .result(opensIntent: OpenURLIntent(URL(string: "hangel://impact-story")!))
+        }
+        return .result(opensIntent: OpenURLIntent())
+    }
+}
+
+// MARK: - App Shortcuts (Siri / Spotlight / Kısayollar)
+
+@available(iOS 16.0, *)
+struct HangelShortcuts: AppShortcutsProvider {
+    static var appShortcuts: [AppShortcut] {
         AppShortcut(
-            intent: ShowNearbyEventsIntent(),
+            intent: HangelCheckinIntent(),
             phrases: [
-                "Hangel'da yakındaki etkinlikleri göster",
-                "\(.applicationName) etkinlik bul",
+                "\(.applicationName) check-in",
+                "\(.applicationName) etkinlik check-in",
+                "\(.applicationName) etkinliğe katıl",
             ],
-            shortTitle: "Yakındaki Etkinlikler",
-            systemImageName: "calendar"
+            shortTitle: "Etkinlik check-in",
+            systemImageName: "qrcode.viewfinder"
         )
         AppShortcut(
-            intent: ShowVolunteerOpportunitiesIntent(),
+            intent: HangelBloodIntent(),
             phrases: [
-                "Hangel'da gönüllülük fırsatlarını göster",
-                "\(.applicationName) gönüllülük bul",
+                "\(.applicationName) acil kan",
+                "\(.applicationName) kan ihtiyacı",
+                "\(.applicationName) acil kan göster",
             ],
-            shortTitle: "Gönüllülük Fırsatları",
+            shortTitle: "Acil kan",
+            systemImageName: "drop.fill"
+        )
+        AppShortcut(
+            intent: HangelDonateIntent(),
+            phrases: [
+                "\(.applicationName) sosyal etki",
+                "\(.applicationName) etki yarat",
+                "\(.applicationName) bağışta bulun",
+            ],
+            shortTitle: "Sosyal etki",
+            systemImageName: "heart.fill"
+        )
+        AppShortcut(
+            intent: HangelVolunteeringIntent(),
+            phrases: [
+                "\(.applicationName) gönüllülük",
+                "\(.applicationName) gönüllü ol",
+                "\(.applicationName) gönüllülük fırsatları",
+            ],
+            shortTitle: "Gönüllülük",
             systemImageName: "hand.raised.fill"
         )
         AppShortcut(
-            intent: ShowMyTasksIntent(),
+            intent: HangelMarketIntent(),
             phrases: [
-                "Hangel görevlerimi göster",
-                "\(.applicationName) görevlerim",
+                "\(.applicationName) pazar",
+                "\(.applicationName) pazarı aç",
+                "\(.applicationName) market",
             ],
-            shortTitle: "Görevlerim",
-            systemImageName: "checklist"
+            shortTitle: "Pazar",
+            systemImageName: "bag.fill"
         )
         AppShortcut(
-            intent: ShowBloodRequestsIntent(),
+            intent: HangelMyDonationsIntent(),
             phrases: [
-                "Hangel'da acil kan ihtiyaçlarını göster",
-                "\(.applicationName) acil kan",
+                "\(.applicationName) bağışlarım",
+                "\(.applicationName) bağışlarımı göster",
+                "\(.applicationName) bağış geçmişim",
             ],
-            shortTitle: "Acil Kan",
-            systemImageName: "drop.fill"
+            shortTitle: "Bağışlarım",
+            systemImageName: "gift.fill"
+        )
+        AppShortcut(
+            intent: HangelImpactReportIntent(),
+            phrases: [
+                "\(.applicationName) etki raporu",
+                "\(.applicationName) etki hikayem",
+                "\(.applicationName) raporumu göster",
+            ],
+            shortTitle: "Etki raporu",
+            systemImageName: "chart.line.uptrend.xyaxis"
         )
     }
 }

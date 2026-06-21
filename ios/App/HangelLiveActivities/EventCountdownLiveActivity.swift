@@ -13,6 +13,18 @@
 import ActivityKit
 import WidgetKit
 import SwiftUI
+import AppIntents
+
+// Kilit ekranı Live Activity butonu (iOS 17+ etkileşimli):
+// dokununca uygulamayı açar ve etkinlikler sayfasına götürür (check-in için).
+@available(iOS 17.0, *)
+struct LiveActivityCheckinIntent: AppIntent {
+    static var title: LocalizedStringResource = "Etkinlik check-in"
+    static var openAppWhenRun: Bool = true
+    @MainActor func perform() async throws -> some IntentResult & OpensIntent {
+        .result(opensIntent: OpenURLIntent(URL(string: "hangel://events")!))
+    }
+}
 
 @available(iOS 16.1, *)
 struct EventCountdownLiveActivity: Widget {
@@ -38,7 +50,10 @@ struct EventCountdownLiveActivity: Widget {
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    flowLine(context)
+                    VStack(spacing: 8) {
+                        flowLine(context)
+                        checkinButton
+                    }
                 }
             } compactLeading: {
                 Image(systemName: "calendar").foregroundStyle(Color.hangelOrange)
@@ -75,6 +90,8 @@ struct EventCountdownLiveActivity: Widget {
             }
 
             flowLine(context)
+
+            checkinButton
         }
         .padding(14)
         .activityBackgroundTint(Color.hangelOrange.opacity(0.10))
@@ -172,6 +189,19 @@ struct EventCountdownLiveActivity: Widget {
                 }
             }
             .tint(.green)
+        }
+    }
+
+    // MARK: - Check-in butonu (yalnızca iOS 17+ etkileşimli; iOS 16'da görünmez)
+    @ViewBuilder
+    private var checkinButton: some View {
+        if #available(iOS 17.0, *) {
+            Button(intent: LiveActivityCheckinIntent()) {
+                Label("Check-in", systemImage: "qrcode.viewfinder")
+                    .font(.caption.bold())
+            }
+            .tint(.hangelOrange)
+            .buttonStyle(.borderedProminent)
         }
     }
 

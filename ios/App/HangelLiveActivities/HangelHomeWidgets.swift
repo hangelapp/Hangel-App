@@ -449,6 +449,123 @@ struct DonationsWidget: Widget {
     }
 }
 
+// MARK: - 6) Kilit ekranı (accessory) widget'ları — iOS 16+
+// Lock Screen / Apple Watch aksesuar aileleri (.accessoryCircular, .accessoryInline,
+// .accessoryRectangular) iOS 16.0+. Mevcut provider/entry'ler yeniden kullanılır.
+// AccessoryWidgetBackground() ile sistemle uyumlu sade arkaplan; renk sınırlı olduğu
+// için tek aksan + tinted/vibrant render'a güvenilir, sade tutulur.
+
+// Etki Puanı — kilit ekranı (dairesel Gauge + satır içi).
+@available(iOS 16.0, *)
+struct ImpactScoreLockWidgetView: View {
+    @Environment(\.widgetFamily) private var family
+    var entry: ImpactScoreEntry
+    var body: some View {
+        switch family {
+        case .accessoryInline:
+            // Tek satır: sistem ikon + kompakt puan (inline'da renk/şekil sınırlı).
+            Label("\(entry.score) puan", systemImage: "sparkles")
+        case .accessoryCircular:
+            // Dairesel: 1000 puanlık dilime göre dolu Gauge + ortada puan.
+            Gauge(value: Double(min(entry.score, 1000)), in: 0...1000) {
+                Image(systemName: "sparkles")
+            } currentValueLabel: {
+                Text("\(entry.score)")
+                    .font(.system(size: 15, weight: .heavy, design: .rounded))
+                    .minimumScaleFactor(0.5)
+            }
+            .gaugeStyle(.accessoryCircular)
+            .tint(Color.hangelOrange)
+        default:
+            // Diğer aileler için güvenli kompakt fallback.
+            ZStack {
+                AccessoryWidgetBackground()
+                VStack(spacing: 1) {
+                    Text("\(entry.score)")
+                        .font(.system(size: 17, weight: .heavy, design: .rounded))
+                        .minimumScaleFactor(0.5).lineLimit(1)
+                    Text("puan").font(.system(size: 9, weight: .semibold, design: .rounded))
+                }
+            }
+        }
+    }
+}
+
+@available(iOS 16.0, *)
+struct ImpactScoreLockWidget: Widget {
+    let kind = "com.hangel.ios.app.widget.impact-score.lock"
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: ImpactScoreProvider()) { entry in
+            ImpactScoreLockWidgetView(entry: entry)
+                .widgetURL(URL(string: "hangel://profile"))
+        }
+        .configurationDisplayName("Etki Puanım (Kilit Ekranı)")
+        .description("Kilit ekranında etki puanını gösterir.")
+        .supportedFamilies([.accessoryCircular, .accessoryInline])
+    }
+}
+
+// Yaklaşan Etkinlik — kilit ekranı (dikdörtgen ad + geri sayım, satır içi).
+@available(iOS 16.0, *)
+struct UpcomingEventLockWidgetView: View {
+    @Environment(\.widgetFamily) private var family
+    var entry: UpcomingEventEntry
+    private var hasUpcoming: Bool {
+        if let s = entry.start { return s > Date() }
+        return false
+    }
+    var body: some View {
+        switch family {
+        case .accessoryInline:
+            // Tek satır: takvim ikonu + etkinlik adı (inline countdown desteklemez).
+            Label(entry.title, systemImage: "calendar")
+        default: // .accessoryRectangular
+            VStack(alignment: .leading, spacing: 2) {
+                Label {
+                    Text("Yaklaşan Etkinlik")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                } icon: {
+                    Image(systemName: "calendar")
+                }
+                .foregroundStyle(Color.hangelOrange)
+                .lineLimit(1)
+                Text(entry.title)
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .lineLimit(1).minimumScaleFactor(0.8)
+                if let start = entry.start, hasUpcoming {
+                    Text(timerInterval: Date()...start, countsDown: true)
+                        .font(.system(size: 13, weight: .heavy, design: .rounded))
+                        .monospacedDigit()
+                        .lineLimit(1)
+                } else if entry.start != nil {
+                    Text("Başladı")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Planlanan etkinlik yok")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+@available(iOS 16.0, *)
+struct UpcomingEventLockWidget: Widget {
+    let kind = "com.hangel.ios.app.widget.upcoming-event.lock"
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: UpcomingEventProvider()) { entry in
+            UpcomingEventLockWidgetView(entry: entry)
+                .widgetURL(URL(string: "hangel://events"))
+        }
+        .configurationDisplayName("Yaklaşan Etkinlik (Kilit Ekranı)")
+        .description("Kilit ekranında bir sonraki etkinliğe kalan süreyi gösterir.")
+        .supportedFamilies([.accessoryRectangular, .accessoryInline])
+    }
+}
+
 // MARK: - containerBackground uyumluluk yardımcısı
 // iOS 17+ widget'lar için containerBackground ZORUNLU (yoksa StandBy/ana ekranda
 // boş/yanlış arkaplan). iOS 16'da bu API yok → koşullu uygula.
