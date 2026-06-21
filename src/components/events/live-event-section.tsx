@@ -31,7 +31,7 @@ function fmtClock(ms: number): string {
 
 interface LiveEventSectionProps {
   eventId: string;
-  event: { name: string; startDate: string; endDate?: string; completed?: boolean; contributors?: EventContributor[] };
+  event: { name: string; startDate: string; endDate?: string; completed?: boolean; contributors?: EventContributor[]; organizer?: string; organizerLogoUrl?: string };
   isGoing: boolean;
   isManager?: boolean;
   authUser: { getIdToken: () => Promise<string> } | null;
@@ -85,6 +85,19 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
 
   const isLive = now >= startMs && now <= endMs;
 
+  // İlerleme çizgisi: başlamadan önce başlangıca yaklaştıkça %100'e dolar
+  // (referans pencere = görünürlük penceresi, 2 saat); canlıda bitişe doğru azalır.
+  const progressPct = isLive
+    ? Math.max(0, Math.min(100, ((endMs - now) / (endMs - startMs)) * 100))
+    : Math.max(0, Math.min(100, ((PRELIVE_WINDOW - (startMs - now)) / PRELIVE_WINDOW) * 100));
+
+  const startClock = (() => {
+    const d = eventStart(event);
+    if (!d) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  })();
+
   const rate = async (idx: number, rating: number) => {
     if (!authUser) return;
     setRatingBusy(idx);
@@ -107,21 +120,55 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
 
   return (
     <section className="rounded-[1.75rem] border border-black/5 bg-card p-5 shadow-sm">
-      {isLive ? (
-        <div className="flex items-center justify-between gap-3">
-          <span className="inline-flex items-center gap-2.5">
-            <span className="relative flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-red-600" />
+      {/* Üst satır: düzenleyen kurum logosu/adı — canlı modda ekranda görünür */}
+      {(event.organizerLogoUrl || event.organizer) && (
+        <div className="mb-4 flex items-center gap-2.5">
+          {event.organizerLogoUrl ? (
+            <span className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-black/5 bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={event.organizerLogoUrl} alt={event.organizer || 'Düzenleyen'} className="h-full w-full object-contain" />
             </span>
-            <span className="text-sm font-black uppercase tracking-[0.15em] text-red-600">Canlı</span>
-          </span>
-          <span className="font-mono text-sm font-bold tabular-nums text-muted-foreground">Bitişe {fmtClock(endMs - now)}</span>
+          ) : (
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-black text-primary">
+              {(event.organizer || '?').slice(0, 2).toLocaleUpperCase('tr')}
+            </span>
+          )}
+          {event.organizer && (
+            <span className="truncate text-xs font-bold uppercase tracking-wider text-muted-foreground">{event.organizer}</span>
+          )}
+        </div>
+      )}
+
+      {/* SAYI öne çıkar (büyük, üstte); etiket + başlama saati altta — konum yer değiştirdi */}
+      {isLive ? (
+        <div>
+          <div className="flex items-end justify-between gap-3">
+            <span className="font-mono text-4xl font-black tabular-nums leading-none text-red-600">{fmtClock(endMs - now)}</span>
+            <span className="inline-flex items-center gap-2 pb-0.5">
+              <span className="relative flex h-3 w-3">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-red-600" />
+              </span>
+              <span className="text-xs font-black uppercase tracking-[0.15em] text-red-600">Canlı · Bitişe</span>
+            </span>
+          </div>
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
+            <div className="h-full rounded-full bg-red-500 transition-[width] duration-1000 ease-linear" style={{ width: `${progressPct}%` }} />
+          </div>
         </div>
       ) : (
-        <div className="flex items-baseline justify-between gap-3">
-          <span className="text-sm font-bold text-muted-foreground">Başlamasına</span>
-          <span className="font-mono text-2xl font-black tabular-nums text-foreground">{fmtClock(startMs - now)}</span>
+        <div>
+          <div className="flex items-end justify-between gap-3">
+            <span className="font-mono text-4xl font-black tabular-nums leading-none text-foreground">{fmtClock(startMs - now)}</span>
+            <span className="flex flex-col items-end pb-0.5 text-right">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Başlamasına</span>
+              {startClock && <span className="text-[11px] font-semibold tabular-nums text-muted-foreground/80">başlangıç {startClock}</span>}
+            </span>
+          </div>
+          {/* İlerleme çizgisi — başlangıca yaklaştıkça %100'e dolar */}
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
+            <div className="h-full rounded-full bg-primary transition-[width] duration-1000 ease-linear" style={{ width: `${progressPct}%` }} />
+          </div>
         </div>
       )}
 

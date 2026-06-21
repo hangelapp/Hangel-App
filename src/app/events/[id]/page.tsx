@@ -613,7 +613,7 @@ export default function EventDetailPage() {
             {/* Canlı etkinlik modu — geri sayım / Canlı Başlat-Bitir / konuşmacıya canlı puan */}
             {resolvedEventId && (
               <div className="mt-4">
-                <LiveEventSection eventId={resolvedEventId} event={event} isGoing={isGoing} isManager={isManager} authUser={authUser ?? null} />
+                <LiveEventSection eventId={resolvedEventId} event={{ ...event, organizer: event.organizer, organizerLogoUrl: organizerLogo }} isGoing={isGoing} isManager={isManager} authUser={authUser ?? null} />
               </div>
             )}
 
@@ -787,15 +787,15 @@ export default function EventDetailPage() {
                   </div>
                 )}
 
-                {/* Aksiyon butonları — sağ kolon içinde */}
-                <div className="flex flex-wrap gap-2 sm:gap-3 pt-1 pb-2">
+                {/* Aksiyon butonları — sağ kolon içinde. Tutarlı boy (h-14) + rounded-2xl + eşit padding. */}
+                <div className="space-y-3 pt-1 pb-2">
+            {/* Birincil eylem: tam genişlik, öne çıkar */}
             {isGoing ? (
-              <>
-              {event.completed ? (
+              event.completed ? (
                 <Button
                   asChild
                   size="lg"
-                  className="flex-1 h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
+                  className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
                 >
                   <Link href="/my-badges">Sertifikan 🎓</Link>
                 </Button>
@@ -805,91 +805,30 @@ export default function EventDetailPage() {
                   variant="outline"
                   disabled={isRsvpLoading}
                   onClick={() => submitRsvp('cancel')}
-                  className="flex-1 h-14 rounded-2xl text-lg font-black"
+                  className="w-full h-14 rounded-2xl text-lg font-black"
                 >
                   {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Katıldın ✓ — vazgeç'}
                 </Button>
-              )}
-              <Button
-                size="lg"
-                variant="secondary"
-                onClick={async () => {
-                  if (!authUser) return;
-                  try {
-                    // Passport (çalışan) ile aynı yol: ?token= query + openExternalUrl
-                    // (sistem tarayıcısı → .pkpass → Apple Wallet "Ekle" sayfası).
-                    const idToken = await authUser.getIdToken();
-                    const url = new URL(`/api/passkit/event/${resolvedEventId}?token=${encodeURIComponent(idToken)}`, window.location.origin).toString();
-                    await openExternalUrl(url);
-                  } catch (e) {
-                    toast({ variant: 'destructive', title: 'Apple Wallet açılamadı', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
-                  }
-                }}
-                className="h-14 rounded-2xl font-black px-4 flex items-center gap-2"
-                aria-label="Apple Wallet'a Ekle"
-                title="Apple Wallet'a Ekle"
-              >
-                🎫 Wallet
-              </Button>
-              {!event.completed && (
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={async () => {
-                  if (!authUser) return;
-                  try {
-                    const { readNdefUrl } = await import('@/lib/native-nfc');
-                    const result = await readNdefUrl();
-                    if (!result.ok || !result.url) {
-                      alert(result.errorMessage || 'NFC okunamadı.');
-                      return;
-                    }
-                    const tagMatch = result.url.match(/\/tag\/([^/?#]+)/);
-                    const tagId = tagMatch ? tagMatch[1] : null;
-                    const idToken = await authUser.getIdToken();
-                    const res = await fetch(`/api/events/${resolvedEventId}/auto-checkin`, {
-                      method: 'POST',
-                      headers: { 'content-type': 'application/json', authorization: `Bearer ${idToken}` },
-                      body: JSON.stringify({ source: 'nfc', tagId }),
-                    });
-                    const data = await res.json();
-                    if (!res.ok || !data.ok) throw new Error(data.message || 'Check-in başarısız');
-                    alert(data.already ? '✓ Zaten check-in yapılmış' : '🎉 Check-in başarılı');
-                  } catch (e) {
-                    alert(e instanceof Error ? e.message : 'NFC hatası');
-                  }
-                }}
-                className="h-14 rounded-2xl font-black px-4 flex items-center gap-2"
-                aria-label="NFC ile Check-in"
-                title="NFC ile Check-in"
-              >
-                📲 NFC
-              </Button>
-              )}
-              {isEventFinished && (
-                <>
-                  <Button size="lg" variant="outline" className="h-14 rounded-2xl font-black px-4 flex items-center gap-2" asChild>
-                    <Link href="/my-badges">🎓 Sertifika</Link>
-                  </Button>
-                  <EventEvaluateButton eventId={resolvedEventId || ''} eventName={event.name} authUser={authUser ?? null} className="h-14 rounded-2xl font-black px-4 flex items-center gap-2" />
-                </>
-              )}
-              </>
+              )
             ) : (
               <Button
                 size="lg"
                 disabled={isRsvpLoading || rsvpClosed}
                 onClick={() => submitRsvp('going')}
-                className="flex-1 h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
+                className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
               >
                 {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isEventFinished ? 'Etkinlik bitti' : (isEventFull ? 'Kontenjan doldu' : 'Etkinliğe Katıl'))}
               </Button>
             )}
+
+            {/* İkincil eylem ızgarası — tüm butonlar AYNI boy/padding/rounded; tutarlı ızgara */}
             {isGoing && (
-            <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button size="lg" variant="secondary" className="h-14 rounded-2xl font-black">Yaka Kartı</Button>
-            </AlertDialogTrigger>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                {/* Yaka Kartı */}
+                <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button size="lg" variant="secondary" className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2">🪪 Yaka Kartı</Button>
+                </AlertDialogTrigger>
             <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-[2.5rem]">
                 <AlertDialogHeader>
                 <AlertDialogTitle className="text-2xl font-black tracking-tight">Kaydınız Alındı!</AlertDialogTitle>
@@ -1014,9 +953,99 @@ export default function EventDetailPage() {
                 </AlertDialogFooter>
             </AlertDialogContent>
             </AlertDialog>
+
+                {/* Apple Wallet */}
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  onClick={async () => {
+                    if (!authUser) return;
+                    try {
+                      // Passport (çalışan) ile aynı yol: ?token= query + openExternalUrl
+                      // (sistem tarayıcısı → .pkpass → Apple Wallet "Ekle" sayfası).
+                      const idToken = await authUser.getIdToken();
+                      const url = new URL(`/api/passkit/event/${resolvedEventId}?token=${encodeURIComponent(idToken)}`, window.location.origin).toString();
+                      await openExternalUrl(url);
+                    } catch (e) {
+                      toast({ variant: 'destructive', title: 'Apple Wallet açılamadı', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
+                    }
+                  }}
+                  className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2"
+                  aria-label="Apple Wallet'a Ekle"
+                  title="Apple Wallet'a Ekle"
+                >
+                  🎫 Wallet
+                </Button>
+
+                {/* Takvime ekle — NFC'nin yanında; .ics dosyasını sistem tarayıcısında aç */}
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => {
+                    if (!resolvedEventId) return;
+                    const url = new URL(`/api/events/${resolvedEventId}/ics`, window.location.origin).toString();
+                    void openExternalUrl(url);
+                  }}
+                  className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2"
+                  aria-label="Takvime ekle"
+                  title="Takvime ekle"
+                >
+                  📅 Takvime ekle
+                </Button>
+
+                {/* NFC ile Check-in */}
+                {!event.completed && (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={async () => {
+                    if (!authUser) return;
+                    try {
+                      const { readNdefUrl } = await import('@/lib/native-nfc');
+                      const result = await readNdefUrl();
+                      if (!result.ok || !result.url) {
+                        alert(result.errorMessage || 'NFC okunamadı.');
+                        return;
+                      }
+                      const tagMatch = result.url.match(/\/tag\/([^/?#]+)/);
+                      const tagId = tagMatch ? tagMatch[1] : null;
+                      const idToken = await authUser.getIdToken();
+                      const res = await fetch(`/api/events/${resolvedEventId}/auto-checkin`, {
+                        method: 'POST',
+                        headers: { 'content-type': 'application/json', authorization: `Bearer ${idToken}` },
+                        body: JSON.stringify({ source: 'nfc', tagId }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok || !data.ok) throw new Error(data.message || 'Check-in başarısız');
+                      alert(data.already ? '✓ Zaten check-in yapılmış' : '🎉 Check-in başarılı');
+                    } catch (e) {
+                      alert(e instanceof Error ? e.message : 'NFC hatası');
+                    }
+                  }}
+                  className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2"
+                  aria-label="NFC ile Check-in"
+                  title="NFC ile Check-in"
+                >
+                  📲 NFC
+                </Button>
+                )}
+
+                {/* Etkinlik bittiyse: sertifika + değerlendir */}
+                {isEventFinished && (
+                  <>
+                    <Button size="lg" variant="outline" className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2" asChild>
+                      <Link href="/my-badges">🎓 Sertifika</Link>
+                    </Button>
+                    <EventEvaluateButton eventId={resolvedEventId || ''} eventName={event.name} authUser={authUser ?? null} className="h-14 w-full rounded-2xl font-black flex items-center justify-center gap-2" />
+                  </>
+                )}
+              </div>
             )}
 
-            <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} />
+            {/* Paylaşım — ayrı satır, ferah */}
+            <div className="pt-1">
+              <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} />
+            </div>
                 </div>{/* end aksiyon butonları */}
             </div>{/* end içerik wrapper (tabs + kapasite + aksiyon) */}
           </div>{/* end SAĞ KOLON */}

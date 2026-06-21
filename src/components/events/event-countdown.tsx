@@ -56,7 +56,12 @@ export function EventCountdown({ event, className }: { event: EventLike; classNa
  * DualCountdown — başlamasına geri sayar; başlayınca BİTİŞE geri sayar.
  * Tarih + saat AYRI ("YYYY-MM-DD" + "HH:mm", gönüllülük) ya da birleşik gelebilir.
  * Bitiş yoksa başlangıç + 3 saat varsayılır. Sona erince gizlenir.
+ *
+ * Apple-temiz: SAYI öne çıkar (büyük, üstte), başlama saati/etiketi altta kalır.
+ * Başlamadan önce, başlangıca yaklaştıkça %100'e dolan bir İLERLEME ÇİZGİSİ çizilir
+ * (referans pencere = son 24 saat; 24 saatten uzaksa çizgi gizli, sade geri sayım).
  */
+const PRELIVE_PROGRESS_WINDOW = 24 * 3600_000;
 export function DualCountdown({ start, startTime, end, endTime, className }: { start?: string; startTime?: string; end?: string; endTime?: string; className?: string }) {
   const [now, setNow] = useState(0);
   useEffect(() => {
@@ -75,24 +80,49 @@ export function DualCountdown({ start, startTime, end, endTime, className }: { s
   if (now > endMs) return null; // sona erdi → gösterme
 
   const live = now >= startMs;
+  const remaining = (live ? endMs : startMs) - now;
+
+  // Başlamadan önce: başlangıca yaklaştıkça dolan ilerleme (0→100). Canlıda: bitişe doğru azalan.
+  let progress: number;
+  if (live) {
+    progress = Math.max(0, Math.min(100, ((endMs - now) / (endMs - startMs)) * 100));
+  } else {
+    const span = Math.min(PRELIVE_PROGRESS_WINDOW, startMs - (startMs - PRELIVE_PROGRESS_WINDOW));
+    const elapsed = PRELIVE_PROGRESS_WINDOW - (startMs - now);
+    progress = (startMs - now) <= PRELIVE_PROGRESS_WINDOW ? Math.max(0, Math.min(100, (elapsed / span) * 100)) : 0;
+  }
+  const showProgress = live || (startMs - now) <= PRELIVE_PROGRESS_WINDOW;
+
   return (
-    <div className={cn('flex items-center justify-between gap-3 rounded-2xl border p-4', live ? 'border-red-500/25 bg-red-500/5' : 'border-primary/20 bg-primary/5', className)}>
-      <span className="inline-flex items-center gap-2">
-        {live ? (
-          <>
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-600" />
-            </span>
-            <span className="text-sm font-black uppercase tracking-wider text-red-600">Canlı · Bitişe</span>
-          </>
-        ) : (
-          <span className="text-sm font-bold text-muted-foreground">Başlamasına</span>
-        )}
-      </span>
-      <span className={cn('font-mono text-xl font-black tabular-nums', live ? 'text-red-600' : 'text-foreground')}>
-        {clock((live ? endMs : startMs) - now)}
-      </span>
+    <div className={cn('rounded-2xl border p-4', live ? 'border-red-500/25 bg-red-500/5' : 'border-primary/20 bg-primary/5', className)}>
+      {/* SAYI öne çıkar — büyük, üstte; etiket altta. (Konum yer değiştirdi.) */}
+      <div className="flex items-end justify-between gap-3">
+        <span className={cn('font-mono text-4xl font-black tabular-nums leading-none', live ? 'text-red-600' : 'text-foreground')}>
+          {clock(remaining)}
+        </span>
+        <span className="inline-flex items-center gap-2 pb-0.5">
+          {live ? (
+            <>
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-600" />
+              </span>
+              <span className="text-xs font-black uppercase tracking-wider text-red-600">Canlı · Bitişe</span>
+            </>
+          ) : (
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Başlamasına</span>
+          )}
+        </span>
+      </div>
+      {/* İlerleme çizgisi — başlangıca/bitişe doğru dolar */}
+      {showProgress && (
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
+          <div
+            className={cn('h-full rounded-full transition-[width] duration-1000 ease-linear', live ? 'bg-red-500' : 'bg-primary')}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -120,7 +150,7 @@ export function EventCardCountdownBadge({ event, className }: { event: EventLike
   const label = h > 0 ? `${h}sa ${m}dk` : `${m} dk`;
 
   return (
-    <span className={cn('inline-flex items-center gap-1 rounded-lg bg-primary/90 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest text-primary-foreground shadow-sm backdrop-blur-md', className)}>
+    <span className={cn('inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-[11px] font-black uppercase tracking-wide tabular-nums text-primary-foreground shadow-md ring-1 ring-black/5 backdrop-blur-md', className)}>
       ⏳ {label}
     </span>
   );

@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "18cb7975",
+    "date": "2026-06-21",
+    "subject": "fix(qr): bazı Android modellerinde kamera açılmama sorununu sağlamlaştır"
+  },
+  {
+    "hash": "4e8320e5",
+    "date": "2026-06-21",
+    "subject": "feat(certificates): H-kodlu doğrulama (kısa link /c/{kod}) + gönüllülük sertifikası ayrı tasarım/metin; geri sayım HH:MM:SS"
+  },
+  {
     "hash": "87da9e5d",
     "date": "2026-06-21",
     "subject": "script: gönüllülük ilanları etki backfill (puan+TL, eşleşmeyene Genel Gönüllülük)"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "710d1fab",
     "date": "2026-06-20",
     "subject": "feat(yetkili): super-admin tam kontrol + sahip her zaman listelensin"
-  },
-  {
-    "hash": "03d8ee32",
-    "date": "2026-06-20",
-    "subject": "feat(events): 'Tamamla = kapat' — tamamlanan etkinlik aktif/canlı listeden düşer"
-  },
-  {
-    "hash": "40934b55",
-    "date": "2026-06-20",
-    "subject": "feat(org): coral doğrulama tiki (VerifiedBadge) — STK profilinde"
   }
 ];

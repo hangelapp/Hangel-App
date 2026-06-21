@@ -129,8 +129,10 @@ export async function generateEventPass(input: EventPassInput): Promise<Buffer> 
   const isVolunteer = input.kind === 'volunteer';
   const titleLabel = isVolunteer ? 'GÖNÜLLÜLÜK' : 'ETKİNLİK';
   const role = (input.role && input.role.trim()) || (isVolunteer ? 'Gönüllü' : 'Katılımcı');
-  // Apple kimliği — iki tasarım görsel olarak AYRIŞIR: etkinlik=coral, gönüllülük=emerald.
-  const accentBg = isVolunteer ? 'rgb(17, 122, 94)' : 'rgb(243, 71, 35)';
+  // Apple kimliği — iki tasarım GÖRSEL OLARAK AYRIŞIR ama ikisi de hangel kimliğinde.
+  // hangel kurumsal kimliğinde YEŞİL YOK → gönüllülük yeşil DEĞİL: koyu antrasit/mürekkep
+  // (premium, sade, beyaz wordmark + beyaz metinle net kontrast). Etkinlik = coral.
+  const accentBg = isVolunteer ? 'rgb(28, 28, 32)' : 'rgb(243, 71, 35)';
 
   // hangel logosu pass logosu olarak zaten var (PASS_ASSETS). STK logosunu —
   // yalnız geçerli PNG ise — sağ thumbnail olarak ekle (pass'i bozmadan).

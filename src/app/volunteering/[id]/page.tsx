@@ -1,7 +1,7 @@
 'use client';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Calendar, CalendarPlus, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock, Wallet, Nfc, Star, IdCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { openExternalUrl } from '@/lib/capacitor';
 import { DualCountdown } from '@/components/events/event-countdown';
@@ -683,8 +683,17 @@ export default function VolunteeringDetailPage() {
                     {/* Tarihler — düzenli liste */}
                     <section className="space-y-5">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Tarihler</h2>
-                        {/* Başlamasına → başlayınca bitişe akan geri sayım */}
-                        <DualCountdown start={opp.dates?.eventStart} startTime={opp.dates?.eventStartTime} end={opp.dates?.eventEnd} endTime={opp.dates?.eventEndTime} />
+                        {/* Düzenleyen kurum logosu + başlamasına → başlayınca bitişe akan geri sayım */}
+                        <div className="flex items-center gap-4 rounded-3xl border border-border bg-card p-4">
+                            <Avatar className="h-14 w-14 border border-border bg-white shrink-0">
+                                {organizerLogo && <AvatarImage src={organizerLogo} alt={organizerName} className="object-contain p-1.5" />}
+                                <AvatarFallback className="text-sm font-bold text-primary">{organizerInitials}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 flex-1 space-y-2">
+                                <p className="text-sm font-semibold tracking-tight text-foreground truncate">{organizerName}</p>
+                                <DualCountdown start={opp.dates?.eventStart} startTime={opp.dates?.eventStartTime} end={opp.dates?.eventEnd} endTime={opp.dates?.eventEndTime} />
+                            </div>
+                        </div>
                         <dl className="divide-y divide-border border-t border-b border-border">
                             <div className="flex justify-between items-baseline gap-4 py-4">
                                 <dt className="text-base text-muted-foreground">Başvuru başlangıç</dt>
@@ -749,52 +758,62 @@ export default function VolunteeringDetailPage() {
                         </p>
                     )}
                     {isApproved && (
-                        <div className="flex flex-wrap gap-3">
+                        <section className="space-y-4">
+                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Onaylı gönüllü araçların</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         <Button
                             size="lg"
                             variant="secondary"
                             onClick={handleAddToWallet}
-                            className="h-14 rounded-2xl font-semibold px-5 flex items-center gap-2"
+                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-3"
                             aria-label="Apple Wallet'a Ekle"
                             title="Apple Wallet'a Ekle"
                         >
-                            🎫 Wallet
+                            <Wallet className="h-5 w-5" />
+                            <span className="text-sm">Wallet</span>
                         </Button>
                         <Button
                             size="lg"
-                            variant="outline"
+                            variant="secondary"
                             onClick={handleNfcRead}
-                            className="h-14 rounded-2xl font-semibold px-5 flex items-center gap-2"
+                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-3"
                             aria-label="NFC Oku"
                             title="NFC Oku"
                         >
-                            📲 NFC
+                            <Nfc className="h-5 w-5" />
+                            <span className="text-sm">NFC oku</span>
                         </Button>
+                        {/* Takvime ekle — NFC yanında, onaylı kullanıcıya kalıcı buton */}
                         <Button
                             size="lg"
-                            variant="outline"
+                            variant="secondary"
                             onClick={handleAddToCalendar}
-                            className="h-14 rounded-2xl font-semibold px-5 flex items-center gap-2"
+                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-3"
                             aria-label="Takvime ekle"
                             title="Takvime ekle"
                         >
-                            📅 Takvime ekle
+                            <CalendarPlus className="h-5 w-5" />
+                            <span className="text-sm">Takvime ekle</span>
                         </Button>
                         {approvedCompletion && (
                             <Button
                                 size="lg"
-                                variant="outline"
+                                variant="secondary"
                                 onClick={() => setIsEvalOpen(true)}
-                                className="h-14 rounded-2xl font-semibold px-5 flex items-center gap-2"
+                                className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-3"
                                 aria-label="STK'yı değerlendir"
                                 title="STK'yı değerlendir"
                             >
-                                ⭐ Değerlendir
+                                <Star className="h-5 w-5" />
+                                <span className="text-sm">Değerlendir</span>
                             </Button>
                         )}
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button size="lg" variant="secondary" className="h-14 rounded-2xl font-semibold px-5">Yaka Kartı</Button>
+                                <Button size="lg" className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-3 col-span-2 sm:col-span-1">
+                                    <IdCard className="h-5 w-5" />
+                                    <span className="text-sm">Yaka kartı</span>
+                                </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-[2.5rem]">
                                 <AlertDialogHeader>
@@ -920,23 +939,22 @@ export default function VolunteeringDetailPage() {
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
-                    </div>
+                        </div>
+                    </section>
                 )}
 
                 {/* Tamamlanmış görev için STK değerlendirme (başvuru durumu Onaylandı değilse de göster) */}
                 {approvedCompletion && !isApproved && (
-                    <div className="flex flex-wrap gap-3">
-                        <Button
-                            size="lg"
-                            variant="outline"
-                            onClick={() => setIsEvalOpen(true)}
-                            className="h-14 rounded-2xl font-semibold px-5 flex items-center gap-2"
-                            aria-label="STK'yı değerlendir"
-                            title="STK'yı değerlendir"
-                        >
-                            ⭐ Değerlendir
-                        </Button>
-                    </div>
+                    <Button
+                        size="lg"
+                        variant="secondary"
+                        onClick={() => setIsEvalOpen(true)}
+                        className="h-14 rounded-2xl font-semibold px-6 flex items-center gap-2 w-full sm:w-auto"
+                        aria-label="STK'yı değerlendir"
+                        title="STK'yı değerlendir"
+                    >
+                        <Star className="h-5 w-5" /> STK'yı değerlendir
+                    </Button>
                 )}
 
                 {/* Gönüllü → STK değerlendirme dialog'u (10 soru, 1-5) */}
@@ -958,22 +976,25 @@ export default function VolunteeringDetailPage() {
                 {/* ───── SAĞ KOLON (web sidebar / mobil alt) — konum, STK, paylaş ───── */}
                 <aside className="space-y-10 lg:sticky lg:top-8">
 
-                    {/* Konum — fiziksel (Saha/Hibrit) → tam adres + Adres Tarifi Al */}
+                    {/* Konum — fiziksel (Saha/Hibrit) → tam adres + mesafe + Adres Tarifi Al */}
                     {isPhysical && (
-                        <section className="space-y-4">
+                        <section className="space-y-4 rounded-3xl border border-border bg-card p-5">
                             <h2 className="text-xl font-bold tracking-tight text-foreground">Konum</h2>
-                            <div className="space-y-3 text-base">
+                            <div className="space-y-2.5 text-base">
                                 {opportunity.location.address && (
-                                    <div className="flex items-start gap-3"><MapPin className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" /> <span className="text-foreground">{opportunity.location.address}</span></div>
+                                    <div className="flex items-start gap-3"><MapPin className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" /> <span className="text-foreground leading-snug">{opportunity.location.address}</span></div>
                                 )}
                                 <div className="flex items-center gap-3 text-muted-foreground">
                                     <MapPin className="h-5 w-5 shrink-0" /> <span>{opportunity.location.district}, {opportunity.location.city}</span>
                                 </div>
                             </div>
-                            <Button variant="outline" size="sm" className="w-fit h-9 rounded-full text-sm font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5" onClick={() => window.open(directionsUrl, '_blank')}>
-                                <Map className="h-4 w-4" /> Adres Tarifi Al
+                            {/* Adres altı mesafe: izin verene km · dk; vermeyene "Konumumu kullan" metin butonu (DistanceBadge içinde) */}
+                            <div className="pl-8">
+                                <DistanceBadge target={coords ? { lat: coords.lat, lon: coords.lon } : null} />
+                            </div>
+                            <Button variant="outline" size="sm" className="w-full h-11 rounded-2xl text-sm font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5" onClick={() => window.open(directionsUrl, '_blank')}>
+                                <Map className="h-4 w-4" /> Adres tarifi al
                             </Button>
-                            <div><DistanceBadge target={coords ? { lat: coords.lat, lon: coords.lon } : null} /></div>
                         </section>
                     )}
 

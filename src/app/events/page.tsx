@@ -411,10 +411,10 @@ function EventsPageContent() {
                   <div className="absolute top-2 left-2">
                     <Badge className="bg-white/90 backdrop-blur-md text-primary border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">{event.type}</Badge>
                   </div>
-                  <div className="absolute top-2 right-2">
+                  <div className="absolute top-2.5 right-2.5">
                     {isEnded
-                      ? <Badge className="bg-foreground/85 backdrop-blur-md text-background border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">Etkinlik bitti</Badge>
-                      : <EventCardCountdownBadge event={event} />}
+                      ? <Badge className="bg-foreground/95 backdrop-blur-md text-background border border-white/20 font-black uppercase text-[10px] tracking-widest px-2.5 py-1 rounded-xl shadow-lg ring-1 ring-black/10">Etkinlik bitti</Badge>
+                      : <EventCardCountdownBadge event={event} className="border border-white/25 text-[10px] px-2.5 py-1 rounded-xl shadow-lg ring-1 ring-black/10" />}
                   </div>
                 </div>
                 <CardContent className="p-3 flex-1 space-y-2">

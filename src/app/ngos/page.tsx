@@ -144,25 +144,25 @@ export default function NgosPage() {
     }, [enrichedNgos, typeFilter, searchTerm, sortKey, categoryFilter]);
 
     return (
-        <div className="p-4 space-y-4 animate-in fade-in-0 bg-secondary/30 backdrop-blur-sm min-h-screen">
-            <div className="space-y-1">
-                <h1 className="text-2xl font-bold font-headline">{t('ngosPage.title')}</h1>
-                <p className="text-muted-foreground text-sm">{t('ngosPage.subtitle')}</p>
+        <div className="px-4 py-6 space-y-6 animate-in fade-in-0 bg-secondary/30 min-h-screen">
+            <div className="space-y-1.5 max-w-2xl">
+                <h1 className="text-3xl font-bold font-headline tracking-tight">{t('ngosPage.title')}</h1>
+                <p className="text-muted-foreground text-[15px] leading-relaxed">{t('ngosPage.subtitle')}</p>
             </div>
-            
-            <div className="flex gap-2 items-center">
+
+            <div className="flex gap-2.5 items-center">
                 <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         placeholder={t('ngosPage.searchPlaceholder')}
-                        className="pl-10 h-11"
+                        className="pl-11 h-12 rounded-2xl text-[15px]"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 relative" aria-label={t('ngosPage.filterAria')}>
+                        <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl shrink-0 relative" aria-label={t('ngosPage.filterAria')}>
                             <Filter className="h-5 w-5" />
                             {categoryFilter.length > 0 && (
                                 <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
@@ -200,7 +200,7 @@ export default function NgosPage() {
                 </DropdownMenu>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label={t('ngosPageExtra.sortLabel')}>
+                        <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl shrink-0" aria-label={t('ngosPageExtra.sortLabel')}>
                             <ArrowDownUp className="h-5 w-5" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -219,18 +219,18 @@ export default function NgosPage() {
             </div>
 
             <Tabs defaultValue="Tümü" className="w-full" onValueChange={(value) => setTypeFilter(value as NgoType)}>
-                <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="Tümü">{t('ngosPageExtra.tabAll')}</TabsTrigger>
-                    <TabsTrigger value="Dernek">{t('ngosPageExtra.tabAssociation')}</TabsTrigger>
-                    <TabsTrigger value="Vakıf">{t('ngosPageExtra.tabFoundation')}</TabsTrigger>
-                    <TabsTrigger value="Spor Kulübü">{t('ngosPageExtra.tabSportClub')}</TabsTrigger>
-                    <TabsTrigger value="Özel İzinli">{t('ngosPageExtra.tabSpecialPermit')}</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-5 h-11 rounded-2xl p-1">
+                    <TabsTrigger value="Tümü" className="rounded-xl text-xs sm:text-sm">{t('ngosPageExtra.tabAll')}</TabsTrigger>
+                    <TabsTrigger value="Dernek" className="rounded-xl text-xs sm:text-sm">{t('ngosPageExtra.tabAssociation')}</TabsTrigger>
+                    <TabsTrigger value="Vakıf" className="rounded-xl text-xs sm:text-sm">{t('ngosPageExtra.tabFoundation')}</TabsTrigger>
+                    <TabsTrigger value="Spor Kulübü" className="rounded-xl text-xs sm:text-sm">{t('ngosPageExtra.tabSportClub')}</TabsTrigger>
+                    <TabsTrigger value="Özel İzinli" className="rounded-xl text-xs sm:text-sm">{t('ngosPageExtra.tabSpecialPermit')}</TabsTrigger>
                 </TabsList>
             </Tabs>
 
             {isLoading ? (
-                <div className="space-y-2">
-                    {[...Array(3)].map((_, i) => <Card key={i} variant="glass" className="h-24 animate-pulse" />)}
+                <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => <Card key={i} variant="glass" className="h-36 rounded-3xl animate-pulse" />)}
                 </div>
             ) : filteredNgos.length === 0 ? (
                 <EmptyState
@@ -247,7 +247,7 @@ export default function NgosPage() {
                     } : undefined}
                 />
             ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                     {filteredNgos.map((ngo) => (
                         <NgoListItem key={ngo.id} ngo={ngo} />
                     ))}
