@@ -58,6 +58,15 @@ final class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDeleg
     @Published var lastError: String?
     @Published var isReachable: Bool = false
 
+    // iPhone'dan gelen kullanıcı istatistikleri ("userStats" payload'u).
+    @Published var impactScore: Int = 0
+    @Published var streak: Int = 0
+    @Published var nextEventTitle: String = ""
+    @Published var nextEventWhen: String = ""
+
+    /// Yakında acil kan ihtiyacı var mı (aksiyon vurgusu için).
+    var bloodUrgent: Bool { !emergencies.isEmpty }
+
     private let session: WCSession?
 
     override init() {
@@ -86,6 +95,27 @@ final class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDeleg
             }
         } else {
             // iPhone uyuyorsa userInfo queue'ya ekle — iPhone uyandığında teslim edilir.
+            session.transferUserInfo(payload)
+        }
+    }
+
+    /// Watch aksiyonu — iPhone'da ilgili hangel sayfasını açmasını ister
+    /// (örn. "hangel://events" check-in için). iPhone tarafı `watchOpen` mesajını
+    /// yakalayıp UIApplication.open ile deep-link'i açar.
+    func openOnPhone(_ url: String) {
+        guard let session, session.activationState == .activated else {
+            lastError = "WCSession aktif değil"; return
+        }
+        let payload: [String: Any] = [
+            "type": "watchOpen",
+            "url": url,
+            "at": Date().timeIntervalSince1970,
+        ]
+        if session.isReachable {
+            session.sendMessage(payload, replyHandler: nil) { [weak self] err in
+                DispatchQueue.main.async { self?.lastError = err.localizedDescription }
+            }
+        } else {
             session.transferUserInfo(payload)
         }
     }
@@ -156,6 +186,15 @@ final class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDeleg
             guard let id = payload["id"] as? String else { return }
             DispatchQueue.main.async {
                 self.emergencies.removeAll { $0.id == id }
+            }
+        case "userStats":
+            DispatchQueue.main.async {
+                if let v = payload["impactScore"] as? Int { self.impactScore = v }
+                else if let v = payload["impactScore"] as? Double { self.impactScore = Int(v) }
+                if let v = payload["streak"] as? Int { self.streak = v }
+                else if let v = payload["streak"] as? Double { self.streak = Int(v) }
+                if let v = payload["nextEventTitle"] as? String { self.nextEventTitle = v }
+                if let v = payload["nextEventWhen"] as? String { self.nextEventWhen = v }
             }
         default:
             break

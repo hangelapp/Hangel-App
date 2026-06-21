@@ -35,6 +35,7 @@ interface HangelWatchConnectivityPlugin {
   isSupported(): Promise<{ supported: boolean; reachable?: boolean }>;
   sendEmergencyToWatch(payload: BloodEmergencyPayload): Promise<{ delivered: boolean }>;
   sendStateUpdate(payload: { emergencyId: string; status: string; minutesLeft?: number; matchedDonors?: number }): Promise<{ delivered: boolean }>;
+  sendUserStats(payload: { impactScore?: number; streak?: number; nextEventTitle?: string; nextEventWhen?: string }): Promise<{ delivered: boolean }>;
   addListener(event: 'watchResponse', cb: (data: WatchResponsePayload) => void): Promise<{ remove: () => Promise<void> }>;
   removeAllListeners(): Promise<void>;
 }
@@ -77,6 +78,23 @@ export async function updateWatchState(input: {
     return delivered;
   } catch (e) {
     console.warn('[watch] sendStateUpdate failed', e);
+    return false;
+  }
+}
+
+/** Watch Etki sekmesine kullanıcı istatistiklerini gönder (etki puanı, günlük seri, yaklaşan etkinlik). */
+export async function sendUserStatsToWatch(input: {
+  impactScore?: number;
+  streak?: number;
+  nextEventTitle?: string;
+  nextEventWhen?: string;
+}): Promise<boolean> {
+  if (!(await isWatchAvailable())) return false;
+  try {
+    const { delivered } = await plugin.sendUserStats(input);
+    return delivered;
+  } catch (e) {
+    console.warn('[watch] sendUserStats failed', e);
     return false;
   }
 }

@@ -35,6 +35,7 @@ import {
 
 import { COLLECTIONS } from '@/firebase/collections';
 import { setWidgetData, type WidgetData } from '@/lib/native-widget';
+import { sendUserStatsToWatch } from '@/lib/native-watch-connectivity';
 
 /**
  * impactScore → kullanıcıya gösterilecek rütbe etiketi (best-effort gösterim).
@@ -177,4 +178,26 @@ export async function syncWidgetData(db: Firestore, uid: string): Promise<void> 
 
   if (Object.keys(data).length === 0) return;
   await setWidgetData(data);
+
+  // Apple Watch Etki sekmesine de gönder (best-effort; native iOS dışında no-op).
+  try {
+    let streak = 0;
+    const userSnap = await getDoc(doc(db, COLLECTIONS.users, uid));
+    const sc = (userSnap.data() as { streak?: { current?: number } } | undefined)?.streak?.current;
+    if (typeof sc === 'number') streak = sc;
+    let nextEventWhen = '';
+    if (typeof data.upcomingEventStartEpochMs === 'number') {
+      nextEventWhen = new Date(data.upcomingEventStartEpochMs).toLocaleString('tr-TR', {
+        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+      });
+    }
+    await sendUserStatsToWatch({
+      impactScore: data.impactScore ?? 0,
+      streak,
+      nextEventTitle: data.upcomingEventTitle ?? '',
+      nextEventWhen,
+    });
+  } catch (e) {
+    console.warn('[sync-widget] watch push failed', e);
+  }
 }

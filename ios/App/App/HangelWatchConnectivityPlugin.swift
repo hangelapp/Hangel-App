@@ -19,6 +19,7 @@
 import Foundation
 import Capacitor
 import WatchConnectivity
+import UIKit
 
 @objc(HangelWatchConnectivityPlugin)
 public class HangelWatchConnectivityPlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
@@ -30,6 +31,7 @@ public class HangelWatchConnectivityPlugin: CAPPlugin, CAPBridgedPlugin, WCSessi
         CAPPluginMethod(name: "sendEmergencyToWatch", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "sendEmergencyList", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "clearEmergency", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "sendUserStats", returnType: CAPPluginReturnPromise),
     ]
 
     private var session: WCSession?
@@ -98,6 +100,17 @@ public class HangelWatchConnectivityPlugin: CAPPlugin, CAPBridgedPlugin, WCSessi
         deliver(payload: payload, call: call)
     }
 
+    /// Web -> Watch: kullanıcı istatistikleri (etki puanı, günlük seri, yaklaşan etkinlik).
+    /// Watch'taki Etki sekmesi bunları gösterir.
+    @objc func sendUserStats(_ call: CAPPluginCall) {
+        var payload: [String: Any] = ["type": "userStats"]
+        if let v = call.getInt("impactScore") { payload["impactScore"] = v }
+        if let v = call.getInt("streak") { payload["streak"] = v }
+        if let v = call.getString("nextEventTitle") { payload["nextEventTitle"] = v }
+        if let v = call.getString("nextEventWhen") { payload["nextEventWhen"] = v }
+        deliver(payload: payload, call: call)
+    }
+
     // MARK: - Delivery helper
 
     private func deliver(payload: [String: Any], call: CAPPluginCall) {
@@ -163,6 +176,12 @@ public class HangelWatchConnectivityPlugin: CAPPlugin, CAPBridgedPlugin, WCSessi
             if let canHelp = data["canHelp"] as? Bool { safe["canHelp"] = canHelp }
             if let ts = data["respondedAt"] as? Double { safe["respondedAt"] = ts }
             notifyListeners("watchResponse", data: safe)
+        case "watchOpen":
+            // Watch'tan gelen aksiyon: iPhone'da hangel deep-link'ini aç (örn. hangel://events).
+            if let urlStr = data["url"] as? String, let url = URL(string: urlStr) {
+                DispatchQueue.main.async { UIApplication.shared.open(url, options: [:], completionHandler: nil) }
+            }
+            notifyListeners("watchOpen", data: ["url": data["url"] as? String ?? ""])
         default:
             // Diğer mesajları generic event olarak yolla.
             notifyListeners("watchMessage", data: data)
