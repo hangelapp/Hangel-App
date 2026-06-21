@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Yaklaşan Etkinlik widget meta verisi (2x2 / 4x2, dinamik).
+     updatePeriodMillis 1800000 (30 dk, OS minimumu) → kalan süre metni periyodik
+     tazelenir. Ana veri güncellemesi web tarafından HangelWidget.setData(...) ile
+     (oturum başına) gelir. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="110dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/widget_upcoming_event"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:description="@string/widget_upcoming_description" />
