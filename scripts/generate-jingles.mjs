@@ -26,27 +26,28 @@ const auth = new GoogleAuth({ credentials: sa, scopes: ['https://www.googleapis.
 
 // jingle0/1/2 = SÖZSÜZ MÜZİK (generate-music-jingle.mjs ile üretildi) — DOKUNMA.
 // Bu script yalnız konuşma anonsu (callCenter) + jingle3/4 sözlü ident üretir.
+// Sesler Chirp3-HD (Google'ın en doğal nesli — SSML DEĞİL düz metin + speakingRate).
 // Metinler hangel kurumsal söylemiyle: "umudu birlikte büyütüyoruz", "yalnız
 // başına mücadele etmek yok", "toplumsal sorunlar için birlikte çalışıyoruz".
 const ITEMS = [
   { key: 'callCenter', name: 'Çağrı Merkezi Karşılaması',
-    voice: 'tr-TR-Wavenet-E', rate: 0.96, pitch: 1.0,
-    ssml: `<speak>hangel'e hoş geldiniz.<break time="350ms"/> Burada hiçbir sorunla yalnız başına mücadele etmezsiniz;<break time="250ms"/> toplumsal sorunlar için birlikte çalışıyoruz.<break time="350ms"/> Çağrınız bizim için çok değerli, lütfen hatta kalın.</speak>` },
+    voice: 'tr-TR-Chirp3-HD-Achernar', rate: 0.95, // kadın, yumuşak/sıcak
+    text: `hangel'e hoş geldiniz. Burada hiçbir sorunla yalnız başına mücadele etmezsiniz; toplumsal sorunlar için birlikte çalışıyoruz. Çağrınız bizim için çok değerli, lütfen hatta kalın.` },
   { key: 'jingle3', name: 'Jenerik — Umudu Büyütüyoruz (sözlü)',
-    voice: 'tr-TR-Wavenet-E', rate: 1.0, pitch: 1.5,
-    ssml: `<speak>Umudu birlikte büyütüyoruz.<break time="250ms"/> <emphasis level="moderate">hangel.</emphasis></speak>` },
+    voice: 'tr-TR-Chirp3-HD-Aoede', rate: 1.0, // kadın, parlak/umutlu
+    text: `Umudu birlikte büyütüyoruz. hangel.` },
   { key: 'jingle4', name: 'Jenerik — Yalnız Değilsin (sözlü)',
-    voice: 'tr-TR-Wavenet-D', rate: 1.0, pitch: 1.0,
-    ssml: `<speak>Yalnız başına mücadele etmek yok;<break time="200ms"/> toplumsal sorunlar için birlikte çalışıyoruz.<break time="250ms"/> <emphasis level="moderate">hangel.</emphasis></speak>` },
+    voice: 'tr-TR-Chirp3-HD-Charon', rate: 0.98, // erkek, güven verici
+    text: `Yalnız başına mücadele etmek yok. Toplumsal sorunlar için birlikte çalışıyoruz. hangel.` },
 ];
 
 async function synth(token, item) {
   const res = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
     method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      input: { ssml: item.ssml },
+      input: { text: item.text },
       voice: { languageCode: 'tr-TR', name: item.voice },
-      audioConfig: { audioEncoding: 'MP3', speakingRate: item.rate, pitch: item.pitch },
+      audioConfig: { audioEncoding: 'MP3', speakingRate: item.rate }, // Chirp3-HD pitch desteklemez
     }),
   });
   const j = await res.json();

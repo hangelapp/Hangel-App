@@ -100,10 +100,10 @@ const VARIANTS = [
 function render(v) {
   const total = Math.floor(SR * 4.6);
   let buf = new Float32Array(total);
-  pad(buf, v.chord, 0, 3.4, 0.16);
+  pad(buf, [v.chord[0] / 2, ...v.chord], 0, 3.4, 0.15); // +sub-oktav kök → sıcak gövde
   for (const [f, t] of v.notes) bell(buf, f, t, 2.0, 0.5);
-  buf = reverb(buf, 0.30);
-  return normalize(buf, 0.9);
+  buf = reverb(buf, 0.33);            // biraz daha mekân
+  return normalize(buf, 0.86);        // yumuşak master (daha az sert)
 }
 
 async function main() {
