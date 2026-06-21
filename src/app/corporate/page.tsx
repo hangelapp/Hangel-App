@@ -317,7 +317,7 @@ export default function CorporateShowcasePage() {
       ];
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+    <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
       <MarketingNav
         label={C.navLabel}
         ctaLabel={C.navCta}

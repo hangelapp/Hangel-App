@@ -35,13 +35,13 @@ export const HospitalStatsCards = ({
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {items.map(item => (
-        <Card key={item.key} className="rounded-2xl border-black/5 shadow-sm">
+        <Card key={item.key} className="rounded-2xl border-border shadow-sm">
           <CardContent className="p-5 space-y-1.5">
             <div className={`flex items-center gap-2 text-xs font-black uppercase tracking-widest ${item.tone}`}>
               {item.icon}
               {item.label}
             </div>
-            <div className="text-3xl font-black tracking-tighter text-[#1d1d1f]">
+            <div className="text-3xl font-black tracking-tighter text-foreground">
               {loading ? '...' : item.value.toLocaleString('tr-TR')}
             </div>
           </CardContent>

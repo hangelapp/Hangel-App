@@ -717,7 +717,7 @@ export function InviteHub({
     );
 
     return (
-        <div className="min-h-dvh bg-[#f5f5f7]">
+        <div className="min-h-dvh bg-background">
             <div className="mx-auto w-full max-w-2xl px-4 sm:px-5 py-6 space-y-6 animate-in fade-in-0 duration-300">
 
                 {/* HERO — squircle app-icon + büyük başlık */}

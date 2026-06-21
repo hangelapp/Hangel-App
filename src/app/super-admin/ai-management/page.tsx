@@ -669,7 +669,7 @@ export default function AIManagementPage() {
   return (
     <div className="space-y-6 animate-in fade-in-0 max-w-4xl mx-auto pb-12">
       <div className="space-y-1 px-1">
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f] flex items-center gap-2">
+        <h1 className="text-3xl font-black tracking-tighter text-foreground flex items-center gap-2">
           <Brain className="h-7 w-7 text-fuchsia-500" />
           Yapay Zeka Yönetimi
         </h1>
@@ -679,7 +679,7 @@ export default function AIManagementPage() {
         </p>
       </div>
 
-      <Card className="rounded-3xl border-black/5 shadow-sm overflow-hidden">
+      <Card className="rounded-3xl border-border shadow-sm overflow-hidden">
         <CardHeader className="bg-muted/30 border-b">
           <CardTitle className="text-lg">Asistan Konfigürasyonu</CardTitle>
           <CardDescription>

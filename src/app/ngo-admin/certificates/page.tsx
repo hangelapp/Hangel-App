@@ -94,7 +94,7 @@ function MetricRow({ icon, value, label }: { icon: React.ReactNode; value: strin
     <div className="flex items-center gap-2">
       <div className="h-7 w-7 shrink-0 rounded-lg bg-[#f34723]/10 flex items-center justify-center text-[#f34723]">{icon}</div>
       <div className="min-w-0">
-        <span className="font-bold text-sm text-[#1d1d1f]">{value}</span>{' '}
+        <span className="font-bold text-sm text-foreground">{value}</span>{' '}
         <span className="text-xs text-muted-foreground">{label}</span>
       </div>
     </div>
@@ -116,7 +116,7 @@ function MetricGrid({ m }: { m: OrgImpactMetrics }) {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <Card className="rounded-[2rem] border-black/5 shadow-xl">
+    <Card className="rounded-[2rem] border-border shadow-xl">
       <CardContent className="p-16 text-center text-muted-foreground">
         <Award className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
         <p className="italic">{message}</p>
@@ -276,7 +276,7 @@ export default function OrgCertificatesPage() {
   return (
     <div className="space-y-6 animate-in fade-in-0">
       <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f] flex items-center gap-2">
+        <h1 className="text-3xl font-black tracking-tighter text-foreground flex items-center gap-2">
           <Award className="h-7 w-7 text-[#f34723]" /> Sertifikalarımız
         </h1>
         <p className="text-muted-foreground text-sm font-medium">
@@ -309,7 +309,7 @@ export default function OrgCertificatesPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="text-[11px] font-bold tracking-[0.2em] text-[#f34723] uppercase">Kurum Etki Sertifikası</p>
-                    <h2 className="text-2xl font-black tracking-tight text-[#1d1d1f] truncate mt-0.5">{orgName || 'Kurumunuz'}</h2>
+                    <h2 className="text-2xl font-black tracking-tight text-foreground truncate mt-0.5">{orgName || 'Kurumunuz'}</h2>
                     <span className="inline-flex items-center gap-1.5 mt-2 rounded-full bg-[#f34723]/10 px-3 py-1 text-xs font-bold text-[#c5391b]">
                       <Sparkles className="h-3.5 w-3.5" /> Toplam Etki
                     </span>
@@ -368,10 +368,10 @@ export default function OrgCertificatesPage() {
                 {months.map((m) => {
                   const code = kind ? monthCertCode(kind, orgName, m.ym) : '';
                   return (
-                    <Card key={m.ym} className="rounded-2xl border-black/5 shadow-sm overflow-hidden">
+                    <Card key={m.ym} className="rounded-2xl border-border shadow-sm overflow-hidden">
                       <CardContent className="p-5 space-y-4">
                         <div className="flex items-center justify-between gap-2">
-                          <h4 className="font-bold text-base text-[#1d1d1f]">{m.label}</h4>
+                          <h4 className="font-bold text-base text-foreground">{m.label}</h4>
                           <span className="inline-flex items-center gap-1 rounded-lg bg-[#f34723]/10 px-2.5 py-1 text-xs font-bold text-[#c5391b]">
                             {TRY(m.totalSocialValueTRY)} TL
                           </span>
@@ -421,7 +421,7 @@ export default function OrgCertificatesPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {issued.map((c) => (
-                <Card key={c.id} className="rounded-2xl border-black/5 shadow-sm overflow-hidden">
+                <Card key={c.id} className="rounded-2xl border-border shadow-sm overflow-hidden">
                   <CardContent className="p-5 flex flex-col gap-3">
                     <div className="flex items-start gap-3">
                       <div className="h-10 w-10 shrink-0 rounded-xl bg-muted flex items-center justify-center">
@@ -462,9 +462,9 @@ export default function OrgCertificatesPage() {
       {/* Web önizleme modalı (iframe) */}
       {preview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={closePreview}>
-          <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-3xl rounded-2xl bg-card shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b px-4 py-3">
-              <p className="font-bold text-sm truncate text-[#1d1d1f]">{preview.title}</p>
+              <p className="font-bold text-sm truncate text-foreground">{preview.title}</p>
               <button onClick={closePreview} className="rounded-lg p-1.5 hover:bg-muted" aria-label="Kapat">
                 <X className="h-5 w-5" />
               </button>

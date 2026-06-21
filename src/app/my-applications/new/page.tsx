@@ -73,19 +73,19 @@ export default function NewApplicationPage() {
         <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('aria.back')}>
           <ArrowLeft className="h-6 w-6" />
         </Button>
-        <h1 className="text-2xl font-bold font-headline tracking-tight text-[#1d1d1f]">Yeni Başvuru</h1>
+        <h1 className="text-2xl font-bold font-headline tracking-tight text-foreground">Yeni Başvuru</h1>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
         {applicationTypes.map((type) => (
           <Link href={type.href} key={type.title} className="block group">
-            <Card className="rounded-[2rem] border-black/5 hover:shadow-xl hover:border-primary/20 transition-all duration-300 bg-white overflow-hidden shadow-sm">
+            <Card className="rounded-[2rem] border-border hover:shadow-xl hover:border-primary/20 transition-all duration-300 bg-card overflow-hidden shadow-sm">
               <CardContent className="p-6 flex items-center gap-6">
                 <div className={cn("p-4 rounded-2xl text-white shadow-lg shrink-0", type.color)}>
                   <type.icon className="h-8 w-8" />
                 </div>
                 <div className="flex-1 space-y-1">
-                  <h3 className="text-xl font-bold text-[#1d1d1f] group-hover:text-primary transition-colors">{type.title}</h3>
+                  <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{type.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{type.description}</p>
                 </div>
                 <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
@@ -95,7 +95,7 @@ export default function NewApplicationPage() {
         ))}
       </div>
 
-      <div className="pt-8 text-center border-t border-dashed border-black/10">
+      <div className="pt-8 text-center border-t border-dashed border-border">
         <p className="text-sm text-muted-foreground font-medium">
           Farklı bir talebiniz mi var? <Link href="/contact" className="text-primary font-bold hover:underline">İletişim Merkezi</Link> üzerinden bize ulaşabilirsiniz.
         </p>

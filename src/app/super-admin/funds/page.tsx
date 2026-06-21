@@ -353,7 +353,7 @@ export default function FundsAdminPage() {
         <div className="space-y-6 animate-in fade-in-0">
             <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Fon Yönetimi</h1>
+                    <h1 className="text-3xl font-black tracking-tighter text-foreground">Fon Yönetimi</h1>
                     <p className="text-muted-foreground text-sm">
                         STK'ların başvurabileceği hibe programları ve fon kaynaklarını yönetin.
                         Buradaki içerik <code>/ngo-admin/funds</code> sayfasında görüntülenir.

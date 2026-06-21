@@ -1061,7 +1061,7 @@ export default function ActiveCallPage() {
 
       {/* WhatsApp İletişim — accordion altta, tüm genişlik */}
       <Accordion type="single" collapsible defaultValue="whatsapp">
-        <AccordionItem value="whatsapp" className="border rounded-lg bg-white">
+        <AccordionItem value="whatsapp" className="border rounded-lg bg-card">
           <AccordionTrigger className="px-4 hover:no-underline">
             <span className="flex items-center gap-2 text-base font-semibold">
               <MessageCircle className="h-5 w-5 text-emerald-600" />
@@ -1174,7 +1174,7 @@ export default function ActiveCallPage() {
                         id="wa-template"
                         value={waSelectedTemplateId}
                         onChange={(e) => setWaSelectedTemplateId(e.target.value)}
-                        className="w-full h-10 px-3 rounded-md border bg-white text-sm"
+                        className="w-full h-10 px-3 rounded-md border bg-background text-sm"
                       >
                         <option value="">Şablon seçin…</option>
                         {waTemplates.map((t) => (

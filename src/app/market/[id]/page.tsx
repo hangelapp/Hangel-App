@@ -31,7 +31,7 @@ const StatRow = ({ label, value }: { label: string, value: string | number | und
 };
 
 const PostCard = ({ post }: { post: Post }) => (
-    <Card className="rounded-2xl border-black/5 shadow-sm">
+    <Card className="rounded-2xl border-border shadow-sm">
         <CardHeader>
             <div className="flex items-center gap-3">
                 <Avatar>
@@ -260,8 +260,8 @@ export default function BrandProfilePage() {
             
             <div className="mt-8 space-y-4">
                 {typeof brand.followers === 'number' && brand.followers > 0 && (
-                    <div className="text-sm text-center text-muted-foreground bg-muted/30 py-3 rounded-2xl border border-dashed border-black/5">
-                        <span className="font-black text-[#1d1d1f]">{brand.followers.toLocaleString('tr-TR')}</span> kişi bu markayı takip ederek toplumsal faydayı destekliyor.
+                    <div className="text-sm text-center text-muted-foreground bg-muted/30 py-3 rounded-2xl border border-dashed border-border">
+                        <span className="font-black text-foreground">{brand.followers.toLocaleString('tr-TR')}</span> kişi bu markayı takip ederek toplumsal faydayı destekliyor.
                     </div>
                 )}
                 <div className="flex gap-2">
@@ -270,7 +270,7 @@ export default function BrandProfilePage() {
                     </Button>
                     <Button
                         variant={isFollowing ? 'default' : 'outline'}
-                        className="flex-1 h-12 rounded-2xl font-bold border-black/10 hover:bg-muted/50"
+                        className="flex-1 h-12 rounded-2xl font-bold border-border hover:bg-muted/50"
                         onClick={handleToggleFollow}
                         disabled={pendingFollow}
                     >
@@ -287,7 +287,7 @@ export default function BrandProfilePage() {
                 <button
                     type="button"
                     onClick={() => router.push('/my-donations')}
-                    className="w-full flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground bg-muted/30 py-3 rounded-2xl border border-dashed border-black/5 hover:bg-muted/50 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground bg-muted/30 py-3 rounded-2xl border border-dashed border-border hover:bg-muted/50 transition-colors"
                 >
                     <Info className="h-4 w-4 shrink-0 text-primary" />
                     <span>Alışverişin tamamlanınca bağışın otomatik işlenir. <span className="font-bold text-foreground underline">Bağışlarım</span> sayfasından takip et.</span>
@@ -304,7 +304,7 @@ export default function BrandProfilePage() {
         </TabsList>
         
         <TabsContent value="about" className="p-4 space-y-6">
-            <Card className="rounded-[2rem] shadow-sm border-black/5">
+            <Card className="rounded-[2rem] shadow-sm border-border">
                 <CardHeader><CardTitle className="text-lg flex items-center gap-2 font-bold"><Info className="h-5 w-5 text-primary"/> Marka Hakkında</CardTitle></CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-4 font-medium leading-relaxed">
                     <p>{brand.about}</p>
@@ -350,7 +350,7 @@ export default function BrandProfilePage() {
                 const hasAny = email || phone || web || ig || tw || li;
                 if (!hasAny) return null;
                 return (
-                    <Card className="rounded-[2rem] shadow-sm border-black/5">
+                    <Card className="rounded-[2rem] shadow-sm border-border">
                         <CardHeader><CardTitle className="text-lg flex items-center gap-2 font-bold"><Mail className="h-5 w-5 text-primary"/> İletişim</CardTitle></CardHeader>
                         <CardContent className="text-sm space-y-3 font-medium">
                             {email && <a href={`mailto:${email}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary"><Mail className="h-4 w-4 shrink-0"/>{email}</a>}
@@ -374,7 +374,7 @@ export default function BrandProfilePage() {
                 const groups = (bx.beneficiaries && bx.beneficiaries.length ? bx.beneficiaries : bx.beneficiaryGroups) || [];
                 if (!groups.length) return null;
                 return (
-                    <Card className="rounded-[2rem] shadow-sm border-black/5">
+                    <Card className="rounded-[2rem] shadow-sm border-border">
                         <CardHeader><CardTitle className="text-lg flex items-center gap-2 font-bold"><Target className="h-5 w-5 text-primary"/> Faydalanıcı Gruplar</CardTitle></CardHeader>
                         <CardContent className="flex flex-wrap gap-2">
                             {groups.map(g => <Badge key={g} variant="secondary" className="font-bold rounded-lg">{g}</Badge>)}
@@ -384,7 +384,7 @@ export default function BrandProfilePage() {
             })()}
 
             {brand.donationRate > 0 && (
-                 <Card className="rounded-[2rem] shadow-sm border-black/5 overflow-hidden">
+                 <Card className="rounded-[2rem] shadow-sm border-border overflow-hidden">
                     <CardHeader className="bg-primary/5 pb-6">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-lg flex items-center gap-2 text-primary font-bold">
@@ -398,10 +398,10 @@ export default function BrandProfilePage() {
                     </CardHeader>
                     <CardContent className='p-0'>
                         {brand.donationByCategory && brand.donationByCategory.length > 0 ? (
-                            <div className="divide-y border-t border-black/5">
+                            <div className="divide-y border-t border-border">
                                 {brand.donationByCategory.map(item => (
                                     <div key={item.category} className="flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
-                                        <span className="font-bold text-sm text-[#1d1d1f]">{item.category}</span>
+                                        <span className="font-bold text-sm text-foreground">{item.category}</span>
                                         <span className="font-black text-primary text-lg tracking-tighter">%{item.rate.toFixed(2)}</span>
                                     </div>
                                 ))}
@@ -441,7 +441,7 @@ export default function BrandProfilePage() {
             </Card>
 
             <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="general-rules" className="border rounded-[2rem] bg-white px-6">
+                <AccordionItem value="general-rules" className="border rounded-[2rem] bg-card px-6">
                     <AccordionTrigger className="hover:no-underline font-bold text-base py-5">
                         Genel Kullanım Şartları
                     </AccordionTrigger>
@@ -463,16 +463,16 @@ export default function BrandProfilePage() {
              {(typeof brand.followers === 'number' && brand.followers > 0) || (brand.stats?.monthlyFollowerGrowth ?? 0) > 0 ? (
                 <div className="grid grid-cols-2 gap-4">
                     {typeof brand.followers === 'number' && brand.followers > 0 && (
-                        <Card className="rounded-[1.5rem] border-none bg-[#f5f5f7] p-6 text-center space-y-2">
+                        <Card className="rounded-[1.5rem] border-none bg-muted p-6 text-center space-y-2">
                             <Users className="h-6 w-6 mx-auto text-primary" />
-                            <p className="text-2xl font-black tracking-tighter text-[#1d1d1f]">{brand.followers.toLocaleString('tr-TR')}</p>
+                            <p className="text-2xl font-black tracking-tighter text-foreground">{brand.followers.toLocaleString('tr-TR')}</p>
                             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aktif Destekçi</p>
                         </Card>
                     )}
                     {(brand.stats?.monthlyFollowerGrowth ?? 0) > 0 && (
-                        <Card className="rounded-[1.5rem] border-none bg-[#f5f5f7] p-6 text-center space-y-2">
+                        <Card className="rounded-[1.5rem] border-none bg-muted p-6 text-center space-y-2">
                             <TrendingUp className="h-6 w-6 mx-auto text-primary" />
-                            <p className="text-2xl font-black tracking-tighter text-[#1d1d1f]">%{brand.stats?.monthlyFollowerGrowth}</p>
+                            <p className="text-2xl font-black tracking-tighter text-foreground">%{brand.stats?.monthlyFollowerGrowth}</p>
                             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aylık Büyüme</p>
                         </Card>
                     )}
@@ -480,13 +480,13 @@ export default function BrandProfilePage() {
              ) : null}
 
              {brand.stats ? (
-                <Card className="rounded-[2rem] shadow-sm border-black/5">
+                <Card className="rounded-[2rem] shadow-sm border-border">
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2 font-bold">
                             <BarChart3 className="h-5 w-5 text-primary" /> Detaylı Performans Verileri
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="divide-y border-t border-black/5">
+                    <CardContent className="divide-y border-t border-border">
                         <StatRow label="Destekçi Sayısı (Tüm Zamanlar)" value={brand.stats.supporters > 0 ? brand.stats.supporters.toLocaleString('tr-TR') : undefined} />
                         <StatRow label="Toplam Bağış Hacmi" value={brand.stats.totalDonation > 0 ? `${brand.stats.totalDonation.toLocaleString('tr-TR')} ₺` : undefined} />
                         <StatRow label="Profil Görüntülenme (Son 30 Gün)" value={brand.stats.profileViews > 0 ? brand.stats.profileViews.toLocaleString('tr-TR') : undefined} />
@@ -502,7 +502,7 @@ export default function BrandProfilePage() {
         </TabsContent>
 
         <TabsContent value="sustainability" className="p-4 space-y-4">
-            <Card className="rounded-[2rem] shadow-sm border-black/5">
+            <Card className="rounded-[2rem] shadow-sm border-border">
                 <CardHeader>
                     <CardTitle className="text-lg font-bold">Sürdürülebilirlik ve KSS Raporları</CardTitle>
                     <CardDescription className="font-medium">Markanın şeffaf sosyal ve çevresel etki raporları.</CardDescription>
@@ -514,7 +514,7 @@ export default function BrandProfilePage() {
                                 <a key={report.title} href={report.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-5 border rounded-2xl hover:bg-muted/30 transition-colors group">
                                     <div className="flex items-center gap-3">
                                         <FileText className="h-5 w-5 text-primary" />
-                                        <span className="font-bold text-sm text-[#1d1d1f]">{report.title}</span>
+                                        <span className="font-bold text-sm text-foreground">{report.title}</span>
                                     </div>
                                     <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                 </a>

@@ -384,7 +384,7 @@ export default function DonationsAdminPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Bağış Yönetimi</h1>
+                <h1 className="text-3xl font-black tracking-tighter text-foreground">Bağış Yönetimi</h1>
                 <p className="text-muted-foreground text-sm font-medium">Tüm kullanıcı bağışlarını ve STK hak edişlerini yönetin.</p>
             </div>
 
@@ -437,7 +437,7 @@ export default function DonationsAdminPage() {
                 </CardContent>
             </Card>
 
-            <Card className="rounded-[2rem] border-black/5 shadow-xl">
+            <Card className="rounded-[2rem] border-border shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><HandCoins className="h-5 w-5" /> Bağışlar &amp; Hakedişler</CardTitle>
                     <CardDescription>İşlem detayları, STK bazında hak edişler ve marka bazında oluşan bağışlar.</CardDescription>

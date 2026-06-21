@@ -61,7 +61,7 @@ export const BrandListRow = ({
                 </Avatar>
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-black text-lg text-[#1d1d1f] tracking-tight">{brand.name}</p>
+                        <p className="font-black text-lg text-foreground tracking-tight">{brand.name}</p>
                         {isApproved && <Badge className="bg-green-600 text-white text-[9px] font-black uppercase">YAYINDA</Badge>}
                         {isPending && <Badge className="bg-amber-500 text-white text-[9px] font-black uppercase">ONAY BEKLİYOR</Badge>}
                         {isPassive && <Badge variant="secondary" className="text-[9px] font-black uppercase">PASİF</Badge>}

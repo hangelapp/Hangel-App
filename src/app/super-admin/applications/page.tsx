@@ -150,7 +150,7 @@ const ApplicationDetailsDialog = ({ application: app }: { application: Applicati
       </DialogHeader>
       <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar">
         {/* Kuruluş Bilgileri */}
-        <Card className="rounded-2xl border-black/5 bg-muted/30">
+        <Card className="rounded-2xl border-border bg-muted/30">
           <CardHeader><CardTitle className="text-base">Kuruluş Bilgileri</CardTitle></CardHeader>
           <CardContent className="space-y-0">
             <InfoField label="Kuruluş Adı" value={name} />
@@ -177,7 +177,7 @@ const ApplicationDetailsDialog = ({ application: app }: { application: Applicati
 
         {/* Adres Bilgileri */}
         {(app.city || app.addressLine) && (
-          <Card className="rounded-2xl border-black/5">
+          <Card className="rounded-2xl border-border">
             <CardHeader><CardTitle className="text-base flex items-center gap-2"><MapPin className="h-4 w-4" /> Adres</CardTitle></CardHeader>
             <CardContent className="space-y-0">
               <InfoField label="İl" value={app.city} />
@@ -189,7 +189,7 @@ const ApplicationDetailsDialog = ({ application: app }: { application: Applicati
         )}
 
         {/* İletişim */}
-        <Card className="rounded-2xl border-black/5">
+        <Card className="rounded-2xl border-border">
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mail className="h-4 w-4" /> İletişim</CardTitle></CardHeader>
           <CardContent className="space-y-0">
             <InfoField label="E-posta" value={app.email} />
@@ -203,7 +203,7 @@ const ApplicationDetailsDialog = ({ application: app }: { application: Applicati
 
         {/* Yetkili Kişi */}
         {app.authorized?.name && (
-          <Card className="rounded-2xl border-black/5">
+          <Card className="rounded-2xl border-border">
             <CardHeader><CardTitle className="text-base flex items-center gap-2"><User className="h-4 w-4" /> Yetkili Kişi</CardTitle></CardHeader>
             <CardContent className="space-y-0">
               <InfoField label="Ad Soyad" value={app.authorized.name} />
@@ -216,7 +216,7 @@ const ApplicationDetailsDialog = ({ application: app }: { application: Applicati
 
         {/* Bağış Kategorileri */}
         {app.donationCategories && app.donationCategories.length > 0 && (
-          <Card className="rounded-2xl border-black/5">
+          <Card className="rounded-2xl border-border">
             <CardHeader><CardTitle className="text-base">Bağış Kategorileri</CardTitle></CardHeader>
             <CardContent className="space-y-0">
               {app.donationCategories.map((cat, i: number) => (
@@ -228,7 +228,7 @@ const ApplicationDetailsDialog = ({ application: app }: { application: Applicati
 
         {/* Faydalanıcı & Hizmet Alanları */}
         {((app.selectedBeneficiaries?.length ?? 0) > 0 || (app.selectedServiceAreas?.length ?? 0) > 0) && (
-          <Card className="rounded-2xl border-black/5">
+          <Card className="rounded-2xl border-border">
             <CardHeader><CardTitle className="text-base">Faaliyet Alanları</CardTitle></CardHeader>
             <CardContent className="space-y-2 text-sm">
               {(app.selectedBeneficiaries?.length ?? 0) > 0 && (
@@ -248,7 +248,7 @@ const ApplicationDetailsDialog = ({ application: app }: { application: Applicati
         )}
 
         {/* Durum */}
-        <Card className="rounded-2xl border-black/5">
+        <Card className="rounded-2xl border-border">
           <CardHeader><CardTitle className="text-base">Durum Takibi</CardTitle></CardHeader>
           <CardContent className="space-y-0">
             <InfoField label="Mevcut Durum" value={app.status} />
@@ -274,7 +274,7 @@ const PendingApplicationCard = ({ item, onApprove, onReject }: { item: Applicati
   const EntityIcon = entityTypeIcons[item.entityType as string] || Building;
 
   return (
-    <Card className="rounded-2xl border-black/5 hover:shadow-md transition-all group">
+    <Card className="rounded-2xl border-border hover:shadow-md transition-all group">
       <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -637,7 +637,7 @@ export default function ApplicationsPage() {
   return (
     <div className="space-y-8 animate-in fade-in-0">
       <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Başvuru Yönetimi</h1>
+        <h1 className="text-3xl font-black tracking-tighter text-foreground">Başvuru Yönetimi</h1>
         <p className="text-muted-foreground text-sm font-medium">STK, Marka ve Kulüp başvurularını gerçek zamanlı denetleyin.</p>
       </div>
 
@@ -673,7 +673,7 @@ export default function ApplicationsPage() {
               />
             ))
           ) : (
-            <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-black/5">
+            <div className="text-center py-24 bg-card/50 rounded-[3rem] border-2 border-dashed border-border">
               <CheckCircle className="h-12 w-12 text-green-500/30 mx-auto mb-4" />
               <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Bekleyen başvuru bulunmuyor.</p>
             </div>
@@ -686,7 +686,7 @@ export default function ApplicationsPage() {
             const type = getAppType(app);
             const EntityIcon = entityTypeIcons[app.entityType as string] || Building;
             return (
-              <Card key={app.id} className="rounded-2xl border-black/5 bg-green-50/30">
+              <Card key={app.id} className="rounded-2xl border-border bg-green-50/30">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-green-700">
@@ -711,7 +711,7 @@ export default function ApplicationsPage() {
             const name = getAppName(app);
             const type = getAppType(app);
             return (
-              <Card key={app.id} className="rounded-2xl border-black/5 opacity-60">
+              <Card key={app.id} className="rounded-2xl border-border opacity-60">
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground font-bold">

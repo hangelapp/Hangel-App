@@ -195,7 +195,7 @@ function EventRow({
   const detailHref = `/events/${event.slug || event.id}`;
 
   return (
-    <Card className="rounded-2xl border-black/5 hover:shadow-md transition-all">
+    <Card className="rounded-2xl border-border hover:shadow-md transition-all">
       <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <Link href={detailHref} target="_blank" rel="noopener noreferrer" className="shrink-0" title="Etkinlik sayfasını aç">
           <Avatar className="h-14 w-14 border shadow-sm rounded-2xl">
@@ -872,7 +872,7 @@ export default function SuperAdminEventsPage() {
   return (
     <div className="space-y-8 animate-in fade-in-0">
       <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Etkinlik Yönetimi</h1>
+        <h1 className="text-3xl font-black tracking-tighter text-foreground">Etkinlik Yönetimi</h1>
         <p className="text-muted-foreground text-sm font-medium">
           Öğrenci kulüplerinin oluşturduğu etkinlikleri inceleyin, onaylayın veya reddedin.
         </p>
@@ -925,7 +925,7 @@ export default function SuperAdminEventsPage() {
 
         <TabsContent value="pending" className="mt-8 space-y-4">
           {grouped.pending.length === 0 ? (
-            <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-black/5">
+            <div className="text-center py-24 bg-card/50 rounded-[3rem] border-2 border-dashed border-border">
               <Inbox className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
               <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
                 Onay bekleyen etkinlik bulunmuyor.
@@ -990,7 +990,7 @@ export default function SuperAdminEventsPage() {
 
         <TabsContent value="published" className="mt-8 space-y-4">
           {grouped.published.length === 0 ? (
-            <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-black/5">
+            <div className="text-center py-24 bg-card/50 rounded-[3rem] border-2 border-dashed border-border">
               <Inbox className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
               <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
                 Yayında olan etkinlik bulunmuyor.
@@ -1011,7 +1011,7 @@ export default function SuperAdminEventsPage() {
 
         <TabsContent value="passive" className="mt-8 space-y-4">
           {grouped.passive.length === 0 ? (
-            <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-black/5">
+            <div className="text-center py-24 bg-card/50 rounded-[3rem] border-2 border-dashed border-border">
               <Inbox className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
               <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
                 Pasif etkinlik bulunmuyor.
@@ -1032,7 +1032,7 @@ export default function SuperAdminEventsPage() {
 
         <TabsContent value="rejected" className="mt-8 space-y-4">
           {grouped.rejected.length === 0 ? (
-            <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-black/5">
+            <div className="text-center py-24 bg-card/50 rounded-[3rem] border-2 border-dashed border-border">
               <Inbox className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
               <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
                 Reddedilmiş etkinlik bulunmuyor.

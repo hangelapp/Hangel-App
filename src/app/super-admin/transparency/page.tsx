@@ -333,7 +333,7 @@ export default function TransparencyPage() {
   return (
     <div className="space-y-6 animate-in fade-in-0">
       <div>
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Şeffaflık Yönetimi</h1>
+        <h1 className="text-3xl font-black tracking-tighter text-foreground">Şeffaflık Yönetimi</h1>
         <p className="text-muted-foreground text-sm font-medium">
           Tüm STK'ların şeffaflık profillerini ve şeffaflık endeksi kriterlerini yönet.
         </p>
@@ -420,7 +420,7 @@ export default function TransparencyPage() {
               <p className="text-muted-foreground italic">Eşleşen STK bulunamadı.</p>
             </CardContent></Card>
           ) : (
-            <Card className="rounded-2xl border-black/5">
+            <Card className="rounded-2xl border-border">
               <CardContent className="p-0 divide-y">
                 {filteredNgos.map(ngo => (
                   <div key={ngo.id} className="p-4 flex items-center gap-4">
@@ -481,7 +481,7 @@ export default function TransparencyPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border-black/5">
+          <Card className="rounded-2xl border-border">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2"><Plus className="h-4 w-4" /> Yeni Kriter Ekle</CardTitle>
               <CardDescription>Endeks listesine yeni şeffaflık kriteri ekle. STK profillerinde işaretlenebilir.</CardDescription>
@@ -522,7 +522,7 @@ export default function TransparencyPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border-black/5">
+          <Card className="rounded-2xl border-border">
             <CardHeader>
               <CardTitle className="text-base">Mevcut Kriterler</CardTitle>
             </CardHeader>

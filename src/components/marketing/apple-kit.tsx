@@ -83,15 +83,15 @@ export function MarketingNav({
   backLabel?: string;
 }) {
   return (
-    <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-black/5">
+    <header className="fixed top-0 inset-x-0 z-[100] bg-card/80 backdrop-blur-xl border-b border-border">
       <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
         <Link
           href="/"
-          className="inline-flex items-center rounded-full h-8 px-3 text-[12px] font-medium text-[#1d1d1f]/80 hover:text-[#1d1d1f]"
+          className="inline-flex items-center rounded-full h-8 px-3 text-[12px] font-medium text-foreground/80 hover:text-foreground"
         >
           <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {backLabel}
         </Link>
-        <div className="flex items-center gap-4 text-[12px] font-medium text-[#1d1d1f]/80">
+        <div className="flex items-center gap-4 text-[12px] font-medium text-foreground/80">
           <span className="hidden sm:inline">{label}</span>
           <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
             <Link href={ctaHref}>{ctaLabel}</Link>

@@ -382,15 +382,15 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       <div>
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Panel Ayarları</h1>
+        <h1 className="text-3xl font-black tracking-tighter text-foreground">Panel Ayarları</h1>
         <p className="text-muted-foreground text-sm font-medium mt-1">
           Platformun konfigürasyonu, bildirim politikaları, AI entegrasyonu ve alt modüller.
         </p>
       </div>
 
       {/* Hızlı erişim link kartları — super-admin ana sayfa pattern'ı */}
-      <Card className="rounded-2xl border-black/5 shadow-sm overflow-hidden">
-        <div className="px-6 pt-6 pb-2 bg-muted/20 border-b border-black/5">
+      <Card className="rounded-2xl border-border shadow-sm overflow-hidden">
+        <div className="px-6 pt-6 pb-2 bg-muted/20 border-b border-border">
           <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Alt Sayfalar</p>
         </div>
         <div className="divide-y divide-black/5">
@@ -405,7 +405,7 @@ export default function SettingsPage() {
                   <SIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1 space-y-0.5 min-w-0">
-                  <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{s.label}</p>
+                  <p className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{s.label}</p>
                   {description && (
                     <p className="text-sm text-muted-foreground font-medium leading-tight">{description}</p>
                   )}

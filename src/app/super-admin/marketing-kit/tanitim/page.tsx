@@ -16,7 +16,7 @@ export default function MarketingKitTanitimPreviewPage() {
           <Link href="/super-admin/marketing-kit" className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground hover:text-primary">
             <ArrowLeft className="h-3.5 w-3.5" /> Tanıtım Araçları
           </Link>
-          <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f] flex items-center gap-2">
+          <h1 className="text-3xl font-black tracking-tighter text-foreground flex items-center gap-2">
             <Globe className="h-7 w-7 text-[#042654]" /> Konferans Sunum Sayfası
           </h1>
           <p className="text-muted-foreground text-sm font-medium">

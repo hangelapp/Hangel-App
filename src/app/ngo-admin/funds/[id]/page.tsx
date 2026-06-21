@@ -102,7 +102,7 @@ export default function FundDetailPage() {
                                 {fund.status}
                             </Badge>
                         </div>
-                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1d1d1f] leading-tight">{fund.name}</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">{fund.name}</h1>
                         <p className="text-base font-bold text-primary">{fund.provider}</p>
                     </div>
 
@@ -111,21 +111,21 @@ export default function FundDetailPage() {
                             <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                 <Info className="h-3.5 w-3.5" /> Program Hakkında
                             </h2>
-                            <p className="text-sm leading-relaxed text-[#1d1d1f]/80 font-medium">{fund.description}</p>
+                            <p className="text-sm leading-relaxed text-muted-foreground font-medium">{fund.description}</p>
                         </section>
 
-                        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-[#f5f5f7] rounded-2xl">
+                        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted rounded-2xl">
                             <div className="space-y-1">
                                 <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                     <DollarSign className="h-3.5 w-3.5 text-primary" /> Bütçe Aralığı
                                 </h3>
-                                <p className="text-sm font-bold text-[#1d1d1f]">{fund.budget || '—'}</p>
+                                <p className="text-sm font-bold text-foreground">{fund.budget || '—'}</p>
                             </div>
                             <div className="space-y-1">
                                 <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                     <Calendar className="h-3.5 w-3.5 text-primary" /> Son Tarih
                                 </h3>
-                                <p className="text-sm font-bold text-[#1d1d1f]">{fund.deadline}</p>
+                                <p className="text-sm font-bold text-foreground">{fund.deadline}</p>
                             </div>
                         </section>
 
@@ -134,7 +134,7 @@ export default function FundDetailPage() {
                                 <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                     <Target className="h-3.5 w-3.5" /> Başvuru Koşulları
                                 </h2>
-                                <p className="text-sm font-medium text-[#1d1d1f]/80 leading-relaxed">{fund.requirements}</p>
+                                <p className="text-sm font-medium text-muted-foreground leading-relaxed">{fund.requirements}</p>
                             </section>
                         )}
 

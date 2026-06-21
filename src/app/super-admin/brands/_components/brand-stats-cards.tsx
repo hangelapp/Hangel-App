@@ -12,7 +12,7 @@ interface BrandStatsCardsProps {
 export const BrandStatsCards = ({ stats, onStatusFilterChange }: BrandStatsCardsProps) => {
     return (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <Card className="rounded-2xl border-black/5 cursor-pointer hover:shadow-md transition" onClick={() => onStatusFilterChange('all')}>
+            <Card className="rounded-2xl border-border cursor-pointer hover:shadow-md transition" onClick={() => onStatusFilterChange('all')}>
                 <CardContent className="p-4">
                     <p className="text-2xl font-black">{stats.total}</p>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Tümü</p>
@@ -30,7 +30,7 @@ export const BrandStatsCards = ({ stats, onStatusFilterChange }: BrandStatsCards
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Onay Bekliyor</p>
                 </CardContent>
             </Card>
-            <Card className="rounded-2xl border-black/5 cursor-pointer hover:shadow-md transition" onClick={() => onStatusFilterChange('passive')}>
+            <Card className="rounded-2xl border-border cursor-pointer hover:shadow-md transition" onClick={() => onStatusFilterChange('passive')}>
                 <CardContent className="p-4">
                     <p className="text-2xl font-black text-muted-foreground">{stats.passive}</p>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Pasif</p>

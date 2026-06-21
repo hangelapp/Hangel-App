@@ -300,7 +300,7 @@ export default function UsersPage() {
   return (
     <div className="space-y-6 animate-in fade-in-0">
       <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Kullanıcı Yönetimi</h1>
+        <h1 className="text-3xl font-black tracking-tighter text-foreground">Kullanıcı Yönetimi</h1>
         <p className="text-muted-foreground text-sm font-medium">Platformdaki tüm kullanıcıları görüntüleyin, düzenleyin, yetki ve durumunu yönetin.</p>
       </div>
 
@@ -323,7 +323,7 @@ export default function UsersPage() {
         onBulkDelete={handleBulkDelete}
       />
 
-      <Card className="rounded-[2rem] border-black/5 shadow-xl">
+      <Card className="rounded-[2rem] border-border shadow-xl">
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <CardTitle>Platform Üyeleri ({users?.length || 0})</CardTitle>
@@ -355,7 +355,7 @@ export default function UsersPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="divide-y border-t border-black/5">
+          <div className="divide-y border-t border-border">
             {filteredUsers.map(user => (
               <UserRowItem
                 key={user.id}

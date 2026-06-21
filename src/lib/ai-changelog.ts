@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "0b88e4c1",
+    "date": "2026-06-21",
+    "subject": "build(ios): HangelHealthPlugin + HangelWidgetPlugin App target'a kaydedildi (pbxproj)"
+  },
+  {
     "hash": "6cb7f0de",
     "date": "2026-06-21",
     "subject": "feat(widgets): canlı veri köprüsü — widget'lar gerçek veriyi gösterir (iOS + Android)"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "7c3f85c9",
     "date": "2026-06-21",
     "subject": "feat(certificates): yeni sertifika kodu — H+ülke+tür+yıl+faaliyet+kişi+Luhn (tiresiz), sıralı sayaç + DB doğrulama"
-  },
-  {
-    "hash": "0fbf4550",
-    "date": "2026-06-21",
-    "subject": "feat(ios): Bağışlarım widget+denetim + Etki Raporu denetim + Temu-vari Pazar Yeri"
   }
 ];

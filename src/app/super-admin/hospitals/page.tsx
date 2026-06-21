@@ -311,7 +311,7 @@ export default function SuperAdminHospitalsPage() {
   return (
     <div className="space-y-8 animate-in fade-in-0">
       <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">
+        <h1 className="text-3xl font-black tracking-tighter text-foreground">
           {t('super_admin_hospitals.pageTitle')}
         </h1>
         <p className="text-muted-foreground text-sm font-medium">
@@ -339,7 +339,7 @@ export default function SuperAdminHospitalsPage() {
         labels={filterLabels}
       />
 
-      <Card className="rounded-[2.5rem] border-black/5 shadow-xl overflow-hidden">
+      <Card className="rounded-[2.5rem] border-border shadow-xl overflow-hidden">
         <CardHeader className="bg-muted/30 border-b p-8">
           <CardTitle className="text-xl font-bold">
             {t('super_admin_hospitals.listTitle')} ({visibleItems.length.toLocaleString('tr-TR')})
@@ -360,7 +360,7 @@ export default function SuperAdminHospitalsPage() {
               <p className="text-muted-foreground italic">{t('super_admin_hospitals.empty')}</p>
             </div>
           ) : (
-            <div className="divide-y border-black/5">
+            <div className="divide-y border-border">
               {visibleItems.map(h => (
                 <HospitalListRow
                   key={h.id}
@@ -373,7 +373,7 @@ export default function SuperAdminHospitalsPage() {
           )}
 
           {hasMore && !initialLoading && (
-            <div className="p-6 flex justify-center border-t border-black/5">
+            <div className="p-6 flex justify-center border-t border-border">
               <Button
                 variant="outline"
                 onClick={handleLoadMore}
@@ -395,11 +395,11 @@ export default function SuperAdminHospitalsPage() {
       </Card>
 
       {/* CSV upload placeholder — gerçek upload sonraki PR'a bırakıldı. */}
-      <Card className="rounded-2xl border-dashed border-black/10 bg-muted/10">
+      <Card className="rounded-2xl border-dashed border-border bg-muted/10">
         <CardContent className="p-6 flex items-center gap-4 text-sm text-muted-foreground">
           <Upload className="h-5 w-5 shrink-0 opacity-60" />
           <div>
-            <p className="font-semibold text-[#1d1d1f]">{t('super_admin_hospitals.csvTitle')}</p>
+            <p className="font-semibold text-foreground">{t('super_admin_hospitals.csvTitle')}</p>
             <p className="text-xs">{t('super_admin_hospitals.csvDesc')}</p>
           </div>
         </CardContent>

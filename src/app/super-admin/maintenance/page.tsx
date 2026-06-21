@@ -9,7 +9,7 @@ import { useFirestore, useUser } from '@/firebase';
 import {
     collection, getDocs, doc, updateDoc, setDoc, addDoc, serverTimestamp, Timestamp,
 } from 'firebase/firestore';
-import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck, Trash2, DatabaseZap, RefreshCw, Users as UsersIcon } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck, Trash2, DatabaseZap, RefreshCw, Users as UsersIcon, Award } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
 import seedNgosJson from '../../../../docs/database-exports/ngos.json';
 import seedBrandsJson from '../../../../docs/database-exports/brands.json';
@@ -21,6 +21,9 @@ export default function MaintenancePage() {
 
     const [running, setRunning] = useState<string | null>(null);
     const [logs, setLogs] = useState<{ type: 'info' | 'ok' | 'err'; text: string }[]>([]);
+
+    // Sertifika kodu backfill — önce dry-run önizleme, sonra "Uygula".
+    const [certBackfill, setCertBackfill] = useState<{ pending: number; sample: string[]; remaining: number } | null>(null);
 
     const log = (type: 'info' | 'ok' | 'err', text: string) =>
         setLogs(prev => [...prev, { type, text }]);
@@ -366,6 +369,85 @@ export default function MaintenancePage() {
         }
     };
 
+    // 3c) Eski etkinlik sertifikalarına doğrulama kodu (H…) backfill — gcloud GEREKMEZ.
+    //     App Hosting'de Admin SDK (ADC) ile çalışan API route'u tetikler. Önce dry-run
+    //     önizleme, sonra "Uygula". İdempotent + kalan>0 ise tekrar basılır.
+    const previewCertCodes = async () => {
+        if (!authUser) return;
+        setRunning('certCodesDry');
+        setLogs([]);
+        setCertBackfill(null);
+        log('info', 'Kodu olmayan etkinlik sertifikaları taranıyor (önizleme)...');
+        try {
+            const token = await authUser.getIdToken();
+            const res = await fetch('/api/super-admin/backfill-cert-codes', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dry: true }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                log('err', `${data.errorCode}: ${data.message}`);
+                toast({ variant: 'destructive', title: 'Önizleme başarısız', description: data.message });
+                return;
+            }
+            const pending = data.remaining as number;
+            const sample = (data.sample as string[]) ?? [];
+            setCertBackfill({ pending, sample, remaining: pending });
+            log('info', `Taranan: ${data.scanned} sertifika.`);
+            log('ok', `${pending} sertifikaya kod yazılacak.`);
+            if (sample.length) log('info', `Örnek kodlar: ${sample.join(', ')}`);
+            toast({
+                title: pending > 0 ? 'Önizleme hazır' : 'Backfill gerekmiyor',
+                description: pending > 0
+                    ? `${pending} sertifikaya kod yazılacak${sample.length ? ` (örnek: ${sample[0]})` : ''}. "Uygula" ile yaz.`
+                    : 'Kodu olmayan etkinlik sertifikası yok.',
+            });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata';
+            log('err', message);
+            toast({ variant: 'destructive', title: 'Hata', description: message });
+        } finally {
+            setRunning(null);
+        }
+    };
+
+    const applyCertCodes = async () => {
+        if (!authUser) return;
+        setRunning('certCodesApply');
+        log('info', 'Sertifika kodları yazılıyor...');
+        try {
+            const token = await authUser.getIdToken();
+            const res = await fetch('/api/super-admin/backfill-cert-codes', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dry: false }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                log('err', `${data.errorCode}: ${data.message}`);
+                toast({ variant: 'destructive', title: 'Yazma başarısız', description: data.message });
+                return;
+            }
+            const updated = data.updated as number;
+            const remaining = data.remaining as number;
+            setCertBackfill(prev => (prev ? { ...prev, remaining } : { pending: remaining, sample: [], remaining }));
+            log('ok', `${updated} sertifikaya kod yazıldı. Kalan: ${remaining}`);
+            toast({
+                title: 'Kodlar yazıldı',
+                description: remaining > 0
+                    ? `${updated} sertifikaya kod yazıldı, kalan: ${remaining}. Tekrar "Uygula" ile devam et.`
+                    : `${updated} sertifikaya kod yazıldı. Tümü tamamlandı.`,
+            });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata';
+            log('err', message);
+            toast({ variant: 'destructive', title: 'Hata', description: message });
+        } finally {
+            setRunning(null);
+        }
+    };
+
     // 4) BUG-17c (b): /super-admin/setup setDocumentNonBlocking ile fire-and-forget
     //    çalışıyor → hataları yutuyor. Bu await'li versiyon her seed kaydı için
     //    başarı/hata raporlar; rules veya başka sebepten import başarısız olursa
@@ -612,6 +694,43 @@ export default function MaintenancePage() {
                         {running === 'authSync' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Auth user'larını Firestore'a senkronize et
                     </Button>
+                </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl border-[#FF6B5C]/40 bg-[#FF6B5C]/5">
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4 text-[#FF6B5C]" /> Sertifika Kodu Backfill (eski etkinlikler)</CardTitle>
+                    <CardDescription>
+                        Kodu olmayan eski etkinlik sertifikalarına doğrulama kodu (H…) yazar — etkinlik tamamlama akışıyla aynı sıralı sayaçları kullanır, çakışmaz. Terminal/gcloud gerekmez. Önce <strong>Önizle</strong>, sonra <strong>Uygula</strong>. İdempotent: kodu olanlar atlanır, kalan&gt;0 ise tekrar bas.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                        <Button
+                            onClick={previewCertCodes}
+                            disabled={running !== null}
+                            variant="outline"
+                            className="rounded-xl border-[#FF6B5C]/50 text-[#FF6B5C] hover:bg-[#FF6B5C]/10 hover:text-[#FF6B5C]"
+                        >
+                            {running === 'certCodesDry' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Önizle (yazmaz)
+                        </Button>
+                        <Button
+                            onClick={applyCertCodes}
+                            disabled={running !== null || !certBackfill || certBackfill.remaining === 0}
+                            className="rounded-xl bg-[#FF6B5C] text-white hover:bg-[#FF6B5C]/90"
+                        >
+                            {running === 'certCodesApply' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Uygula
+                        </Button>
+                    </div>
+                    {certBackfill && (
+                        <p className="text-xs text-muted-foreground">
+                            {certBackfill.remaining > 0
+                                ? <>Kod yazılacak: <strong>{certBackfill.remaining}</strong> sertifika{certBackfill.sample.length ? <> · örnek: <code>{certBackfill.sample[0]}</code></> : null}</>
+                                : 'Bekleyen sertifika kalmadı.'}
+                        </p>
+                    )}
                 </CardContent>
             </Card>
 

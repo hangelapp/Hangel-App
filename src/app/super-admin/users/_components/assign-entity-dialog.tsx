@@ -419,7 +419,7 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
                   const key = `${a.kind}:${a.entityId}`;
                   const isRevoking = revoking === key;
                   return (
-                    <li key={key} className="flex items-center gap-2 bg-white rounded-xl p-2 border border-amber-100">
+                    <li key={key} className="flex items-center gap-2 bg-card rounded-xl p-2 border border-amber-100">
                       <Icon className="h-4 w-4 text-amber-700 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold truncate">{a.entityName}</p>
@@ -463,7 +463,7 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
                       'flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-2 transition-all font-bold text-xs',
                       active
                         ? 'border-purple-600 bg-purple-50 text-purple-700'
-                        : 'border-black/10 bg-background hover:border-purple-300',
+                        : 'border-border bg-background hover:border-purple-300',
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -551,7 +551,7 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
           </div>
         </div>
 
-        <DialogFooter className="shrink-0 gap-2 border-t border-black/5 bg-background p-6 pt-4">
+        <DialogFooter className="shrink-0 gap-2 border-t border-border bg-background p-6 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl font-bold">
             İptal
           </Button>

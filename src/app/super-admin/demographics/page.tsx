@@ -318,7 +318,7 @@ export default function DemographicsPage() {
                 </Card>
             )}
             <div>
-                <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Demografi Analizi</h1>
+                <h1 className="text-3xl font-black tracking-tighter text-foreground">Demografi Analizi</h1>
                 <p className="text-muted-foreground text-sm">
                     Platform genelinde veya belirli bir STK'nın destekçileri için yaş, cinsiyet, konum,
                     meslek ve ilgi alanı dağılımları.

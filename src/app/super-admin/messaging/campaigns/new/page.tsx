@@ -724,7 +724,7 @@ export default function CampaignWizardPage() {
                   placeholder={String(recipientCount)}
                   value={doubleConfirmCount}
                   onChange={(e) => setDoubleConfirmCount(e.target.value)}
-                  className="bg-white"
+                  className="bg-card"
                 />
               </div>
             )}

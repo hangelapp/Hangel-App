@@ -116,7 +116,7 @@ export default function BrandEarningsPage() {
         return (
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Bağış Kazançları</h1>
+                    <h1 className="text-3xl font-black tracking-tighter text-foreground">Bağış Kazançları</h1>
                 </div>
                 <Card className="rounded-2xl border-orange-300/50 bg-orange-50/50">
                     <CardContent className="p-6 flex items-start gap-3">
@@ -144,7 +144,7 @@ export default function BrandEarningsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Bağış Kazançları</h1>
+                <h1 className="text-3xl font-black tracking-tighter text-foreground">Bağış Kazançları</h1>
                 <p className="text-muted-foreground text-sm font-medium">
                     Markanız üzerinden oluşan bağışların aylık ve günlük dökümü.
                 </p>
@@ -178,7 +178,7 @@ export default function BrandEarningsPage() {
                 </Card>
             </div>
 
-            <Card className="rounded-[2rem] border-black/5 shadow-xl">
+            <Card className="rounded-[2rem] border-border shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><HandCoins className="h-5 w-5" /> Dönemsel Kırılım</CardTitle>
                     <CardDescription>Aylık ve günlük olarak oluşan bağış miktarları.</CardDescription>

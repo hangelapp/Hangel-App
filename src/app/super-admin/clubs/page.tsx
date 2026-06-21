@@ -208,7 +208,7 @@ const TransferAdminDialog = ({ club, allUsers, onAssign }: {
                     ) : managerRows.length > 0 && (
                         <div className="space-y-2">
                             <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mevcut Yetkililer ({managerRows.length})</p>
-                            <div className="space-y-1.5 rounded-2xl border border-black/5 bg-muted/20 p-2">
+                            <div className="space-y-1.5 rounded-2xl border border-border bg-muted/20 p-2">
                                 {managerRows.map(row => {
                                     const currentRole = (row.role || 'Genel Yönetici') as ClubRole;
                                     const editedRole = roleEdits[row.userId] ?? currentRole;
@@ -216,7 +216,7 @@ const TransferAdminDialog = ({ club, allUsers, onAssign }: {
                                     const isUpdatingThis = updatingInv === row.userId;
                                     const isRemovingThis = removingId === row.userId;
                                     return (
-                                        <div key={row.userId} className="flex items-center gap-2 p-2 rounded-xl bg-white flex-wrap">
+                                        <div key={row.userId} className="flex items-center gap-2 p-2 rounded-xl bg-card flex-wrap">
                                             <Avatar className="h-8 w-8 shrink-0">
                                                 <AvatarImage src={row.avatarUrl || undefined} />
                                                 <AvatarFallback className="text-xs font-bold">{row.name.charAt(0)}</AvatarFallback>
@@ -558,7 +558,7 @@ export default function ClubsAdminPage() {
     return (
         <div className="space-y-6 animate-in fade-in-0">
             <div className="space-y-1">
-                <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Öğrenci Kulübü Yönetimi</h1>
+                <h1 className="text-3xl font-black tracking-tighter text-foreground">Öğrenci Kulübü Yönetimi</h1>
                 <p className="text-muted-foreground text-sm font-medium">
                     Yayında olan ve başvuru sürecindeki kulüpleri yönetin.
                 </p>
@@ -566,7 +566,7 @@ export default function ClubsAdminPage() {
 
             {/* Stat cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <Card className="rounded-2xl border-black/5 cursor-pointer hover:shadow-md transition" onClick={() => setStatusFilter('all')}>
+                <Card className="rounded-2xl border-border cursor-pointer hover:shadow-md transition" onClick={() => setStatusFilter('all')}>
                     <CardContent className="p-4">
                         <p className="text-2xl font-black">{stats.total}</p>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Tümü</p>
@@ -599,7 +599,7 @@ export default function ClubsAdminPage() {
             </div>
 
             {/* Filtre & arama */}
-            <Card className="rounded-2xl border-black/5">
+            <Card className="rounded-2xl border-border">
                 <CardContent className="p-4 flex items-center gap-3 flex-wrap">
                     <div className="relative flex-1 min-w-[220px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -626,13 +626,13 @@ export default function ClubsAdminPage() {
             </Card>
 
             {/* Kulüp listesi */}
-            <Card className="rounded-[2rem] border-black/5 shadow-xl overflow-hidden">
+            <Card className="rounded-[2rem] border-border shadow-xl overflow-hidden">
                 <CardHeader className="bg-muted/30 border-b p-6">
                     <CardTitle className="text-xl font-bold">Kulüp Listesi</CardTitle>
                     <CardDescription>Yayında olan ve başvuru sürecindeki öğrenci kulüpleri.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <div className="divide-y border-black/5">
+                    <div className="divide-y border-border">
                         {filteredItems.length > 0 ? filteredItems.map(club => {
                             const isPassive = club.status === 'Pasif';
                             const isPending = club.status === 'Beklemede';
@@ -655,7 +655,7 @@ export default function ClubsAdminPage() {
                                         </Avatar>
                                         <div className="space-y-1 min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <p className="font-black text-base text-[#1d1d1f] tracking-tight truncate">{club.name}</p>
+                                                <p className="font-black text-base text-foreground tracking-tight truncate">{club.name}</p>
                                                 {isApproved && <Badge className="bg-green-600 text-white text-[9px] font-black uppercase">YAYINDA</Badge>}
                                                 {isPending && <Badge className="bg-amber-500 text-white text-[9px] font-black uppercase">ONAY BEKLİYOR</Badge>}
                                                 {isPassive && <Badge variant="secondary" className="text-[9px] font-black uppercase">PASİF</Badge>}

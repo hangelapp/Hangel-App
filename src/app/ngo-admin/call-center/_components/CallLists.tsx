@@ -833,7 +833,7 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
                   id="wa-blast-phone"
                   value={waSelectedPhoneId}
                   onChange={(e) => setWaSelectedPhoneId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-md border bg-white text-sm"
+                  className="w-full h-10 px-3 rounded-md border bg-background text-sm"
                 >
                   <option value="">Numara seçin…</option>
                   {waPhones.map((p) => (
@@ -850,7 +850,7 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
                   id="wa-blast-template"
                   value={waSelectedTemplateId}
                   onChange={(e) => setWaSelectedTemplateId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-md border bg-white text-sm"
+                  className="w-full h-10 px-3 rounded-md border bg-background text-sm"
                 >
                   <option value="">Şablon seçin…</option>
                   {waTemplates.map((t) => (

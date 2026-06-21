@@ -179,7 +179,7 @@ export default function SuperAdminActivityPage() {
   return (
     <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f] flex items-center gap-2">
+        <h1 className="text-3xl font-black tracking-tighter text-foreground flex items-center gap-2">
           <Activity className="h-7 w-7 text-primary" /> Aktiviteler & İşlem Logu
         </h1>
         <p className="text-muted-foreground text-sm font-medium">
@@ -187,7 +187,7 @@ export default function SuperAdminActivityPage() {
         </p>
       </div>
 
-      <Card className="rounded-2xl border-black/5 shadow-sm">
+      <Card className="rounded-2xl border-border shadow-sm">
         <CardHeader>
           <CardTitle className="text-base">Son Aktiviteler ({visibleEntries.length})</CardTitle>
           <CardDescription>En yeni işlemler üstte. Tıklayarak ilgili yönetim sayfasına gidebilirsin.</CardDescription>

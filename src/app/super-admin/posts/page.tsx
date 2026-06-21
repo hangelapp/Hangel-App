@@ -184,7 +184,7 @@ export default function PostsAdminPage() {
     return (
         <div className="space-y-6 animate-in fade-in-0">
             <div>
-                <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Gönderi Yönetimi</h1>
+                <h1 className="text-3xl font-black tracking-tighter text-foreground">Gönderi Yönetimi</h1>
                 <p className="text-muted-foreground text-sm font-medium">
                     Platformdaki gönderileri yönet, içerik düzenle, pasife al veya sil.
                 </p>

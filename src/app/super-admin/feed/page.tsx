@@ -185,7 +185,7 @@ export default function FeedAdminPage() {
   return (
     <div className="space-y-6 animate-in fade-in-0">
       <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f] flex items-center gap-2">
+        <h1 className="text-3xl font-black tracking-tighter text-foreground flex items-center gap-2">
           <Library className="h-7 w-7 text-primary" /> Ürün Feed & Listeleme
         </h1>
         <p className="text-muted-foreground text-sm font-medium">
@@ -194,7 +194,7 @@ export default function FeedAdminPage() {
       </div>
 
       {/* 1) Feed ingest */}
-      <Card className="rounded-[2rem] border-black/5 shadow-xl">
+      <Card className="rounded-[2rem] border-border shadow-xl">
         <CardHeader>
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
@@ -221,7 +221,7 @@ export default function FeedAdminPage() {
           ) : feeds.length === 0 ? (
             <p className="text-sm text-muted-foreground italic py-4">Feed bulunamadı.</p>
           ) : (
-            <div className="divide-y border-t border-black/5">
+            <div className="divide-y border-t border-border">
               {feeds.map((f) => (
                 <div key={f.feedId} className="py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
@@ -240,7 +240,7 @@ export default function FeedAdminPage() {
       </Card>
 
       {/* 1b) Manuel generic feed URL ekle */}
-      <Card className="rounded-[2rem] border-black/5 shadow-xl">
+      <Card className="rounded-[2rem] border-border shadow-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Link2 className="h-5 w-5" /> Manuel feed URL ekle (ikas/ideasoft/tsoft/Google Merchant)</CardTitle>
           <CardDescription>Platformun ürettiği Google Merchant XML feed URL&apos;sini yapıştır; ürünler kütüphaneye çekilir.</CardDescription>
@@ -289,7 +289,7 @@ export default function FeedAdminPage() {
       </Card>
 
       {/* 2) Marka listeleme modu */}
-      <Card className="rounded-[2rem] border-black/5 shadow-xl">
+      <Card className="rounded-[2rem] border-border shadow-xl">
         <CardHeader>
           <CardTitle>Marka Listeleme Modu ({filteredBrands.length})</CardTitle>
           <CardDescription>Her markanın hangel&apos;da nasıl görüneceği: sadece marka, sadece ürün, ya da her ikisi.</CardDescription>
@@ -310,7 +310,7 @@ export default function FeedAdminPage() {
           {brandsLoading ? (
             <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
           ) : (
-            <div className="divide-y border-t border-black/5 max-h-[60vh] overflow-y-auto">
+            <div className="divide-y border-t border-border max-h-[60vh] overflow-y-auto">
               {filteredBrands.map((b) => (
                 <div key={b.id} className="px-5 py-3 flex items-center justify-between gap-3">
                   <p className="font-medium truncate min-w-0">{b.name}</p>

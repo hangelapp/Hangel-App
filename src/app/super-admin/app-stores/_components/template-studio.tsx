@@ -105,7 +105,7 @@ export function TemplateStudio({
     <div className="flex flex-col items-center gap-3">
       {/* Önizleme — ölçekli */}
       <div
-        className="rounded-xl border border-black/10 shadow-sm overflow-hidden bg-white"
+        className="rounded-xl border border-border shadow-sm overflow-hidden bg-white"
         style={{ width: previewW, height: previewH }}
       >
         <ScreenshotTemplate

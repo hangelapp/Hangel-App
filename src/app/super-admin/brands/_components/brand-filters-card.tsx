@@ -22,7 +22,7 @@ interface BrandFiltersCardProps {
 
 export const BrandFiltersCard = ({ searchTerm, onSearchTermChange, statusFilter, onStatusFilterChange, sortBy, onSortByChange, resultCount }: BrandFiltersCardProps) => {
     return (
-        <Card className="rounded-2xl border-black/5">
+        <Card className="rounded-2xl border-border">
             <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="space-y-2">

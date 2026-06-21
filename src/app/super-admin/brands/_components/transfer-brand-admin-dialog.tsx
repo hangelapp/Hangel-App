@@ -171,7 +171,7 @@ export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign }: Transfer
                     ) : managerRows.length > 0 && (
                         <div className="space-y-2">
                             <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mevcut Yetkililer ({managerRows.length})</p>
-                            <div className="space-y-1.5 rounded-2xl border border-black/5 bg-muted/20 p-2">
+                            <div className="space-y-1.5 rounded-2xl border border-border bg-muted/20 p-2">
                                 {managerRows.map(row => {
                                     const currentRole = (row.role || 'Genel Yönetici') as BrandRole;
                                     const editedRole = roleEdits[row.userId] ?? currentRole;
@@ -179,7 +179,7 @@ export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign }: Transfer
                                     const isUpdatingThis = updatingId === row.userId;
                                     const isRemovingThis = removingId === row.userId;
                                     return (
-                                        <div key={row.userId} className="flex items-center gap-2 p-2 rounded-xl bg-white flex-wrap">
+                                        <div key={row.userId} className="flex items-center gap-2 p-2 rounded-xl bg-card flex-wrap">
                                             <Avatar className="h-8 w-8 shrink-0">
                                                 <AvatarImage src={row.avatarUrl || undefined} />
                                                 <AvatarFallback className="text-xs font-bold">{row.name.charAt(0)}</AvatarFallback>

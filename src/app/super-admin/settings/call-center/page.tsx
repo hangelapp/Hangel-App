@@ -101,7 +101,7 @@ export default function CallCenterPage() {
               const Icon = s.icon;
               return (
                 <div key={s.label} className="flex sm:flex-col items-start sm:items-center gap-2 sm:gap-2 sm:text-center">
-                  <div className="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center shrink-0 ring-1 ring-black/5">
+                  <div className="h-10 w-10 rounded-2xl bg-card shadow-sm flex items-center justify-center shrink-0 ring-1 ring-black/5">
                     <Icon className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 sm:flex-initial">

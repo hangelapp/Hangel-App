@@ -44,7 +44,7 @@ const AppleSection = ({
     children?: React.ReactNode
 }) => (
     <section className={cn(
-        "relative min-h-[80vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
+        "relative min-h-[80vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-border",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
         className
     )}>
@@ -86,7 +86,7 @@ const AppleSection = ({
 );
 
 const FeatureCard = ({ icon: Icon, title, description }: { icon: React.ComponentType<{ className?: string }>, title: string, description: string }) => (
-    <Card className="rounded-[2.5rem] p-8 border-none shadow-lg bg-white group hover:shadow-2xl transition-all duration-500 text-left">
+    <Card className="rounded-[2.5rem] p-8 border-none shadow-lg bg-card group hover:shadow-2xl transition-all duration-500 text-left">
         <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
             <Icon className="h-7 w-7 text-primary group-hover:text-white" />
         </div>
@@ -101,9 +101,9 @@ export default function AboutPage() {
     const { t } = useTranslation();
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             {/* Nav */}
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
@@ -134,7 +134,7 @@ export default function AboutPage() {
             </AppleSection>
 
             {/* Core Values Grid */}
-            <section className="py-32 px-6 bg-[#f5f5f7]">
+            <section className="py-32 px-6 bg-muted">
                 <div className="container mx-auto max-w-6xl space-y-16">
                     <div className="text-center space-y-4 max-w-3xl mx-auto">
                         <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full">{t('marketing.about.valuesBadge')}</Badge>
@@ -172,7 +172,7 @@ export default function AboutPage() {
             />
 
             {/* Impact Numbers — gerçek rakamlar /api/public/stats'tan. 0 olan kartlar gizli. */}
-            <section className="bg-white py-32 text-center border-b border-black/5">
+            <section className="bg-background py-32 text-center border-b border-border">
                 <div className="container mx-auto px-6 max-w-6xl">
                     <PublicStatsRow
                         items={[
@@ -188,7 +188,7 @@ export default function AboutPage() {
             {/* Philosophy */}
             <AppleSection
                 theme="light"
-                className="bg-[#fafafa]"
+                className="bg-muted"
                 title={get('about.foundationTitle', t('marketing.about.foundationTitle'))}
                 description={get('about.foundationDesc', t('marketing.about.foundationDesc'))}
                 imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"

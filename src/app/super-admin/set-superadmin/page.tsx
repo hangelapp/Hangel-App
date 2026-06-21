@@ -192,7 +192,7 @@ export default function SetSuperAdminPage() {
       </div>
 
       {/* Yeni süper admin ataması */}
-      <Card className="rounded-2xl border-black/5 shadow-sm">
+      <Card className="rounded-2xl border-border shadow-sm">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <UserPlus className="h-4 w-4 text-primary" />
@@ -307,7 +307,7 @@ export default function SetSuperAdminPage() {
       </Card>
 
       {/* Mevcut süper adminler */}
-      <Card className="rounded-2xl border-black/5 shadow-sm">
+      <Card className="rounded-2xl border-border shadow-sm">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Users className="h-4 w-4 text-primary" />

@@ -241,12 +241,12 @@ export default function MessagingQuotaPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">SMS / Mail Kota Yönetimi</h1>
+                <h1 className="text-3xl font-black tracking-tighter text-foreground">SMS / Mail Kota Yönetimi</h1>
                 <p className="text-muted-foreground text-sm font-medium">Bayilik havuzunu doldur, STK&apos;lara kota tanımla, paketleri ve siparişleri yönet.</p>
             </div>
 
             {/* (a) Bayilik Havuzu */}
-            <Card className="rounded-[2rem] border-black/5 shadow-xl">
+            <Card className="rounded-[2rem] border-border shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Layers className="h-5 w-5" /> Bayilik Havuzu</CardTitle>
                     <CardDescription>Satın alınan toplu SMS/mail adetleri. STK tahsisleri bu havuzdan düşülür.</CardDescription>
@@ -287,7 +287,7 @@ export default function MessagingQuotaPage() {
             </Card>
 
             {/* (b) NGO Kota Tahsisi */}
-            <Card className="rounded-[2rem] border-black/5 shadow-xl">
+            <Card className="rounded-[2rem] border-border shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5" /> STK Kota Tahsisi</CardTitle>
                     <CardDescription>Bir STK seçip ücretsiz SMS/mail kotası tanımlayın (havuzdan düşülür).</CardDescription>
@@ -340,7 +340,7 @@ export default function MessagingQuotaPage() {
             </Card>
 
             {/* (c) Paketler */}
-            <Card className="rounded-[2rem] border-black/5 shadow-xl">
+            <Card className="rounded-[2rem] border-border shadow-xl">
                 <CardHeader className="flex flex-row items-start justify-between gap-2">
                     <div>
                         <CardTitle className="flex items-center gap-2"><PackagePlus className="h-5 w-5" /> Kontör Paketleri</CardTitle>
@@ -387,7 +387,7 @@ export default function MessagingQuotaPage() {
             </Card>
 
             {/* (d) Bekleyen Siparişler */}
-            <Card className="rounded-[2rem] border-black/5 shadow-xl">
+            <Card className="rounded-[2rem] border-border shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Bekleyen Siparişler ({pendingOrders.length})</CardTitle>
                     <CardDescription>Ödenmiş kontör paketi siparişlerini onaylayın; kota STK cüzdanına yüklenir.</CardDescription>

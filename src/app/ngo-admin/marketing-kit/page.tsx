@@ -65,7 +65,7 @@ export default function OrgMarketingKitPage() {
   return (
     <div className="space-y-6 animate-in fade-in-0">
       <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f] flex items-center gap-2">
+        <h1 className="text-3xl font-black tracking-tighter text-foreground flex items-center gap-2">
           <Megaphone className="h-7 w-7 text-primary" /> Tanıtım Araçları
         </h1>
         <p className="text-muted-foreground text-sm font-medium">
@@ -75,7 +75,7 @@ export default function OrgMarketingKitPage() {
       </div>
 
       {visible.length === 0 ? (
-        <Card className="rounded-[2rem] border-black/5 shadow-xl">
+        <Card className="rounded-[2rem] border-border shadow-xl">
           <CardContent className="p-16 text-center text-muted-foreground">
             <Megaphone className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
             <p className="italic">Şu an indirilebilir tanıtım materyali yok. Yeni materyaller eklendikçe burada görünecek.</p>
@@ -86,7 +86,7 @@ export default function OrgMarketingKitPage() {
           {grouped.map(({ category, items }) => (
             <div key={category.value} className="space-y-3">
               <div className="space-y-0.5">
-                <h2 className="text-lg font-bold text-[#1d1d1f]">{category.label}</h2>
+                <h2 className="text-lg font-bold text-foreground">{category.label}</h2>
                 <p className="text-xs text-muted-foreground">{category.description}</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -94,7 +94,7 @@ export default function OrgMarketingKitPage() {
                   const isImage = (a.contentType || '').startsWith('image/');
                   const preview = a.thumbnailUrl || (isImage ? a.fileUrl : null);
                   return (
-                    <Card key={a.id} className="rounded-2xl border-black/5 shadow-sm overflow-hidden flex flex-col">
+                    <Card key={a.id} className="rounded-2xl border-border shadow-sm overflow-hidden flex flex-col">
                       <div className="relative h-40 bg-muted/40 flex items-center justify-center">
                         {preview ? (
                           <Image src={preview} alt={a.title} fill className="object-cover" unoptimized />

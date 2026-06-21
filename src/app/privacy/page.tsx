@@ -15,10 +15,10 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12 text-sm leading-relaxed text-slate-800">
+    <main className="mx-auto max-w-3xl px-6 py-12 text-sm leading-relaxed text-foreground">
       <header className="mb-8 border-b pb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Gizlilik Politikası / Privacy Policy</h1>
-        <p className="mt-2 text-slate-600">
+        <h1 className="text-2xl font-bold text-foreground">Gizlilik Politikası / Privacy Policy</h1>
+        <p className="mt-2 text-muted-foreground">
           hangel — Uluslararası Sosyal Fayda Derneği<br />
           Son güncelleme: 2026-06-14
         </p>
@@ -26,7 +26,7 @@ export default function PrivacyPage() {
 
       {/* ─── Türkçe ──────────────────────────────────────────── */}
       <section className="mb-12">
-        <h2 className="mb-4 text-xl font-semibold text-slate-900">Türkçe</h2>
+        <h2 className="mb-4 text-xl font-semibold text-foreground">Türkçe</h2>
 
         <h3 className="mt-6 mb-2 font-semibold">1. Veri Sorumlusu</h3>
         <p>
@@ -64,7 +64,7 @@ export default function PrivacyPage() {
 
       {/* ─── Chrome Extension özel ──────────────────────────── */}
       <section className="mb-12 rounded-lg border-2 border-orange-200 bg-orange-50/40 p-6">
-        <h2 className="mb-4 text-xl font-semibold text-slate-900">hangel Chrome Extension — Veri Uygulamaları</h2>
+        <h2 className="mb-4 text-xl font-semibold text-foreground">hangel Chrome Extension — Veri Uygulamaları</h2>
 
         <h3 className="mt-4 mb-2 font-semibold">Ne toplanır?</h3>
         <ul className="list-disc pl-6 space-y-1">
@@ -110,7 +110,7 @@ export default function PrivacyPage() {
 
       {/* ─── English ────────────────────────────────────────── */}
       <section className="mb-12 border-t pt-8">
-        <h2 className="mb-4 text-xl font-semibold text-slate-900">English</h2>
+        <h2 className="mb-4 text-xl font-semibold text-foreground">English</h2>
 
         <h3 className="mt-6 mb-2 font-semibold">1. Data Controller</h3>
         <p>
@@ -157,7 +157,7 @@ export default function PrivacyPage() {
         </ul>
       </section>
 
-      <footer className="border-t pt-6 text-xs text-slate-500">
+      <footer className="border-t pt-6 text-xs text-muted-foreground">
         <p>© {new Date().getFullYear()} hangel Uluslararası Sosyal Fayda Derneği. Tüm hakları saklıdır.</p>
         <p className="mt-2">
           Sorularınız için: <a className="text-orange-600 hover:underline" href="mailto:info@hangel.org">info@hangel.org</a>

@@ -247,7 +247,7 @@ export default function LibraryAboutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+    <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
       <MarketingNav label={C.navLabel} ctaLabel={C.navCta} ctaHref="/library" backLabel={C.back} />
 
       {/* Hero */}
@@ -292,7 +292,7 @@ export default function LibraryAboutPage() {
       />
 
       {/* Koleksiyon ızgarası */}
-      <section className="bg-[#f5f5f7] py-24 border-b border-black/5">
+      <section className="bg-muted py-24 border-b border-border">
         <SectionHeading eyebrow={C.gridEyebrow} title={C.gridTitle} description={C.gridDescription} />
         <FeatureGrid items={features} columns={3} />
         <CompareNote>{C.compare}</CompareNote>

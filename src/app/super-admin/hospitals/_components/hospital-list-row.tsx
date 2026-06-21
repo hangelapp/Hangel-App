@@ -42,7 +42,7 @@ export const HospitalListRow = React.memo(function HospitalListRow({ hospital, o
     <div className="flex flex-col md:flex-row md:items-center gap-3 p-5 hover:bg-muted/30 transition-colors">
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="font-bold text-base text-[#1d1d1f] truncate">
+          <p className="font-bold text-base text-foreground truncate">
             {hospital.name || '—'}
           </p>
           <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wide">

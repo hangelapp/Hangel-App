@@ -130,14 +130,14 @@ function StoreBadge({ store, caption, status, href, Logo }: StoreBadgeProps) {
   const inner = (
     <span
       className={[
-        'group flex items-center gap-2.5 rounded-2xl border border-black/10 bg-white/70 px-3.5 py-2 min-w-[185px]',
-        'transition-colors hover:border-black/20 hover:bg-white',
+        'group flex items-center gap-2.5 rounded-2xl border border-border bg-card/70 px-3.5 py-2 min-w-[185px]',
+        'transition-colors hover:border-border hover:bg-card',
       ].join(' ')}
     >
       <Logo className="h-7 w-7 shrink-0" />
       <span className="flex flex-col text-left leading-tight min-w-0">
         <span className="flex items-center gap-1.5">
-          <span className="text-[13px] font-semibold text-[#1d1d1f]">{store}</span>
+          <span className="text-[13px] font-semibold text-foreground">{store}</span>
           {badgeMeta && (
             <span className={['rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide shrink-0', badgeMeta.cls].join(' ')}>
               {badgeMeta.label}

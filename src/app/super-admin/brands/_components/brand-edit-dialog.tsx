@@ -153,7 +153,7 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                                         <AvatarFallback className="font-black">{(editFormData.name || '?')[0]}</AvatarFallback>
                                     </Avatar>
                                 ) : (
-                                    <div className="h-14 w-14 rounded-full border-2 border-dashed border-black/10 flex items-center justify-center text-muted-foreground shrink-0">
+                                    <div className="h-14 w-14 rounded-full border-2 border-dashed border-border flex items-center justify-center text-muted-foreground shrink-0">
                                         <ImageUp className="h-5 w-5" />
                                     </div>
                                 )}
@@ -192,7 +192,7 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                                 {editFormData.coverPhotoUrl ? (
                                     <div className="h-14 w-24 rounded-xl border-2 border-white shadow-md bg-cover bg-center shrink-0" style={{ backgroundImage: `url(${editFormData.coverPhotoUrl})` }} />
                                 ) : (
-                                    <div className="h-14 w-24 rounded-xl border-2 border-dashed border-black/10 flex items-center justify-center text-muted-foreground shrink-0">
+                                    <div className="h-14 w-24 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground shrink-0">
                                         <ImageUp className="h-5 w-5" />
                                     </div>
                                 )}
@@ -254,7 +254,7 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                     </div>
                 </div>
 
-                <div className="border-t border-black/5" />
+                <div className="border-t border-border" />
 
                 {/* --- İletişim --- */}
                 <div className="space-y-4">
@@ -292,7 +292,7 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                     </div>
                 </div>
 
-                <div className="border-t border-black/5" />
+                <div className="border-t border-border" />
 
                 {/* --- Sosyal Medya --- */}
                 <div className="space-y-4">
@@ -341,7 +341,7 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                     </div>
                 </div>
 
-                <div className="border-t border-black/5" />
+                <div className="border-t border-border" />
 
                 {/* --- Adres --- */}
                 <div className="space-y-4">

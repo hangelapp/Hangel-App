@@ -266,7 +266,7 @@ export default function CampusAdvantagesPage() {
   ];
 
   return (
-    <div className="bg-white font-sans selection:bg-primary/30">
+    <div className="bg-background font-sans selection:bg-primary/30">
       <MarketingNav
         label={C.navLabel}
         ctaLabel={C.navCta}
@@ -316,7 +316,7 @@ export default function CampusAdvantagesPage() {
       />
 
       {/* Canlı araçlar */}
-      <section id="araclar" className="bg-[#f5f5f7] pt-20 pb-16 border-b border-black/5">
+      <section id="araclar" className="bg-muted pt-20 pb-16 border-b border-border">
         <SectionHeading
           eyebrow={C.toolsEyebrow}
           title={C.toolsTitle}
@@ -327,7 +327,7 @@ export default function CampusAdvantagesPage() {
       </section>
 
       {/* Beta / Yakında */}
-      <section className="bg-white pt-20 pb-16 border-b border-black/5">
+      <section className="bg-background pt-20 pb-16 border-b border-border">
         <SectionHeading
           eyebrow={C.betaSoonEyebrow}
           title={C.betaSoonTitle}

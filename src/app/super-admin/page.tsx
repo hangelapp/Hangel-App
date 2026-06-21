@@ -216,7 +216,7 @@ function SuperAdminMenuItem({ href, label, description, Icon, color, badgeConfig
                 </div>
                 <div className="flex-1 space-y-0.5">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{label}</p>
+                        <p className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{label}</p>
                         {showBadge && (
                             <Badge className="bg-red-600 hover:bg-red-600 text-white font-black text-[10px] px-2 py-0 h-5 min-w-[20px] flex items-center justify-center rounded-full">
                                 {count > 99 ? '99+' : count}
@@ -295,7 +295,7 @@ export default function SuperAdminDashboard() {
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
         <div className="space-y-1">
-            <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Admin Paneli</h1>
+            <h1 className="text-3xl font-black tracking-tighter text-foreground">Admin Paneli</h1>
             <p className="text-muted-foreground text-sm font-medium">Platform sağlığı ve operasyonel denetim merkezi.</p>
         </div>
         <Badge variant="outline" className="w-fit bg-green-50 text-green-700 border-green-200 font-bold flex items-center gap-1.5 px-3 py-1">
@@ -304,7 +304,7 @@ export default function SuperAdminDashboard() {
       </div>
 
        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="rounded-2xl border-black/5 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="rounded-2xl border-border shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">Kullanıcılar</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -317,7 +317,7 @@ export default function SuperAdminDashboard() {
           
           <Link href="/super-admin/applications" className="block group">
             <Card className={cn(
-                "rounded-2xl border-black/5 shadow-sm transition-all",
+                "rounded-2xl border-border shadow-sm transition-all",
                 pendingAppsCount > 0 ? "bg-primary/5 border-primary/20 hover:bg-primary/10" : "hover:shadow-md"
             )}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -331,7 +331,7 @@ export default function SuperAdminDashboard() {
             </Card>
           </Link>
 
-          <Card className="rounded-2xl border-black/5 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="rounded-2xl border-border shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">Aktif STK</CardTitle>
               <Building className="h-4 w-4 text-muted-foreground" />
@@ -342,7 +342,7 @@ export default function SuperAdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border-black/5 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="rounded-2xl border-border shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">Aktif Marka</CardTitle>
               <Store className="h-4 w-4 text-muted-foreground" />
@@ -354,7 +354,7 @@ export default function SuperAdminDashboard() {
           </Card>
         </div>
 
-        <Card className="shadow-xl rounded-[2.5rem] border-black/5 overflow-hidden bg-white">
+        <Card className="shadow-xl rounded-[2.5rem] border-border overflow-hidden bg-card">
             <CardHeader className="bg-muted/30 p-8 border-b">
                 <CardTitle className="text-xl font-bold">Yönetim Araçları</CardTitle>
                 <CardDescription>Platformun teknik ve içerik operasyonlarını buradan yönetin.</CardDescription>
@@ -362,10 +362,10 @@ export default function SuperAdminDashboard() {
             <CardContent className="p-0">
                 {visibleSections.map(section => (
                     <div key={section.title}>
-                        <div className="px-6 pt-6 pb-2 bg-muted/20 border-b border-black/5">
+                        <div className="px-6 pt-6 pb-2 bg-muted/20 border-b border-border">
                             <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{section.title}</p>
                         </div>
-                        <div className="divide-y border-black/5">
+                        <div className="divide-y border-border">
                             {section.items.map(item => {
                                 const Icon = iconMap[item.icon] || HelpCircle;
                                 const color = iconColorMap[item.icon as keyof typeof iconColorMap] || 'bg-gray-500';

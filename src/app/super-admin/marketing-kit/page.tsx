@@ -440,7 +440,7 @@ export default function MarketingKitPage() {
     <div className="space-y-6 animate-in fade-in-0">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Tanıtım Araçları</h1>
+          <h1 className="text-3xl font-black tracking-tighter text-foreground">Tanıtım Araçları</h1>
           <p className="text-muted-foreground text-sm font-medium">
             hangel’i tanıtacak tüm materyalleri yönetin: profesyonel sunum, 15 günlük sosyal medya içerikleri,
             döner kartlar, mağaza içi ekipmanlar, kasa önü A5 kartlar, örümcek stand görselleri. Yayına aldığınızda
@@ -507,7 +507,7 @@ export default function MarketingKitPage() {
       </Tabs>
 
       {visibleAssets.length === 0 ? (
-        <Card className="rounded-[2rem] border-black/5 shadow-xl">
+        <Card className="rounded-[2rem] border-border shadow-xl">
           <CardContent className="p-16 text-center text-muted-foreground italic">
             Bu kitle için henüz materyal yok — “Yeni Materyal” veya “Başlangıç Paketi” ekle.
           </CardContent>
@@ -518,7 +518,7 @@ export default function MarketingKitPage() {
             const isImage = (a.contentType || '').startsWith('image/');
             const preview = a.thumbnailUrl || (isImage ? a.fileUrl : null);
             return (
-              <Card key={a.id} className="rounded-2xl border-black/5 shadow-sm overflow-hidden flex flex-col">
+              <Card key={a.id} className="rounded-2xl border-border shadow-sm overflow-hidden flex flex-col">
                 <div className="relative h-40 bg-muted/40 flex items-center justify-center">
                   {preview ? (
                     <Image src={preview} alt={a.title} fill className="object-cover" unoptimized />

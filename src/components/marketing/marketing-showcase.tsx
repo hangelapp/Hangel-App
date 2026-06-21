@@ -84,7 +84,7 @@ export function MarketingShowcase() {
         const isImage = (a.contentType || '').startsWith('image/');
         const preview = a.thumbnailUrl || (isImage ? a.fileUrl : null);
         return (
-          <article key={a.id} className="rounded-2xl border border-black/5 shadow-sm overflow-hidden flex flex-col bg-white">
+          <article key={a.id} className="rounded-2xl border border-border shadow-sm overflow-hidden flex flex-col bg-card">
             <div className="relative h-44 bg-muted/40 flex items-center justify-center">
               {preview ? (
                 <Image src={preview} alt={a.title} fill className="object-cover" unoptimized />
@@ -94,7 +94,7 @@ export function MarketingShowcase() {
             </div>
             <div className="p-5 flex-1 flex flex-col gap-2">
               <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{categoryLabel(a.category)}</span>
-              <h2 className="font-bold text-lg leading-tight text-[#1d1d1f]">{a.title}</h2>
+              <h2 className="font-bold text-lg leading-tight text-foreground">{a.title}</h2>
               {a.description && <p className="text-sm text-muted-foreground line-clamp-3">{a.description}</p>}
               <a
                 href={a.fileUrl}

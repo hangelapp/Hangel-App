@@ -79,9 +79,9 @@ export default function AccessibilityPublicPage() {
     const screenReaderDesc = 'ARIA etiketleri ve anonslar ile ekran okuyucu uyumluluğunu güçlendirin.';
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             {/* Navigation */}
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-card/80 backdrop-blur-md border-b border-border">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-6xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.accessibility.backShort')}
@@ -95,25 +95,25 @@ export default function AccessibilityPublicPage() {
 
             <main>
                 {/* Hero Section */}
-                <section className="relative pt-24 md:pt-32 pb-16 md:pb-24 px-6 text-center bg-[#f5f5f7] overflow-hidden border-b border-black/5">
+                <section className="relative pt-24 md:pt-32 pb-16 md:pb-24 px-6 text-center bg-muted overflow-hidden border-b border-border">
                     <div className="container mx-auto max-w-4xl space-y-6 relative z-10 animate-in fade-in-0 slide-in-from-bottom-4 duration-1000">
                         {cms.subtitle && (
                             <p className="text-sm font-bold uppercase tracking-widest text-primary">{cms.subtitle}</p>
                         )}
-                        <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">
+                        <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-foreground leading-[0.95]">
                             {cms.title || t('marketing.accessibility.heroTitleFallback')}
                         </h1>
                         <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-tight">
                             {cms.description || t('marketing.accessibility.heroDescriptionFallback')}
                         </p>
                         <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-primary/20 text-xs font-bold text-primary">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card border border-primary/20 text-xs font-bold text-primary">
                                 <ShieldCheck className="h-3.5 w-3.5" /> WCAG 2.2 AA
                             </span>
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-primary/20 text-xs font-bold text-primary">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card border border-primary/20 text-xs font-bold text-primary">
                                 <Scale className="h-3.5 w-3.5" /> EN 301 549
                             </span>
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-primary/20 text-xs font-bold text-primary">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card border border-primary/20 text-xs font-bold text-primary">
                                 <Globe className="h-3.5 w-3.5" /> Evrensel Tasarım
                             </span>
                         </div>
@@ -134,7 +134,7 @@ export default function AccessibilityPublicPage() {
                     <div className="space-y-8 mt-16">
                         {/* Visual & Reading */}
                         <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
-                            <CardHeader className="bg-[#f5f5f7] border-b">
+                            <CardHeader className="bg-muted border-b">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <Eye className="h-5 w-5 text-indigo-500" />
                                     {t('marketing.accessibility.groupVisualTitle')}
@@ -158,7 +158,7 @@ export default function AccessibilityPublicPage() {
 
                         {/* Cognitive & Understanding */}
                         <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
-                            <CardHeader className="bg-[#f5f5f7] border-b">
+                            <CardHeader className="bg-muted border-b">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <Layers className="h-5 w-5 text-orange-500" />
                                     {t('marketing.accessibility.groupCognitiveTitle')}
@@ -178,7 +178,7 @@ export default function AccessibilityPublicPage() {
 
                         {/* Interaction & Motor */}
                         <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
-                            <CardHeader className="bg-[#f5f5f7] border-b">
+                            <CardHeader className="bg-muted border-b">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <MousePointerClick className="h-5 w-5 text-teal-500" />
                                     {t('marketing.accessibility.groupMotorTitle')}
@@ -198,7 +198,7 @@ export default function AccessibilityPublicPage() {
 
                         {/* Screen Reader & Media */}
                         <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
-                            <CardHeader className="bg-[#f5f5f7] border-b">
+                            <CardHeader className="bg-muted border-b">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <Volume2 className="h-5 w-5 text-blue-500" />
                                     {t('marketing.accessibility.groupMediaTitle')}
@@ -219,7 +219,7 @@ export default function AccessibilityPublicPage() {
 
                         {/* Time & Control Management */}
                         <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
-                            <CardHeader className="bg-[#f5f5f7] border-b">
+                            <CardHeader className="bg-muted border-b">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <Clock className="h-5 w-5 text-slate-600" />
                                     {t('marketing.accessibility.groupTimeTitle')}
@@ -239,10 +239,10 @@ export default function AccessibilityPublicPage() {
 
                         {/* Promotional praise banner — accessibility as core value */}
                         <div className="p-8 md:p-10 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-[2rem] border border-primary/15 text-center space-y-4">
-                            <div className="inline-flex p-4 bg-white rounded-2xl shadow-sm">
+                            <div className="inline-flex p-4 bg-card rounded-2xl shadow-sm">
                                 <ShieldCheck className="h-8 w-8 text-primary" />
                             </div>
-                            <h3 className="text-2xl md:text-3xl font-black tracking-tight text-[#1d1d1f]">
+                            <h3 className="text-2xl md:text-3xl font-black tracking-tight text-foreground">
                                 hangel'de erişilebilirlik bir özellik değil, bir hak.
                             </h3>
                             <p className="text-sm md:text-base text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
@@ -277,7 +277,7 @@ export default function AccessibilityPublicPage() {
                 </section>
 
                 {/* Final commitment — promotional / inspirational */}
-                <section className="py-16 md:py-24 px-6 text-center bg-[#f5f5f7]">
+                <section className="py-16 md:py-24 px-6 text-center bg-muted">
                     <div className="container mx-auto max-w-3xl space-y-8 md:space-y-10">
                         <ShieldCheck className="h-12 w-12 md:h-16 md:w-16 text-primary mx-auto mb-4 md:mb-6" />
                         <h2 className="text-3xl md:text-4xl font-black tracking-tighter">{t('marketing.accessibility.finalCommitTitle')}</h2>
@@ -288,7 +288,7 @@ export default function AccessibilityPublicPage() {
                             "İyilik için tasarlanmış bir platform önce iyilik tasarlanmış olmalı."
                         </p>
                         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Button asChild variant="ghost" size="lg" className="rounded-full px-10 md:px-12 h-12 md:h-14 font-bold border border-black/10 hover:bg-white text-base md:text-lg w-full sm:w-auto">
+                            <Button asChild variant="ghost" size="lg" className="rounded-full px-10 md:px-12 h-12 md:h-14 font-bold border border-border hover:bg-card text-base md:text-lg w-full sm:w-auto">
                                 <Link href="/feedback">{t('marketing.accessibility.feedbackCta')}</Link>
                             </Button>
                         </div>

@@ -750,7 +750,7 @@ export default function WebContentPage() {
                                             const previewTitle = stored.title || PAGE_DEFAULT_KEYS[p.slug]?.title || p.label;
                                             const resolvedTitle = previewTitle.startsWith('marketing.') ? t(previewTitle) : previewTitle;
                                             return (
-                                                <Card key={p.slug} className="overflow-hidden rounded-2xl border-black/5 shadow-sm hover:shadow-lg transition-all group">
+                                                <Card key={p.slug} className="overflow-hidden rounded-2xl border-border shadow-sm hover:shadow-lg transition-all group">
                                                     <div className="relative h-32 bg-gradient-to-br from-muted to-muted/40 overflow-hidden">
                                                         {stored.heroImageUrl ? (
                                                              
@@ -774,7 +774,7 @@ export default function WebContentPage() {
                                                             <p className="text-[11px] text-muted-foreground truncate" title={resolvedTitle}>{resolvedTitle}</p>
                                                         </div>
                                                         <code className="text-[10px] text-muted-foreground/80 bg-muted/40 px-1.5 py-0.5 rounded inline-block truncate max-w-full">{p.href}</code>
-                                                        <div className="flex items-center gap-1 pt-1 border-t border-black/5">
+                                                        <div className="flex items-center gap-1 pt-1 border-t border-border">
                                                             <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Yayında görüntüle">
                                                                 <Link href={p.href} target="_blank" rel="noopener noreferrer" aria-label="Yayında görüntüle">
                                                                     <Eye className="h-4 w-4" />
@@ -825,7 +825,7 @@ export default function WebContentPage() {
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {Object.entries(customPages).map(([slug, p]) => (
-                                        <Card key={slug} className="overflow-hidden rounded-2xl border-black/5 shadow-sm hover:shadow-lg transition-all group">
+                                        <Card key={slug} className="overflow-hidden rounded-2xl border-border shadow-sm hover:shadow-lg transition-all group">
                                             <div className="relative h-32 bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
                                                 {p.heroImageUrl ? (
                                                      
@@ -843,7 +843,7 @@ export default function WebContentPage() {
                                                     {p.subtitle && <p className="text-[11px] text-muted-foreground truncate">{p.subtitle}</p>}
                                                 </div>
                                                 <code className="text-[10px] text-muted-foreground/80 bg-muted/40 px-1.5 py-0.5 rounded inline-block truncate max-w-full">{CUSTOM_PAGE_BASE}/{slug}</code>
-                                                <div className="flex items-center gap-1 pt-1 border-t border-black/5">
+                                                <div className="flex items-center gap-1 pt-1 border-t border-border">
                                                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Yayında görüntüle">
                                                         <Link href={`${CUSTOM_PAGE_BASE}/${slug}`} target="_blank" rel="noopener noreferrer" aria-label="Yayında görüntüle">
                                                             <Eye className="h-4 w-4" />

@@ -511,7 +511,7 @@ export default function BrandsPage() {
     return (
         <div className="space-y-8 animate-in fade-in-0">
             <div className="space-y-1">
-                <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Marka Yönetimi</h1>
+                <h1 className="text-3xl font-black tracking-tighter text-foreground">Marka Yönetimi</h1>
                 <p className="text-muted-foreground text-sm font-medium">İş ortağı markaları, bağış oranlarını, onay durumlarını ve detaylarını yönetin.</p>
             </div>
 
@@ -528,13 +528,13 @@ export default function BrandsPage() {
             />
 
             {/* Brands List */}
-            <Card className="rounded-[2.5rem] border-black/5 shadow-xl overflow-hidden">
+            <Card className="rounded-[2.5rem] border-border shadow-xl overflow-hidden">
                 <CardHeader className="bg-muted/30 border-b p-8">
                     <CardTitle className="text-xl font-bold">Markalar ({filteredBrands.length})</CardTitle>
                     <CardDescription>Aktif ve beklemede olan tüm markalar.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <div className="divide-y border-black/5">
+                    <div className="divide-y border-border">
                         {filteredBrands && filteredBrands.length > 0 ? (
                             filteredBrands.map(brand => (
                                 <BrandListRow

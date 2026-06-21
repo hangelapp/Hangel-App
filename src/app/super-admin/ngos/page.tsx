@@ -216,7 +216,7 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign }: {
           ) : managerRows.length > 0 && (
             <div className="space-y-2">
               <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mevcut Yetkililer ({managerRows.length})</p>
-              <div className="space-y-1.5 rounded-2xl border border-black/5 bg-muted/20 p-2">
+              <div className="space-y-1.5 rounded-2xl border border-border bg-muted/20 p-2">
                 {managerRows.map(row => {
                   const currentRole = (row.role || 'Yönetici') as NgoRole;
                   const editedRole = roleEdits[row.userId] ?? currentRole;
@@ -224,7 +224,7 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign }: {
                   const isUpdatingThis = updatingInv === row.userId;
                   const isRemovingThis = removingId === row.userId;
                   return (
-                    <div key={row.userId} className="flex items-center gap-2 p-2 rounded-xl bg-white flex-wrap">
+                    <div key={row.userId} className="flex items-center gap-2 p-2 rounded-xl bg-card flex-wrap">
                       <Avatar className="h-8 w-8 shrink-0">
                         <AvatarImage src={row.avatarUrl || undefined} />
                         <AvatarFallback className="text-xs font-bold">{row.name.charAt(0)}</AvatarFallback>
@@ -554,7 +554,7 @@ export default function NgosPage() {
   return (
     <div className="space-y-6 animate-in fade-in-0">
       <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">STK Yönetimi</h1>
+        <h1 className="text-3xl font-black tracking-tighter text-foreground">STK Yönetimi</h1>
         <p className="text-muted-foreground text-sm font-medium">
           Yayında olan ve başvuru sürecindeki tüm STK'ları görüntüleyin, yönetin, yetkili kişi atayın.
         </p>
@@ -594,7 +594,7 @@ export default function NgosPage() {
         </Card>
       </div>
 
-      <Card className="rounded-2xl border-black/5">
+      <Card className="rounded-2xl border-border">
         <CardContent className="p-4 flex items-center gap-3 flex-wrap">
           <Label className="text-sm font-semibold">Durum:</Label>
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'approved' | 'pending' | 'passive' | 'rejected')}>
@@ -642,13 +642,13 @@ export default function NgosPage() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-[2rem] border-black/5 shadow-xl overflow-hidden">
+      <Card className="rounded-[2rem] border-border shadow-xl overflow-hidden">
         <CardHeader className="bg-muted/30 border-b p-6">
           <CardTitle className="text-xl font-bold">Kuruluş Listesi</CardTitle>
           <CardDescription>Yayında olan ve başvuru sürecindeki STK'lar.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="divide-y border-black/5">
+          <div className="divide-y border-border">
             {filteredItems.length > 0 ? filteredItems.map(ngo => {
               const isPassive = ngo.status === 'Pasif';
               const isPending = ngo.status === 'Beklemede';

@@ -312,7 +312,7 @@ export default function FundsPage() {
                 </div>
             </div>
 
-            <Card className="rounded-[2rem] border-black/5 shadow-sm">
+            <Card className="rounded-[2rem] border-border shadow-sm">
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardTitle>{t('ngo_admin_funds.cardTitle')}</CardTitle>
@@ -323,7 +323,7 @@ export default function FundsPage() {
                 <CardContent className="space-y-4">
                     {filteredAndSortedFunds.length > 0 ? filteredAndSortedFunds.map(fund => (
                         <Card key={fund.id} className={cn(
-                            "transition-all duration-300 rounded-2xl border-black/5 shadow-sm overflow-hidden",
+                            "transition-all duration-300 rounded-2xl border-border shadow-sm overflow-hidden",
                             fund.status === 'Kapandı' ? 'opacity-60 bg-muted/30 grayscale-[0.5]' : 'hover:border-primary/50 hover:shadow-md'
                         )}>
                             <CardHeader className="p-6 pb-2">
@@ -351,7 +351,7 @@ export default function FundsPage() {
                             <CardContent className="p-6 pt-2 space-y-4">
                                 <div className="flex flex-wrap gap-2">
                                     {(fund.areas || []).map((area: string) => (
-                                        <Badge key={area} variant="secondary" className="rounded-lg font-bold text-[10px] bg-[#f5f5f7] border-none text-[#1d1d1f]/70">
+                                        <Badge key={area} variant="secondary" className="rounded-lg font-bold text-[10px] bg-muted border-none text-muted-foreground">
                                             {area}
                                         </Badge>
                                     ))}
@@ -381,7 +381,7 @@ export default function FundsPage() {
                                 {(() => {
                                     const officialUrl = normalizeUrl(fund.url);
                                     return officialUrl ? (
-                                        <Button asChild size="sm" variant="outline" className="flex-1 min-w-[120px] font-bold h-10 rounded-xl border-black/10">
+                                        <Button asChild size="sm" variant="outline" className="flex-1 min-w-[120px] font-bold h-10 rounded-xl border-border">
                                             <a href={officialUrl} target="_blank" rel="noopener noreferrer">
                                                 {t('ngo_admin_funds.officialPage')} <ExternalLink className="ml-2 h-3.5 w-3.5" />
                                             </a>

@@ -31,7 +31,7 @@ const CareerSection = ({
     className?: string
 }) => (
     <section className={cn(
-        "relative min-h-[80vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
+        "relative min-h-[80vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-border",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
         className
     )}>
@@ -65,9 +65,9 @@ export default function CareersPage() {
     );
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             {/* Nav */}
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
@@ -105,10 +105,10 @@ export default function CareersPage() {
                 imageHint="students group study discussion"
             />
 
-            <section className="py-24 bg-[#f5f5f7]">
+            <section className="py-24 bg-muted">
               <div className="container mx-auto px-6 max-w-4xl space-y-12">
                 <div className="text-center space-y-3">
-                    <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">{t('marketing.careers.openPositionsTitle')}</h2>
+                    <h2 className="text-4xl font-bold tracking-tight text-foreground">{t('marketing.careers.openPositionsTitle')}</h2>
                     <p className="text-lg text-muted-foreground">{t('marketing.careers.openPositionsDescription')}</p>
                 </div>
                 <div className="space-y-4">
@@ -121,7 +121,7 @@ export default function CareersPage() {
                   ] as const).map((job) => {
                     const title = t(`marketing.careers.jobs.${job.tkey}`);
                     return (
-                      <div key={job.tkey} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white rounded-2xl shadow-sm border hover:border-primary transition-all">
+                      <div key={job.tkey} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-card rounded-2xl shadow-sm border hover:border-primary transition-all">
                         <div>
                           <h3 className="font-bold text-lg">{title}</h3>
                           <p className="text-sm text-muted-foreground">{t('marketing.careers.jobOrg')} • {t(`marketing.careers.${job.locKey}`)} • {t(`marketing.careers.${job.typeKey}`)}</p>
@@ -136,15 +136,15 @@ export default function CareersPage() {
               </div>
             </section>
             
-            <section className="py-24 bg-white">
+            <section className="py-24 bg-background">
               <div className="container mx-auto px-6 max-w-4xl space-y-12">
                 <div className="text-center space-y-3">
-                    <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">{t('marketing.careers.volunteerTitle')}</h2>
+                    <h2 className="text-4xl font-bold tracking-tight text-foreground">{t('marketing.careers.volunteerTitle')}</h2>
                     <p className="text-lg text-muted-foreground">{t('marketing.careers.volunteerDescription')}</p>
                 </div>
                 <div className="space-y-4">
                   {hangelVolunteerOps.map((job) => (
-                    <div key={job.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white rounded-2xl shadow-sm border hover:border-primary transition-all">
+                    <div key={job.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-card rounded-2xl shadow-sm border hover:border-primary transition-all">
                       <div>
                         <h3 className="font-bold text-lg">{job.title}</h3>
                         <p className="text-sm text-muted-foreground">{job.organization} • {job.location.city} • {job.commitment}</p>
