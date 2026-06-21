@@ -20,9 +20,8 @@ const db = admin.firestore();
 const bucket = admin.storage().bucket();
 const auth = new GoogleAuth({ credentials: sa, scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
 
-// Tek IVR metni (kullanıcı kesinleştirdi — DEĞİŞTİRME). Marka sesli olarak "hencıl"
-// okunsun diye TTS metninde "hencıl" yazıldı (görünen marka adı yine "hangel").
-const IVR_TEXT = `Merhaba, hencıl'e hoş geldiniz. Toplumsal sorunlarla kolektif bilinç ve iş birliğiyle mücadele etme yolculuğumuza katkı sunduğunuz için teşekkür ederiz. Kullanıcı Destek Birimi için 1'i, Sivil Toplum Kuruluşları Destek Birimi için 2'yi, Marka ve Kurumsal İş Birlikleri Birimi için 3'ü tuşlayınız. Kişisel Verilerin Korunması Politikamız ve diğer yasal bilgilendirmeler için hencıl.org adresini ziyaret edebilirsiniz. hencıl'i aradığınız için teşekkür eder, iyi günler dileriz.`;
+// Tek IVR metni — kullanıcı kesinleştirdi, AYNEN ("hangel" yazımıyla, DEĞİŞTİRME).
+const IVR_TEXT = `Merhaba, hangel'e hoş geldiniz. Toplumsal sorunlarla kolektif bilinç ve iş birliğiyle mücadele etme yolculuğumuza katkı sunduğunuz için teşekkür ederiz. Kullanıcı Destek Birimi için 1'i, Sivil Toplum Kuruluşları Destek Birimi için 2'yi, Marka ve Kurumsal İş Birlikleri Birimi için 3'ü tuşlayınız. Kişisel Verilerin Korunması Politikamız ve diğer yasal bilgilendirmeler için hangel.org adresini ziyaret edebilirsiniz. hangel'i aradığınız için teşekkür eder, iyi günler dileriz.`;
 
 // 5 YETİŞKİN ("normal insan") sesi — aynı IVR metni, farklı Chirp3-HD sesleri.
 const SANTRAL = [
