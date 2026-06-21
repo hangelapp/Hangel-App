@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "7f0d9334",
+    "date": "2026-06-21",
+    "subject": "feat(scripts): generate-music-jingle — sözsüz instrumental hangel jingle (saf DSP)"
+  },
+  {
+    "hash": "25b451c8",
+    "date": "2026-06-21",
+    "subject": "feat(org-certs+ios): kurumlara sertifika + \"Sertifikalarımız\" menüsü; derin-bağlantı + durum çubuğu düzeltmeleri"
+  },
+  {
     "hash": "89c85478",
     "date": "2026-06-21",
     "subject": "feat(scripts): generate-jingles — Google Cloud TTS ile hangel seslerini üret + Storage'a yükle + siteSettings/jingles'a yaz"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "e84bd00e",
     "date": "2026-06-21",
     "subject": "feat: akıllı erişilebilirlik + iOS denetim/widget + gönüllülük backfill (workflow)"
-  },
-  {
-    "hash": "d60bd3a6",
-    "date": "2026-06-21",
-    "subject": "feat(volunteering): detayda başlamasına→bitişe akan geri sayım (DualCountdown)"
-  },
-  {
-    "hash": "acf0c5a8",
-    "date": "2026-06-21",
-    "subject": "feat(wallet): Apple kimliğinde yeniden tasarım + etkinlik/gönüllülük farklı renk"
   }
 ];

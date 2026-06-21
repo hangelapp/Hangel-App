@@ -380,6 +380,11 @@ export const translations: Record<Language, any> = {
       saved: 'Kaydedildi',
       savedDesc: 'Afet ve acil durum tercihlerin güncellendi.',
       saveError: 'Kaydedilemedi',
+      fillFromAppleHealth: 'Apple Health\'ten Doldur',
+      healthFilled: 'Apple Health\'ten dolduruldu',
+      healthFilledDesc: 'Kan grubun ve sağlık bilgilerin Apple Health\'ten alındı ve kaydedildi.',
+      healthUnavailable: 'Apple Health verisi alınamadı',
+      healthUnavailableDesc: 'İzin verilmemiş olabilir veya Apple Health\'te bu bilgiler kayıtlı değil.',
     },
     educationPage: {
       title: 'Eğitim ve Kulüp Bilgileri',
@@ -4877,6 +4882,11 @@ export const translations: Record<Language, any> = {
       saved: 'Saved',
       savedDesc: 'Your disaster & emergency preferences are updated.',
       saveError: 'Could not save',
+      fillFromAppleHealth: 'Fill from Apple Health',
+      healthFilled: 'Filled from Apple Health',
+      healthFilledDesc: 'Your blood type and health info were imported from Apple Health and saved.',
+      healthUnavailable: 'Could not read Apple Health data',
+      healthUnavailableDesc: 'Permission may not be granted, or this info is not recorded in Apple Health.',
     },
     educationPage: {
       title: 'Education & Clubs',

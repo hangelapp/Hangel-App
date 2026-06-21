@@ -75,23 +75,30 @@ enum HangelWidgetStore {
 
 // MARK: - Paylaşılan widget kabuğu (hangel marka çerçevesi)
 
-/// Üst satır: ikon rozeti + başlık etiketi (sol), hangel wordmark (sağ).
+/// Üst satır: yumuşak yuvarlatılmış ikon rozeti + başlık etiketi (sol), hangel wordmark (sağ).
+/// Apple-tarzı: ikon nötr-coral renk dolgulu yuvarlak karede, net tipografi hiyerarşisi.
 @available(iOS 16.1, *)
 private struct WidgetHeader: View {
     let kicker: String
     let systemImage: String
     var tint: Color = .hangelOrange
     var body: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 7) {
+            // İkon: yumuşak coral zeminli yuvarlatılmış kare (Apple app-icon estetiği).
             Image(systemName: systemImage)
                 .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(tint)
+                .frame(width: 22, height: 22)
+                .background(
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(tint.opacity(0.14))
+                )
                 .layoutPriority(1)
             // Kicker: tek satır + gerekirse küçülür (truncate/kesilme YOK).
             Text(kicker.uppercased())
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
-                .foregroundStyle(tint)
-                .kerning(0.2)
+                .foregroundStyle(.secondary)
+                .kerning(0.4)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             Spacer(minLength: 4)
@@ -135,36 +142,39 @@ struct UpcomingEventProvider: TimelineProvider {
 struct UpcomingEventWidgetView: View {
     var entry: UpcomingEventEntry
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             WidgetHeader(kicker: "Yaklaşan Etkinlik", systemImage: "calendar")
             Text(entry.title)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .foregroundStyle(.primary)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
             Spacer(minLength: 0)
             if let start = entry.start {
                 if start > Date() {
                     Text(timerInterval: Date()...start, countsDown: true)
-                        .font(.system(size: 22, weight: .heavy, design: .rounded))
+                        .font(.system(size: 24, weight: .heavy, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Color.hangelOrange)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                 } else {
                     Label("Başladı", systemImage: "dot.radiowaves.left.and.right")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(.green)
                 }
             } else {
                 Text("Planlanan etkinlik yok")
-                    .font(.caption2).foregroundStyle(.secondary)
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary)
             }
             if !entry.location.isEmpty {
                 Label(entry.location, systemImage: "mappin.and.ellipse")
-                    .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary).lineLimit(1)
             }
         }
-        .padding(14)
+        .padding(16)
         .containerBackgroundCompat()
         .widgetURL(URL(string: "hangel://events"))
     }
@@ -211,26 +221,26 @@ struct ImpactScoreProvider: TimelineProvider {
 struct ImpactScoreWidgetView: View {
     var entry: ImpactScoreEntry
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             WidgetHeader(kicker: "Etki Puanım", systemImage: "sparkles")
             Spacer(minLength: 0)
             Text("\(entry.score)")
-                .font(.system(size: 34, weight: .heavy, design: .rounded))
+                .font(.system(size: 40, weight: .heavy, design: .rounded))
                 .foregroundStyle(Color.hangelOrange)
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
             Text("puan")
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.system(size: 11, weight: .medium, design: .rounded))
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)
             Text(entry.rank)
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .foregroundStyle(Color.hangelOrange)
-                .padding(.horizontal, 8).padding(.vertical, 3)
-                .background(Capsule().fill(Color.hangelOrange.opacity(0.15)))
+                .padding(.horizontal, 10).padding(.vertical, 4)
+                .background(Capsule().fill(Color.hangelOrange.opacity(0.14)))
                 .lineLimit(1)
         }
-        .padding(14)
+        .padding(16)
         .containerBackgroundCompat()
         .widgetURL(URL(string: "hangel://profile"))
     }
@@ -279,28 +289,30 @@ struct BloodStatusWidgetView: View {
     var entry: BloodStatusEntry
     private var hasOpen: Bool { entry.openRequests > 0 }
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             WidgetHeader(kicker: "Acil Kan Durumu", systemImage: "drop.fill", tint: .hangelEmergency)
             Spacer(minLength: 0)
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
                 Text("\(entry.openRequests)")
-                    .font(.system(size: 34, weight: .heavy, design: .rounded))
+                    .font(.system(size: 40, weight: .heavy, design: .rounded))
                     .foregroundStyle(hasOpen ? Color.hangelEmergency : Color.secondary)
                     .minimumScaleFactor(0.5).lineLimit(1)
                 Text(hasOpen ? "açık çağrı" : "çağrı yok")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
             if hasOpen && !entry.nearestCity.isEmpty {
                 Label("En yakın: \(entry.nearestCity)", systemImage: "mappin.and.ellipse")
-                    .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary).lineLimit(1)
             } else if !hasOpen {
                 Label("Şu an acil ihtiyaç yok", systemImage: "checkmark.seal.fill")
-                    .font(.caption2).foregroundStyle(.green).lineLimit(1)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(.green).lineLimit(1)
             }
         }
-        .padding(14)
+        .padding(16)
         .containerBackgroundCompat()
         .widgetURL(URL(string: "hangel://blood"))
     }
@@ -340,18 +352,18 @@ struct MarketplaceWidgetView: View {
     private let tints: [Color] = [.hangelOrange, .pink, .purple, .teal]
     private let icons: [String] = ["tshirt.fill", "cup.and.saucer.fill", "gift.fill", "sparkles"]
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             WidgetHeader(kicker: "Fırsatlar", systemImage: "bag.fill")
             Spacer(minLength: 0)
             // Renkli ürün şeridi (4 kutucuk).
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 ForEach(0..<4, id: \.self) { i in
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .fill(tints[i].opacity(0.16))
-                        .frame(height: 36)
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(tints[i].opacity(0.14))
+                        .frame(height: 40)
                         .overlay(
                             Image(systemName: icons[i])
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(tints[i])
                         )
                 }
@@ -359,14 +371,14 @@ struct MarketplaceWidgetView: View {
             Spacer(minLength: 0)
             HStack(spacing: 4) {
                 Text("Alışverişle destek ol")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .foregroundStyle(Color.hangelOrange)
                     .lineLimit(1).minimumScaleFactor(0.7)
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold)).foregroundStyle(Color.hangelOrange)
             }
         }
-        .padding(12)
+        .padding(16)
         .containerBackgroundCompat()
         .widgetURL(URL(string: "hangel://market"))
     }
@@ -411,26 +423,26 @@ struct DonationsProvider: TimelineProvider {
 struct DonationsWidgetView: View {
     var entry: DonationsEntry
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             WidgetHeader(kicker: "Bağışlarım", systemImage: "gift.fill")
             Spacer(minLength: 0)
             Text("\(entry.count)")
-                .font(.system(size: 34, weight: .heavy, design: .rounded))
+                .font(.system(size: 40, weight: .heavy, design: .rounded))
                 .foregroundStyle(Color.hangelOrange)
                 .minimumScaleFactor(0.5).lineLimit(1)
             Text(entry.label)
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.system(size: 11, weight: .medium, design: .rounded))
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)
             HStack(spacing: 4) {
                 Text("Katkılarımı gör")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .foregroundStyle(Color.hangelOrange).lineLimit(1).minimumScaleFactor(0.7)
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold)).foregroundStyle(Color.hangelOrange)
             }
         }
-        .padding(14)
+        .padding(16)
         .containerBackgroundCompat()
         .widgetURL(URL(string: "hangel://my-donations"))
     }
@@ -449,7 +461,126 @@ struct DonationsWidget: Widget {
     }
 }
 
-// MARK: - 6) Kilit ekranı (accessory) widget'ları — iOS 16+
+// MARK: - 6) hangel Hızlı Erişim widget'ı (Temu-tarzı hızlı eylem ızgarası)
+// Tek dokunuşla 4 hangel eylemine derin bağlantı. Home-screen widget'larda
+// .widgetURL yerine Link(destination:) ile ÇOK hedefli dokunma desteklenir; her
+// kutu kendi hangel:// rotasına gider. İçerik statik → basit (Entry yok-veri) Provider.
+// Apple-temiz: yuvarlatılmış kutular, yumuşak coral zemin, SF rounded tipografi.
+
+struct QuickAccessEntry: TimelineEntry { let date: Date }
+
+@available(iOS 16.1, *)
+struct QuickAccessProvider: TimelineProvider {
+    func placeholder(in context: Context) -> QuickAccessEntry { QuickAccessEntry(date: Date()) }
+    func getSnapshot(in context: Context, completion: @escaping (QuickAccessEntry) -> Void) {
+        completion(QuickAccessEntry(date: Date()))
+    }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<QuickAccessEntry>) -> Void) {
+        // İçerik statik → bir daha yenilemeye gerek yok.
+        completion(Timeline(entries: [QuickAccessEntry(date: Date())], policy: .never))
+    }
+}
+
+/// 4 hızlı eylem tanımı (etiket, SF Symbol, hangel:// derin bağlantı, aksan rengi).
+@available(iOS 16.1, *)
+private struct QuickAccessAction: Identifiable {
+    let id = UUID()
+    let label: String
+    let systemImage: String
+    let url: String
+    var tint: Color = .hangelOrange
+}
+
+@available(iOS 16.1, *)
+private let quickAccessActions: [QuickAccessAction] = [
+    QuickAccessAction(label: "Bağış",      systemImage: "heart.fill",       url: "hangel://social-impact"),
+    QuickAccessAction(label: "Gönüllülük", systemImage: "hand.raised.fill", url: "hangel://volunteering"),
+    QuickAccessAction(label: "Etkinlikler", systemImage: "calendar",        url: "hangel://events"),
+    QuickAccessAction(label: "Acil Kan",   systemImage: "drop.fill",        url: "hangel://blood", tint: .hangelEmergency),
+]
+
+/// Tek hızlı-erişim kutusu: yumuşak coral zeminli yuvarlatılmış kare + ikon + etiket.
+@available(iOS 16.1, *)
+private struct QuickAccessTile: View {
+    let action: QuickAccessAction
+    var body: some View {
+        Link(destination: URL(string: action.url)!) {
+            VStack(spacing: 6) {
+                Image(systemName: action.systemImage)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(action.tint)
+                    .frame(width: 40, height: 40)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(action.tint.opacity(0.14))
+                    )
+                Text(action.label)
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+@available(iOS 16.1, *)
+struct QuickAccessWidgetView: View {
+    @Environment(\.widgetFamily) private var family
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Üst başlık: küçük wordmark + "Hızlı Erişim" etiketi.
+            HStack(spacing: 6) {
+                HangelWordmark(size: 13).fixedSize()
+                Text("Hızlı Erişim")
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            Spacer(minLength: 0)
+            if family == .systemSmall {
+                // 2x2 ızgara (küçük boy).
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        QuickAccessTile(action: quickAccessActions[0])
+                        QuickAccessTile(action: quickAccessActions[1])
+                    }
+                    HStack(spacing: 8) {
+                        QuickAccessTile(action: quickAccessActions[2])
+                        QuickAccessTile(action: quickAccessActions[3])
+                    }
+                }
+            } else {
+                // 1x4 satır (orta boy) — Temu hızlı-erişim şeridi gibi.
+                HStack(spacing: 8) {
+                    ForEach(quickAccessActions) { action in
+                        QuickAccessTile(action: action)
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .containerBackgroundCompat()
+    }
+}
+
+@available(iOS 16.1, *)
+struct QuickAccessWidget: Widget {
+    let kind = "com.hangel.ios.app.widget.quick-access"
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: QuickAccessProvider()) { _ in
+            QuickAccessWidgetView()
+        }
+        .configurationDisplayName("hangel Hızlı Erişim")
+        .description("Bağış, gönüllülük, etkinlikler ve acil kana tek dokunuşla eriş.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
+// MARK: - 7) Kilit ekranı (accessory) widget'ları — iOS 16+
 // Lock Screen / Apple Watch aksesuar aileleri (.accessoryCircular, .accessoryInline,
 // .accessoryRectangular) iOS 16.0+. Mevcut provider/entry'ler yeniden kullanılır.
 // AccessoryWidgetBackground() ile sistemle uyumlu sade arkaplan; renk sınırlı olduğu

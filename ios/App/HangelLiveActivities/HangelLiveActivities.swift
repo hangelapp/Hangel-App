@@ -150,6 +150,7 @@ struct HangelLiveActivitiesBundle: WidgetBundle {
         BloodStatusWidget()
         MarketplaceWidget()
         DonationsWidget()
+        QuickAccessWidget()
         // Kilit ekranı (accessory) widget'ları — iOS 16+
         ImpactScoreLockWidget()
         UpcomingEventLockWidget()

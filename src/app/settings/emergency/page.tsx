@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { Loader2, Droplet, Siren, HeartPulse, Activity } from 'lucide-react';
+import { Loader2, Droplet, Siren, HeartPulse, Activity, HeartHandshake } from 'lucide-react';
 
 import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
+import { readHealthData } from '@/lib/native-health';
 
 const BLOOD_TYPES = ['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-', 'Bilinmiyor'] as const;
 type BloodType = typeof BLOOD_TYPES[number];
@@ -34,6 +36,8 @@ export default function EmergencySettingsPage() {
   const [prefs, setPrefs] = useState<EmergencyPrefs>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [healthLoading, setHealthLoading] = useState(false);
+  const isNative = Capacitor.isNativePlatform();
 
   useEffect(() => {
     if (!user || !firestore) return;
@@ -78,6 +82,40 @@ export default function EmergencySettingsPage() {
     }
   };
 
+  // Apple Health'ten kan grubu + cinsiyet + doğum tarihini oku, formu doldur ve
+  // doğrudan kaydet. Native değilse buton görünmez; veri/izin yoksa bilgi ver.
+  const fillFromAppleHealth = async () => {
+    if (!user || !firestore) return;
+    setHealthLoading(true);
+    try {
+      const health = await readHealthData();
+      if (!health || !health.available) {
+        toast({ variant: 'destructive', title: t('emergencyPage.healthUnavailable'), description: t('emergencyPage.healthUnavailableDesc') });
+        return;
+      }
+      const updates: Record<string, string> = {};
+      if (health.bloodType) {
+        updates['personalInfo.bloodType'] = health.bloodType;
+        setPrefs((p) => ({ ...p, bloodType: health.bloodType }));
+      }
+      if (health.gender) updates['personalInfo.gender'] = health.gender;
+      if (health.birthDate) updates['personalInfo.birthDate'] = health.birthDate;
+      if (health.height) updates['personalInfo.height'] = health.height;
+      if (health.weight) updates['personalInfo.weight'] = health.weight;
+
+      if (Object.keys(updates).length === 0) {
+        toast({ variant: 'destructive', title: t('emergencyPage.healthUnavailable'), description: t('emergencyPage.healthUnavailableDesc') });
+        return;
+      }
+      await updateDoc(doc(firestore, COLLECTIONS.users, user.uid), updates);
+      toast({ title: t('emergencyPage.healthFilled'), description: t('emergencyPage.healthFilledDesc') });
+    } catch (e) {
+      toast({ variant: 'destructive', title: t('emergencyPage.saveError'), description: e instanceof Error ? e.message : t('common.unknownError') });
+    } finally {
+      setHealthLoading(false);
+    }
+  };
+
   if (isUserLoading || loading) {
     return <div className="min-h-dvh flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
@@ -102,6 +140,18 @@ export default function EmergencySettingsPage() {
               <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={t('emergencyPage.bloodTypePlaceholder')} /></SelectTrigger>
               <SelectContent>{BLOOD_TYPES.map((bt: BloodType) => (<SelectItem key={bt} value={bt}>{bt === 'Bilinmiyor' ? t('emergencyPage.bloodTypeUnknown') : bt}</SelectItem>))}</SelectContent>
             </Select>
+            {isNative && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={fillFromAppleHealth}
+                disabled={healthLoading}
+                className="w-full h-11 rounded-xl gap-2 mt-1"
+              >
+                {healthLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <HeartHandshake className="h-4 w-4 text-red-600" />}
+                {t('emergencyPage.fillFromAppleHealth')}
+              </Button>
+            )}
           </div>
           <ToggleRow label={t('emergencyPage.bloodNotifications')} checked={!!prefs.bloodNotifications} onChange={(v) => setPrefs((p) => ({ ...p, bloodNotifications: v }))} />
           <ToggleRow label={t('emergencyPage.canDonateBlood')} checked={!!prefs.canDonateBlood} onChange={(v) => setPrefs((p) => ({ ...p, canDonateBlood: v }))} />

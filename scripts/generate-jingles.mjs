@@ -24,26 +24,20 @@ const bucket = admin.storage().bucket();
 
 const auth = new GoogleAuth({ credentials: sa, scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
 
-// Üretilecek sesler — warm Türkçe Wavenet sesi, marka adı "hangel" vurgulu.
+// jingle0/1/2 = SÖZSÜZ MÜZİK (generate-music-jingle.mjs ile üretildi) — DOKUNMA.
+// Bu script yalnız konuşma anonsu (callCenter) + jingle3/4 sözlü ident üretir.
+// Metinler hangel kurumsal söylemiyle: "umudu birlikte büyütüyoruz", "yalnız
+// başına mücadele etmek yok", "toplumsal sorunlar için birlikte çalışıyoruz".
 const ITEMS = [
   { key: 'callCenter', name: 'Çağrı Merkezi Karşılaması',
-    voice: 'tr-TR-Wavenet-E', rate: 0.97, pitch: 1.0,
-    ssml: `<speak>hangel iyilik hareketine hoş geldiniz.<break time="350ms"/> Çağrınız bizim için çok değerli.<break time="300ms"/> Lütfen hatta kalın, en kısa sürede size yardımcı olacağız.</speak>` },
-  { key: 'jingle0', name: 'Jenerik 1 — Karşılama',
+    voice: 'tr-TR-Wavenet-E', rate: 0.96, pitch: 1.0,
+    ssml: `<speak>hangel'e hoş geldiniz.<break time="350ms"/> Burada hiçbir sorunla yalnız başına mücadele etmezsiniz;<break time="250ms"/> toplumsal sorunlar için birlikte çalışıyoruz.<break time="350ms"/> Çağrınız bizim için çok değerli, lütfen hatta kalın.</speak>` },
+  { key: 'jingle3', name: 'Jenerik — Umudu Büyütüyoruz (sözlü)',
     voice: 'tr-TR-Wavenet-E', rate: 1.0, pitch: 1.5,
-    ssml: `<speak><emphasis level="moderate">hangel.</emphasis><break time="250ms"/> İyilik, bir dokunuş kadar yakın.</speak>` },
-  { key: 'jingle1', name: 'Jenerik 2 — Teşekkür',
+    ssml: `<speak>Umudu birlikte büyütüyoruz.<break time="250ms"/> <emphasis level="moderate">hangel.</emphasis></speak>` },
+  { key: 'jingle4', name: 'Jenerik — Yalnız Değilsin (sözlü)',
     voice: 'tr-TR-Wavenet-D', rate: 1.0, pitch: 1.0,
-    ssml: `<speak>İyiliğin parçası olduğun için teşekkürler.<break time="250ms"/> <emphasis level="moderate">hangel.</emphasis></speak>` },
-  { key: 'jingle2', name: 'Jenerik 3 — Gönüllülük',
-    voice: 'tr-TR-Wavenet-E', rate: 1.02, pitch: 2.0,
-    ssml: `<speak>Bir saatini ayır,<break time="200ms"/> bir hayata dokun.<break time="250ms"/> <emphasis level="moderate">hangel</emphasis> ile gönüllü ol.</speak>` },
-  { key: 'jingle3', name: 'Jenerik 4 — Etki',
-    voice: 'tr-TR-Wavenet-B', rate: 1.0, pitch: 0.0,
-    ssml: `<speak>Küçük bir hareket,<break time="200ms"/> büyük bir etki.<break time="250ms"/> <emphasis level="moderate">hangel.</emphasis></speak>` },
-  { key: 'jingle4', name: 'Jenerik 5 — Dayanışma',
-    voice: 'tr-TR-Wavenet-E', rate: 0.98, pitch: 1.0,
-    ssml: `<speak>Birlikte daha güçlüyüz.<break time="250ms"/> <emphasis level="moderate">hangel</emphasis> dayanışma ağı.</speak>` },
+    ssml: `<speak>Yalnız başına mücadele etmek yok;<break time="200ms"/> toplumsal sorunlar için birlikte çalışıyoruz.<break time="250ms"/> <emphasis level="moderate">hangel.</emphasis></speak>` },
 ];
 
 async function synth(token, item) {

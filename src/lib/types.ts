@@ -299,6 +299,9 @@ export type User = {
         gender: string;
         nationality: string;
         bloodType: string;
+        // Apple Health'ten otomatik senkronlanabilen ölçüler (cm / kg, string).
+        height?: string;
+        weight?: string;
         address: {
             country: string;
             city: string;
