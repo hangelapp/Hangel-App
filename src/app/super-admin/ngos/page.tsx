@@ -20,15 +20,14 @@ import Link from 'next/link';
 import React, { useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
 import { useNgoRealtimeStats } from '@/hooks/use-ngo-stats';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Loader2, Trash2, Edit3, Power, PowerOff, UserCog, CheckCircle,
-  XCircle, Search, X, ArrowDownUp, Award,
+  XCircle, Search, X, ArrowDownUp,
 } from 'lucide-react';
 import type { NGO } from '@/lib/types';
 import { normalizePhone } from '@/lib/messaging/phone';
@@ -78,95 +77,6 @@ interface NgoInvitation {
   status?: string;
   invitedAt?: { toDate?: () => Date } | Date | null;
 }
-
-// Süper-admin bu kuruma sertifika verir (başlık + opsiyonel açıklama).
-// Bu sayfa STK listesidir → orgKind 'ngo'. POST /api/super-admin/org-certificate.
-const IssueCertDialog = ({ ngo }: { ngo: NgoItem }) => {
-  const { user } = useUser();
-  const { toast } = useToast();
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleIssue = async () => {
-    if (!user || !title.trim()) return;
-    setSubmitting(true);
-    try {
-      const idToken = await user.getIdToken();
-      const res = await fetch('/api/super-admin/org-certificate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
-        body: JSON.stringify({
-          orgId: ngo.id,
-          orgKind: 'ngo',
-          orgName: ngo.name || 'STK',
-          title: title.trim(),
-          description: description.trim() || undefined,
-        }),
-      });
-      const data = (await res.json().catch(() => null)) as { ok?: boolean; code?: string; message?: string } | null;
-      if (!res.ok || !data?.ok) {
-        toast({ variant: 'destructive', title: 'Sertifika verilemedi', description: data?.message ?? 'Beklenmeyen bir hata oluştu.' });
-        return;
-      }
-      toast({ title: 'Sertifika verildi 🧡', description: `${ngo.name} için sertifika oluşturuldu. Kod: ${data.code}` });
-      setOpen(false);
-      setTitle('');
-      setDescription('');
-    } catch {
-      toast({ variant: 'destructive', title: 'Sertifika verilemedi', description: 'Beklenmeyen bir hata oluştu.' });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3">
-          <Award className="mr-1.5 h-3.5 w-3.5" /> Sertifika Ver
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="rounded-2xl sm:max-w-[480px]">
-        <DialogHeader>
-          <DialogTitle className="font-bold">Kuruma Sertifika Ver</DialogTitle>
-          <DialogDescription>
-            <strong>{ngo.name}</strong> kuruluşuna bir sertifika verin. Kurum bunu &quot;Sertifikalarımız&quot; sayfasında görür.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label>Sertifika Başlığı</Label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Örn. Yılın Şeffaf STK'sı"
-              className="rounded-xl"
-              autoFocus
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Açıklama (opsiyonel)</Label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Sertifikanın gerekçesi / kısa açıklaması"
-              className="rounded-xl min-h-[80px]"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" className="rounded-xl font-bold" onClick={() => setOpen(false)}>İptal</Button>
-          <Button className="rounded-xl font-bold" disabled={!title.trim() || submitting} onClick={handleIssue}>
-            {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sertifika Ver
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRemove, onChangeRole }: {
   ngo: NgoItem;
@@ -853,7 +763,6 @@ export default function NgosPage() {
                           <Link href={`/super-admin/ngos/${ngo.id}/edit`}><Edit3 className="mr-1.5 h-3.5 w-3.5" />Düzelt</Link>
                         </Button>
                         <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRemove={handleRemoveManager} onChangeRole={handleChangeAdminRole} />
-                        <IssueCertDialog ngo={ngo} />
                         {isDraft ? (
                           <Button size="sm" className="rounded-xl font-bold h-9 px-3 bg-green-600 hover:bg-green-700 text-white"
                                   onClick={() => handleApproveDraft(ngo.id, ngo.name)}>

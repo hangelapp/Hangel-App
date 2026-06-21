@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "ef33065b",
+    "date": "2026-06-21",
+    "subject": "feat(scripts): jingle anonsları hangel kurumsal söylemiyle + Firestore merge fix"
+  },
+  {
+    "hash": "ba8f1e76",
+    "date": "2026-06-21",
+    "subject": "feat(ios): HealthKit otomatik doldurma + Apple-stil widget'lar + \"hangel Hızlı Erişim\" widget"
+  },
+  {
     "hash": "7f0d9334",
     "date": "2026-06-21",
     "subject": "feat(scripts): generate-music-jingle — sözsüz instrumental hangel jingle (saf DSP)"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "1d115591",
     "date": "2026-06-21",
     "subject": "build(ios): widget+denetim Swift dosyalarını HangelLiveActivities target'ına ekle"
-  },
-  {
-    "hash": "4624092d",
-    "date": "2026-06-21",
-    "subject": "feat(ios): widget+denetimleri WidgetBundle'a kaydet (Xcode target-add + build bekliyor)"
-  },
-  {
-    "hash": "e84bd00e",
-    "date": "2026-06-21",
-    "subject": "feat: akıllı erişilebilirlik + iOS denetim/widget + gönüllülük backfill (workflow)"
   }
 ];
