@@ -39,6 +39,15 @@ export const entityIdFieldByKind: Record<EntityKind, 'managedNgoId' | 'managedBr
   club: 'managedClubId',
 };
 
+// Kind'a özel rol başlığı alanı — kanonik /api/ngo-admin/users/managers route'u
+// rolü ÖNCE bu alandan okur (ngoRoleTitle vb.), generic roleTitle fallback'tir.
+// Yetkilendir dialog'u her iki alanı da yazar ki 3 panel aynı rolü göstersin.
+export const roleTitleFieldByKind: Record<EntityKind, 'ngoRoleTitle' | 'brandRoleTitle' | 'clubRoleTitle'> = {
+  ngo: 'ngoRoleTitle',
+  brand: 'brandRoleTitle',
+  club: 'clubRoleTitle',
+};
+
 export const invitationIdFieldByKind: Record<EntityKind, 'ngoId' | 'brandId' | 'clubId'> = {
   ngo: 'ngoId',
   brand: 'brandId',

@@ -24,7 +24,7 @@ import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, doc, getDoc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { UserRow, EntityKind, EntityRow } from './types';
 import {
@@ -32,6 +32,7 @@ import {
   entityCollectionByKind,
   entityIdFieldByKind,
   invitationIdFieldByKind,
+  roleTitleFieldByKind,
   rolesByKind,
 } from './types';
 
@@ -239,24 +240,29 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
     setRevoking(`${auth.kind}:${auth.entityId}`);
     try {
       const idField = entityIdFieldByKind[auth.kind];
+      const roleTitleField = roleTitleFieldByKind[auth.kind];
       // Diğer kuruluşlarda hâlâ yetkisi var mı kontrolü için kullanıcıya kalan
-      // yetki var mı bak; yoksa role'ü 'user'a indir.
+      // yetki var mı bak; yoksa role'ü 'user'a indir. Kanonik kaldırma: managed{kind}Id
+      // + kind'a özel rol başlığı temizlenir (3 panelde de listeden düşsün).
       const remaining = activeAuthorizations.filter(a => !(a.kind === auth.kind && a.entityId === auth.entityId));
-      const userPatch: Record<string, unknown> = { [idField]: null };
+      const userPatch: Record<string, unknown> = { [idField]: null, [roleTitleField]: null };
       if (remaining.length === 0 && user.role !== 'super-admin') {
         userPatch.role = 'user';
         userPatch.roleTitle = null;
       }
       await updateDoc(doc(db, COLLECTIONS.users, user.id), userPatch);
 
-      // Eğer kuruluşun adminUserId'si bu kullanıcıysa onu da temizle.
+      // adminUserId'yi YALNIZCA bu kullanıcı sahipse temizle — başka birine aitse
+      // dokunma (aksi halde sahip yanlışlıkla sıfırlanır, panel 3'teki "Sahip" kaybolur).
       try {
         const entityCollection = entityCollectionByKind[auth.kind];
-        await updateDoc(doc(db, entityCollection, auth.entityId), {
-          adminUserId: null,
-        });
+        const entityRef = doc(db, entityCollection, auth.entityId);
+        const entitySnap = await getDoc(entityRef);
+        const currentOwner = entitySnap.exists() ? (entitySnap.data() as { adminUserId?: string | null }).adminUserId : null;
+        if (currentOwner === user.id) {
+          await updateDoc(entityRef, { adminUserId: null });
+        }
       } catch (entErr) {
-        // adminUserId zaten başka birine ait olabilir — sessizce geç.
         console.warn('[assign-entity] adminUserId clear skipped', entErr);
       }
 
@@ -305,13 +311,17 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
     try {
       const entityCollection = entityCollectionByKind[entityKind];
       const idField = entityIdFieldByKind[entityKind];
+      const roleTitleField = roleTitleFieldByKind[entityKind];
       const invitationIdField = invitationIdFieldByKind[entityKind];
       const role = rolesByKind[entityKind].find(r => r.value === roleTitle);
       const isPrimary = role?.isPrimary ?? false;
 
-      // 1) Kullanıcı dokümanını güncelle
+      // 1) Kullanıcı dokümanını güncelle — kanonik alanlar: managed{kind}Id + hem
+      //    kind'a özel rol başlığı (ngoRoleTitle vb., managers route'unun birincil
+      //    okuduğu alan) hem generic roleTitle. Böylece 3 panel aynı rolü gösterir.
       const userPatch: Record<string, unknown> = {
         [idField]: selectedEntityId,
+        [roleTitleField]: roleTitle,
         roleTitle,
       };
       if (user.role !== 'super-admin') {
@@ -319,15 +329,20 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
       }
       await updateDoc(doc(db, COLLECTIONS.users, user.id), userPatch);
 
-      // 2) Sadece Genel Yönetici ise kuruluşun adminUserId'sini bu kullanıcıya bağla
-      if (isPrimary) {
-        try {
-          await updateDoc(doc(db, entityCollection, selectedEntityId), {
-            adminUserId: user.id,
-          });
-        } catch (entityErr) {
-          console.warn('Entity adminUserId güncellenemedi:', entityErr);
+      // 2) Kuruluşun adminUserId'sini (sahip) kanonik kurala göre bağla:
+      //    Genel Yönetici (birincil) atanıyorsa VEYA kuruluşun henüz sahibi yoksa
+      //    bu kullanıcı sahip olur. Mevcut bir sahip varken birincil-olmayan rol
+      //    atanırsa sahip DEĞİŞMEZ (Ömer sahipken İsmail'e alt rol verince ikisi de
+      //    listede kalır, sahip rozeti Ömer'de).
+      try {
+        const entityRef = doc(db, entityCollection, selectedEntityId);
+        const entitySnap = await getDoc(entityRef);
+        const currentOwner = entitySnap.exists() ? (entitySnap.data() as { adminUserId?: string | null }).adminUserId : null;
+        if (isPrimary || !currentOwner) {
+          await updateDoc(entityRef, { adminUserId: user.id });
         }
+      } catch (entityErr) {
+        console.warn('Entity adminUserId güncellenemedi:', entityErr);
       }
 
       // 3) userInvitations koleksiyonuna kabul edilmiş davet kaydı ekle

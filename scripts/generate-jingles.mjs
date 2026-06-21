@@ -20,21 +20,20 @@ const db = admin.firestore();
 const bucket = admin.storage().bucket();
 const auth = new GoogleAuth({ credentials: sa, scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
 
-// Tek IVR metni — kullanıcı kesinleştirdi, AYNEN ("hangel" yazımıyla, DEĞİŞTİRME).
-const IVR_TEXT = `Merhaba, hangel'e hoş geldiniz. Toplumsal sorunlarla kolektif bilinç ve iş birliğiyle mücadele etme yolculuğumuza katkı sunduğunuz için teşekkür ederiz. Kullanıcı Destek Birimi için 1'i, Sivil Toplum Kuruluşları Destek Birimi için 2'yi, Marka ve Kurumsal İş Birlikleri Birimi için 3'ü tuşlayınız. Kişisel Verilerin Korunması Politikamız ve diğer yasal bilgilendirmeler için hangel.org adresini ziyaret edebilirsiniz. hangel'i aradığınız için teşekkür eder, iyi günler dileriz.`;
+// Tek IVR metni — kullanıcının son hâli (4 birim), AYNEN. ("hangel" küçük harf; sesli fark yok.)
+const IVR_TEXT = `Merhaba, hangel'e hoş geldiniz. Sosyal sorunlarla kolektif bilinç ve iş birliğiyle mücadele etme yolculuğumuzda yanımızda olduğunuz, katkılarınız ve desteğiniz için teşekkür ederiz. Kullanıcı Destek Birimi için 1'i, Sivil Toplum Kuruluşları Destek Birimi için 2'yi, Marka İş Birlikleri Birimi için 3'ü, Kurumsal İş Birlikleri Birimi için 4'ü tuşlayınız. Kişisel Verilerin Korunması Politikamız ve diğer yasal bilgilendirmeler hakkında bilgi almak için web sitemizi ziyaret edebilirsiniz. Lütfen bekleyiniz, sizi en kısa sürede ilgili temsilcimize aktarıyoruz. hangel'i aradığınız için teşekkür ederiz.`;
 
-// 5 YETİŞKİN sesi — yeni/daha iyi Chirp3-HD seçimi (önceki set beğenilmedi).
+// "Jazz/soul yıldızı" vibe — GERÇEK ünlü (Şakira/Kanye) klonlanamaz/yasaktır; TTS şarkı
+// söyleyemez. En karakterli/sıcak Chirp3-HD sesler + yavaş smooth tempo (rahat "lounge").
 const SANTRAL = [
-  { voice: 'tr-TR-Chirp3-HD-Kore', rate: 0.97, text: IVR_TEXT },        // kadın, profesyonel
-  { voice: 'tr-TR-Chirp3-HD-Despina', rate: 0.97, text: IVR_TEXT },     // kadın, pürüzsüz
-  { voice: 'tr-TR-Chirp3-HD-Gacrux', rate: 0.97, text: IVR_TEXT },      // kadın, olgun/sıcak
-  { voice: 'tr-TR-Chirp3-HD-Puck', rate: 0.98, text: IVR_TEXT },        // erkek, canlı
-  { voice: 'tr-TR-Chirp3-HD-Enceladus', rate: 0.97, text: IVR_TEXT },   // erkek, yumuşak
+  { voice: 'tr-TR-Chirp3-HD-Enceladus', rate: 0.90, text: IVR_TEXT },   // erkek, breathy "crooner"
+  { voice: 'tr-TR-Chirp3-HD-Charon', rate: 0.91, text: IVR_TEXT },      // erkek, dolgun
+  { voice: 'tr-TR-Chirp3-HD-Gacrux', rate: 0.92, text: IVR_TEXT },      // kadın, olgun/soul
+  { voice: 'tr-TR-Chirp3-HD-Sulafat', rate: 0.92, text: IVR_TEXT },     // kadın, sıcak
+  { voice: 'tr-TR-Chirp3-HD-Rasalgethi', rate: 0.91, text: IVR_TEXT },  // erkek, derin
 ];
 
-// Google TTS gerçek ÇOCUK sesi yapamıyor (pitch shift "sahte çocuk taklidi" gibi).
-// En doğal alternatif = Chirp3-HD genç/ferah sesler (pitch YOK). Gerçek çocuk için
-// kayıt ya da ElevenLabs gerekir.
+// "Çocuk" slotları = doğal genç Chirp3 (sahte değil). Gerçek çocuk için kayıt/ElevenLabs.
 const COCUK = [
   { voice: 'tr-TR-Chirp3-HD-Leda', rate: 1.0, text: IVR_TEXT },         // genç, doğal
   { voice: 'tr-TR-Chirp3-HD-Aoede', rate: 1.0, text: IVR_TEXT },        // genç, ferah

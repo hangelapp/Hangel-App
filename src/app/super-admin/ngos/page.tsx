@@ -17,10 +17,10 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import Link from 'next/link';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
@@ -32,6 +32,7 @@ import {
 import type { NGO } from '@/lib/types';
 import { normalizePhone } from '@/lib/messaging/phone';
 import { COLLECTIONS } from '@/firebase/collections';
+import { ORG_ROLE_OPTIONS } from '@/lib/ngo-admin/roles';
 
 type NgoItem = (NGO & { id: string }) & {
   source: 'ngos' | 'applications';
@@ -59,39 +60,105 @@ interface NgoApplication {
   [key: string]: unknown;
 }
 
-const NGO_ROLE_OPTIONS = [
-  'Genel Yönetici',
-  'Finans Yöneticisi',
-  'Gönüllü Yöneticisi',
-  'İçerik Yöneticisi',
-  'Proje Yöneticisi',
-] as const;
-type NgoRole = typeof NGO_ROLE_OPTIONS[number];
+// Yetkili listesi + rol değiştirme artık kanonik route'lardan geçer; rol seçenekleri
+// /ngo-admin/users ile birebir aynı kaynaktan (ORG_ROLE_OPTIONS) gelir, yoksa
+// set-role doğrulaması farklı role'lerde başarısız olurdu.
+const NGO_ROLE_OPTIONS = ORG_ROLE_OPTIONS;
+type NgoRole = (typeof ORG_ROLE_OPTIONS)[number];
 
-interface NgoInvitation {
-  id: string;
-  ngoId?: string;
-  inviteeUserId?: string;
-  inviteeName?: string;
-  role?: string;
-  status?: string;
-  invitedAt?: { toDate?: () => Date } | Date | null;
+// Kanonik /api/ngo-admin/users/managers route'unun döndürdüğü yetkili satırı.
+interface CanonicalManagerRow {
+  userId: string;
+  name: string;
+  avatarUrl?: string | null;
+  role: string;
+  since: number;
+  invitationId?: string;
+  isPrimary: boolean;
+  isOwner: boolean;
 }
 
-const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRemove, onChangeRole }: {
+const TransferAdminDialog = ({ ngo, allUsers, onAssign }: {
   ngo: NgoItem;
   allUsers: SimpleNgoUser[] | null;
   onAssign: (ngoId: string, newUserId: string, newUserName: string, role: NgoRole) => Promise<void>;
-  onRemove: (ngoId: string, userId: string, invitationId: string | undefined, name: string) => Promise<void>;
-  onChangeRole: (ngoId: string, invitationId: string | undefined, userId: string | undefined, newRole: NgoRole, name: string) => Promise<void>;
 }) => {
-  const db = useFirestore();
+  const { user: authUser } = useUser();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<NgoRole>('Genel Yönetici');
   const [submitting, setSubmitting] = useState(false);
   const [roleEdits, setRoleEdits] = useState<Record<string, NgoRole>>({});
   const [updatingInv, setUpdatingInv] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+
+  // Yetkili listesi KANONİK kaynaktan: /ngo-admin/users ile birebir aynı route
+  // (managedNgoId üyeleri + adminUserId sahibi + kabul edilmiş davetlerin birleşimi).
+  const [managerRows, setManagerRows] = useState<CanonicalManagerRow[]>([]);
+  const [managersLoading, setManagersLoading] = useState(false);
+
+  const fetchManagers = useCallback(async () => {
+    if (!authUser || !open) return;
+    setManagersLoading(true);
+    try {
+      const token = await authUser.getIdToken();
+      const params = new URLSearchParams({ orgId: ngo.id, kind: 'ngo' });
+      const res = await fetch(`/api/ngo-admin/users/managers?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`list ${res.status}`);
+      const data = (await res.json()) as { managers?: CanonicalManagerRow[] };
+      setManagerRows(Array.isArray(data.managers) ? data.managers : []);
+    } catch {
+      setManagerRows([]);
+    } finally {
+      setManagersLoading(false);
+    }
+  }, [authUser, open, ngo.id]);
+
+  useEffect(() => { void fetchManagers(); }, [fetchManagers]);
+
+  // Kanonik route'a (set-role / remove) süper-admin token'ı ile çağrı.
+  const callCanonical = useCallback(async (path: string, payload: Record<string, unknown>) => {
+    if (!authUser) throw new Error('Oturum bulunamadı.');
+    const token = await authUser.getIdToken();
+    const res = await fetch(path, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, orgId: ngo.id, kind: 'ngo' }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data as { message?: string })?.message || `Hata (${res.status})`);
+    return data;
+  }, [authUser, ngo.id]);
+
+  const handleChangeRole = useCallback(async (userId: string, newRole: NgoRole, name: string) => {
+    setUpdatingInv(userId);
+    try {
+      await callCanonical('/api/ngo-admin/users/set-role', { targetUserId: userId, role: newRole });
+      setRoleEdits(prev => { const n = { ...prev }; delete n[userId]; return n; });
+      toast({ title: 'Rol Güncellendi', description: `${name} kullanıcısının rolü "${newRole}" olarak güncellendi.` });
+      await fetchManagers();
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Rol güncellenemedi', description: e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.' });
+    } finally {
+      setUpdatingInv(null);
+    }
+  }, [callCanonical, fetchManagers, toast]);
+
+  const handleRemove = useCallback(async (userId: string, name: string) => {
+    setRemovingId(userId);
+    try {
+      await callCanonical('/api/ngo-admin/users/remove', { targetUserId: userId });
+      toast({ title: 'Yetki Kaldırıldı', description: `${name} için yetkilendirme iptal edildi.` });
+      await fetchManagers();
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Yetki kaldırılamadı', description: e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.' });
+    } finally {
+      setRemovingId(null);
+    }
+  }, [callCanonical, fetchManagers, toast]);
 
   const isEmailSearch = searchTerm.includes('@');
   const normalizedSearch = isEmailSearch ? searchTerm.trim().toLowerCase() : normalizePhone(searchTerm);
@@ -112,63 +179,14 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRemove, onChangeRole }
     }) || null;
   }, [allUsers, normalizedSearch, isEmailSearch]);
 
-  // Daha önce yetkilendirilenleri listele
-  const invitationsQuery = useMemoFirebase(
-    () => open ? query(collection(db, COLLECTIONS.userInvitations), where('ngoId', '==', ngo.id)) : null,
-    [db, ngo.id, open],
-  );
-  const { data: invitations } = useCollection<NgoInvitation>(invitationsQuery);
-
-  const activeInvitations = useMemo(
-    () => (invitations || []).filter(i => i.status !== 'revoked'),
-    [invitations],
-  );
-
-  // STK'nın TÜM yetkilileri: managedNgoId == ngo.id olan kullanıcılar (davet kaydı
-  // olmasa da, örn. kuruluş sahibi) + davet kayıtları, kullanıcı bazında birleşik.
-  const ownerUserId = (ngo as { adminUserId?: string }).adminUserId || null;
-  const managerRows = useMemo(() => {
-    const byId = new Map<string, { userId: string; name: string; avatarUrl?: string; role: string; invitationId?: string; isOwner: boolean }>();
-    (allUsers || []).forEach(u => {
-      if ((u.managedNgoId as string | undefined) !== ngo.id) return;
-      byId.set(u.id, {
-        userId: u.id,
-        name: u.name || u.displayName || 'Üye',
-        avatarUrl: u.avatarUrl,
-        role: (u.ngoRoleTitle as string) || (u.roleTitle as string) || 'Yönetici',
-        isOwner: ownerUserId === u.id,
-      });
-    });
-    activeInvitations.forEach(inv => {
-      const uid = inv.inviteeUserId;
-      if (!uid) return;
-      const info = (allUsers || []).find(u => u.id === uid);
-      const ex = byId.get(uid);
-      if (ex) {
-        ex.invitationId = inv.id;
-        if (inv.role) ex.role = inv.role;
-        return;
-      }
-      byId.set(uid, {
-        userId: uid,
-        name: inv.inviteeName || info?.name || info?.displayName || 'Üye',
-        avatarUrl: info?.avatarUrl,
-        role: inv.role || 'Yönetici',
-        invitationId: inv.id,
-        isOwner: ownerUserId === uid,
-      });
-    });
-    return Array.from(byId.values()).sort((a, b) => (b.isOwner ? 1 : 0) - (a.isOwner ? 1 : 0));
-  }, [allUsers, activeInvitations, ngo.id, ownerUserId]);
-
   const handleAssign = async () => {
     if (!matchedUser) return;
     setSubmitting(true);
     try {
       await onAssign(ngo.id, matchedUser.id, matchedUser.name || matchedUser.displayName || 'Üye', selectedRole);
-      setOpen(false);
       setSearchTerm('');
       setSelectedRole('Genel Yönetici');
+      await fetchManagers();
     } finally {
       setSubmitting(false);
     }
@@ -190,8 +208,12 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRemove, onChangeRole }
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* STK'nın tüm yetkilileri (rolleriyle) */}
-          {managerRows.length > 0 && (
+          {/* STK'nın tüm yetkilileri (rolleriyle) — kanonik route'tan, /ngo-admin/users ile birebir aynı liste */}
+          {managersLoading && managerRows.length === 0 ? (
+            <div className="flex items-center justify-center py-4 text-xs text-muted-foreground">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Yetkililer yükleniyor...
+            </div>
+          ) : managerRows.length > 0 && (
             <div className="space-y-2">
               <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mevcut Yetkililer ({managerRows.length})</p>
               <div className="space-y-1.5 rounded-2xl border border-black/5 bg-muted/20 p-2">
@@ -200,10 +222,11 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRemove, onChangeRole }
                   const editedRole = roleEdits[row.userId] ?? currentRole;
                   const isKnownRole = (NGO_ROLE_OPTIONS as readonly string[]).includes(editedRole);
                   const isUpdatingThis = updatingInv === row.userId;
+                  const isRemovingThis = removingId === row.userId;
                   return (
                     <div key={row.userId} className="flex items-center gap-2 p-2 rounded-xl bg-white flex-wrap">
                       <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarImage src={row.avatarUrl} />
+                        <AvatarImage src={row.avatarUrl || undefined} />
                         <AvatarFallback className="text-xs font-bold">{row.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-[140px]">
@@ -229,13 +252,7 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRemove, onChangeRole }
                         size="sm"
                         className="h-8 px-2.5 text-xs font-bold rounded-lg"
                         disabled={isUpdatingThis || editedRole === currentRole}
-                        onClick={async () => {
-                          setUpdatingInv(row.userId);
-                          try {
-                            await onChangeRole(ngo.id, row.invitationId, row.userId, editedRole, row.name);
-                            setRoleEdits(prev => { const n = { ...prev }; delete n[row.userId]; return n; });
-                          } finally { setUpdatingInv(null); }
-                        }}>
+                        onClick={() => { void handleChangeRole(row.userId, editedRole, row.name); }}>
                         {isUpdatingThis ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
                         Güncelle
                       </Button>
@@ -245,8 +262,9 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRemove, onChangeRole }
                         size="icon"
                         className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
                         aria-label="Yetkiyi Kaldır"
-                        onClick={() => onRemove(ngo.id, row.userId, row.invitationId, row.name)}>
-                        <X className="h-4 w-4" />
+                        disabled={isRemovingThis}
+                        onClick={() => { void handleRemove(row.userId, row.name); }}>
+                        {isRemovingThis ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
                       </Button>
                     </div>
                   );
@@ -524,107 +542,6 @@ export default function NgosPage() {
     }
   };
 
-  const handleChangeAdminRole = async (
-    ngoId: string,
-    invitationId: string | undefined,
-    userId: string | undefined,
-    newRole: NgoRole,
-    inviteeName: string,
-  ) => {
-    try {
-      // Davet kaydı varsa rolünü güncelle (managedNgoId ile atanmış ama davet
-      // kaydı olmayan yetkililerde invitationId olmayabilir — o zaman atla).
-      if (invitationId) {
-        await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
-          role: newRole,
-          roleChangedAt: serverTimestamp(),
-          roleChangedBy: 'super-admin',
-        });
-      }
-      if (userId) {
-        const patch: Record<string, unknown> = { ngoRoleTitle: newRole, roleTitle: newRole };
-        if (newRole === 'Genel Yönetici') {
-          await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), { adminUserId: userId });
-        }
-        await updateDoc(doc(db, COLLECTIONS.users, userId), patch);
-
-        try {
-          const ngoSnap = await getDoc(doc(db, COLLECTIONS.ngos, ngoId));
-          const ngoName = ngoSnap.exists() ? ((ngoSnap.data() as { name?: string }).name || 'STK') : 'STK';
-          await addDoc(collection(db, COLLECTIONS.notifications), {
-            userId,
-            type: 'authorization',
-            title: 'Rolünüz Güncellendi',
-            body: `${ngoName} için rolünüz "${newRole}" olarak güncellendi.`,
-            data: { entityId: ngoId, entityType: 'ngo', role: newRole },
-            read: false,
-            createdAt: serverTimestamp(),
-            createdBy: 'super-admin',
-          });
-        } catch { /* bildirim zorunlu değil */ }
-      }
-      toast({
-        title: 'Rol Güncellendi',
-        description: `${inviteeName} kullanıcısının rolü "${newRole}" olarak güncellendi.`,
-      });
-    } catch (e) {
-      console.error('Change role failed:', e);
-      const code = (e as { code?: string } | null)?.code;
-      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
-      toast({
-        variant: 'destructive',
-        title: 'Rol güncellenemedi',
-        description: code === 'permission-denied'
-          ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : message,
-      });
-    }
-  };
-
-  const handleRemoveManager = async (ngoId: string, userId: string, invitationId: string | undefined, inviteeName: string) => {
-    try {
-      // 1) Davet kaydı varsa revoke et.
-      if (invitationId) {
-        await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
-          status: 'revoked',
-          revokedAt: serverTimestamp(),
-          revokedBy: 'super-admin',
-        });
-      }
-      // 2) Kullanıcının bu STK'ya dair yönetim alanlarını temizle (managedNgoId ile
-      //    atanmış davet kaydı olmayan yetkililer de gerçekten kaldırılsın).
-      const userSnap = await getDoc(doc(db, COLLECTIONS.users, userId));
-      const targetManagedNgo = userSnap.exists() ? (userSnap.data() as { managedNgoId?: string }).managedNgoId : undefined;
-      if (targetManagedNgo === ngoId) {
-        const patch: Record<string, unknown> = { managedNgoId: null, ngoRoleTitle: null, roleTitle: null };
-        if (userSnap.exists() && (userSnap.data() as { role?: string }).role !== 'super-admin') {
-          patch.role = 'user';
-        }
-        await updateDoc(doc(db, COLLECTIONS.users, userId), patch);
-      }
-      // 3) Sahip kaldırılıyorsa STK'nın adminUserId'sini de temizle (sahipsiz kalsın, eski sahip yetkide kalmasın).
-      const ngoSnap = await getDoc(doc(db, COLLECTIONS.ngos, ngoId));
-      if (ngoSnap.exists() && (ngoSnap.data() as { adminUserId?: string }).adminUserId === userId) {
-        await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), { adminUserId: null });
-      }
-      toast({
-        title: 'Yetki Kaldırıldı',
-        description: `${inviteeName} için yetkilendirme iptal edildi.`,
-      });
-    } catch (e) {
-      console.error('Revoke failed:', e);
-      const code = (e as { code?: string } | null)?.code;
-      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
-      toast({
-        variant: 'destructive',
-        title: 'Yetki kaldırılamadı',
-        description: code === 'permission-denied'
-          ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : message,
-      });
-    }
-  };
-
   if (ngosLoading || appsLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -762,7 +679,7 @@ export default function NgosPage() {
                         <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3" asChild>
                           <Link href={`/super-admin/ngos/${ngo.id}/edit`}><Edit3 className="mr-1.5 h-3.5 w-3.5" />Düzelt</Link>
                         </Button>
-                        <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRemove={handleRemoveManager} onChangeRole={handleChangeAdminRole} />
+                        <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} />
                         {isDraft ? (
                           <Button size="sm" className="rounded-xl font-bold h-9 px-3 bg-green-600 hover:bg-green-700 text-white"
                                   onClick={() => handleApproveDraft(ngo.id, ngo.name)}>

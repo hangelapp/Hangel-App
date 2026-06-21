@@ -3,6 +3,26 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "588d1639",
+    "date": "2026-06-21",
+    "subject": "fix(jingles): yetişkin sesleri yenilendi + çocuk yerine doğal genç Chirp3 (pitch kaldırıldı)"
+  },
+  {
+    "hash": "e393034d",
+    "date": "2026-06-21",
+    "subject": "fix(jingles): IVR metni 'hangel' yazımıyla (hencıl geri alındı)"
+  },
+  {
+    "hash": "eaa5268b",
+    "date": "2026-06-21",
+    "subject": "feat(jingles): kesin IVR menü metni — 5 yetişkin + 5 çocuk ses, 'hencıl' telaffuzu"
+  },
+  {
+    "hash": "d27a8938",
+    "date": "2026-06-21",
+    "subject": "fix(certs): kurum etki sertifikası kodları DB'ye yazılır → /c doğrulama YEŞİL"
+  },
+  {
     "hash": "7e5ff21c",
     "date": "2026-06-21",
     "subject": "feat(jingles): 5 santral (umut veren, Chirp3-HD) + 5 çocuk anonsu (Wavenet pitch, dili dönmeyen) + 3 müzik"
@@ -106,25 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "ceb3a000",
     "date": "2026-06-21",
     "subject": "feat(ui): etkinlik/gönüllülük detay + STK liste Apple redesign + wallet fix (workflow)"
-  },
-  {
-    "hash": "18cb7975",
-    "date": "2026-06-21",
-    "subject": "fix(qr): bazı Android modellerinde kamera açılmama sorununu sağlamlaştır"
-  },
-  {
-    "hash": "4e8320e5",
-    "date": "2026-06-21",
-    "subject": "feat(certificates): H-kodlu doğrulama (kısa link /c/{kod}) + gönüllülük sertifikası ayrı tasarım/metin; geri sayım HH:MM:SS"
-  },
-  {
-    "hash": "87da9e5d",
-    "date": "2026-06-21",
-    "subject": "script: gönüllülük ilanları etki backfill (puan+TL, eşleşmeyene Genel Gönüllülük)"
-  },
-  {
-    "hash": "55771087",
-    "date": "2026-06-21",
-    "subject": "fix(certificates+live): /my-badges sertifikası yeni tasarım + Türkçe glyph + iOS; adsız cert gizli; canlı geri sayım HH:MM:SS"
   }
 ];
