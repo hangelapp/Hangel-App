@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "7e5ff21c",
+    "date": "2026-06-21",
+    "subject": "feat(jingles): 5 santral (umut veren, Chirp3-HD) + 5 çocuk anonsu (Wavenet pitch, dili dönmeyen) + 3 müzik"
+  },
+  {
+    "hash": "9a72e4c4",
+    "date": "2026-06-21",
+    "subject": "feat(scripts): konuşma seslerini Chirp3-HD'ye yükselt + müziği zenginleştir"
+  },
+  {
+    "hash": "1e4d4bec",
+    "date": "2026-06-21",
+    "subject": "feat(certs): otomatik kurum etki sertifikası (toplam + aylık) — manuel issuance kaldırıldı"
+  },
+  {
     "hash": "ef33065b",
     "date": "2026-06-21",
     "subject": "feat(scripts): jingle anonsları hangel kurumsal söylemiyle + Firestore merge fix"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "55771087",
     "date": "2026-06-21",
     "subject": "fix(certificates+live): /my-badges sertifikası yeni tasarım + Türkçe glyph + iOS; adsız cert gizli; canlı geri sayım HH:MM:SS"
-  },
-  {
-    "hash": "dc6e7db8",
-    "date": "2026-06-21",
-    "subject": "feat(marketing+live-activity): tek tık \"Tümünü Yayınla\" + Panel Ayarları başlığı; etkinlik kapanınca Live Activity söner"
-  },
-  {
-    "hash": "eab8a2d9",
-    "date": "2026-06-21",
-    "subject": "feat(super-admin/events): katılımcı listesi + Düzenle'de konuşmacılar"
-  },
-  {
-    "hash": "1d115591",
-    "date": "2026-06-21",
-    "subject": "build(ios): widget+denetim Swift dosyalarını HangelLiveActivities target'ına ekle"
   }
 ];

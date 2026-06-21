@@ -130,3 +130,19 @@ export function normalizeCertCode(raw: string): string {
 export function certVerifyUrl(code: string): string {
   return CERT_VERIFY_BASE + code;
 }
+
+/**
+ * Kurum etki sertifikası kodu — generator + route + sayfa AYNI kodu üretsin diye
+ * tek kaynak. Toplam: ym yok. Aylık: ym = "YYYY-MM" (veya "YYYYMM").
+ */
+export function orgImpactCertCode(kind: CertKind, orgName: string, ym?: string): string {
+  let year = new Date().getFullYear();
+  let activityNo = 0;
+  if (ym) {
+    const y = Number(ym.slice(0, 4));
+    if (Number.isFinite(y) && y >= 2000) year = y;
+    const d = ym.replace(/[^0-9]/g, '');
+    if (d.length >= 4) activityNo = Number(d.slice(-5)) || 0;
+  }
+  return buildCertCode({ kind, country: '90', year, activityNo, personNo: 1, idSeed: `${orgName}-${ym ?? 'toplam'}` });
+}

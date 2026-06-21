@@ -21,7 +21,9 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { orgImpactCertCode, type CertKind } from '@/lib/certificate-code';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -282,6 +284,39 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       impactValueTRY: b.impactValueTRY,
       totalSocialValueTRY: b.impactValueTRY + b.donationTRY,
     }));
+
+  // Doğrulama kayıtları: etki sertifikası kodlarını `certificates`'a yaz → /c YEŞİL olur
+  // (kod biçim + Luhn + DB eşleşmesi). Deterministik kod (orgImpactCertCode) → QR ile birebir.
+  const ck = kind as CertKind;
+  const periods: Array<{ certId: string; code: string; ym?: string; label: string; m: typeof cumulative }> = [
+    { certId: `org-impact-${kind}-${orgId}-total`, code: orgImpactCertCode(ck, orgName, undefined), label: 'Toplam Etki', m: cumulative },
+    ...monthsOut.map((mo) => ({ certId: `org-impact-${kind}-${orgId}-${mo.ym}`, code: orgImpactCertCode(ck, orgName, mo.ym), ym: mo.ym, label: mo.label, m: mo as typeof cumulative })),
+  ];
+  try {
+    const batch = db.batch();
+    const year = new Date().getFullYear();
+    for (const p of periods) {
+      batch.set(
+        db.collection(COLLECTIONS.certificates).doc(p.certId),
+        {
+          id: p.certId, recipientType: 'org', orgId, orgKind: kind, orgName,
+          type: kind, title: `Kurum Etki Sertifikası — ${p.label}`, ngoName: orgName, role: 'organization',
+          code: p.code, certCountry: '90', certYear: p.ym ? Number(p.ym.slice(0, 4)) || year : year,
+          period: p.ym ?? 'total',
+          metrics: {
+            volunteerHours: p.m.volunteerHours, eventHours: p.m.eventHours,
+            volunteerCount: p.m.volunteerCount, participantCount: p.m.participantCount,
+            donationTRY: p.m.donationTRY, impactValueTRY: p.m.impactValueTRY, totalSocialValueTRY: p.m.totalSocialValueTRY,
+          },
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
+    await batch.commit();
+  } catch {
+    /* best-effort: doğrulama kaydı yazılamazsa sertifika yine görüntülenir/indirilir */
+  }
 
   return NextResponse.json({ ok: true, orgName, cumulative, months: monthsOut, logoUrl });
 }
