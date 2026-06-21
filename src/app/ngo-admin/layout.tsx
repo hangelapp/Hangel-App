@@ -4,6 +4,7 @@ import React, { Suspense } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  Award,
   Check,
   ChevronsUpDown,
   Heart,
@@ -113,6 +114,7 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/notifications', label: 'Bildirim Merkezi', icon: Bell },
       { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper, scope: 'posts' },
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayemiz', icon: Sparkles },
+      { href: '/ngo-admin/certificates', label: 'Sertifikalarımız', icon: Award },
       { href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck },
     ],
   },
@@ -193,6 +195,7 @@ const BRAND_MENU: MenuGroup[] = [
       { href: '/ngo-admin/notifications', label: 'Bildirim Merkezi', icon: Bell },
       { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper, scope: 'posts' },
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayemiz', icon: Sparkles },
+      { href: '/ngo-admin/certificates', label: 'Sertifikalarımız', icon: Award },
       { href: '/ngo-admin/reports', label: 'Sürdürülebilirlik ve KSS Raporları', icon: Leaf },
     ],
   },
@@ -232,6 +235,7 @@ const CLUB_MENU: MenuGroup[] = [
       { href: '/ngo-admin/notifications', label: 'Bildirim Merkezi', icon: Bell },
       { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper, scope: 'posts' },
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayemiz', icon: Sparkles },
+      { href: '/ngo-admin/certificates', label: 'Sertifikalarımız', icon: Award },
       { href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: Calendar },
     ],
   },

@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "89c85478",
+    "date": "2026-06-21",
+    "subject": "feat(scripts): generate-jingles — Google Cloud TTS ile hangel seslerini üret + Storage'a yükle + siteSettings/jingles'a yaz"
+  },
+  {
+    "hash": "de806f75",
+    "date": "2026-06-21",
+    "subject": "feat(ngo-admin): yönetim paneli başlığı tür-uygun + kurumun kendi logosu"
+  },
+  {
+    "hash": "f2c8e365",
+    "date": "2026-06-21",
+    "subject": "feat(blood+certs): kan bağışı akışı (geleceğim→geldi/gelmedi→tip-3 sertifika+rozet) + tür haritası 1-6"
+  },
+  {
     "hash": "d2d2bf63",
     "date": "2026-06-21",
     "subject": "feat(super-admin): Jenerikler & Sesler — çağrı merkezi sesi + 5 hangel jeneriği"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "acf0c5a8",
     "date": "2026-06-21",
     "subject": "feat(wallet): Apple kimliğinde yeniden tasarım + etkinlik/gönüllülük farklı renk"
-  },
-  {
-    "hash": "d2dc05af",
-    "date": "2026-06-21",
-    "subject": "feat: gönüllülük+etkinlik 8 iyileştirme (paralel workflow)"
-  },
-  {
-    "hash": "2e8c1a29",
-    "date": "2026-06-20",
-    "subject": "fix(wallet): etkinlik pkpass üretimi patlıyordu — yanlış alan okuması"
-  },
-  {
-    "hash": "5b1a4f4d",
-    "date": "2026-06-20",
-    "subject": "feat(functions): etkinlik katılımcı hatırlatmaları — 1 gün / 1 saat / 10 dk push"
   }
 ];

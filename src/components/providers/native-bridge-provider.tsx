@@ -14,12 +14,13 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { initDeepLinkListener } from '@/lib/native-bridge';
+import { initDeepLinkListener, ensureStatusBarVisible } from '@/lib/native-bridge';
 
 export function NativeBridgeProvider() {
   const router = useRouter();
   useEffect(() => {
     const cleanup = initDeepLinkListener((path) => router.push(path));
+    void ensureStatusBarVisible(); // saat/şarj çubuğu görünür kalsın
     return cleanup;
   }, [router]);
   return null;
