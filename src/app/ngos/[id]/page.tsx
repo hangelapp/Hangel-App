@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { VerifiedBadge, isVerifiedOrg } from '@/components/shared/verified-badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, Share2, Target, Copy, ExternalLink, QrCode, Download } from 'lucide-react';
+import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, Share2, Target, Copy, ExternalLink, QrCode, Download, FileText, Sparkles, RefreshCw, Loader2, Leaf } from 'lucide-react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +40,18 @@ interface ProfileCriteriaItem {
   textValue?: string;
   selectedOptions?: string[];
   status?: 'pending' | 'approved';
+}
+
+// ngos/{id}.impactReport — /api/ngo/impact-report'un yazdığı AI sürdürülebilirlik/etki raporu.
+// (Yerel tip; src/lib/types.ts'e dokunmamak için burada tutulur.)
+interface ImpactReportData {
+  summary?: string;
+  metrics?: { label: string; value: string; note?: string }[];
+  sdgAlignment?: { sdg: string; contribution: string }[];
+  sections?: { heading: string; body: string }[];
+  period?: string;
+  generatedAt?: string;
+  generatedBy?: string;
 }
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
@@ -141,7 +153,40 @@ export default function NgoProfilePage() {
     supportedNgos?: string[];
     volunteerNgos?: string[];
     lastNgoSelectionChange?: { toDate?: () => Date; seconds?: number; nanoseconds?: number } | null;
+    role?: string;
+    managedNgoId?: string;
   }>(userDocRef);
+
+  // Bu kuruluşu yöneten admin mi? Sadece o "Raporu Oluştur/Güncelle" görür.
+  const canManageReport = userData?.role === 'ngo-admin' && userData?.managedNgoId === id;
+
+  // Sürdürülebilirlik / etki raporu — ngos/{id}.impactReport'ta cache'li.
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportOverride, setReportOverride] = useState<ImpactReportData | null>(null);
+
+  const handleGenerateReport = async () => {
+    if (!authUser || reportBusy) return;
+    setReportBusy(true);
+    try {
+      const idToken = await authUser.getIdToken();
+      const res = await fetch('/api/ngo/impact-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ targetNgoId: id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        toast({ variant: 'destructive', title: 'Rapor oluşturulamadı', description: data?.message || 'Lütfen tekrar deneyin.' });
+        return;
+      }
+      setReportOverride(data.report as ImpactReportData);
+      toast({ title: 'Etki raporu hazır', description: 'Sürdürülebilirlik raporu güncellendi.' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Bir hata oluştu', description: (e as Error)?.message || 'Lütfen tekrar deneyin.' });
+    } finally {
+      setReportBusy(false);
+    }
+  };
 
   // Gerçek şeffaflık verisi: transparency/{adminUserId}.criteria — STK'nın yüklediği
   // belge/link/bilgiler ve tamamlanma/onay durumları burada. Eski mock (puana göre
@@ -376,6 +421,14 @@ export default function NgoProfilePage() {
 
   const ngoAnalytics = (ngo as NGO & { analytics?: { gaId?: string; gtmId?: string; metaPixelId?: string } }).analytics;
 
+  // Sürdürülebilirlik / etki raporu: yeni üretilen (override) varsa onu, yoksa cache'i göster.
+  const impactReport: ImpactReportData | null =
+    reportOverride ?? ((ngo as NGO & { impactReport?: ImpactReportData }).impactReport ?? null);
+  const hasImpactReport = !!(impactReport && (impactReport.summary || (impactReport.sections && impactReport.sections.length)));
+  const reportGeneratedLabel = impactReport?.generatedAt
+    ? new Date(impactReport.generatedAt).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })
+    : '';
+
   // Kütük (devlet sicil) numarası ngo dokümanında birden fazla alan adıyla tutulabilir;
   // ilk dolu olanı paylaşılabilir hangel.org.tr/<no> linki olarak gösteririz.
   const ngoRegistry = ngo as NGO & { kutukNo?: string; registryNo?: string; registryNumber?: string; kutuk?: string };
@@ -502,6 +555,7 @@ export default function NgoProfilePage() {
             <TabsTrigger value="opportunities">Gönüllülük</TabsTrigger>
             <TabsTrigger value="stats">İstatistikler</TabsTrigger>
             <TabsTrigger value="transparency">Şeffaflık</TabsTrigger>
+            <TabsTrigger value="impact-report">Etki Raporu</TabsTrigger>
             <TabsTrigger value="posts">Gönderiler</TabsTrigger>
         </TabsList>
         <TabsContent value="about" className="p-4 space-y-4">
@@ -737,6 +791,98 @@ export default function NgoProfilePage() {
                             );
                         })}
                     </div>
+                </CardContent>
+            </Card>
+        </TabsContent>
+        <TabsContent value="impact-report" className="p-4 space-y-4">
+            <Card className="rounded-3xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-br from-primary/10 to-transparent">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                            <CardTitle className="text-lg flex items-center gap-2"><Leaf className="h-5 w-5 text-primary" /> Sürdürülebilirlik / Etki Raporu</CardTitle>
+                            <CardDescription>
+                                {hasImpactReport
+                                    ? <>Standart formatta, kuruluş verisine dayalı etki özeti.{impactReport?.period ? <> · Dönem: {impactReport.period}</> : null}</>
+                                    : 'Bu kuruluş için henüz bir etki raporu oluşturulmadı.'}
+                            </CardDescription>
+                        </div>
+                        <Badge variant="outline" className="border-primary/40 text-primary bg-primary/5 shrink-0 gap-1.5">
+                            <Sparkles className="h-3.5 w-3.5" /> AI
+                        </Badge>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-6">
+                    {hasImpactReport ? (
+                        <>
+                            {impactReport?.summary && (
+                                <p className="text-sm leading-relaxed text-foreground">{impactReport.summary}</p>
+                            )}
+
+                            {impactReport?.metrics && impactReport.metrics.length > 0 && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {impactReport.metrics.map((m, i) => (
+                                        <div key={i} className="rounded-2xl border bg-muted/40 p-4">
+                                            <p className="text-xl font-bold text-foreground leading-tight">{m.value}</p>
+                                            <p className="text-xs font-medium text-muted-foreground mt-1">{m.label}</p>
+                                            {m.note && <p className="text-[11px] text-muted-foreground/80 mt-1.5 leading-snug">{m.note}</p>}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {impactReport?.sdgAlignment && impactReport.sdgAlignment.length > 0 && (
+                                <div className="space-y-3">
+                                    <h4 className="font-semibold text-sm flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> SKA Uyumu</h4>
+                                    <div className="space-y-2">
+                                        {impactReport.sdgAlignment.map((s, i) => (
+                                            <div key={i} className="rounded-2xl border p-3">
+                                                <p className="text-sm font-medium text-foreground">{s.sdg}</p>
+                                                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{s.contribution}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {impactReport?.sections && impactReport.sections.length > 0 && (
+                                <div className="space-y-5">
+                                    {impactReport.sections.map((sec, i) => (
+                                        <div key={i} className="space-y-1.5">
+                                            <h4 className="font-semibold text-sm text-foreground">{sec.heading}</h4>
+                                            <p className="text-sm text-muted-foreground leading-relaxed">{sec.body}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="pt-2 flex items-center justify-between gap-3 border-t">
+                                {reportGeneratedLabel && (
+                                    <p className="text-[11px] text-muted-foreground pt-3">Son güncelleme: {reportGeneratedLabel}</p>
+                                )}
+                                {canManageReport && (
+                                    <Button onClick={handleGenerateReport} disabled={reportBusy} variant="ghost" size="sm" className="ml-auto mt-3 text-primary">
+                                        {reportBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                                        {reportBusy ? 'Güncelleniyor…' : 'Raporu Güncelle'}
+                                    </Button>
+                                )}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="text-center py-10 space-y-4">
+                            <FileText className="mx-auto h-12 w-12 text-muted-foreground/40" />
+                            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                                Kuruluşun bağış, gönüllülük, etkinlik ve şeffaflık verisinden standart bir sürdürülebilirlik / etki raporu üretilir.
+                            </p>
+                            {canManageReport ? (
+                                <Button onClick={handleGenerateReport} disabled={reportBusy} className="rounded-2xl">
+                                    {reportBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                    {reportBusy ? 'Oluşturuluyor…' : 'Etki Raporu Oluştur'}
+                                </Button>
+                            ) : (
+                                <p className="text-xs text-muted-foreground/70">Rapor, kuruluş yöneticisi tarafından oluşturulduğunda burada görünür.</p>
+                            )}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </TabsContent>

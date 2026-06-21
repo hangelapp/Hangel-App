@@ -49,7 +49,8 @@ interface VerifyResult {
 }
 
 const TYPE_TO_KIND: Record<string, CertKind> = {
-  event: 'event', volunteering: 'volunteer', volunteer: 'volunteer', donation: 'donation', blood: 'blood',
+  event: 'event', volunteering: 'volunteer', volunteer: 'volunteer', blood: 'blood',
+  ngo: 'ngo', brand: 'brand', club: 'club',
 };
 
 /** Firestore Timestamp-ish guard — pulls `toDate()` without an `any` cast. */

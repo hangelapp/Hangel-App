@@ -120,7 +120,7 @@ export const translations: Record<Language, any> = {
       leaderboard: 'Liderlik Tablosu',
       invite: 'Arkadaş Davet Et',
       feedback: 'Geri Bildirim',
-      impactStory: 'Etki Story',
+      impactStory: 'Etki Hikayem',
       library: 'Kütüphane',
       admin: 'Yönetim Paneli',
       superAdmin: 'Admin Paneli',

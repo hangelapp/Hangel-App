@@ -18,10 +18,11 @@
 
 export const CERT_VERIFY_BASE = 'https://hangel.org.tr/c/';
 
-export type CertKind = 'volunteer' | 'event' | 'donation' | 'blood';
+export type CertKind = 'volunteer' | 'event' | 'blood' | 'ngo' | 'brand' | 'club';
 
-const KIND_TO_CODE: Record<CertKind, string> = { volunteer: '1', event: '2', donation: '3', blood: '4' };
-const CODE_TO_KIND: Record<string, CertKind> = { '1': 'volunteer', '2': 'event', '3': 'donation', '4': 'blood' };
+// 1 Gönüllülük · 2 Etkinlik · 3 Kan bağışı · 4 STK · 5 Marka · 6 Öğrenci kulübü
+const KIND_TO_CODE: Record<CertKind, string> = { volunteer: '1', event: '2', blood: '3', ngo: '4', brand: '5', club: '6' };
+const CODE_TO_KIND: Record<string, CertKind> = { '1': 'volunteer', '2': 'event', '3': 'blood', '4': 'ngo', '5': 'brand', '6': 'club' };
 
 const DIALING_TO_COUNTRY: Record<string, string> = {
   '90': 'Türkiye', '1': 'ABD/Kanada', '44': 'Birleşik Krallık', '49': 'Almanya', '33': 'Fransa',
@@ -44,8 +45,10 @@ export function countryName(dialing?: string): string | undefined {
 export function kindLabelTr(kind?: CertKind): string {
   switch (kind) {
     case 'volunteer': return 'Gönüllülük Sertifikası';
-    case 'donation': return 'Bağış Sertifikası';
     case 'blood': return 'Kan Bağışı Sertifikası';
+    case 'ngo': return 'STK Sertifikası';
+    case 'brand': return 'Marka Sertifikası';
+    case 'club': return 'Öğrenci Kulübü Sertifikası';
     default: return 'Etkinlik Katılım Sertifikası';
   }
 }

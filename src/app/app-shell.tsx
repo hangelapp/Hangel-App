@@ -35,6 +35,7 @@ import {
   HeartHandshake,
   CircleHelp,
   Smartphone,
+  MapPinned,
 } from 'lucide-react';
 
 // P2-4: Replaces `import * as Icons from 'lucide-react'`. Only the icons used
@@ -62,9 +63,11 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   'circle-help': CircleHelp,
   'message-circle': MessageCircle,
   smartphone: Smartphone,
+  'map-pinned': MapPinned,
 };
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
+import { useStreakPing } from '@/lib/streak-ping';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -92,6 +95,8 @@ const group2Items: SideNavItem[] = [
     { href: '/my-donations', label: 'nav.donations', icon: 'dollar-sign' },
     { href: '/my-applications', label: 'nav.applications', icon: 'file-text' },
     { href: '/my-badges', label: 'nav.badges', icon: 'award' },
+    { href: '/etki-haritam', label: 'Etki Haritam', icon: 'map-pinned' },
+    { href: '/etki-hikayem', label: 'nav.impactStory', icon: 'HeartHandshake' },
     { href: '/messages', label: 'nav.messages', icon: 'message-square' },
 ];
 
@@ -133,6 +138,7 @@ const iconColorMap: { [key: string]: string } = {
   'circle-help': 'bg-teal-500',
   'message-circle': 'bg-emerald-500',
   smartphone: 'bg-violet-500',
+  'map-pinned': 'bg-[#f34723]',
 };
 
 const MobileNavLink = ({ item, onClick: _onClick }: { item: SideNavItem; onClick: () => void }) => {
@@ -185,6 +191,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }, [db, authUser]);
 
     const { data: userData, isLoading: userDataLoading } = useDoc<User>(userDocRef);
+
+    // Streak (seri) — hangel ZIYARETİ sinyali: günde 1 kez /api/streak/ping.
+    useStreakPing(authUser);
 
     useEffect(() => {
         setIsMounted(true);

@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { CheckCircle2, XCircle, Loader2, AlertCircle } from 'lucide-react';
 
-type Kind = 'event' | 'volunteer' | 'donation' | 'blood';
+type Kind = 'event' | 'volunteer' | 'blood' | 'ngo' | 'brand' | 'club';
 
 interface VerifyResponse {
   valid: boolean;
@@ -39,16 +39,18 @@ const INK = '#1f1f1f';
 function kindLabel(kind?: Kind): string {
   switch (kind) {
     case 'volunteer': return 'Gönüllülük Sertifikası';
-    case 'donation': return 'Bağış Sertifikası';
     case 'blood': return 'Kan Bağışı Sertifikası';
+    case 'ngo': return 'STK Sertifikası';
+    case 'brand': return 'Marka Sertifikası';
+    case 'club': return 'Öğrenci Kulübü Sertifikası';
     default: return 'Etkinlik Katılım Sertifikası';
   }
 }
 function subjectLabel(kind?: Kind): string {
   switch (kind) {
     case 'volunteer': return 'Görev';
-    case 'donation': return 'Kampanya';
     case 'blood': return 'Çağrı';
+    case 'ngo': case 'brand': case 'club': return 'Kurum';
     default: return 'Etkinlik';
   }
 }

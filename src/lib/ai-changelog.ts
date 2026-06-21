@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "aacc5ec9",
+    "date": "2026-06-21",
+    "subject": "build(ios): HangelAppIntents.swift App target'a ekle (Siri/Spotlight App Intents derlensin)"
+  },
+  {
+    "hash": "7c3f85c9",
+    "date": "2026-06-21",
+    "subject": "feat(certificates): yeni sertifika kodu — H+ülke+tür+yıl+faaliyet+kişi+Luhn (tiresiz), sıralı sayaç + DB doğrulama"
+  },
+  {
     "hash": "0fbf4550",
     "date": "2026-06-21",
     "subject": "feat(ios): Bağışlarım widget+denetim + Etki Raporu denetim + Temu-vari Pazar Yeri"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "3931774c",
     "date": "2026-06-20",
     "subject": "feat(events): etkinlik sonrası değerlendirme (puan+yorum) + Sertifika/Değerlendir butonları"
-  },
-  {
-    "hash": "e4ad7d0e",
-    "date": "2026-06-20",
-    "subject": "feat(events): otomatik canlı mod + kart geri sayımı + kapasite dolunca kayıt kapanır"
-  },
-  {
-    "hash": "e1d81d4c",
-    "date": "2026-06-20",
-    "subject": "feat(events): etkinlik elden geçirme — afiş overlay, hava durumu, mesafe, canlı sayaç, sertifika DM akışı"
   }
 ];
