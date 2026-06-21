@@ -3,6 +3,10 @@
 
 import type { Brand } from "@/lib/types";
 
+// Marka rolleri tek kaynaktan (shared roles.ts) — set-role route + 3 panel aynı
+// listeyi paylaşsın diye buradan re-export edilir (eski import yolları korunur).
+export { BRAND_ROLE_OPTIONS, type BrandRole } from '@/lib/ngo-admin/roles';
+
 export type BrandItem = Brand & { id: string; source?: 'brands' | 'applications' | 'api'; status?: string };
 
 export type EditFormData = Partial<BrandItem> & {
@@ -63,20 +67,3 @@ export interface SimpleUser {
 
 export const normalizePhone = (raw: string): string => raw.replace(/[^0-9]/g, '');
 
-export const BRAND_ROLE_OPTIONS = [
-    'Genel Yönetici',
-    'Marka Yöneticisi',
-    'Pazarlama Yöneticisi',
-    'Finans Yöneticisi',
-] as const;
-export type BrandRole = typeof BRAND_ROLE_OPTIONS[number];
-
-export interface BrandInvitation {
-    id: string;
-    brandId?: string;
-    inviteeUserId?: string;
-    inviteeName?: string;
-    role?: string;
-    status?: string;
-    invitedAt?: { toDate?: () => Date } | Date | null;
-}

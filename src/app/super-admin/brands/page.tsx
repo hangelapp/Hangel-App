@@ -19,12 +19,12 @@ import {
     type BrandApplication,
     type BrandExtra,
     type BrandItem,
-    type BrandRole,
     type EditFormData,
     type SimpleUser,
     type SortOption,
     type StatusFilter,
 } from './_components/types';
+import { type BrandRole } from '@/lib/ngo-admin/roles';
 
 export default function BrandsPage() {
     const { toast } = useToast();
@@ -306,53 +306,6 @@ export default function BrandsPage() {
         }
     };
 
-    const handleRevokeBrandAdmin = async (invitationId: string, inviteeName: string) => {
-        try {
-            await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
-                status: 'revoked',
-                revokedAt: serverTimestamp(),
-                revokedBy: 'super-admin',
-            });
-            toast({
-                title: 'Yetki Kaldırıldı',
-                description: `${inviteeName} için yetkilendirme iptal edildi.`,
-            });
-        } catch (e) {
-            console.error('Revoke failed:', e);
-            const code = (e as { code?: string } | null)?.code;
-            const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
-            toast({
-                variant: 'destructive',
-                title: 'Yetki kaldırılamadı',
-                description: code === 'permission-denied'
-                    ? 'Bu işlem için super-admin yetkisi gerekli.'
-                    : message,
-            });
-        }
-    };
-
-    const handleUpdateBrandAdminRole = async (invitationId: string, inviteeUserId: string, newRole: BrandRole) => {
-        try {
-            await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), { role: newRole });
-            await updateDoc(doc(db, COLLECTIONS.users, inviteeUserId), { brandRoleTitle: newRole });
-            toast({
-                title: 'Yetki Güncellendi',
-                description: `Yetkili rolü "${newRole}" olarak güncellendi.`,
-            });
-        } catch (e) {
-            console.error('Update brand admin role failed:', e);
-            const code = (e as { code?: string } | null)?.code;
-            const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
-            toast({
-                variant: 'destructive',
-                title: 'Rol güncellenemedi',
-                description: code === 'permission-denied'
-                    ? 'Bu işlem için super-admin yetkisi gerekli.'
-                    : message,
-            });
-        }
-    };
-
     const handleStartEdit = (brand: BrandItem) => {
         setEditingBrand(brand);
         const b = brand as BrandExtra;
@@ -599,8 +552,6 @@ export default function BrandsPage() {
                                     onToggleStatus={handleToggleStatus}
                                     onRemove={handleRemove}
                                     onAssignBrandAdmin={handleAssignBrandAdmin}
-                                    onRevokeBrandAdmin={handleRevokeBrandAdmin}
-                                    onUpdateBrandAdminRole={handleUpdateBrandAdminRole}
                                 />
                             ))
                         ) : (

@@ -1,24 +1,22 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { collection, query, where } from 'firebase/firestore';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2, Search, UserCog, CheckCircle, XCircle, X } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { COLLECTIONS } from '@/firebase/collections';
+import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/firebase';
+import { BRAND_ROLE_OPTIONS, type BrandRole } from '@/lib/ngo-admin/roles';
 
 import {
-    BRAND_ROLE_OPTIONS,
     normalizePhone,
     type BrandItem,
-    type BrandInvitation,
-    type BrandRole,
     type SimpleUser,
 } from './types';
 
@@ -26,27 +24,97 @@ interface TransferBrandAdminDialogProps {
     brand: BrandItem;
     allUsers: SimpleUser[] | null;
     onAssign: (brandId: string, userId: string, userName: string, role: BrandRole) => Promise<void>;
-    onRevoke: (invitationId: string, inviteeName: string) => Promise<void>;
-    onUpdateRole: (invitationId: string, inviteeUserId: string, newRole: BrandRole) => Promise<void>;
 }
 
-export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign, onRevoke, onUpdateRole }: TransferBrandAdminDialogProps) => {
-    const db = useFirestore();
+// Kanonik /api/ngo-admin/users/managers route'unun döndürdüğü yetkili satırı.
+interface CanonicalManagerRow {
+    userId: string;
+    name: string;
+    avatarUrl?: string | null;
+    role: string;
+    since: number;
+    invitationId?: string;
+    isPrimary: boolean;
+    isOwner: boolean;
+}
+
+export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign }: TransferBrandAdminDialogProps) => {
+    const { user: authUser } = useUser();
+    const { toast } = useToast();
     const [open, setOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRole, setSelectedRole] = useState<BrandRole>('Genel Yönetici');
     const [submitting, setSubmitting] = useState(false);
     const [roleEdits, setRoleEdits] = useState<Record<string, BrandRole>>({});
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [removingId, setRemovingId] = useState<string | null>(null);
 
-    const handleUpdateRole = async (invitationId: string, inviteeUserId: string, newRole: BrandRole) => {
-        setUpdatingId(invitationId);
+    // Yetkili listesi KANONİK kaynaktan: /ngo-admin/users ile birebir aynı route
+    // (managedBrandId üyeleri + adminUserId sahibi + kabul edilmiş davetlerin birleşimi).
+    const [managerRows, setManagerRows] = useState<CanonicalManagerRow[]>([]);
+    const [managersLoading, setManagersLoading] = useState(false);
+
+    const fetchManagers = useCallback(async () => {
+        if (!authUser || !open) return;
+        setManagersLoading(true);
         try {
-            await onUpdateRole(invitationId, inviteeUserId, newRole);
+            const token = await authUser.getIdToken();
+            const params = new URLSearchParams({ orgId: brand.id, kind: 'brand' });
+            const res = await fetch(`/api/ngo-admin/users/managers?${params.toString()}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) throw new Error(`list ${res.status}`);
+            const data = (await res.json()) as { managers?: CanonicalManagerRow[] };
+            setManagerRows(Array.isArray(data.managers) ? data.managers : []);
+        } catch {
+            setManagerRows([]);
+        } finally {
+            setManagersLoading(false);
+        }
+    }, [authUser, open, brand.id]);
+
+    useEffect(() => { void fetchManagers(); }, [fetchManagers]);
+
+    // Kanonik route'a (set-role / remove) süper-admin token'ı ile çağrı.
+    const callCanonical = useCallback(async (path: string, payload: Record<string, unknown>) => {
+        if (!authUser) throw new Error('Oturum bulunamadı.');
+        const token = await authUser.getIdToken();
+        const res = await fetch(path, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...payload, orgId: brand.id, kind: 'brand' }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error((data as { message?: string })?.message || `Hata (${res.status})`);
+        return data;
+    }, [authUser, brand.id]);
+
+    const handleChangeRole = useCallback(async (userId: string, newRole: BrandRole, name: string) => {
+        setUpdatingId(userId);
+        try {
+            await callCanonical('/api/ngo-admin/users/set-role', { targetUserId: userId, role: newRole });
+            setRoleEdits(prev => { const n = { ...prev }; delete n[userId]; return n; });
+            toast({ title: 'Rol Güncellendi', description: `${name} kullanıcısının rolü "${newRole}" olarak güncellendi.` });
+            await fetchManagers();
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Rol güncellenemedi', description: e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.' });
         } finally {
             setUpdatingId(null);
         }
-    };
+    }, [callCanonical, fetchManagers, toast]);
+
+    const handleRemove = useCallback(async (userId: string, name: string) => {
+        setRemovingId(userId);
+        try {
+            await callCanonical('/api/ngo-admin/users/remove', { targetUserId: userId });
+            toast({ title: 'Yetki Kaldırıldı', description: `${name} için yetkilendirme iptal edildi.` });
+            await fetchManagers();
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Yetki kaldırılamadı', description: e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.' });
+        } finally {
+            setRemovingId(null);
+        }
+    }, [callCanonical, fetchManagers, toast]);
 
     const isEmailSearch = searchTerm.includes('@');
     const normalizedSearch = isEmailSearch ? searchTerm.trim().toLowerCase() : normalizePhone(searchTerm);
@@ -67,40 +135,17 @@ export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign, onRevoke, 
         }) || null;
     }, [allUsers, normalizedSearch, isEmailSearch]);
 
-    // Daha önce yetkilendirilenleri listele
-    const invitationsQuery = useMemoFirebase(
-        () => open ? query(collection(db, COLLECTIONS.userInvitations), where('brandId', '==', brand.id)) : null,
-        [db, brand.id, open],
-    );
-    const { data: invitations } = useCollection<BrandInvitation>(invitationsQuery);
-
-    const activeInvitations = useMemo(
-        () => (invitations || []).filter(i => i.status !== 'revoked'),
-        [invitations],
-    );
-
     const handleAssign = async () => {
         if (!matchedUser) return;
         setSubmitting(true);
         try {
             await onAssign(brand.id, matchedUser.id, matchedUser.name || matchedUser.displayName || 'Üye', selectedRole);
-            setOpen(false);
             setSearchTerm('');
             setSelectedRole('Genel Yönetici');
+            await fetchManagers();
         } finally {
             setSubmitting(false);
         }
-    };
-
-    const formatDate = (raw: BrandInvitation['invitedAt']): string => {
-        if (!raw) return '';
-        try {
-            let d: Date | null = null;
-            if (raw instanceof Date) d = raw;
-            else if (typeof (raw as { toDate?: () => Date }).toDate === 'function') d = (raw as { toDate: () => Date }).toDate();
-            if (!d) return '';
-            return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
-        } catch { return ''; }
     };
 
     return (
@@ -118,57 +163,63 @@ export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign, onRevoke, 
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-2">
-                    {/* Daha önce yetkilendirilenler */}
-                    {activeInvitations.length > 0 && (
+                    {/* Markanın tüm yetkilileri (rolleriyle) — kanonik route'tan, /ngo-admin/users ile birebir aynı liste */}
+                    {managersLoading && managerRows.length === 0 ? (
+                        <div className="flex items-center justify-center py-4 text-xs text-muted-foreground">
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Yetkililer yükleniyor...
+                        </div>
+                    ) : managerRows.length > 0 && (
                         <div className="space-y-2">
-                            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mevcut Yetkililer</p>
+                            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Mevcut Yetkililer ({managerRows.length})</p>
                             <div className="space-y-1.5 rounded-2xl border border-black/5 bg-muted/20 p-2">
-                                {activeInvitations.map(inv => {
-                                    const userInfo = (allUsers || []).find(u => u.id === inv.inviteeUserId);
-                                    const displayName = inv.inviteeName || userInfo?.name || userInfo?.displayName || 'Üye';
-                                    const currentRole: BrandRole = (BRAND_ROLE_OPTIONS as readonly string[]).includes(inv.role || '')
-                                        ? (inv.role as BrandRole)
-                                        : 'Genel Yönetici';
-                                    const editedRole = roleEdits[inv.id] ?? currentRole;
-                                    const isRowUpdating = updatingId === inv.id;
+                                {managerRows.map(row => {
+                                    const currentRole = (row.role || 'Genel Yönetici') as BrandRole;
+                                    const editedRole = roleEdits[row.userId] ?? currentRole;
+                                    const isKnownRole = (BRAND_ROLE_OPTIONS as readonly string[]).includes(editedRole);
+                                    const isUpdatingThis = updatingId === row.userId;
+                                    const isRemovingThis = removingId === row.userId;
                                     return (
-                                        <div key={inv.id} className="flex items-center gap-2 p-2 rounded-xl bg-white">
-                                            <Avatar className="h-8 w-8">
-                                                <AvatarImage src={userInfo?.avatarUrl} />
-                                                <AvatarFallback className="text-xs font-bold">{displayName.charAt(0)}</AvatarFallback>
+                                        <div key={row.userId} className="flex items-center gap-2 p-2 rounded-xl bg-white flex-wrap">
+                                            <Avatar className="h-8 w-8 shrink-0">
+                                                <AvatarImage src={row.avatarUrl || undefined} />
+                                                <AvatarFallback className="text-xs font-bold">{row.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
-                                            <div className="flex-1 min-w-0 space-y-1">
-                                                <p className="font-bold text-sm truncate">{displayName}</p>
-                                                <div className="flex items-center gap-1.5 flex-wrap">
-                                                    <Select
-                                                        value={editedRole}
-                                                        onValueChange={(v) => setRoleEdits(prev => ({ ...prev, [inv.id]: v as BrandRole }))}>
-                                                        <SelectTrigger className="h-7 w-auto rounded-lg text-[11px] font-bold"><SelectValue /></SelectTrigger>
-                                                        <SelectContent>
-                                                            {BRAND_ROLE_OPTIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="h-7 px-2.5 rounded-lg font-bold text-[11px]"
-                                                        disabled={isRowUpdating || editedRole === currentRole}
-                                                        onClick={() => { void handleUpdateRole(inv.id, inv.inviteeUserId || '', editedRole); }}>
-                                                        {isRowUpdating && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-                                                        Güncelle
-                                                    </Button>
-                                                    {inv.invitedAt && (
-                                                        <span className="text-[10px] text-muted-foreground">{formatDate(inv.invitedAt)}</span>
+                                            <div className="flex-1 min-w-[140px]">
+                                                <div className="flex items-center gap-1.5">
+                                                    <p className="font-bold text-sm truncate">{row.name}</p>
+                                                    {row.isOwner && (
+                                                        <Badge variant="outline" className="text-[9px] font-bold px-1.5 py-0 bg-amber-100 text-amber-800 border-amber-300/50">Sahip</Badge>
                                                     )}
                                                 </div>
                                             </div>
+                                            <Select
+                                                value={isKnownRole ? editedRole : undefined}
+                                                onValueChange={(v) => setRoleEdits(prev => ({ ...prev, [row.userId]: v as BrandRole }))}>
+                                                <SelectTrigger className="h-8 w-auto min-w-[150px] text-xs font-bold rounded-lg" aria-label="Rol değiştir">
+                                                    <SelectValue placeholder={currentRole} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {BRAND_ROLE_OPTIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8 px-2.5 text-xs font-bold rounded-lg"
+                                                disabled={isUpdatingThis || editedRole === currentRole}
+                                                onClick={() => { void handleChangeRole(row.userId, editedRole, row.name); }}>
+                                                {isUpdatingThis ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
+                                                Güncelle
+                                            </Button>
+                                            {/* Super-admin paneli — sahip dahil herkes kaldırılabilir. */}
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-lg"
+                                                className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
                                                 aria-label="Yetkiyi Kaldır"
-                                                onClick={() => onRevoke(inv.id, displayName)}>
-                                                <X className="h-4 w-4" />
+                                                disabled={isRemovingThis}
+                                                onClick={() => { void handleRemove(row.userId, row.name); }}>
+                                                {isRemovingThis ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
                                             </Button>
                                         </div>
                                     );

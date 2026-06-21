@@ -8,7 +8,7 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { resolveOrgAdminCtx, KIND_TO_MANAGED, KIND_TO_ROLE_TITLE, KIND_TO_INVITE_ID, KIND_TO_ACCUSATIVE, type OrgKind } from '@/lib/ngo-admin/org-admin-auth';
-import { isValidOrgRole } from '@/lib/ngo-admin/roles';
+import { isValidRoleForKind } from '@/lib/ngo-admin/roles';
 
 export const runtime = 'nodejs';
 
@@ -25,7 +25,10 @@ export async function POST(req: Request) {
   const targetUserId = (body.targetUserId || '').trim();
   const role = (body.role || '').trim();
   if (!targetUserId) return NextResponse.json({ errorCode: 'BAD_REQUEST', message: 'targetUserId zorunlu.' }, { status: 400 });
-  if (!isValidOrgRole(role)) return NextResponse.json({ errorCode: 'BAD_ROLE', message: 'Geçersiz rol.' }, { status: 400 });
+  // Rol doğrulaması KIND'a duyarlı: isteğin kuruluş türü (ngo/brand/club) için
+  // tanımlı rol listesine göre doğrula — yoksa marka/kulübe özel roller (örn.
+  // "Marka Yöneticisi", "Kulüp Başkanı") hep NGO listesiyle reddedilirdi.
+  if (!isValidRoleForKind(ctx.kind, role)) return NextResponse.json({ errorCode: 'BAD_ROLE', message: 'Geçersiz rol.' }, { status: 400 });
   // Sahibin rolünü yalnız super-admin değiştirebilir (org Genel Yönetici değil).
   if (targetUserId === ctx.ownerUserId && !ctx.isSuperAdmin) {
     return NextResponse.json({ errorCode: 'OWNER_PROTECTED', message: 'Kuruluş sahibinin rolü değiştirilemez.' }, { status: 400 });
