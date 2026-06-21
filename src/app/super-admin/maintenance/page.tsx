@@ -22,8 +22,12 @@ export default function MaintenancePage() {
     const [running, setRunning] = useState<string | null>(null);
     const [logs, setLogs] = useState<{ type: 'info' | 'ok' | 'err'; text: string }[]>([]);
 
-    // Sertifika kodu backfill — önce dry-run önizleme, sonra "Uygula".
-    const [certBackfill, setCertBackfill] = useState<{ pending: number; sample: string[]; remaining: number } | null>(null);
+    // Tüm sertifikaları geriye dönük üret + yayınla — önce dry-run önizleme, sonra "Uygula".
+    type PhaseCount = { scanned: number; updated: number };
+    type CertPhases = { 'org-impact': PhaseCount; event: PhaseCount; volunteer: PhaseCount; blood: PhaseCount };
+    const [certBackfill, setCertBackfill] = useState<
+        { phases: CertPhases; sample: string[]; remaining: number; dry: boolean } | null
+    >(null);
 
     const log = (type: 'info' | 'ok' | 'err', text: string) =>
         setLogs(prev => [...prev, { type, text }]);
@@ -369,39 +373,64 @@ export default function MaintenancePage() {
         }
     };
 
-    // 3c) Eski etkinlik sertifikalarına doğrulama kodu (H…) backfill — gcloud GEREKMEZ.
-    //     App Hosting'de Admin SDK (ADC) ile çalışan API route'u tetikler. Önce dry-run
-    //     önizleme, sonra "Uygula". İdempotent + kalan>0 ise tekrar basılır.
-    const previewCertCodes = async () => {
+    // 3c) TÜM sertifikaları geriye dönük üret + yayınla — gcloud GEREKMEZ.
+    //     App Hosting'de Admin SDK (ADC) ile çalışan API route'u tetikler.
+    //     4 faz: org-impact (STK/marka/kulüp) + event + volunteer + blood.
+    //     Önce dry-run önizleme, sonra "Uygula". İdempotent + kalan>0 ise tekrar bas.
+    const PHASE_LABELS: Record<keyof CertPhases, string> = {
+        'org-impact': 'Kurum etki (STK/marka/kulüp)',
+        event: 'Etkinlik',
+        volunteer: 'Gönüllülük',
+        blood: 'Kan bağışı',
+    };
+
+    const logPhases = (phases: CertPhases, dry: boolean) => {
+        (Object.keys(PHASE_LABELS) as Array<keyof CertPhases>).forEach((k) => {
+            const p = phases[k];
+            log('info', `${PHASE_LABELS[k]}: ${p.scanned} tarandı, ${p.updated} ${dry ? 'işlenecek' : 'yazıldı'}.`);
+        });
+    };
+
+    const runCertBackfill = async (dry: boolean) => {
         if (!authUser) return;
-        setRunning('certCodesDry');
-        setLogs([]);
-        setCertBackfill(null);
-        log('info', 'Kodu olmayan etkinlik sertifikaları taranıyor (önizleme)...');
+        setRunning(dry ? 'certCodesDry' : 'certCodesApply');
+        if (dry) { setLogs([]); setCertBackfill(null); }
+        log('info', dry
+            ? 'Tüm sertifikalar taranıyor (önizleme — hiçbir şey yazılmaz)...'
+            : 'Sertifikalar üretiliyor ve yayımlanıyor...');
         try {
             const token = await authUser.getIdToken();
             const res = await fetch('/api/super-admin/backfill-cert-codes', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ dry: true }),
+                body: JSON.stringify({ dry }),
             });
             const data = await res.json();
             if (!res.ok) {
                 log('err', `${data.errorCode}: ${data.message}`);
-                toast({ variant: 'destructive', title: 'Önizleme başarısız', description: data.message });
+                toast({ variant: 'destructive', title: dry ? 'Önizleme başarısız' : 'Üretim başarısız', description: data.message });
                 return;
             }
-            const pending = data.remaining as number;
+            const phases = data.phases as CertPhases;
+            const remaining = data.remaining as number;
             const sample = (data.sample as string[]) ?? [];
-            setCertBackfill({ pending, sample, remaining: pending });
-            log('info', `Taranan: ${data.scanned} sertifika.`);
-            log('ok', `${pending} sertifikaya kod yazılacak.`);
+            setCertBackfill({ phases, sample, remaining, dry });
+            logPhases(phases, dry);
             if (sample.length) log('info', `Örnek kodlar: ${sample.join(', ')}`);
+            log('ok', dry
+                ? `Toplam ${remaining} sertifika işlenecek.`
+                : `Bu turda yazıldı. Kalan: ${remaining}.`);
             toast({
-                title: pending > 0 ? 'Önizleme hazır' : 'Backfill gerekmiyor',
-                description: pending > 0
-                    ? `${pending} sertifikaya kod yazılacak${sample.length ? ` (örnek: ${sample[0]})` : ''}. "Uygula" ile yaz.`
-                    : 'Kodu olmayan etkinlik sertifikası yok.',
+                title: dry
+                    ? (remaining > 0 ? 'Önizleme hazır' : 'Üretilecek bir şey yok')
+                    : (remaining > 0 ? 'Tur tamamlandı' : 'Tümü tamamlandı'),
+                description: dry
+                    ? (remaining > 0
+                        ? `${remaining} sertifika üretilecek${sample.length ? ` (örnek: ${sample[0]})` : ''}. "Uygula" ile yaz.`
+                        : 'Tüm sertifikalar zaten üretilmiş ve yayında.')
+                    : (remaining > 0
+                        ? `Kalan ${remaining} için tekrar "Uygula" bas.`
+                        : 'Tüm sertifikalar üretildi ve yayında.'),
             });
         } catch (e) {
             const message = e instanceof Error ? e.message : 'Hata';
@@ -412,41 +441,8 @@ export default function MaintenancePage() {
         }
     };
 
-    const applyCertCodes = async () => {
-        if (!authUser) return;
-        setRunning('certCodesApply');
-        log('info', 'Sertifika kodları yazılıyor...');
-        try {
-            const token = await authUser.getIdToken();
-            const res = await fetch('/api/super-admin/backfill-cert-codes', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ dry: false }),
-            });
-            const data = await res.json();
-            if (!res.ok) {
-                log('err', `${data.errorCode}: ${data.message}`);
-                toast({ variant: 'destructive', title: 'Yazma başarısız', description: data.message });
-                return;
-            }
-            const updated = data.updated as number;
-            const remaining = data.remaining as number;
-            setCertBackfill(prev => (prev ? { ...prev, remaining } : { pending: remaining, sample: [], remaining }));
-            log('ok', `${updated} sertifikaya kod yazıldı. Kalan: ${remaining}`);
-            toast({
-                title: 'Kodlar yazıldı',
-                description: remaining > 0
-                    ? `${updated} sertifikaya kod yazıldı, kalan: ${remaining}. Tekrar "Uygula" ile devam et.`
-                    : `${updated} sertifikaya kod yazıldı. Tümü tamamlandı.`,
-            });
-        } catch (e) {
-            const message = e instanceof Error ? e.message : 'Hata';
-            log('err', message);
-            toast({ variant: 'destructive', title: 'Hata', description: message });
-        } finally {
-            setRunning(null);
-        }
-    };
+    const previewCertCodes = () => runCertBackfill(true);
+    const applyCertCodes = () => runCertBackfill(false);
 
     // 4) BUG-17c (b): /super-admin/setup setDocumentNonBlocking ile fire-and-forget
     //    çalışıyor → hataları yutuyor. Bu await'li versiyon her seed kaydı için
@@ -699,9 +695,9 @@ export default function MaintenancePage() {
 
             <Card className="rounded-2xl border-[#FF6B5C]/40 bg-[#FF6B5C]/5">
                 <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4 text-[#FF6B5C]" /> Sertifika Kodu Backfill (eski etkinlikler)</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4 text-[#FF6B5C]" /> Tüm Sertifikaları Üret + Yayınla (geriye dönük)</CardTitle>
                     <CardDescription>
-                        Kodu olmayan eski etkinlik sertifikalarına doğrulama kodu (H…) yazar — etkinlik tamamlama akışıyla aynı sıralı sayaçları kullanır, çakışmaz. Terminal/gcloud gerekmez. Önce <strong>Önizle</strong>, sonra <strong>Uygula</strong>. İdempotent: kodu olanlar atlanır, kalan&gt;0 ise tekrar bas.
+                        STK + marka + öğrenci kulübü + etkinlik + gönüllülük + kan bağışı — her sertifikayı geriye dönük üretir, doğrulanabilir kod (H…) verir ve <code>/c</code> üzerinden yayına alır. Üretim akışlarıyla (tamamla / etki / kan) aynı sıralı sayaçları kullanır, çakışmaz. Terminal/gcloud gerekmez. Önce <strong>Önizle</strong>, sonra <strong>Uygula</strong>. İdempotent: üretilmiş olanlar atlanır, kalan&gt;0 ise tekrar bas.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -717,7 +713,7 @@ export default function MaintenancePage() {
                         </Button>
                         <Button
                             onClick={applyCertCodes}
-                            disabled={running !== null || !certBackfill || certBackfill.remaining === 0}
+                            disabled={running !== null}
                             className="rounded-xl bg-[#FF6B5C] text-white hover:bg-[#FF6B5C]/90"
                         >
                             {running === 'certCodesApply' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -725,11 +721,22 @@ export default function MaintenancePage() {
                         </Button>
                     </div>
                     {certBackfill && (
-                        <p className="text-xs text-muted-foreground">
-                            {certBackfill.remaining > 0
-                                ? <>Kod yazılacak: <strong>{certBackfill.remaining}</strong> sertifika{certBackfill.sample.length ? <> · örnek: <code>{certBackfill.sample[0]}</code></> : null}</>
-                                : 'Bekleyen sertifika kalmadı.'}
-                        </p>
+                        <div className="text-xs text-muted-foreground space-y-1">
+                            <p>
+                                {certBackfill.dry ? 'Üretilecek (önizleme): ' : 'Kalan: '}
+                                <strong>{certBackfill.remaining}</strong> sertifika
+                                {certBackfill.sample.length ? <> · örnek: <code>{certBackfill.sample[0]}</code></> : null}
+                            </p>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 sm:grid-cols-4">
+                                {(['org-impact', 'event', 'volunteer', 'blood'] as const).map((k) => (
+                                    <span key={k}>
+                                        <span className="text-foreground/70">{PHASE_LABELS[k]}:</span>{' '}
+                                        <strong>{certBackfill.phases[k].updated}</strong>
+                                        <span className="opacity-60"> / {certBackfill.phases[k].scanned}</span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </CardContent>
             </Card>
