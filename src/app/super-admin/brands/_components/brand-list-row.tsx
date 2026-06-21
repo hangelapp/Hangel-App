@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { Edit3, Eye, Power, PowerOff, Trash2 } from 'lucide-react';
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
+import { BrandLogo } from '@/components/market/brand-logo';
 import { BrandEditDialog } from './brand-edit-dialog';
 import { TransferBrandAdminDialog } from './transfer-brand-admin-dialog';
 import type { BrandItem, BrandRole, EditFormData, SimpleUser } from './types';
@@ -55,10 +55,9 @@ export const BrandListRow = ({
     return (
         <div className={cn("p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-muted/30 transition-colors", (isPassive || isRejected) && "opacity-60 grayscale")}>
             <div className="flex items-center gap-5 flex-1">
-                <Avatar className="h-14 w-14 border-2 border-white shadow-lg bg-white">
-                    <AvatarImage src={brand.logoUrl} alt={brand.name} className="object-contain p-1" />
-                    <AvatarFallback className="font-black text-xl">{brand.name?.[0]}</AvatarFallback>
-                </Avatar>
+                <div className="relative h-14 w-14 rounded-full border-2 border-white shadow-lg bg-white overflow-hidden shrink-0">
+                    <BrandLogo brand={brand} />
+                </div>
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-black text-lg text-foreground tracking-tight">{brand.name}</p>

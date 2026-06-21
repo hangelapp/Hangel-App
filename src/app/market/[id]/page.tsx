@@ -19,6 +19,7 @@ import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@
 import { collection, doc, updateDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp } from 'firebase/firestore';
 import { openExternalUrl } from '@/lib/capacitor';
 import { COLLECTIONS } from '@/firebase/collections';
+import { BrandLogo } from '@/components/market/brand-logo';
 
 const StatRow = ({ label, value }: { label: string, value: string | number | undefined }) => {
     if (value === undefined) return null;
@@ -246,10 +247,9 @@ export default function BrandProfilePage() {
             </div>
 
             <div className="flex gap-4 items-center">
-                <Avatar className="h-24 w-24 border-4 border-background shrink-0 bg-white shadow-xl">
-                    <AvatarImage src={brand.logoUrl} alt={brand.name} className="object-contain p-2"/>
-                    <AvatarFallback className="font-black text-2xl">{brand.name.slice(0,2)}</AvatarFallback>
-                </Avatar>
+                <div className="relative h-24 w-24 rounded-full border-4 border-background shrink-0 bg-white shadow-xl overflow-hidden">
+                    <BrandLogo brand={brand} />
+                </div>
                  <div className="flex-1">
                     <div>
                          <h1 className="text-3xl font-black font-headline tracking-tighter leading-tight">{brand.name}</h1>

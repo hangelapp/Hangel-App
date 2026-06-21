@@ -7,7 +7,6 @@ import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Loader2, Store } f
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, useCollection } from '@/firebase';
 import { doc, collection, query, limit as fsLimit } from 'firebase/firestore';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +18,7 @@ import type { Brand } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { BrandLogo } from '@/components/market/brand-logo';
 
 type BrandTypeFilter = Brand['type'] | 'Tümü';
 
@@ -224,10 +224,9 @@ export default function FollowedBrandsPage() {
                   onClick={() => handleBrandSelect(brand.id)}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Avatar className="h-10 w-10 bg-muted">
-                      <AvatarImage src={brand.logoUrl} alt={brand.name} className="object-contain p-1" />
-                      <AvatarFallback className="text-primary font-bold">{brand.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
+                    <div className="relative h-10 w-10 rounded-full bg-muted overflow-hidden shrink-0">
+                      <BrandLogo brand={brand} />
+                    </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm truncate">{brand.name}</p>
                       <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">

@@ -26,33 +26,8 @@ import { UserNav } from '@/components/layout/user-nav';
 import { useRouter } from 'next/navigation';
 import { useWebContent } from '@/hooks/use-site-content';
 import { COLLECTIONS } from '@/firebase/collections';
+import { BrandLogo } from '@/components/market/brand-logo';
 
-
-const BrandLogo = ({ brand }: { brand: Brand }) => {
-  const [hasError, setHasError] = useState(false);
-
-  useEffect(() => {
-    setHasError(false); // Reset error state when brand changes
-  }, [brand]);
-
-  if (hasError || !brand.logoUrl) {
-    return (
-      <div className="w-full h-full rounded-xl bg-card flex items-center justify-center p-1">
-        <span className="text-muted-foreground font-bold text-sm">{brand.name.charAt(0)}</span>
-      </div>
-    );
-  }
-
-  return (
-    <img 
-      src={brand.logoUrl} 
-      alt={brand.name} 
-      className="w-full h-full object-contain p-2"
-      onError={() => setHasError(true)}
-      loading="lazy"
-    />
-  );
-};
 
 const BrandCard = ({ brand }: { brand: Brand }) => {
     const { t } = useTranslation();
@@ -63,7 +38,7 @@ const BrandCard = ({ brand }: { brand: Brand }) => {
         <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">
             {typeLabel}
         </p>
-        <div className="w-24 h-24 rounded-2xl bg-muted overflow-hidden mb-4 border border-border">
+        <div className="relative w-24 h-24 rounded-2xl bg-muted overflow-hidden mb-4 border border-border">
           <BrandLogo brand={brand} />
         </div>
         <div className="flex-1 flex flex-col items-center">

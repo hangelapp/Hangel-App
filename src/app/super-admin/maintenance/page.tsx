@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -631,6 +632,20 @@ export default function MaintenancePage() {
                 <h1 className="text-2xl font-black tracking-tighter">Bakım & Migration</h1>
                 <p className="text-sm text-muted-foreground">Tek seferlik veri düzeltmeleri ve seed işlemleri.</p>
             </div>
+
+            <Card className="rounded-2xl border-[#FF6B5C]/40 bg-[#FF6B5C]/5">
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4 text-[#FF6B5C]" /> Örnek Sertifikalar</CardTitle>
+                    <CardDescription>
+                        Gönüllülük, etkinlik ve kan bağışı sertifikalarının örnek kopyalarını görüntüleyip indirin — gerçek üreticilerle, örnek verilerle.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild variant="outline" className="rounded-xl border-[#FF6B5C]/50 text-[#FF6B5C] hover:bg-[#FF6B5C]/10 hover:text-[#FF6B5C]">
+                        <Link href="/super-admin/cert-preview">Örnek Sertifikalar</Link>
+                    </Button>
+                </CardContent>
+            </Card>
 
             <Card className="rounded-2xl">
                 <CardHeader>
