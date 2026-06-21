@@ -57,7 +57,11 @@ async function synth(token, item) {
 async function main() {
   const client = await auth.getClient();
   const { token } = await client.getAccessToken();
-  const result = { jingles: [] };
+  // Mevcut doc'u oku — sözsüz müzik jingle0/1/2'yi KORU, üzerine yazma.
+  const ref = db.collection('siteSettings').doc('jingles');
+  const snap = await ref.get();
+  const cur = snap.exists ? snap.data() : {};
+  const result = { jingles: Array.isArray(cur.jingles) ? [...cur.jingles] : [] };
   for (const item of ITEMS) {
     const mp3 = await synth(token, item);
     const path = `jingles/${item.key}.mp3`;
@@ -70,7 +74,9 @@ async function main() {
     else result.jingles[Number(item.key.replace('jingle', ''))] = entry;
     console.log(`✅ ${item.key} → ${mp3.length} bytes → ${url}`);
   }
-  await db.collection('siteSettings').doc('jingles').set(result, { merge: true });
+  // Firestore undefined kabul etmez — boş slotları null'a çevir.
+  for (let i = 0; i < result.jingles.length; i++) if (result.jingles[i] === undefined) result.jingles[i] = null;
+  await ref.set(result, { merge: true });
   console.log('\n🧡 siteSettings/jingles güncellendi. Jingle sayfasında görünür + çalar.');
   process.exit(0);
 }
