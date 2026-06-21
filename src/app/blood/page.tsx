@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Droplet, MapPin, Phone, AlertCircle, Loader2 } from 'lucide-react';
+import { Droplet, MapPin, Phone, AlertCircle, Loader2, Check } from 'lucide-react';
 
 import { useUser } from '@/firebase';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,6 +38,28 @@ export default function BloodFeedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [needsLocation, setNeedsLocation] = useState(false);
+  // Bağışçının "geleceğim" dediği çağrılar (id → durum). responding: istek uçuyor.
+  const [responded, setResponded] = useState<Record<string, boolean>>({});
+  const [responding, setResponding] = useState<string | null>(null);
+
+  const handleRespond = async (callId: string) => {
+    if (!user || responding) return;
+    setResponding(callId);
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch(`/api/emergency/${callId}/respond`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${idToken}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.message || t('bloodPage.respondError'));
+      setResponded((prev) => ({ ...prev, [callId]: true }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('bloodPage.unknownError'));
+    } finally {
+      setResponding(null);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -139,8 +161,25 @@ export default function BloodFeedPage() {
                 </Badge>
               )}
             </div>
+            {responded[call.id] ? (
+              <div className="flex items-center justify-center gap-2 w-full mt-2 rounded-md bg-primary/10 py-2 text-sm font-bold text-primary">
+                <Check className="h-4 w-4" /> {t('bloodPage.respondedOk')}
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                className="w-full mt-2"
+                disabled={responding === call.id}
+                onClick={() => handleRespond(call.id)}
+              >
+                {responding === call.id
+                  ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  : <Droplet className="h-4 w-4 mr-2" />}
+                {t('bloodPage.respondCta')}
+              </Button>
+            )}
             {call.contactPhone && (
-              <Button asChild size="sm" className="w-full mt-2">
+              <Button asChild size="sm" variant="outline" className="w-full mt-2">
                 <Link href={`tel:${call.contactPhone}`}>
                   <Phone className="h-4 w-4 mr-2" /> {t('bloodPage.contactHospital')}
                 </Link>

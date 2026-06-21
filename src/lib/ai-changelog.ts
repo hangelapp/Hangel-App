@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "d2d2bf63",
+    "date": "2026-06-21",
+    "subject": "feat(super-admin): Jenerikler & Sesler — çağrı merkezi sesi + 5 hangel jeneriği"
+  },
+  {
+    "hash": "a0058851",
+    "date": "2026-06-21",
+    "subject": "fix(ios): OpenURLIntent iOS 18+ — App Intents + Live Activity butonu iOS 18'e çekildi (build fix)"
+  },
+  {
+    "hash": "d4c2c7f6",
+    "date": "2026-06-21",
+    "subject": "feat: Etki Wrapped + Streak + Etki Haritası + AI kurumsal sürdürülebilirlik raporu (workflow)"
+  },
+  {
     "hash": "aacc5ec9",
     "date": "2026-06-21",
     "subject": "build(ios): HangelAppIntents.swift App target'a ekle (Siri/Spotlight App Intents derlensin)"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "5b1a4f4d",
     "date": "2026-06-20",
     "subject": "feat(functions): etkinlik katılımcı hatırlatmaları — 1 gün / 1 saat / 10 dk push"
-  },
-  {
-    "hash": "f62fc886",
-    "date": "2026-06-20",
-    "subject": "feat(events): RSVP sonrası 'Takvime ekle' (.ics) + 1 saat önce alarm"
-  },
-  {
-    "hash": "02b118dd",
-    "date": "2026-06-20",
-    "subject": "fix(wallet): etkinlik + gönüllülük 'Wallet' butonu açılmıyordu → passport pattern"
-  },
-  {
-    "hash": "3931774c",
-    "date": "2026-06-20",
-    "subject": "feat(events): etkinlik sonrası değerlendirme (puan+yorum) + Sertifika/Değerlendir butonları"
   }
 ];

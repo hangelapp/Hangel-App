@@ -87,7 +87,9 @@ export default function JinglesSettingsPage() {
           {entry ? (
             <div className="mt-2.5 space-y-2">
               <p className="truncate text-xs text-muted-foreground">{entry.name}</p>
-              <audio controls src={entry.url} className="h-9 w-full" />
+              <audio controls src={entry.url} className="h-9 w-full">
+                <track kind="captions" />
+              </audio>
               <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" disabled={busy === slot}
                 onClick={() => void remove(slot)}>
                 {busy === slot ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Trash2 className="mr-1.5 h-4 w-4" />} Kaldır

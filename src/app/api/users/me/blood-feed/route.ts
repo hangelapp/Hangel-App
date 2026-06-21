@@ -95,26 +95,43 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ ok: true, calls: [], message: 'Kan bağışı uygunluğu kapalı.' });
     }
 
-    // bloodCalls collection — emergency module
-    const callsQuery = db.collection('bloodCalls').where('status', '==', 'active');
-    const snap = await callsQuery.get();
+    // Kan ilanları TEK kaynaktan: emergencyRequests (type:'blood', status:'approved').
+    // Böylece "Bağışa geleceğim" (respond) + ilan sahibi bağışçı listesi aynı doc'a oturur.
+    const snap = await db.collection(COLLECTIONS.emergencyRequests)
+      .where('type', '==', 'blood')
+      .where('status', '==', 'approved')
+      .get();
 
     const compat = userBloodType ? COMPATIBILITY[userBloodType] ?? [] : null;
     const calls: BloodCall[] = [];
 
     snap.docs.forEach((d) => {
-      const data = d.data() as BloodCall;
+      const data = d.data() as {
+        bloodType?: string; coordinates?: { lat: number; lng: number } | null;
+        hospitalName?: string; contactPhone?: string; hospitalCity?: string; city?: string;
+      };
       const coords = data.coordinates;
-      if (!coords) return;
+      if (!coords || typeof coords.lat !== 'number' || typeof coords.lng !== 'number') return;
       const dist = distanceKm(lat, lng, coords.lat, coords.lng);
       if (dist > radiusKm) return;
-      // Kan grubu match: ilan herhangi bir tipi kabul ediyor mu?
-      if (compat && data.bloodTypes && data.bloodTypes.length > 0) {
-        const matches = data.bloodTypes.some((bt) => compat.includes(bt) || bt === 'Bilinmiyor');
+      const bloodTypes = data.bloodType ? [data.bloodType] : [];
+      if (compat && bloodTypes.length > 0) {
+        const matches = bloodTypes.some((bt) => compat.includes(bt) || bt === 'Bilinmiyor');
         if (!matches) return;
       }
-      if (urgentOnly && data.urgency !== 'critical') return;
-      calls.push({ ...data, id: d.id, distanceKm: Math.round(dist * 10) / 10 });
+      if (urgentOnly) return; // emergencyRequests'te kritiklik ayrımı yok → urgentOnly hepsini eler
+      calls.push({
+        id: d.id,
+        bloodTypes,
+        donationType: 'blood',
+        urgency: 'high',
+        hospitalName: data.hospitalName,
+        contactPhone: data.contactPhone,
+        coordinates: coords,
+        location: data.hospitalCity || data.city || '',
+        status: 'active',
+        distanceKm: Math.round(dist * 10) / 10,
+      });
     });
 
     // Distance + urgency'ye göre sırala

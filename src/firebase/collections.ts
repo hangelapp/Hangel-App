@@ -99,6 +99,11 @@ export const COLLECTIONS = {
 
   // Emergency / requests
   emergencyRequests: 'emergencyRequests',
+  // Sub-collection under emergencyRequests/{id}/donors — kan talebine "geleceğim"
+  // diyen bağışçılar. Doc id = donorUid. İlan sahibi + super-admin okur/işaretler.
+  // Alanlar: uid, name, phoneLast4, status('coming'|'came'|'noshow'), respondedAt,
+  // statusAt?, certIssued?. Tam telefon/e-posta ASLA tutulmaz (yalnız son 4 hane).
+  emergencyDonors: 'donors',
   emergencyResponses: 'emergencyResponses',
   bloodRequests: 'bloodRequests',
   userRequests: 'userRequests',

@@ -3,14 +3,15 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Droplets, Siren, MapPin, Loader2 } from 'lucide-react';
+import { Droplets, Siren, MapPin, Loader2, Check, X, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
 import { countryPhoneCodes, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
-import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, addDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useUser, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { collection, addDoc, doc, serverTimestamp, query, where } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -371,6 +372,187 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
     )
 }
 
+// ── İlan sahibinin kan ilanları + bağışçı listesi ─────────────────────────────
+interface MyBloodRequest {
+    id: string;
+    type?: string;
+    hospitalName?: string;
+    hospitalCity?: string;
+    bloodType?: string;
+    needType?: string;
+    units?: number;
+    status?: string;
+}
+
+interface DonorRow {
+    uid: string;
+    name: string;
+    phoneLast4: string;
+    status: 'coming' | 'came' | 'noshow' | string;
+    certIssued: boolean;
+}
+
+const DonorList = ({ request, authUser }: { request: MyBloodRequest; authUser: User }) => {
+    const { t } = useTranslation();
+    const { toast } = useToast();
+    const [donors, setDonors] = useState<DonorRow[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [marking, setMarking] = useState<string | null>(null);
+
+    useEffect(() => {
+        let active = true;
+        (async () => {
+            try {
+                const idToken = await authUser.getIdToken();
+                const res = await fetch(`/api/emergency/${request.id}/donors`, {
+                    headers: { authorization: `Bearer ${idToken}` },
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.ok) throw new Error(data.message || t('emergency_root.donorsLoadError'));
+                if (active) setDonors(data.donors ?? []);
+            } catch (e) {
+                if (active) setError(e instanceof Error ? e.message : t('emergency_root.donorsLoadError'));
+            } finally {
+                if (active) setLoading(false);
+            }
+        })();
+        return () => { active = false; };
+    }, [request.id, authUser, t]);
+
+    const handleMark = async (donorUid: string, status: 'came' | 'noshow') => {
+        if (marking) return;
+        setMarking(donorUid);
+        try {
+            const idToken = await authUser.getIdToken();
+            const res = await fetch(`/api/emergency/${request.id}/donor-status`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ donorUid, status }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) throw new Error(data.message || t('emergency_root.donorMarkError'));
+            setDonors((prev) => prev.map((d) =>
+                d.uid === donorUid ? { ...d, status, certIssued: status === 'came' ? true : d.certIssued } : d,
+            ));
+            if (status === 'came') {
+                toast({ title: t('emergency_root.donorCertTitle'), description: t('emergency_root.donorCertDesc') });
+            }
+        } catch (e) {
+            toast({
+                variant: 'destructive',
+                title: t('emergency_root.toastSendFailedTitle'),
+                description: e instanceof Error ? e.message : t('emergency_root.donorMarkError'),
+            });
+        } finally {
+            setMarking(null);
+        }
+    };
+
+    if (loading) return <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+    if (error) return <p className="text-xs text-destructive py-2">{error}</p>;
+    if (donors.length === 0) return <p className="text-xs text-muted-foreground italic py-2">{t('emergency_root.noDonorsYet')}</p>;
+
+    return (
+        <div className="space-y-2 pt-2">
+            {donors.map((d) => (
+                <div key={d.uid} className="flex items-center justify-between gap-2 rounded-xl border bg-background p-3">
+                    <div className="min-w-0">
+                        <p className="font-bold text-sm truncate">{d.name}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Phone className="h-3 w-3" /> •••{d.phoneLast4 || '••••'}
+                        </p>
+                    </div>
+                    {d.status === 'came' ? (
+                        <Badge className="rounded-full text-[10px] font-black uppercase gap-1 bg-primary text-primary-foreground shrink-0">
+                            <Check className="h-3 w-3" /> {t('emergency_root.donorCertGiven')}
+                        </Badge>
+                    ) : d.status === 'noshow' ? (
+                        <Badge variant="secondary" className="rounded-full text-[10px] font-black uppercase shrink-0">
+                            {t('emergency_root.donorNoShow')}
+                        </Badge>
+                    ) : (
+                        <div className="flex gap-1.5 shrink-0">
+                            <Button
+                                size="sm"
+                                className="rounded-xl h-8 px-3 font-bold"
+                                disabled={marking === d.uid}
+                                onClick={() => handleMark(d.uid, 'came')}
+                            >
+                                {marking === d.uid ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1" />}
+                                {t('emergency_root.donorMarkCame')}
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="rounded-xl h-8 px-3 font-bold"
+                                disabled={marking === d.uid}
+                                onClick={() => handleMark(d.uid, 'noshow')}
+                            >
+                                <X className="h-3.5 w-3.5 mr-1" /> {t('emergency_root.donorMarkNoShow')}
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const MyBloodRequestsTab = ({ authUser }: { authUser: User }) => {
+    const { t } = useTranslation();
+    const db = useFirestore();
+
+    const myRequestsQuery = useMemoFirebase(() => {
+        if (!db || !authUser?.uid) return null;
+        return query(
+            collection(db, COLLECTIONS.emergencyRequests),
+            where('requestedBy', '==', authUser.uid),
+            where('type', '==', 'blood'),
+        );
+    }, [db, authUser?.uid]);
+    const { data: myRequests, isLoading } = useCollection<MyBloodRequest>(myRequestsQuery);
+
+    if (isLoading) {
+        return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+    }
+
+    const requests = myRequests ?? [];
+    if (requests.length === 0) {
+        return (
+            <div className="text-center py-16 bg-white/5 rounded-[2rem] border-2 border-dashed border-muted-foreground/20">
+                <Droplets className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                <p className="text-sm font-medium text-muted-foreground">{t('emergency_root.noMyBloodRequests')}</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4 pb-6">
+            {requests.map((r) => (
+                <Card key={r.id} className="rounded-[1.5rem] border-none shadow-sm overflow-hidden">
+                    <div className="bg-destructive/5 p-4 space-y-1">
+                        <div className="flex items-center gap-2">
+                            <Droplets className="h-4 w-4 text-red-600" />
+                            <p className="font-bold text-base tracking-tight leading-tight">{r.hospitalName || t('emergency_root.bloodRequestFallback')}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
+                            {r.bloodType && <span className="font-mono font-bold text-foreground">{r.bloodType}</span>}
+                            {r.needType && <span>· {r.needType}</span>}
+                            {r.hospitalCity && <span className="flex items-center gap-1">· <MapPin className="h-3 w-3" /> {r.hospitalCity}</span>}
+                            {typeof r.units === 'number' && <span>· {r.units} {t('emergency_root.unitsSuffix')}</span>}
+                        </p>
+                    </div>
+                    <CardContent className="p-4 border-t border-dashed">
+                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{t('emergency_root.donorsTitle')}</p>
+                        <DonorList request={r} authUser={authUser} />
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    );
+};
+
 export default function EmergencyPage() {
     const router = useRouter();
     const { toast } = useToast();
@@ -568,12 +750,15 @@ export default function EmergencyPage() {
 
         <div className="px-4">
             <Tabs defaultValue="report" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1.5 h-14 rounded-3xl backdrop-blur-xl shrink-0">
+                <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1.5 h-14 rounded-3xl backdrop-blur-xl shrink-0">
                     <TabsTrigger value="report" className="rounded-2xl text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">
                         {t('emergency_root.tabReport')}
                     </TabsTrigger>
                     <TabsTrigger value="calls" className="rounded-2xl text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">
                         {t('emergency_root.tabCalls')}
+                    </TabsTrigger>
+                    <TabsTrigger value="my-requests" className="rounded-2xl text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">
+                        {t('emergency_root.tabMyRequests')}
                     </TabsTrigger>
                 </TabsList>
 
@@ -644,6 +829,19 @@ export default function EmergencyPage() {
                                 <p className="text-center text-xs text-muted-foreground py-8 italic">{t('emergency_root.noPastApps')}</p>
                             )}
                         </div>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="my-requests" className="mt-4">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between px-1">
+                            <h3 className="text-base font-bold">{t('emergency_root.myRequestsTitle')}</h3>
+                            <Badge variant="outline" className="rounded-full bg-red-100 text-red-700 border-red-200 text-[10px] font-bold uppercase">{t('emergency_root.bloodBadge')}</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground px-1">{t('emergency_root.myRequestsHint')}</p>
+                        {authUser
+                            ? <MyBloodRequestsTab authUser={authUser} />
+                            : <p className="text-center text-xs text-muted-foreground py-8 italic">{t('emergency_root.noMyBloodRequests')}</p>}
                     </div>
                 </TabsContent>
             </Tabs>
