@@ -15,12 +15,12 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     const { t } = useTranslation();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('association.back')}
                 </Button>
-                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
+                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
                     <Link href="/association/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>{t('association.navAbout')}</Link>
                     <Link href="/association/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>{t('association.navEvents')}</Link>
                     <Link href="/association/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>{t('association.navWorkshop')}</Link>
@@ -43,8 +43,8 @@ interface DetailSectionProps {
 
 const DetailSection = ({ title, subtitle, description, image, hint, theme = 'light' }: DetailSectionProps) => (
     <section className={cn(
-        "relative min-h-[80vh] flex flex-col items-center pt-24 text-center border-b border-black/5 overflow-hidden",
-        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]"
+        "relative min-h-[80vh] flex flex-col items-center pt-24 text-center border-b border-border overflow-hidden",
+        theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground"
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">
             <h2 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.1]">{title}</h2>
@@ -71,7 +71,7 @@ export default function AssociationLegislationPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="legislation" />
 
             <DetailSection
@@ -100,18 +100,18 @@ export default function AssociationLegislationPage() {
                 </div>
             </section>
 
-            <section className="py-32 bg-[#f5f5f7] border-b border-black/5">
+            <section className="py-32 bg-muted border-b border-border">
                 <div className="container mx-auto px-6 max-w-4xl text-center space-y-12">
                     <div className="space-y-2">
                         <Landmark className="h-12 w-12 text-primary mx-auto mb-4" />
-                        <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-[#1d1d1f]">{t('associationLegislation.draftTitle')}</h2>
+                        <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">{t('associationLegislation.draftTitle')}</h2>
                         <p className="text-lg text-muted-foreground font-medium">{t('associationLegislation.draftSubtitle')}</p>
                     </div>
                     <div className="grid grid-cols-1 gap-4">
                         {draftItems.map((item, i) => (
-                            <div key={i} className="flex items-center justify-between p-8 bg-white rounded-[2rem] shadow-sm border border-black/5 hover:border-primary transition-all group text-left">
+                            <div key={i} className="flex items-center justify-between p-8 bg-card rounded-[2rem] shadow-sm border border-border hover:border-primary transition-all group text-left">
                                 <div className="space-y-1">
-                                    <span className="font-bold text-xl text-[#1d1d1f]">{item.title}</span>
+                                    <span className="font-bold text-xl text-foreground">{item.title}</span>
                                     <p className="text-sm text-muted-foreground font-medium">{item.desc}</p>
                                 </div>
                                 <ChevronRight className="h-6 w-6 text-primary group-hover:translate-x-1 transition-transform" />
@@ -121,7 +121,7 @@ export default function AssociationLegislationPage() {
                 </div>
             </section>
 
-            <section className="py-32 bg-white text-center">
+            <section className="py-32 bg-background text-center">
                 <div className="container mx-auto px-6 max-w-2xl space-y-8">
                     <h2 className="text-3xl font-bold tracking-tight">{t('associationLegislation.partnershipTitle')}</h2>
                     <p className="text-lg text-muted-foreground font-medium leading-relaxed">

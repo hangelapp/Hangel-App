@@ -145,7 +145,7 @@ export default function FundDetailPage() {
                                 </h2>
                                 <div className="flex flex-wrap gap-2">
                                     {fund.areas.map((area) => (
-                                        <Badge key={area} variant="secondary" className="rounded-xl font-bold px-4 py-1 bg-white border border-black/5 text-[#1d1d1f]/80">{area}</Badge>
+                                        <Badge key={area} variant="secondary" className="rounded-xl font-bold px-4 py-1 bg-muted border border-border text-muted-foreground">{area}</Badge>
                                     ))}
                                 </div>
                             </section>

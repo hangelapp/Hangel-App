@@ -346,7 +346,7 @@ export default function VolunteerSettingsPage() {
       </Button>
       <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/20 -mx-4 -mt-4 px-4 py-8 space-y-4 mb-6">
         <div className="max-w-2xl mx-auto space-y-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-[#1d1d1f]">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">
             {t('dashboard.settingsVolunteer.heroTitle')}
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed font-medium">

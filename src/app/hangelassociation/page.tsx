@@ -18,12 +18,12 @@ const AssociationHeader = ({ currentPage }: { currentPage?: string }) => {
     const router = useRouter();
     const { t } = useTranslation();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-6xl">
-                <Button onClick={() => router.push('/login')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium text-[#1d1d1f]/80">
+                <Button onClick={() => router.push('/login')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium text-muted-foreground">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.association.platformBack')}
                 </Button>
-                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
+                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
                     <Link href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>{t('marketing.association.navAbout')}</Link>
                     <Link href="/hangelassociation/press" className={cn("hover:text-primary transition-colors", currentPage === 'press' && "text-primary")}>Basında Biz</Link>
                     <Link href="/hangelassociation/conferences" className={cn("hover:text-primary transition-colors", currentPage === 'conferences' && "text-primary")}>Konferanslar</Link>
@@ -63,8 +63,8 @@ const ShowcaseSection = ({
     children?: React.ReactNode;
 }) => (
     <section id={id} className={cn(
-        "relative min-h-[90vh] flex flex-col items-center justify-center py-20 text-center overflow-hidden border-b border-black/5",
-        theme === 'dark' ? "bg-black text-white" : "bg-[#f5f5f7] text-[#1d1d1f]",
+        "relative min-h-[90vh] flex flex-col items-center justify-center py-20 text-center overflow-hidden border-b border-border",
+        theme === 'dark' ? "bg-black text-white" : "bg-muted text-foreground",
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">
             {subtitle && <p className="text-xl md:text-2xl font-semibold opacity-90 tracking-tight" style={{color: theme === 'dark' ? '#00A8E8' : 'var(--primary)'}}>{subtitle}</p>}
@@ -94,7 +94,7 @@ const ShowcaseSection = ({
 );
 
 const GridSection = ({ children, className }: { children: React.ReactNode, className?: string }) => (
-    <section className={cn("py-20 md:py-32 px-4 bg-white", className)}>
+    <section className={cn("py-20 md:py-32 px-4 bg-card", className)}>
         <div className="container mx-auto max-w-7xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {children}
@@ -116,7 +116,7 @@ type GridCardProps = {
 const GridCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint, theme = 'light' }: GridCardProps) => (
     <div className={cn(
         "relative rounded-[2.5rem] p-10 text-center flex flex-col overflow-hidden min-h-[550px]",
-        theme === 'dark' ? 'bg-black text-white' : 'bg-[#f5f5f7] text-[#1d1d1f]'
+        theme === 'dark' ? 'bg-black text-white' : 'bg-muted text-foreground'
     )}>
         <div className="space-y-2 z-10">
             <h3 className="text-4xl font-bold tracking-tight">{title}</h3>
@@ -138,7 +138,7 @@ const GridCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint, theme = 
 const PressSection = () => {
     const { t } = useTranslation();
     return (
-    <section className="py-20 md:py-32 bg-white border-y border-black/5 overflow-hidden">
+    <section className="py-20 md:py-32 bg-card border-y border-border overflow-hidden">
         <div className="text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight">{t('marketing.association.pressTitle')}</h2>
         </div>
@@ -171,7 +171,7 @@ export default function AssociationHomePage() {
     const { t } = useTranslation();
 
     return (
-        <div className="min-h-screen bg-white font-sans text-center text-[#1d1d1f]">
+        <div className="min-h-screen bg-background font-sans text-center text-foreground">
             <style jsx global>{`
                 @keyframes scroll {
                     from { transform: translateX(0); }
@@ -184,8 +184,8 @@ export default function AssociationHomePage() {
             <AssociationHeader />
 
             <main>
-                <section className="h-[90vh] flex flex-col justify-center items-center text-center p-6 bg-[#f5f5f7] border-b border-black/5">
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">{t('marketing.association.heroTitle')}</h1>
+                <section className="h-[90vh] flex flex-col justify-center items-center text-center p-6 bg-muted border-b border-border">
+                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-foreground">{t('marketing.association.heroTitle')}</h1>
                     <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">{t('marketing.association.heroSubtitle')}</h2>
                     <div className="mt-12">
                         <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">

@@ -18,12 +18,12 @@ import { Badge } from '@/components/ui/badge';
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.push('/hangelassociation')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                 </Button>
-                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
+                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
                     <Link href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</Link>
                     <Link href="/hangelassociation/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>Dernek Etkinlikleri</Link>
                     <Link href="/hangelassociation/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>Uluslararası Çalıştay</Link>
@@ -50,17 +50,17 @@ const SectionHeading = ({ badge, title, desc, centered = true }: SectionHeadingP
             <Sparkles className="h-4 w-4" />
             <span className="text-[10px] font-black uppercase tracking-widest">{badge}</span>
         </div>
-        <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">{title}</h2>
+        <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.95]">{title}</h2>
         <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed">{desc}</p>
     </div>
 );
 
 const FeatureBlock = ({ icon: Icon, title, desc, onClick }: { icon: LucideIcon, title: string, desc: string, onClick?: () => void }) => (
-    <button onClick={onClick} className="flex flex-col items-center gap-6 text-center p-10 bg-[#f5f5f7] rounded-[3rem] border border-black/5 hover:bg-white hover:shadow-2xl transition-all duration-500 group w-full">
-        <div className="p-5 bg-white rounded-3xl shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+    <button onClick={onClick} className="flex flex-col items-center gap-6 text-center p-10 bg-muted rounded-[3rem] border border-border hover:bg-card hover:shadow-2xl transition-all duration-500 group w-full">
+        <div className="p-5 bg-card rounded-3xl shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
             <Icon className="h-10 w-10 text-primary group-hover:text-white" />
         </div>
-        <h4 className="text-2xl font-bold text-[#1d1d1f] tracking-tight">{title}</h4>
+        <h4 className="text-2xl font-bold text-foreground tracking-tight">{title}</h4>
         <p className="text-base text-muted-foreground leading-relaxed font-medium">{desc}</p>
     </button>
 );
@@ -70,11 +70,11 @@ export default function AssociationAboutPage() {
     const { get } = useAssociationContent();
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="about" />
 
             {/* Hero Section */}
-            <section className="relative pt-32 pb-24 px-6 text-center bg-[#f5f5f7] overflow-hidden">
+            <section className="relative pt-32 pb-24 px-6 text-center bg-muted overflow-hidden">
                 <div className="container mx-auto max-w-5xl space-y-12 relative z-10">
                     <SectionHeading
                         badge={get('about.heroBadge', 'BİZ KİMİZ?')}
@@ -89,7 +89,7 @@ export default function AssociationAboutPage() {
             </section>
 
             {/* Misyon & Vizyon */}
-            <section className="py-32 px-6 border-b border-black/5">
+            <section className="py-32 px-6 border-b border-border">
                 <div className="container mx-auto max-w-5xl space-y-24">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
                         <div className="space-y-8">
@@ -164,7 +164,7 @@ export default function AssociationAboutPage() {
             </section>
 
             {/* Neden Bölümü */}
-            <section className="py-32 px-6 bg-white">
+            <section className="py-32 px-6 bg-background">
                 <div className="container mx-auto max-w-4xl text-center space-y-12">
                     <SectionHeading 
                         badge="NEDEN HANGEL?"
@@ -172,13 +172,13 @@ export default function AssociationAboutPage() {
                         desc="hangel ve Social Business Global, yalnızca sosyal fayda bilincine sahip olmakla kalmayıp, kalıcı sosyal etki için aktif olarak çalışan çocuklar, gençler, iş insanları ve sivil toplum liderleri için bir köprüdür."
                     />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
-                        <div className="p-8 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 hover:shadow-xl transition-all">
-                            <div className="p-3 bg-white rounded-xl w-fit shadow-sm"><Users className="h-6 w-6 text-primary" /></div>
+                        <div className="p-8 bg-muted rounded-[2.5rem] space-y-4 hover:shadow-xl transition-all">
+                            <div className="p-3 bg-card rounded-xl w-fit shadow-sm"><Users className="h-6 w-6 text-primary" /></div>
                             <h4 className="text-xl font-bold">Kolektif Bilinç</h4>
                             <p className="text-sm text-muted-foreground font-medium">Halkın kendi sorunlarını yine kendi arasında paylaşarak imece usulüyle çözmesini sağlıyoruz.</p>
                         </div>
-                        <div className="p-8 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 hover:shadow-xl transition-all">
-                            <div className="p-3 bg-white rounded-xl w-fit shadow-sm"><Sparkles className="h-6 w-6 text-primary" /></div>
+                        <div className="p-8 bg-muted rounded-[2.5rem] space-y-4 hover:shadow-xl transition-all">
+                            <div className="p-3 bg-card rounded-xl w-fit shadow-sm"><Sparkles className="h-6 w-6 text-primary" /></div>
                             <h4 className="text-xl font-bold">Sosyal İnovasyon</h4>
                             <p className="text-sm text-muted-foreground font-medium">Üniversite, sanayi ve sivil toplum kuruluşları ile yürütülen araştırmalarla sürdürülebilir modeller geliştiriyoruz.</p>
                         </div>

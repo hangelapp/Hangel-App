@@ -16,12 +16,12 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     const { t } = useTranslation();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('association.back')}
                 </Button>
-                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
+                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
                     <Link href="/association/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>{t('association.navAbout')}</Link>
                     <Link href="/association/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>{t('association.navEvents')}</Link>
                     <Link href="/association/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>{t('association.navWorkshop')}</Link>
@@ -47,22 +47,22 @@ interface EventLineupProps {
 }
 
 const EventLineup = ({ title, date, location, image, hint, description, category, inspectLabel }: EventLineupProps) => (
-    <div className="group relative w-full border-b border-black/5 py-16 flex flex-col md:flex-row items-center gap-12 px-6 hover:bg-[#f5f5f7]/50 transition-colors">
+    <div className="group relative w-full border-b border-border py-16 flex flex-col md:flex-row items-center gap-12 px-6 hover:bg-muted/50 transition-colors">
         <div className="relative w-full md:w-80 aspect-video rounded-[2rem] overflow-hidden shadow-2xl shrink-0">
             <Image src={image} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" data-ai-hint={hint} />
         </div>
         <div className="flex-1 text-left space-y-4">
             <div className="flex items-center gap-3">
                 <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-bold uppercase text-[9px] tracking-widest px-3 py-1 rounded-full">{category}</Badge>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#1d1d1f]/40 flex items-center gap-1"><Calendar className="h-3 w-3" /> {date}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" /> {date}</span>
             </div>
-            <h3 className="text-3xl font-bold text-[#1d1d1f] tracking-tight">{title}</h3>
+            <h3 className="text-3xl font-bold text-foreground tracking-tight">{title}</h3>
             <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl font-medium">{description}</p>
             <div className="flex items-center gap-4 pt-2">
-                <span className="text-[11px] font-bold text-[#1d1d1f]/60 flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-primary" /> {location}</span>
+                <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-primary" /> {location}</span>
             </div>
         </div>
-        <Button variant="outline" className="rounded-full px-8 h-12 font-bold border-black/10 hover:bg-white self-start md:self-center">{inspectLabel}</Button>
+        <Button variant="outline" className="rounded-full px-8 h-12 font-bold border-border hover:bg-muted self-start md:self-center">{inspectLabel}</Button>
     </div>
 );
 
@@ -71,11 +71,11 @@ export default function AssociationEventsPage() {
     const inspectLabel = t('associationEvents.inspectBtn');
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="events" />
 
-            <section className="pt-32 pb-20 px-6 text-center space-y-4 bg-[#f5f5f7]">
-                <h1 className="text-5xl md:text-8xl font-bold tracking-tight text-[#1d1d1f]">{t('associationEvents.heroTitle')}</h1>
+            <section className="pt-32 pb-20 px-6 text-center space-y-4 bg-muted">
+                <h1 className="text-5xl md:text-8xl font-bold tracking-tight text-foreground">{t('associationEvents.heroTitle')}</h1>
                 <p className="text-xl md:text-3xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
                     {t('associationEvents.heroDesc')}
                 </p>

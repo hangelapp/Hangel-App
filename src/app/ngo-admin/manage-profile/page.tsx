@@ -602,14 +602,14 @@ export default function ManageProfilePage() {
                 <div className="space-y-4 p-4 border rounded-[2rem] bg-primary/5 border-primary/10 animate-in slide-in-from-top-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">{t('ngo_admin_manage_profile.labelFederations')}</Label>
                     <Select onValueChange={toggleFed}>
-                        <SelectTrigger className="h-11 rounded-xl bg-white shadow-sm"><SelectValue placeholder={t('ngo_admin_manage_profile.federationPlaceholder')} /></SelectTrigger>
+                        <SelectTrigger className="h-11 rounded-xl bg-background shadow-sm"><SelectValue placeholder={t('ngo_admin_manage_profile.federationPlaceholder')} /></SelectTrigger>
                         <SelectContent className="max-h-60">
                             {sportsFederations.map(fed => <SelectItem key={fed} value={fed}>{fed}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     <div className="flex flex-wrap gap-2">
                         {selectedFeds.map(fed => (
-                            <Badge key={fed} className="bg-white text-foreground border shadow-sm px-3 py-1.5 rounded-xl gap-2 h-auto flex items-center">
+                            <Badge key={fed} className="bg-card text-foreground border shadow-sm px-3 py-1.5 rounded-xl gap-2 h-auto flex items-center">
                                 <span className="text-[11px] font-medium">{fed}</span>
                                 <button type="button" onClick={() => toggleFed(fed)}><X className="h-3 w-3" /></button>
                             </Badge>
@@ -818,15 +818,15 @@ export default function ManageProfilePage() {
             <CardContent className="space-y-4 pt-0">
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelRepFullName')}</Label>
-                    <Input value={repFullName} onChange={(e) => setRepFullName(e.target.value)} className="h-11 rounded-xl bg-white" />
+                    <Input value={repFullName} onChange={(e) => setRepFullName(e.target.value)} className="h-11 rounded-xl bg-background" />
                 </div>
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelRepTitle')}</Label>
-                    <Input value={repTitle} onChange={(e) => setRepTitle(e.target.value)} className="h-11 rounded-xl bg-white" />
+                    <Input value={repTitle} onChange={(e) => setRepTitle(e.target.value)} className="h-11 rounded-xl bg-background" />
                 </div>
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelRepEmail')}</Label>
-                    <Input value={repEmail} onChange={(e) => setRepEmail(e.target.value)} className="h-11 rounded-xl bg-white" />
+                    <Input value={repEmail} onChange={(e) => setRepEmail(e.target.value)} className="h-11 rounded-xl bg-background" />
                 </div>
             </CardContent>
         </Card>

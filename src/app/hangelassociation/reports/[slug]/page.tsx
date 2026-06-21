@@ -60,13 +60,13 @@ export default function ReportsSlugPage() {
     if (!content) return <div>Rapor bulunamadı.</div>;
 
     return (
-        <div className="min-h-screen bg-white font-sans">
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <div className="min-h-screen bg-background font-sans">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                     </Button>
-                    <span className="text-[11px] font-black uppercase tracking-widest text-[#1d1d1f]/40">RAPORLAR</span>
+                    <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">RAPORLAR</span>
                     <div className="w-20" />
                 </div>
             </header>
@@ -75,13 +75,13 @@ export default function ReportsSlugPage() {
                 <section className="container mx-auto px-6 max-w-4xl space-y-12">
                     <div className="space-y-4 text-center">
                         <Badge className="bg-primary/10 text-primary border-none">{content.period}</Badge>
-                        <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[#1d1d1f]">{content.title}</h1>
+                        <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground">{content.title}</h1>
                         <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">{content.summary}</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {content.stats.map((stat, i) => (
-                            <div key={i} className="p-8 bg-[#f5f5f7] rounded-[2.5rem] text-center border border-black/5">
+                            <div key={i} className="p-8 bg-muted rounded-[2.5rem] text-center border border-border">
                                 <p className="text-4xl font-black text-primary tracking-tighter">{stat.value}</p>
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">{stat.label}</p>
                             </div>

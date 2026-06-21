@@ -16,12 +16,12 @@ import { useAssociationContent } from '@/hooks/use-site-content';
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.push('/hangelassociation')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                 </Button>
-                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
+                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
                     <Link href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</Link>
                     <Link href="/hangelassociation/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>Dernek Etkinlikleri</Link>
                     <Link href="/hangelassociation/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>Uluslararası Çalıştay</Link>
@@ -47,8 +47,8 @@ type EventCardProps = {
 };
 
 const EventCard = ({ day, month, title, desc, location, time, category, onClick }: EventCardProps) => (
-    <button onClick={onClick} className="group relative w-full text-left bg-[#f5f5f7] rounded-[2.5rem] p-10 flex flex-col md:flex-row gap-10 hover:bg-white hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-black/5">
-        <div className="flex flex-col items-center justify-center bg-white rounded-3xl w-24 h-24 shadow-sm group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
+    <button onClick={onClick} className="group relative w-full text-left bg-muted rounded-[2.5rem] p-10 flex flex-col md:flex-row gap-10 hover:bg-card hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-border">
+        <div className="flex flex-col items-center justify-center bg-card rounded-3xl w-24 h-24 shadow-sm group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
             <span className="text-3xl font-black tracking-tighter leading-none">{day}</span>
             <span className="text-[10px] font-black uppercase tracking-widest mt-1 opacity-60 group-hover:opacity-100">{month}</span>
         </div>
@@ -58,11 +58,11 @@ const EventCard = ({ day, month, title, desc, location, time, category, onClick 
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5"><Calendar className="h-3 w-3" /> {time}</span>
                 {location && <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5"><MapPin className="h-3 w-3 text-primary" /> {location}</span>}
             </div>
-            <h3 className="text-2xl md:text-3xl font-bold text-[#1d1d1f] tracking-tight group-hover:text-primary transition-colors leading-tight">{title}</h3>
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight group-hover:text-primary transition-colors leading-tight">{title}</h3>
             <p className="text-base text-muted-foreground leading-relaxed font-medium line-clamp-3">{desc}</p>
         </div>
         <div className="self-start md:self-center">
-            <div className="w-12 h-12 rounded-full border border-black/10 flex items-center justify-center group-hover:bg-primary group-hover:border-primary group-hover:text-white transition-all">
+            <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center group-hover:bg-primary group-hover:border-primary group-hover:text-white transition-all">
                 <ChevronRight className="h-6 w-6" />
             </div>
         </div>
@@ -78,14 +78,14 @@ type InstitutionListProps = {
 };
 
 const InstitutionList = ({ title, count, items, icon: Icon, onDetailClick }: InstitutionListProps) => (
-    <div className="bg-white p-10 md:p-16 rounded-[3.5rem] border border-black/5 shadow-sm hover:shadow-2xl transition-all duration-700">
-        <div className="flex items-center justify-between mb-12 border-b border-black/5 pb-8">
+    <div className="bg-card p-10 md:p-16 rounded-[3.5rem] border border-border shadow-sm hover:shadow-2xl transition-all duration-700">
+        <div className="flex items-center justify-between mb-12 border-b border-border pb-8">
             <div className="flex items-center gap-6">
-                <div className="p-4 bg-[#f5f5f7] rounded-[1.5rem]">
+                <div className="p-4 bg-muted rounded-[1.5rem]">
                     <Icon className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                    <h3 className="text-3xl font-bold tracking-tight text-[#1d1d1f]">{title}</h3>
+                    <h3 className="text-3xl font-bold tracking-tight text-foreground">{title}</h3>
                     <p className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">Kurumsal Faaliyet Ağı</p>
                 </div>
             </div>
@@ -96,7 +96,7 @@ const InstitutionList = ({ title, count, items, icon: Icon, onDetailClick }: Ins
                 <button 
                     key={i} 
                     onClick={() => onDetailClick?.(item)}
-                    className="flex items-center gap-4 text-sm font-bold text-[#1d1d1f]/70 text-left hover:text-primary transition-colors py-1 group"
+                    className="flex items-center gap-4 text-sm font-bold text-muted-foreground text-left hover:text-primary transition-colors py-1 group"
                 >
                     <div className="w-1.5 h-1.5 rounded-full bg-primary/30 group-hover:scale-150 transition-transform" />
                     {item}
@@ -149,11 +149,11 @@ export default function AssociationEventsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="events" />
 
-            <section className="pt-32 pb-20 px-6 text-center space-y-6 bg-[#f5f5f7]">
-                <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f]">{get('events.title', 'Etkinlikler.')}</h1>
+            <section className="pt-32 pb-20 px-6 text-center space-y-6 bg-muted">
+                <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-foreground">{get('events.title', 'Etkinlikler.')}</h1>
                 <p className="text-xl md:text-3xl text-muted-foreground font-medium max-w-3xl mx-auto leading-tight">
                     {get('events.description', 'Türkiye genelinde 126 farkındalık konferansı ve zirve ile sosyal inovasyon bilincini yaygınlaştırıyoruz.')}
                 </p>
@@ -193,7 +193,7 @@ export default function AssociationEventsPage() {
                 </div>
             </div>
 
-            <section className="py-32 px-6 bg-white">
+            <section className="py-32 px-6 bg-background">
                 <div className="container mx-auto max-w-6xl space-y-12">
                     <InstitutionList icon={GraduationCap} title="Üniversiteler" count={42} items={networkData.universities} onDetailClick={(item) => handleEventClick(item)} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

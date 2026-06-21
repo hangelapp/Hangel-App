@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "f9e14351",
+    "date": "2026-06-21",
+    "subject": "feat(super-admin): geriye dönük TÜM sertifikaları üret + yayınla (STK+marka+kulüp+kullanıcı) [skip ci]"
+  },
+  {
+    "hash": "5b6b453e",
+    "date": "2026-06-21",
+    "subject": "feat(super-admin): sertifika kodu backfill tek-tık (gcloud gerekmez)"
+  },
+  {
     "hash": "0b88e4c1",
     "date": "2026-06-21",
     "subject": "build(ios): HangelHealthPlugin + HangelWidgetPlugin App target'a kaydedildi (pbxproj)"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "d4c2c7f6",
     "date": "2026-06-21",
     "subject": "feat: Etki Wrapped + Streak + Etki Haritası + AI kurumsal sürdürülebilirlik raporu (workflow)"
-  },
-  {
-    "hash": "aacc5ec9",
-    "date": "2026-06-21",
-    "subject": "build(ios): HangelAppIntents.swift App target'a ekle (Siri/Spotlight App Intents derlensin)"
-  },
-  {
-    "hash": "7c3f85c9",
-    "date": "2026-06-21",
-    "subject": "feat(certificates): yeni sertifika kodu — H+ülke+tür+yıl+faaliyet+kişi+Luhn (tiresiz), sıralı sayaç + DB doğrulama"
   }
 ];

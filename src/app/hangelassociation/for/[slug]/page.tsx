@@ -77,13 +77,13 @@ export default function ForSlugPage() {
     if (!content) return <div>Sayfa bulunamadı.</div>;
 
     return (
-        <div className="min-h-screen bg-white font-sans">
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <div className="min-h-screen bg-background font-sans">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                     </Button>
-                    <span className="text-[11px] font-black uppercase tracking-widest text-[#1d1d1f]/40">KİM İÇİN</span>
+                    <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">KİM İÇİN</span>
                     <div className="w-20" />
                 </div>
             </header>
@@ -91,7 +91,7 @@ export default function ForSlugPage() {
             <main className="pt-32 pb-20">
                 <section className="container mx-auto px-6 text-center space-y-8 max-w-4xl">
                     <div className="space-y-4">
-                        <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">
+                        <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-foreground leading-[0.95]">
                             {content.title}
                         </h1>
                         <p className="text-xl md:text-3xl text-muted-foreground font-medium max-w-3xl mx-auto leading-tight">
@@ -99,7 +99,7 @@ export default function ForSlugPage() {
                         </p>
                     </div>
                     
-                    <p className="text-lg md:text-xl text-[#1d1d1f]/70 leading-relaxed font-medium pt-8 border-t max-w-2xl mx-auto">
+                    <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium pt-8 border-t max-w-2xl mx-auto">
                         {content.desc}
                     </p>
 

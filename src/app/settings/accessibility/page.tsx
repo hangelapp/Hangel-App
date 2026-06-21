@@ -422,7 +422,7 @@ export default function AccessibilitySettingsPage() {
             <div className="space-y-8">
                 {/* Visual & Reading */}
                 <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
-                    <CardHeader className="bg-[#f5f5f7] border-b">
+                    <CardHeader className="bg-muted border-b">
                         <CardTitle className="text-lg flex items-center gap-2">
                             <Eye className="h-5 w-5 text-indigo-500" />
                             Görsel & Okuma
@@ -496,7 +496,7 @@ export default function AccessibilitySettingsPage() {
 
                 {/* Cognitive & Understanding */}
                 <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
-                    <CardHeader className="bg-[#f5f5f7] border-b">
+                    <CardHeader className="bg-muted border-b">
                         <CardTitle className="text-lg flex items-center gap-2">
                             <Layers className="h-5 w-5 text-orange-500" />
                             Bilişsel & Anlama
@@ -533,7 +533,7 @@ export default function AccessibilitySettingsPage() {
 
                 {/* Interaction & Motor */}
                 <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
-                    <CardHeader className="bg-[#f5f5f7] border-b">
+                    <CardHeader className="bg-muted border-b">
                         <CardTitle className="text-lg flex items-center gap-2">
                             <MousePointerClick className="h-5 w-5 text-teal-500" />
                             Etkileşim & Motor
@@ -570,7 +570,7 @@ export default function AccessibilitySettingsPage() {
 
                 {/* Screen Reader & Media */}
                 <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
-                    <CardHeader className="bg-[#f5f5f7] border-b">
+                    <CardHeader className="bg-muted border-b">
                         <CardTitle className="text-lg flex items-center gap-2">
                             <Volume2 className="h-5 w-5 text-blue-500" />
                             Ekran Okuyucu & Medya
@@ -606,7 +606,7 @@ export default function AccessibilitySettingsPage() {
 
                 {/* Time & Error Management */}
                 <Card className="rounded-[2rem] overflow-hidden shadow-sm border-black/5">
-                    <CardHeader className="bg-[#f5f5f7] border-b">
+                    <CardHeader className="bg-muted border-b">
                         <CardTitle className="text-lg flex items-center gap-2">
                             <Clock className="h-5 w-5 text-slate-600" />
                             Zaman & Hata Yönetimi

@@ -15,12 +15,12 @@ import { sanitizeHtml } from '@/lib/sanitize-html';
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.push('/hangelassociation')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                 </Button>
-                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
+                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
                     <Link href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</Link>
                     <Link href="/hangelassociation/press" className={cn("hover:text-primary transition-colors", currentPage === 'press' && "text-primary")}>Basında Biz</Link>
                     <Link href="/hangelassociation/conferences" className={cn("hover:text-primary transition-colors", currentPage === 'conferences' && "text-primary")}>Konferanslar</Link>
@@ -42,12 +42,12 @@ export default function AssociationConferencesPage() {
     const heroImage = get('conferences.heroImage', '');
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="conferences" />
 
             <main className="container mx-auto px-4 pt-32 pb-24 max-w-4xl">
                 <header className="text-center mb-12 space-y-4">
-                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-[#1d1d1f]">{title}</h1>
+                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">{title}</h1>
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed">{subtitle}</p>
                 </header>
                 {heroImage && (

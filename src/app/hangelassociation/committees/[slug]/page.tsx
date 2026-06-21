@@ -65,13 +65,13 @@ export default function CommitteeSlugPage() {
     const Icon = content.icon;
 
     return (
-        <div className="min-h-screen bg-white font-sans">
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <div className="min-h-screen bg-background font-sans">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                     </Button>
-                    <span className="text-[11px] font-black uppercase tracking-widest text-[#1d1d1f]/40">KOMİTELER</span>
+                    <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">KOMİTELER</span>
                     <div className="w-20" />
                 </div>
             </header>
@@ -83,10 +83,10 @@ export default function CommitteeSlugPage() {
                             <Icon className="h-10 w-10" />
                         </div>
                         <div className="space-y-4">
-                            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">{content.title}</h1>
+                            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.95]">{content.title}</h1>
                             <p className="text-xl md:text-3xl text-muted-foreground font-medium">{content.subtitle}</p>
                         </div>
-                        <p className="text-lg text-[#1d1d1f]/70 leading-relaxed font-medium max-w-2xl mx-auto border-t pt-8">
+                        <p className="text-lg text-muted-foreground leading-relaxed font-medium max-w-2xl mx-auto border-t pt-8">
                             {content.desc}
                         </p>
                     </div>
@@ -95,16 +95,16 @@ export default function CommitteeSlugPage() {
                         <h3 className="text-xs font-black uppercase tracking-[0.3em] text-center text-muted-foreground">Odak Alanları</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {content.tasks.map((task: string, i: number) => (
-                                <div key={i} className="flex items-center gap-4 p-6 bg-[#f5f5f7] rounded-[2rem] border border-black/5 hover:bg-white transition-all group">
+                                <div key={i} className="flex items-center gap-4 p-6 bg-muted rounded-[2rem] border border-border hover:bg-card transition-all group">
                                     <CheckCircle2 className="h-6 w-6 text-primary" />
-                                    <span className="font-bold text-[#1d1d1f]">{task}</span>
+                                    <span className="font-bold text-foreground">{task}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     <div className="pt-12 text-center">
-                        <Button onClick={() => toast({title: "Başvuru", description: "Uzmanlık alanınızla komiteye katılma talebiniz incelenecektir."})} variant="outline" className="rounded-full px-10 h-14 font-bold border-black/10 hover:bg-black hover:text-white">
+                        <Button onClick={() => toast({title: "Başvuru", description: "Uzmanlık alanınızla komiteye katılma talebiniz incelenecektir."})} variant="outline" className="rounded-full px-10 h-14 font-bold border-border hover:bg-black hover:text-white">
                             Komiteye Katılın
                         </Button>
                     </div>

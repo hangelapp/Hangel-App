@@ -29,12 +29,12 @@ import { useAssociationContent } from '@/hooks/use-site-content';
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.push('/hangelassociation')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                 </Button>
-                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
+                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
                     <a href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</a>
                     <a href="/hangelassociation/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>Dernek Etkinlikleri</a>
                     <a href="/hangelassociation/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>Uluslararası Çalıştay</a>
@@ -67,22 +67,22 @@ export default function AssociationLegislationPage() {
     };
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="legislation" />
 
             {/* Hero Section - Preface focus */}
-            <section className="relative min-h-[90vh] flex flex-col items-center pt-32 text-center border-b border-black/5 overflow-hidden bg-[#f5f5f7]">
+            <section className="relative min-h-[90vh] flex flex-col items-center pt-32 text-center border-b border-border overflow-hidden bg-muted">
                 <div className="relative z-10 space-y-6 px-6 max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-[0.2em] mb-4 px-4 py-1.5 rounded-full">TBMM Kanun Teklifi Taslağı</Badge>
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.95] text-[#1d1d1f]">
+                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.95] text-foreground">
                         {get('legislation.title', 'Yok artık, öyle yalnız başına mücadele etmek!')}
                     </h1>
                     <p className="text-xl md:text-3xl font-medium text-muted-foreground max-w-3xl mx-auto leading-tight">
                         {get('legislation.subtitle', 'Sosyal Fayda ve Sürdürülebilirlik Odaklı Sosyal Girişimcilik Kanunu Teklifi.')}
                     </p>
                     <div className="pt-12 flex flex-col md:flex-row items-center justify-center gap-6">
-                        <div className="text-left max-w-2xl bg-white p-8 rounded-[2.5rem] shadow-xl border border-black/5">
-                            <p className="text-lg leading-relaxed text-[#1d1d1f]/80 italic">
+                        <div className="text-left max-w-2xl bg-card p-8 rounded-[2.5rem] shadow-xl border border-border">
+                            <p className="text-lg leading-relaxed text-muted-foreground italic">
                                 "Bu tasarı sadece bir kanun teklifi değil; vicdanın gücüyle, küresel sorumlulukla ve umut ile yazılmış bir toplumsal sözleşmedir. Gerçek değişim; dayanışmayla, kolektif güçle, yan yana birlikte mücadele ettiğimizde mümkün olur."
                             </p>
                             <p className="mt-6 font-bold text-sm text-primary">— İsmail Hilmi ADIGÜZEL</p>
@@ -97,10 +97,10 @@ export default function AssociationLegislationPage() {
             </section>
 
             {/* Core Values Section */}
-            <section className="py-32 px-6 bg-white">
+            <section className="py-32 px-6 bg-background">
                 <div className="container mx-auto max-w-5xl space-y-20">
                     <div className="text-center space-y-4">
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Bir Paradigma Değişikliği.</h2>
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">Bir Paradigma Değişikliği.</h2>
                         <p className="text-xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
                             Hedefimiz net: Sosyal girişimcilikte yasa ithal eden değil, yasa ihraç eden bir ülke olmak. Ahilikten vakıf kültürüne uzanan mirasımızı çağın ihtiyaçlarıyla buluşturuyoruz.
                         </p>
@@ -112,11 +112,11 @@ export default function AssociationLegislationPage() {
                             { title: "Şeffaf Denetim", desc: "DERBİS üzerinden izlenebilir, şeffaf ve hesap verebilir bir etki raporlama standartı geliyor.", icon: Eye },
                             { title: "Kamu İşbirliği", desc: "Kamu, sivil toplum ve özel sektör arasında sürdürülebilir bir işbirliği modeli inşaa ediliyor.", icon: Landmark }
                         ].map((item, i) => (
-                            <div key={i} className="p-10 bg-[#f5f5f7] rounded-[2.5rem] flex flex-col gap-6 hover:bg-white hover:shadow-2xl transition-all border border-transparent hover:border-black/5">
-                                <div className="p-4 bg-white rounded-2xl w-fit shadow-sm">
+                            <div key={i} className="p-10 bg-muted rounded-[2.5rem] flex flex-col gap-6 hover:bg-card hover:shadow-2xl transition-all border border-transparent hover:border-border">
+                                <div className="p-4 bg-card rounded-2xl w-fit shadow-sm">
                                     <item.icon className="h-8 w-8 text-primary" />
                                 </div>
-                                <h3 className="text-2xl font-bold text-[#1d1d1f] tracking-tight">{item.title}</h3>
+                                <h3 className="text-2xl font-bold text-foreground tracking-tight">{item.title}</h3>
                                 <p className="text-base text-muted-foreground leading-relaxed font-medium">{item.desc}</p>
                             </div>
                         ))}
@@ -200,11 +200,11 @@ export default function AssociationLegislationPage() {
             </section>
 
             {/* Global Context Section */}
-            <section className="py-32 bg-[#f5f5f7]">
+            <section className="py-32 bg-muted">
                 <div className="container mx-auto px-6 max-w-6xl">
                     <div className="text-center mb-20 space-y-4">
                         <Globe className="h-12 w-12 text-primary mx-auto mb-4" />
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Uluslararası Kıyaslama.</h2>
+                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">Uluslararası Kıyaslama.</h2>
                         <p className="text-xl text-muted-foreground font-medium">Dünyadaki başarılı modellerle uyumlu, özgün bir yapı.</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -214,7 +214,7 @@ export default function AssociationLegislationPage() {
                             { country: "Güney Kore", model: "Promotion Act", desc: "Sosyal girişimler kamu alımlarında %100 öncelik hakkına sahip." },
                             { country: "ABD", model: "L3C / B-Corp", desc: "Düşük kârla çalışan sosyal işletmelere özel tüzel kişilik tanımı." }
                         ].map((item, i) => (
-                            <button key={i} onClick={() => toast({ title: `${item.country} Modeli`, description: `${item.model} yapısı hakkında detaylı kıyaslama raporu yükleniyor.` })} className="p-8 bg-white rounded-[2rem] border border-black/5 shadow-sm hover:shadow-xl transition-all text-left">
+                            <button key={i} onClick={() => toast({ title: `${item.country} Modeli`, description: `${item.model} yapısı hakkında detaylı kıyaslama raporu yükleniyor.` })} className="p-8 bg-card rounded-[2rem] border border-border shadow-sm hover:shadow-xl transition-all text-left">
                                 <h4 className="text-primary font-black text-xs uppercase tracking-[0.2em] mb-4">{item.country}</h4>
                                 <h3 className="text-2xl font-bold mb-3">{item.model}</h3>
                                 <p className="text-sm text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
@@ -225,17 +225,17 @@ export default function AssociationLegislationPage() {
             </section>
 
             {/* Research & Data Section */}
-            <section className="py-32 px-6 bg-white border-b border-black/5">
+            <section className="py-32 px-6 bg-card border-b border-border">
                 <div className="container mx-auto max-w-5xl">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div className="space-y-8">
                             <BarChart3 className="h-12 w-12 text-primary" />
-                            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Veriye Dayalı Gerekçe.</h2>
+                            <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">Veriye Dayalı Gerekçe.</h2>
                             <p className="text-xl text-muted-foreground leading-relaxed font-medium">
                                 British Council, Marmara Üniversitesi ve KUSIF gibi kuruluşların araştırmaları, Türkiye'de yasal tanım eksikliğinin sosyal etkiyi %70 oranında sınırladığını gösteriyor.
                             </p>
                             <div className="space-y-4">
-                                <button onClick={() => toast({ title: "Rapor Açılıyor", description: "Marmara Üniversitesi akademik analizi yükleniyor." })} className="flex w-full items-center gap-4 p-4 bg-[#f5f5f7] rounded-2xl border border-black/5 group cursor-pointer hover:bg-primary/5 transition-colors">
+                                <button onClick={() => toast({ title: "Rapor Açılıyor", description: "Marmara Üniversitesi akademik analizi yükleniyor." })} className="flex w-full items-center gap-4 p-4 bg-muted rounded-2xl border border-border group cursor-pointer hover:bg-primary/5 transition-colors">
                                     <FileText className="h-6 w-6 text-primary" />
                                     <div className="flex-1 text-left">
                                         <p className="text-sm font-bold">Marmara Üni. Analizi (2024)</p>
@@ -243,7 +243,7 @@ export default function AssociationLegislationPage() {
                                     </div>
                                     <ChevronRight className="h-5 w-5 text-primary group-hover:translate-x-1 transition-transform" />
                                 </button>
-                                <button onClick={() => toast({ title: "Rapor Açılıyor", description: "British Council sosyal girişim durumu raporu yükleniyor." })} className="flex w-full items-center gap-4 p-4 bg-[#f5f5f7] rounded-2xl border border-black/5 group cursor-pointer hover:bg-primary/5 transition-colors">
+                                <button onClick={() => toast({ title: "Rapor Açılıyor", description: "British Council sosyal girişim durumu raporu yükleniyor." })} className="flex w-full items-center gap-4 p-4 bg-muted rounded-2xl border border-border group cursor-pointer hover:bg-primary/5 transition-colors">
                                     <FileText className="h-6 w-6 text-primary" />
                                     <div className="flex-1 text-left">
                                         <p className="text-sm font-bold">British Council Raporu (2019)</p>
@@ -253,17 +253,17 @@ export default function AssociationLegislationPage() {
                                 </button>
                             </div>
                         </div>
-                        <div className="p-12 bg-[#f5f5f7] rounded-[3rem] space-y-8">
+                        <div className="p-12 bg-muted rounded-[3rem] space-y-8">
                             <div className="space-y-2">
                                 <p className="text-6xl font-black tracking-tighter text-primary">%18.2</p>
                                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Kadın Girişimci Oranı (2024)</p>
                             </div>
-                            <div className="h-px bg-black/5 w-full" />
+                            <div className="h-px bg-border w-full" />
                             <div className="space-y-2">
                                 <p className="text-6xl font-black tracking-tighter text-primary">587M$</p>
                                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Toplam Girişim Yatırımı (2024 H1)</p>
                             </div>
-                            <div className="h-px bg-black/5 w-full" />
+                            <div className="h-px bg-border w-full" />
                             <div className="text-sm font-medium text-muted-foreground italic">
                                 "Bu veriler, sosyal girişimin ekonomik büyümedeki potansiyelini ancak yasal güvenceyle gerçekleştirebileceğini kanıtlıyor."
                             </div>
@@ -273,10 +273,10 @@ export default function AssociationLegislationPage() {
             </section>
 
             {/* Bottom CTA Section */}
-            <section className="py-32 px-6 text-center bg-white">
+            <section className="py-32 px-6 text-center bg-card">
                 <div className="container mx-auto max-w-3xl space-y-10">
                     <Shield className="h-16 w-16 text-primary mx-auto" />
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Bu Değişimin Tarafı Olun.</h2>
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">Bu Değişimin Tarafı Olun.</h2>
                     <p className="text-xl text-muted-foreground font-medium leading-relaxed">
                         Bu teklif, bir metinden öte toplumsal bir mirastır. Sosyal meselelerle uğraşan girişimcilerin yalnızca alkış değil, mevzuat desteği de gördüğü bir gelecek için çalışıyoruz.
                     </p>
@@ -284,7 +284,7 @@ export default function AssociationLegislationPage() {
                         <Button size="lg" className="rounded-full px-12 h-14 font-bold bg-primary hover:bg-primary/90 text-lg shadow-2xl shadow-primary/20" onClick={handleDownload}>
                             Taslağı İndir <Download className="ml-2 h-5 w-5" />
                         </Button>
-                        <Button variant="ghost" size="lg" className="rounded-full px-12 h-14 font-bold border border-black/10 hover:bg-white text-lg" onClick={handleFeedback}>
+                        <Button variant="ghost" size="lg" className="rounded-full px-12 h-14 font-bold border border-border hover:bg-muted text-lg" onClick={handleFeedback}>
                             Görüş Bildir <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </div>

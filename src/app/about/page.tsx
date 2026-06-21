@@ -45,7 +45,7 @@ const AppleSection = ({
 }) => (
     <section className={cn(
         "relative min-h-[80vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-border",
-        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
+        theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground",
         className
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">

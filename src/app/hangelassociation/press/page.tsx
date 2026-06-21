@@ -15,12 +15,12 @@ import { useToast } from '@/hooks/use-toast';
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.push('/hangelassociation')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                 </Button>
-                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
+                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
                     <Link href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</Link>
                     <Link href="/hangelassociation/press" className={cn("hover:text-primary transition-colors", currentPage === 'press' && "text-primary")}>Basında Biz</Link>
                     <Link href="/hangelassociation/conferences" className={cn("hover:text-primary transition-colors", currentPage === 'conferences' && "text-primary")}>Konferanslar</Link>
@@ -236,13 +236,13 @@ const DownloadButtons = ({ release }: { release: PressRelease }) => {
 const ReleaseCard = ({ release }: { release: PressRelease }) => {
     const accent = release.group === 'app' ? CORAL : NAVY;
     return (
-        <article className="relative bg-white rounded-[1.75rem] p-7 shadow-sm border border-black/5 overflow-hidden">
+        <article className="relative bg-card rounded-[1.75rem] p-7 shadow-sm border border-border overflow-hidden">
             <span className="absolute inset-x-0 top-0 h-1.5" style={{ backgroundColor: accent }} />
             <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: accent }}>
                 Basın Bülteni
             </p>
             <p className="mt-1 text-xs text-muted-foreground">{release.location}, {release.date}</p>
-            <h3 className="mt-3 text-xl md:text-2xl font-black tracking-tight text-[#1f1f1f] leading-snug">
+            <h3 className="mt-3 text-xl md:text-2xl font-black tracking-tight text-foreground leading-snug">
                 {release.title}
             </h3>
             <div className="mt-5 space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -330,19 +330,19 @@ export default function AssociationPressPage() {
     const subtitle = get('press.subtitle', 'hangel app ve hangel Derneği basın bültenleri');
 
     return (
-        <div className="min-h-screen bg-[#f5f5f7] font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="press" />
 
             <main className="container mx-auto px-4 pt-32 pb-24 max-w-5xl">
                 <header className="text-center mb-12 space-y-4">
-                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-[#1d1d1f]">{title}</h1>
+                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">{title}</h1>
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed">{subtitle}</p>
                 </header>
 
                 {/* Basın bültenleri — iki ayrı grup (app turuncu / dernek lacivert aksanlı). */}
                 <Tabs defaultValue="app" className="w-full">
                     <div className="flex justify-center">
-                        <TabsList className="h-11 rounded-full bg-white shadow-sm border border-black/5 p-1">
+                        <TabsList className="h-11 rounded-full bg-card shadow-sm border border-border p-1">
                             <TabsTrigger
                                 value="app"
                                 className="rounded-full px-5 text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white"
@@ -377,7 +377,7 @@ export default function AssociationPressPage() {
 
                 {/* App Icon + Kurumsal Fotoğraflar (cihaz mockup'ları). */}
                 <section className="mt-24">
-                    <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center text-[#1d1d1f]">
+                    <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center text-foreground">
                         Kurumsal Görseller
                     </h2>
                     <p className="text-center text-muted-foreground mt-3 max-w-2xl mx-auto">
@@ -386,22 +386,22 @@ export default function AssociationPressPage() {
 
                     <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                         {/* App Icon — turuncu köşeli-kare zemin, ortada beyaz "hangel" wordmark. */}
-                        <div className="bg-white rounded-[1.75rem] p-8 shadow-sm border border-black/5 flex flex-col items-center text-center">
+                        <div className="bg-card rounded-[1.75rem] p-8 shadow-sm border border-border flex flex-col items-center text-center">
                             <div
                                 className="aspect-square w-32 rounded-[1.5rem] flex items-center justify-center shadow-lg"
                                 style={{ backgroundColor: CORAL }}
                             >
                                 <span className="text-white font-black tracking-tighter text-xl leading-none">hangel</span>
                             </div>
-                            <h3 className="mt-6 text-lg font-bold text-[#1f1f1f]">App Icon</h3>
+                            <h3 className="mt-6 text-lg font-bold text-foreground">App Icon</h3>
                             <p className="mt-1 text-sm text-muted-foreground">
                                 Mobil uygulama simgesi — turuncu (#f34723) köşeli-kare zeminde beyaz hangel wordmark.
                             </p>
                         </div>
 
                         {/* Cihaz mockup'ları. */}
-                        <div className="lg:col-span-2 bg-white rounded-[1.75rem] p-8 shadow-sm border border-black/5">
-                            <h3 className="text-lg font-bold text-[#1f1f1f] text-center mb-8">
+                        <div className="lg:col-span-2 bg-card rounded-[1.75rem] p-8 shadow-sm border border-border">
+                            <h3 className="text-lg font-bold text-foreground text-center mb-8">
                                 Cihazlarda hangel
                             </h3>
                             <DeviceMockups />

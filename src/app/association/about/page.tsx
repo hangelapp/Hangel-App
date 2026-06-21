@@ -16,12 +16,12 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     const { t } = useTranslation();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('association.back')}
                 </Button>
-                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
+                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
                     <Link href="/association/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>{t('association.navAbout')}</Link>
                     <Link href="/association/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>{t('association.navEvents')}</Link>
                     <Link href="/association/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>{t('association.navWorkshop')}</Link>
@@ -55,8 +55,8 @@ const AppleSection = ({
     children?: React.ReactNode
 }) => (
     <section className={cn(
-        "relative min-h-[85vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-black/5",
-        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
+        "relative min-h-[85vh] flex flex-col items-center pt-24 text-center overflow-hidden border-b border-border",
+        theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground",
         className
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl animate-in fade-in-0 slide-in-from-bottom-4 duration-1000">
@@ -85,7 +85,7 @@ const AppleSection = ({
 export default function AssociationAboutPage() {
     const { t } = useTranslation();
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="about" />
 
             {/* Hero */}
@@ -107,9 +107,9 @@ export default function AssociationAboutPage() {
             />
 
             {/* Metrics — gerçek rakamlar /api/public/stats'tan. 0 olan kartlar gizli. */}
-            <section className="bg-[#f5f5f7] py-32 text-center border-b border-black/5">
+            <section className="bg-muted py-32 text-center border-b border-border">
                 <div className="container mx-auto px-6 max-w-5xl">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-20 text-[#1d1d1f]">{t('associationAbout.metricsTitle')}</h2>
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-20 text-foreground">{t('associationAbout.metricsTitle')}</h2>
                     <PublicStatsRow
                         items={[
                             { key: 'ngos', label: t('associationAbout.metricInitiatives'), format: STAT_FORMATTERS.count },
@@ -118,7 +118,7 @@ export default function AssociationAboutPage() {
                             { key: 'donationVolume', label: 'Toplam Bağış', format: STAT_FORMATTERS.currency },
                         ]}
                         containerClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16"
-                        labelClassName="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60"
+                        labelClassName="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
                     />
                 </div>
             </section>

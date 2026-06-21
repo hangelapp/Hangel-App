@@ -15,12 +15,12 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     const { t } = useTranslation();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('association.back')}
                 </Button>
-                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
+                <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-muted-foreground">
                     <Link href="/association/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>{t('association.navAbout')}</Link>
                     <Link href="/association/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>{t('association.navEvents')}</Link>
                     <Link href="/association/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>{t('association.navWorkshop')}</Link>
@@ -44,8 +44,8 @@ interface ShowcaseSectionProps {
 
 const ShowcaseSection = ({ title, subtitle, stat, description, image, hint, theme = 'light' }: ShowcaseSectionProps) => (
     <section className={cn(
-        "relative min-h-screen flex flex-col items-center pt-32 text-center border-b border-black/5 overflow-hidden",
-        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]"
+        "relative min-h-screen flex flex-col items-center pt-32 text-center border-b border-border overflow-hidden",
+        theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground"
     )}>
         <div className="relative z-10 space-y-6 px-6 max-w-4xl">
             <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
@@ -64,7 +64,7 @@ const ShowcaseSection = ({ title, subtitle, stat, description, image, hint, them
 export default function AssociationWorkshopPage() {
     const { t } = useTranslation();
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="workshop" />
 
             <ShowcaseSection
@@ -76,19 +76,19 @@ export default function AssociationWorkshopPage() {
                 hint="diverse group of international students"
             />
 
-            <section className="bg-[#f5f5f7] py-32 border-b border-black/5">
+            <section className="bg-muted py-32 border-b border-border">
                 <div className="container mx-auto px-6 max-w-5xl">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                         <div className="space-y-6">
                             <Database className="h-12 w-12 text-primary" />
-                            <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">{t('associationWorkshop.bigDataTitle')}</h2>
+                            <h2 className="text-4xl font-bold tracking-tight text-foreground">{t('associationWorkshop.bigDataTitle')}</h2>
                             <p className="text-lg text-muted-foreground leading-relaxed font-medium">
                                 {t('associationWorkshop.bigDataDesc')}
                             </p>
                         </div>
-                        <div className="p-10 bg-white rounded-[2.5rem] shadow-xl border border-black/5 text-center">
+                        <div className="p-10 bg-card rounded-[2.5rem] shadow-xl border border-border text-center">
                             <p className="text-8xl font-black tracking-tighter text-primary mb-2">632</p>
-                            <p className="text-sm font-bold uppercase tracking-widest text-[#1d1d1f]/60">{t('associationWorkshop.bigDataLabel')}</p>
+                            <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t('associationWorkshop.bigDataLabel')}</p>
                         </div>
                     </div>
                 </div>
@@ -104,16 +104,16 @@ export default function AssociationWorkshopPage() {
                 hint="academic meeting discussion"
             />
 
-            <section className="py-32 bg-white text-center">
+            <section className="py-32 bg-background text-center">
                 <div className="container mx-auto px-6 max-w-4xl space-y-16">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">{t('associationWorkshop.curriculumTitle')}</h2>
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">{t('associationWorkshop.curriculumTitle')}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-left">
-                        <div className="p-10 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 group hover:bg-primary transition-colors">
+                        <div className="p-10 bg-muted rounded-[2.5rem] space-y-4 group hover:bg-primary transition-colors">
                             <BookOpen className="h-8 w-8 text-primary group-hover:text-white" />
                             <h3 className="text-xl font-bold group-hover:text-white">{t('associationWorkshop.yokTitle')}</h3>
                             <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-white/80">{t('associationWorkshop.yokDesc')}</p>
                         </div>
-                        <div className="p-10 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 group hover:bg-primary transition-colors">
+                        <div className="p-10 bg-muted rounded-[2.5rem] space-y-4 group hover:bg-primary transition-colors">
                             <Rocket className="h-8 w-8 text-primary group-hover:text-white" />
                             <h3 className="text-xl font-bold group-hover:text-white">{t('associationWorkshop.scienceTitle')}</h3>
                             <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-white/80">{t('associationWorkshop.scienceDesc')}</p>

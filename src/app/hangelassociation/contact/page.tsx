@@ -26,13 +26,13 @@ export default function AssociationContactPage() {
     };
 
     return (
-        <div className="min-h-screen bg-white font-sans">
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+        <div className="min-h-screen bg-background font-sans">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
                     </Button>
-                    <span className="text-[11px] font-black uppercase tracking-widest text-[#1d1d1f]/40">İLETİŞİM</span>
+                    <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">İLETİŞİM</span>
                     <div className="w-20" />
                 </div>
             </header>
@@ -41,7 +41,7 @@ export default function AssociationContactPage() {
                 <div className="container mx-auto px-6 max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-20">
                     <div className="space-y-12">
                         <div className="space-y-4">
-                            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[#1d1d1f]">{get('contact.title', 'Bize Ulaşın.')}</h1>
+                            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground">{get('contact.title', 'Bize Ulaşın.')}</h1>
                             <p className="text-xl text-muted-foreground font-medium">{get('contact.description', 'İş birlikleri, projeler ve kurumsal talepleriniz için buradayız.')}</p>
                         </div>
 
@@ -61,18 +61,18 @@ export default function AssociationContactPage() {
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="bg-[#f5f5f7] p-10 rounded-[3rem] space-y-6 border border-black/5">
+                    <form onSubmit={handleSubmit} className="bg-muted p-10 rounded-[3rem] space-y-6 border border-border">
                         <div className="space-y-2">
                             <Label>Adınız Soyadınız</Label>
-                            <Input placeholder="Tam adınızı girin" required className="bg-white rounded-xl border-none h-12" />
+                            <Input placeholder="Tam adınızı girin" required className="bg-card rounded-xl border-none h-12" />
                         </div>
                         <div className="space-y-2">
                             <Label>E-posta Adresiniz</Label>
-                            <Input type="email" placeholder="ornek@mail.com" required className="bg-white rounded-xl border-none h-12" />
+                            <Input type="email" placeholder="ornek@mail.com" required className="bg-card rounded-xl border-none h-12" />
                         </div>
                         <div className="space-y-2">
                             <Label>Mesajınız</Label>
-                            <Textarea placeholder="Kurumsal talebinizi buraya yazın..." rows={6} required className="bg-white rounded-[2rem] border-none p-6" />
+                            <Textarea placeholder="Kurumsal talebinizi buraya yazın..." rows={6} required className="bg-card rounded-[2rem] border-none p-6" />
                         </div>
                         <Button type="submit" className="w-full h-14 rounded-2xl font-bold bg-primary shadow-lg shadow-primary/20">
                             <Send className="mr-2 h-5 w-5" /> Mesajı Gönder

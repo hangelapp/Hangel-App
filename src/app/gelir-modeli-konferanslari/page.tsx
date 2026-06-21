@@ -171,7 +171,7 @@ function EventCard({ ev }: { ev: Event & { id: string } }) {
   const capacityLabel = ev.capacity?.max ? `${ev.capacity.current ?? 0}/${ev.capacity.max} kayıt` : 'Kontenjan açık';
   return (
     <Link href={href} className="group block focus:outline-none">
-      <Card className="overflow-hidden flex flex-col h-full border-black/5 hover:border-primary/30 hover:shadow-lg transition-all rounded-2xl">
+      <Card className="overflow-hidden flex flex-col h-full border-border hover:border-primary/30 hover:shadow-lg transition-all rounded-2xl">
         <div className="relative aspect-[16/10] w-full bg-muted">
           {ev.imageUrl ? (
             <Image src={ev.imageUrl} alt={ev.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={ev.imageHint || 'konferans'} />
@@ -220,14 +220,14 @@ export default function IncomeModelConferencePage() {
   const eventCount = (liveEvents.length || fallbackSchedule.length) + comingSoonCities.length;
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+    <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
       {/* Header */}
-      <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
+      <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
-          <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium text-[#1d1d1f]/80">
+          <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium text-muted-foreground">
             <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
           </Button>
-          <div className="flex items-center gap-4 text-[12px] font-medium text-[#1d1d1f]/80">
+          <div className="flex items-center gap-4 text-[12px] font-medium text-muted-foreground">
             <span className="hidden sm:inline">Gelir Modeli Konferansları</span>
             <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
               <Link href="#takvim">Etkinliği Seç, Katıl</Link>
@@ -248,7 +248,7 @@ export default function IncomeModelConferencePage() {
             <span className="ml-0.5 inline-flex items-center gap-1 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] uppercase tracking-wide group-hover:bg-primary/30">▶ Sunum</span>
           </Link>
           <p className="mt-6 text-lg font-medium text-muted-foreground">Sivil Toplum Kuruluşlarında</p>
-          <h1 className="mt-1 text-4xl sm:text-6xl font-black tracking-tighter text-[#1d1d1f] leading-[1.05]">
+          <h1 className="mt-1 text-4xl sm:text-6xl font-black tracking-tighter text-foreground leading-[1.05]">
             Gelir Modeli Oluşturma<br />ve Sürdürülebilirlik
           </h1>
           <p className="mt-5 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
@@ -259,7 +259,7 @@ export default function IncomeModelConferencePage() {
             <Button asChild size="lg" className="h-12 rounded-full px-8 font-bold shadow-xl shadow-primary/20">
               <Link href="#takvim">Şehrini Seç, Kayıt Ol</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="h-12 rounded-full px-6 font-bold border-black/10">
+            <Button asChild variant="outline" size="lg" className="h-12 rounded-full px-6 font-bold border-border">
               <Link href={APPLY_URL} target="_blank" rel="noopener noreferrer">Başvuru Formu</Link>
             </Button>
           </div>
@@ -284,7 +284,7 @@ export default function IncomeModelConferencePage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {fallbackSchedule.map((e, i) => (
-              <Card key={i} className="border-black/5">
+              <Card key={i} className="border-border">
                 <CardContent className="p-5 flex items-center gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
                     <CalendarDays className="h-6 w-6 text-primary" aria-hidden="true" />
@@ -327,7 +327,7 @@ export default function IncomeModelConferencePage() {
       </section>
 
       {/* Müfredat */}
-      <section className="bg-[#f5f5f7] py-16">
+      <section className="bg-muted py-16">
         <div className="mx-auto max-w-5xl px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Bu Konferansta Ne Öğreneceksiniz?</h2>
@@ -339,7 +339,7 @@ export default function IncomeModelConferencePage() {
             {curriculum.map((c) => {
               const Icon = c.icon;
               return (
-                <Card key={c.title} className="border-none bg-white shadow-sm">
+                <Card key={c.title} className="border-none bg-card shadow-sm">
                   <CardContent className="p-6">
                     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
                       <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
@@ -353,7 +353,7 @@ export default function IncomeModelConferencePage() {
           </div>
 
           {/* Hibe ve Destekler — "Ne Öğreneceksiniz?" ile aynı zemin; eğitim içeriği */}
-          <div className="mt-16 pt-12 border-t border-black/10">
+          <div className="mt-16 pt-12 border-t border-border">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Hibe ve Destekler: Nereye, Nasıl Başvurulur?</h2>
               <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
@@ -364,7 +364,7 @@ export default function IncomeModelConferencePage() {
           {grants.map((g) => {
             const external = g.href.startsWith('http');
             return (
-              <Card key={g.name} className="border-black/5 hover:shadow-md transition-shadow">
+              <Card key={g.name} className="border-border hover:shadow-md transition-shadow">
                 <CardContent className="p-6 flex flex-col h-full">
                   <h3 className="text-lg font-bold mb-2">{g.name}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed flex-1">{g.offer}</p>
@@ -390,7 +390,7 @@ export default function IncomeModelConferencePage() {
       </section>
 
       {/* Katılım koşulları */}
-      <section className="bg-[#f5f5f7] py-16">
+      <section className="bg-muted py-16">
         <div className="mx-auto max-w-5xl px-6">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Katılım Koşulları</h2>
@@ -399,7 +399,7 @@ export default function IncomeModelConferencePage() {
             {audience.map((a) => {
               const Icon = a.icon;
               return (
-                <Card key={a.title} className="bg-white border-black/5">
+                <Card key={a.title} className="bg-card border-border">
                   <CardContent className="p-5 text-center">
                     <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
                       <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
@@ -429,7 +429,7 @@ export default function IncomeModelConferencePage() {
           <p className="mt-4 text-sm text-muted-foreground">
             Detaylı bilgi: <Link href={APPLY_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">socialbusinessglobal.org</Link>
           </p>
-          <div className="mt-8 border-t border-black/5 pt-6">
+          <div className="mt-8 border-t border-border pt-6">
             <SupportBadge />
           </div>
         </div>
