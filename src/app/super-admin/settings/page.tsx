@@ -40,6 +40,7 @@ import {
   Mail,
   PhoneCall,
   Presentation,
+  Music2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -195,6 +196,9 @@ const SETTINGS_SECTIONS = [
   { id: 'call-center-config', label: 'Santral — Sağlayıcı & Numara Havuzu', icon: PhoneCall, color: 'bg-teal-600',
     href: '/super-admin/settings/call-center',
     description: 'Sağlayıcı kaydı, numara havuzu yönetimi, KVKK + tier plan ayarları.' },
+  { id: 'jingles', label: 'Jenerikler & Sesler', icon: Music2, color: 'bg-rose-500',
+    href: '/super-admin/settings/jingles',
+    description: 'Çağrı merkezi karşılama sesi + 5 hangel jeneriği (ses yükle / oynat / kaldır).' },
   { id: 'ai-management', label: 'Yapay Zeka Yönetimi', icon: Brain, color: 'bg-indigo-600',
     href: '/super-admin/ai-management',
     description: 'Kütüphane AI Asistanı ve Proje Yazma Asistanı yapay zekalarını eğit ve yönet.' },
