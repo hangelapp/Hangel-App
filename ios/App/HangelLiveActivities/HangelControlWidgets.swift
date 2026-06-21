@@ -122,3 +122,39 @@ struct MarketplaceControl: ControlWidget {
         .description("Alışverişle destek olabileceğin markaları açar.")
     }
 }
+
+// MARK: - 6) Bağışlarım denetimi
+
+@available(iOS 18.0, *)
+struct DonationsControl: ControlWidget {
+    static let kind = "com.hangel.ios.app.control.donations"
+
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(kind: Self.kind) {
+            ControlWidgetButton(action: hangelOpenURLIntent("hangel://my-donations")) {
+                Label("Bağışlarım", systemImage: "gift.fill")
+            }
+            .tint(.hangelOrange)
+        }
+        .displayName("hangel · Bağışlarım")
+        .description("Bağış geçmişini ve katkılarını açar.")
+    }
+}
+
+// MARK: - 7) Sosyal Etki Raporu denetimi
+
+@available(iOS 18.0, *)
+struct ImpactReportControl: ControlWidget {
+    static let kind = "com.hangel.ios.app.control.impact-report"
+
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(kind: Self.kind) {
+            ControlWidgetButton(action: hangelOpenURLIntent("hangel://impact-story")) {
+                Label("Etki Raporu", systemImage: "chart.line.uptrend.xyaxis")
+            }
+            .tint(.hangelOrange)
+        }
+        .displayName("hangel · Sosyal Etki Raporu")
+        .description("Sağladığın sosyal etkinin raporunu açar.")
+    }
+}

@@ -149,6 +149,7 @@ struct HangelLiveActivitiesBundle: WidgetBundle {
         ImpactScoreWidget()
         BloodStatusWidget()
         MarketplaceWidget()
+        DonationsWidget()
         // Kontrol Merkezi denetimleri — iOS 18+ (koşullu)
         if #available(iOS 18.0, *) {
             EmergencyBloodControl()
@@ -156,6 +157,8 @@ struct HangelLiveActivitiesBundle: WidgetBundle {
             QuickDonateControl()
             VolunteeringControl()
             MarketplaceControl()
+            DonationsControl()
+            ImpactReportControl()
         }
     }
 }

@@ -63,6 +63,14 @@ enum HangelWidgetStore {
         let city = d?.string(forKey: "widget.blood.nearestCity") ?? ""
         return (open, city)
     }
+
+    // Bağışlarım (katkı sayısı + etiket)
+    static func donations() -> (count: Int, label: String) {
+        let d = defaults
+        let count = d?.integer(forKey: "widget.donations.count") ?? 0
+        let label = d?.string(forKey: "widget.donations.label") ?? "destek"
+        return (count, label)
+    }
 }
 
 // MARK: - Paylaşılan widget kabuğu (hangel marka çerçevesi)
@@ -328,20 +336,37 @@ struct MarketplaceProvider: TimelineProvider {
 
 @available(iOS 16.1, *)
 struct MarketplaceWidgetView: View {
+    // Temu vitrin havası: renkli ürün kutucukları.
+    private let tints: [Color] = [.hangelOrange, .pink, .purple, .teal]
+    private let icons: [String] = ["tshirt.fill", "cup.and.saucer.fill", "gift.fill", "sparkles"]
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            WidgetHeader(kicker: "Pazar Yeri", systemImage: "bag.fill")
+        VStack(alignment: .leading, spacing: 8) {
+            WidgetHeader(kicker: "Fırsatlar", systemImage: "bag.fill")
             Spacer(minLength: 0)
-            Image(systemName: "bag.fill")
-                .font(.system(size: 30, weight: .semibold))
-                .foregroundStyle(Color.hangelOrange)
-            Text("Alışverişle destek ol")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
-                .lineLimit(2).minimumScaleFactor(0.8)
-            Text("Anlaşmalı markalardan al → sosyal fayda")
-                .font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+            // Renkli ürün şeridi (4 kutucuk).
+            HStack(spacing: 6) {
+                ForEach(0..<4, id: \.self) { i in
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .fill(tints[i].opacity(0.16))
+                        .frame(height: 36)
+                        .overlay(
+                            Image(systemName: icons[i])
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(tints[i])
+                        )
+                }
+            }
+            Spacer(minLength: 0)
+            HStack(spacing: 4) {
+                Text("Alışverişle destek ol")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.hangelOrange)
+                    .lineLimit(1).minimumScaleFactor(0.7)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold)).foregroundStyle(Color.hangelOrange)
+            }
         }
-        .padding(14)
+        .padding(12)
         .containerBackgroundCompat()
         .widgetURL(URL(string: "hangel://market"))
     }
@@ -357,6 +382,70 @@ struct MarketplaceWidget: Widget {
         .configurationDisplayName("Pazar Yeri")
         .description("Alışverişle destek olabileceğin markalara hızlı erişim.")
         .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
+// MARK: - 5) Bağışlarım widget'ı
+
+struct DonationsEntry: TimelineEntry {
+    let date: Date
+    let count: Int
+    let label: String
+}
+
+@available(iOS 16.1, *)
+struct DonationsProvider: TimelineProvider {
+    func placeholder(in context: Context) -> DonationsEntry { DonationsEntry(date: Date(), count: 12, label: "destek") }
+    func getSnapshot(in context: Context, completion: @escaping (DonationsEntry) -> Void) {
+        let d = HangelWidgetStore.donations()
+        completion(DonationsEntry(date: Date(), count: d.count, label: d.label))
+    }
+    func getTimeline(in context: Context, completion: @escaping (Timeline<DonationsEntry>) -> Void) {
+        let d = HangelWidgetStore.donations()
+        let entry = DonationsEntry(date: Date(), count: d.count, label: d.label)
+        completion(Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(60 * 60))))
+    }
+}
+
+@available(iOS 16.1, *)
+struct DonationsWidgetView: View {
+    var entry: DonationsEntry
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            WidgetHeader(kicker: "Bağışlarım", systemImage: "gift.fill")
+            Spacer(minLength: 0)
+            Text("\(entry.count)")
+                .font(.system(size: 34, weight: .heavy, design: .rounded))
+                .foregroundStyle(Color.hangelOrange)
+                .minimumScaleFactor(0.5).lineLimit(1)
+            Text(entry.label)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+            HStack(spacing: 4) {
+                Text("Katkılarımı gör")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.hangelOrange).lineLimit(1).minimumScaleFactor(0.7)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.system(size: 9, weight: .bold)).foregroundStyle(Color.hangelOrange)
+            }
+        }
+        .padding(14)
+        .containerBackgroundCompat()
+        .widgetURL(URL(string: "hangel://my-donations"))
+    }
+}
+
+@available(iOS 16.1, *)
+struct DonationsWidget: Widget {
+    let kind = "com.hangel.ios.app.widget.donations"
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: DonationsProvider()) { entry in
+            DonationsWidgetView(entry: entry)
+        }
+        .configurationDisplayName("Bağışlarım")
+        .description("Toplam katkı/destek sayını gösterir.")
+        .supportedFamilies([.systemSmall])
     }
 }
 
