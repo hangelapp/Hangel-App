@@ -349,17 +349,33 @@ function NgoDashboardPageContent() {
 
     const entityName = entity?.name || t('ngo_admin_dashboard.defaultEntityName');
     const stats = entity?.stats || { totalDonation: 0, volunteers: 0, followers: 0 };
+    // Kurumun kendi logosu (otomatik) — avatarUrl/logoUrl.
+    const logoUrl = (entity as { avatarUrl?: string; logoUrl?: string } | null | undefined)?.avatarUrl
+      || (entity as { logoUrl?: string } | null | undefined)?.logoUrl;
+    // Tür-uygun kimlik söylemi — STK / Marka / Kulüp her birine özel.
+    const KIND_IDENTITY: Record<'ngo' | 'brand' | 'club', { label: string; subtitle: string }> = {
+      ngo: { label: 'Sivil Toplum Kuruluşu', subtitle: 'Şeffaflığını göster, gönüllülerini yönet, bağışlarını takip et.' },
+      brand: { label: 'Marka', subtitle: 'Ürünlerini listele, kampanyalarını yönet, sosyal etki ortaklığını büyüt.' },
+      club: { label: 'Öğrenci Kulübü', subtitle: 'Etkinliklerini düzenle, üyelerini yönet, kulübünü büyüt.' },
+    };
+    const identity = KIND_IDENTITY[activeKind];
 
   return (
     <div className="space-y-6 animate-in fade-in-0 pb-8 px-4 sm:px-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-            <div className="p-3 bg-white rounded-2xl shadow-sm border border-black/5">
-                <Building2 className="h-8 w-8 text-primary" />
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-white shadow-sm border border-black/5 flex items-center justify-center">
+                {logoUrl
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={logoUrl} alt={entityName} className="h-full w-full object-contain p-1.5" />
+                    : <Building2 className="h-8 w-8 text-primary" />}
             </div>
             <div className="space-y-1">
-                <h1 className="text-2xl font-bold font-headline">{entityName}</h1>
-                <p className="text-muted-foreground text-sm">{t('ngo_admin_dashboard.panelSubtitle')}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-2xl font-bold font-headline">{entityName}</h1>
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-primary">{identity.label}</span>
+                </div>
+                <p className="text-muted-foreground text-sm">{identity.subtitle}</p>
             </div>
         </div>
         <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 self-start md:self-center">
