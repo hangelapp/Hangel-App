@@ -23,22 +23,24 @@ const auth = new GoogleAuth({ credentials: sa, scopes: ['https://www.googleapis.
 // Tek IVR metni — kullanıcı kesinleştirdi, AYNEN ("hangel" yazımıyla, DEĞİŞTİRME).
 const IVR_TEXT = `Merhaba, hangel'e hoş geldiniz. Toplumsal sorunlarla kolektif bilinç ve iş birliğiyle mücadele etme yolculuğumuza katkı sunduğunuz için teşekkür ederiz. Kullanıcı Destek Birimi için 1'i, Sivil Toplum Kuruluşları Destek Birimi için 2'yi, Marka ve Kurumsal İş Birlikleri Birimi için 3'ü tuşlayınız. Kişisel Verilerin Korunması Politikamız ve diğer yasal bilgilendirmeler için hangel.org adresini ziyaret edebilirsiniz. hangel'i aradığınız için teşekkür eder, iyi günler dileriz.`;
 
-// 5 YETİŞKİN ("normal insan") sesi — aynı IVR metni, farklı Chirp3-HD sesleri.
+// 5 YETİŞKİN sesi — yeni/daha iyi Chirp3-HD seçimi (önceki set beğenilmedi).
 const SANTRAL = [
-  { voice: 'tr-TR-Chirp3-HD-Achernar', rate: 0.97, text: IVR_TEXT },     // kadın, yumuşak
-  { voice: 'tr-TR-Chirp3-HD-Sulafat', rate: 0.97, text: IVR_TEXT },      // kadın, sıcak
-  { voice: 'tr-TR-Chirp3-HD-Vindemiatrix', rate: 0.97, text: IVR_TEXT }, // kadın, nazik
-  { voice: 'tr-TR-Chirp3-HD-Autonoe', rate: 0.98, text: IVR_TEXT },      // kadın, parlak
-  { voice: 'tr-TR-Chirp3-HD-Charon', rate: 0.97, text: IVR_TEXT },       // erkek, güven verici
+  { voice: 'tr-TR-Chirp3-HD-Kore', rate: 0.97, text: IVR_TEXT },        // kadın, profesyonel
+  { voice: 'tr-TR-Chirp3-HD-Despina', rate: 0.97, text: IVR_TEXT },     // kadın, pürüzsüz
+  { voice: 'tr-TR-Chirp3-HD-Gacrux', rate: 0.97, text: IVR_TEXT },      // kadın, olgun/sıcak
+  { voice: 'tr-TR-Chirp3-HD-Puck', rate: 0.98, text: IVR_TEXT },        // erkek, canlı
+  { voice: 'tr-TR-Chirp3-HD-Enceladus', rate: 0.97, text: IVR_TEXT },   // erkek, yumuşak
 ];
 
-// 5 ÇOCUK sesi — aynı IVR metni, Wavenet + yüksek pitch (çocuksu tını).
+// Google TTS gerçek ÇOCUK sesi yapamıyor (pitch shift "sahte çocuk taklidi" gibi).
+// En doğal alternatif = Chirp3-HD genç/ferah sesler (pitch YOK). Gerçek çocuk için
+// kayıt ya da ElevenLabs gerekir.
 const COCUK = [
-  { voice: 'tr-TR-Wavenet-A', rate: 1.0, pitch: 6.0, text: IVR_TEXT },
-  { voice: 'tr-TR-Wavenet-C', rate: 1.0, pitch: 7.0, text: IVR_TEXT },
-  { voice: 'tr-TR-Wavenet-A', rate: 1.0, pitch: 8.0, text: IVR_TEXT },
-  { voice: 'tr-TR-Wavenet-C', rate: 1.0, pitch: 6.5, text: IVR_TEXT },
-  { voice: 'tr-TR-Wavenet-D', rate: 1.0, pitch: 7.0, text: IVR_TEXT },
+  { voice: 'tr-TR-Chirp3-HD-Leda', rate: 1.0, text: IVR_TEXT },         // genç, doğal
+  { voice: 'tr-TR-Chirp3-HD-Aoede', rate: 1.0, text: IVR_TEXT },        // genç, ferah
+  { voice: 'tr-TR-Chirp3-HD-Callirrhoe', rate: 1.0, text: IVR_TEXT },   // genç, rahat
+  { voice: 'tr-TR-Chirp3-HD-Zephyr', rate: 1.02, text: IVR_TEXT },      // parlak
+  { voice: 'tr-TR-Chirp3-HD-Laomedeia', rate: 1.0, text: IVR_TEXT },    // ferah
 ];
 
 async function synth(token, item) {
