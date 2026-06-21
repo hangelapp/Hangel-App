@@ -283,7 +283,7 @@ export default function MarketPage() {
         </div>
 
         <Button asChild variant="outline" className="w-full rounded-2xl gap-2 border-none bg-primary/10 text-primary font-bold shadow-sm hover:bg-primary/15">
-          <Link href="/market/products">
+          <Link href="/market/discover">
             <ShoppingBag className="h-5 w-5" />
             Ürünleri Keşfet
           </Link>

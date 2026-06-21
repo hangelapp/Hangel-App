@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { doc } from 'firebase/firestore';
-import { ChevronRight, Loader2, Calendar, CalendarDays, Sparkles } from 'lucide-react';
+import { ChevronRight, Loader2, Calendar, CalendarDays, Sparkles, Film } from 'lucide-react';
 
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { WrappedCard } from '@/components/impact/wrapped-card';
+import { WrappedStory, type WrappedStoryData } from '@/components/impact/wrapped-story';
 
 type Period = 'month' | 'year';
 
@@ -128,6 +129,7 @@ export default function EtkiHikayemPage() {
   const [loading, setLoading] = useState(true);
   const [slideIndex, setSlideIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  const [storyOpen, setStoryOpen] = useState(false);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -216,6 +218,25 @@ export default function EtkiHikayemPage() {
           name={name}
           avatarUrl={avatarUrl}
           onReplay={() => { setSlideIndex(0); setRevealed(false); }}
+          onWatchVideo={() => setStoryOpen(true)}
+        />
+      )}
+
+      {/* Tam ekran IG-tarzı animasyonlu Hikaye Videosu oynatıcısı */}
+      {storyOpen && data && (
+        <WrappedStory
+          data={{
+            name,
+            periodLabel: data.periodLabel,
+            periodKind: period,
+            totalVolunteerHours: data.totalVolunteerHours,
+            donationCount: data.donationCount,
+            eventCount: data.eventCount,
+            impactScore: data.impactScore,
+            estimatedLivesTouched: data.estimatedLivesTouched,
+            topArea: data.topArea,
+          } satisfies WrappedStoryData}
+          onClose={() => setStoryOpen(false)}
         />
       )}
     </div>
@@ -302,13 +323,14 @@ function StoryReveal({
 }
 
 function SummaryView({
-  data, period, name, avatarUrl, onReplay,
+  data, period, name, avatarUrl, onReplay, onWatchVideo,
 }: {
   data: Wrapped;
   period: Period;
   name: string;
   avatarUrl?: string;
   onReplay: () => void;
+  onWatchVideo: () => void;
 }) {
   return (
     <div className="px-4 pb-16 pt-6 animate-in fade-in duration-500">
@@ -318,6 +340,25 @@ function SummaryView({
         </p>
         <h1 className="text-2xl font-black tracking-tight mt-1">Etki Hikayen</h1>
         <p className="text-sm text-white/60 mt-1">Kartını indir ya da paylaş; ilhamı büyüt.</p>
+      </div>
+
+      {/* 🎬 Hikaye Videosu girişi — tam ekran animasyonlu oynatıcı */}
+      <div className="max-w-md mx-auto mb-6">
+        <button
+          onClick={onWatchVideo}
+          className="group w-full flex items-center gap-3 rounded-3xl bg-gradient-to-r from-[#f34723] to-[#d6310f] px-5 py-4 text-left shadow-md transition-transform duration-300 ease-spring-out active:scale-[0.98]"
+        >
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md">
+            <Film className="h-6 w-6 text-white" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-base font-black tracking-tight text-white">🎬 Hikaye Videosu</span>
+            <span className="block text-xs font-medium text-white/85">
+              Etkini müzikli, animasyonlu sahnelerle izle ve paylaş
+            </span>
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 text-white/80 transition-transform group-hover:translate-x-0.5" />
+        </button>
       </div>
 
       <div className="mx-auto w-full max-w-[calc(100vw-24px)] overflow-hidden sm:max-w-md">
