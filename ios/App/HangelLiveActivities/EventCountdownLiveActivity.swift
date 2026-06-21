@@ -17,7 +17,7 @@ import AppIntents
 
 // Kilit ekranı Live Activity butonu (iOS 17+ etkileşimli):
 // dokununca uygulamayı açar ve etkinlikler sayfasına götürür (check-in için).
-@available(iOS 17.0, *)
+@available(iOS 18.0, *)
 struct LiveActivityCheckinIntent: AppIntent {
     static var title: LocalizedStringResource = "Etkinlik check-in"
     static var openAppWhenRun: Bool = true
@@ -195,7 +195,7 @@ struct EventCountdownLiveActivity: Widget {
     // MARK: - Check-in butonu (yalnızca iOS 17+ etkileşimli; iOS 16'da görünmez)
     @ViewBuilder
     private var checkinButton: some View {
-        if #available(iOS 17.0, *) {
+        if #available(iOS 18.0, *) {
             Button(intent: LiveActivityCheckinIntent()) {
                 Label("Check-in", systemImage: "qrcode.viewfinder")
                     .font(.caption.bold())
