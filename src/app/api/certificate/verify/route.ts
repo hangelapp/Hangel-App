@@ -37,6 +37,9 @@ interface VerifyResult {
   valid: true;
   kind?: 'event' | 'volunteer';
   country?: string;
+  countryName?: string;
+  city?: string;
+  cityName?: string;
   date?: string;
   holderName?: string;
   subject?: string;
@@ -44,9 +47,9 @@ interface VerifyResult {
   issuedAt?: string;
 }
 
-/** Normalize a raw code for DB matching: uppercase + strip non-alphanumerics. */
+/** Normalize a raw code for DB matching: trim + uppercase (tireler korunur — kanonik biçim tireli). */
 function normalizeCode(raw: string): string {
-  return raw.toUpperCase().replace(/[^0-9A-Z]/g, '');
+  return raw.trim().toUpperCase().replace(/\s+/g, '');
 }
 
 /** Firestore Timestamp-ish guard — pulls `toDate()` without an `any` cast. */
@@ -85,6 +88,9 @@ export async function GET(req: Request) {
     valid: true,
     kind: decoded.kind,
     country: decoded.country,
+    countryName: decoded.countryName,
+    city: decoded.city,
+    cityName: decoded.cityName,
     date: decoded.date,
   };
 

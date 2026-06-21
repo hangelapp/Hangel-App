@@ -194,8 +194,9 @@ export default function MyBadgesPage() {
         organization?: string; ngoName?: string;
         date?: string; completedAt?: { seconds?: number } | string | number;
         type?: string;
+        code?: string; organizerLogoUrl?: string;
     };
-    type CertificateDoc = { id?: string; title: string; organization: string; date: string; kind: 'event' | 'volunteer' };
+    type CertificateDoc = { id?: string; title: string; organization: string; date: string; kind: 'event' | 'volunteer'; code?: string; logoUrl?: string };
     const certificatesRef = useMemoFirebase(
         () => (db && authUser ? collection(db, COLLECTIONS.users, authUser.uid, COLLECTIONS.certificates) : null),
         [db, authUser?.uid],
@@ -246,6 +247,8 @@ export default function MyBadgesPage() {
             organization: (c.organization || c.ngoName || '').trim(),
             date: c.date || tsToDateStr(c.completedAt),
             kind: (c.type === 'volunteering' || c.type === 'volunteer') ? 'volunteer' : 'event',
+            code: c.code,
+            logoUrl: c.organizerLogoUrl,
         }));
         const seen = new Set(manual.map(c => `${c.title}|${c.organization}`));
         const merged: CertificateDoc[] = [...manual];
@@ -296,10 +299,10 @@ export default function MyBadgesPage() {
 
     // Sertifika çıktısı: yeni Apple-kimlikli, iOS-GÜVENLİ üretici (SVG→canvas→jsPDF,
     // sistem fontuyla Türkçe ğ/ş/ı/İ doğru render). İndir + Görüntüle aynı Blob'u paylaşır.
-    const buildCertBlob = (cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer' }) => {
+    const buildCertBlob = (cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer'; code?: string; logoUrl?: string }) => {
         const certificateId = cert.id || cert.title;
         // Gönüllülük ve etkinlik sertifikaları AYRI tasarım + AYRI metin kullanır.
-        // verifyUrl GEÇMEZ → üretici, H-kodlu doğrulama linkini (/c/{kod}) kendi kurar.
+        // code GEÇİLİRSE (DB'de saklı) onu kullanır → QR'daki kod DB ile eşleşir.
         if (cert.kind === 'volunteer') {
             return generateVolunteerCertificate({
                 taskTitle: cert.title,
@@ -307,6 +310,8 @@ export default function MyBadgesPage() {
                 userName: recipientName,
                 date: cert.date,
                 certificateId,
+                code: cert.code,
+                logoUrl: cert.logoUrl,
             });
         }
         return generateEventCertificate({
@@ -316,6 +321,8 @@ export default function MyBadgesPage() {
             organizerName: cert.organization,
             role: 'participant',
             certificateId,
+            code: cert.code,
+            logoUrl: cert.logoUrl,
         });
     };
 
@@ -332,7 +339,7 @@ export default function MyBadgesPage() {
         });
 
     // Native: write to Documents/ + share; Web: blob indir.
-    const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer' }) => {
+    const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer'; code?: string; logoUrl?: string }) => {
         try {
             const blob = await buildCertBlob(cert);
             const filename = certFileName(cert);
@@ -374,10 +381,10 @@ export default function MyBadgesPage() {
     };
 
     // Modal popup preview için cert PDF blob URL'i ve seçili cert.
-    const [previewState, setPreviewState] = useState<{ url: string; cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer' } } | null>(null);
+    const [previewState, setPreviewState] = useState<{ url: string; cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer'; code?: string; logoUrl?: string } } | null>(null);
 
     // Native: write temp + open via Browser; Web: iframe preview modal.
-    const handleViewCertificate = async (cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer' }) => {
+    const handleViewCertificate = async (cert: { title: string; organization: string; date: string; id?: string; kind?: 'event' | 'volunteer'; code?: string; logoUrl?: string }) => {
         try {
             const blob = await buildCertBlob(cert);
             if (isNativeApp()) {

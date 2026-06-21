@@ -86,11 +86,13 @@ export type VolunteerCertificateInput = {
   certificateId: string;
   code?: string;
   country?: string;
+  city?: string;
+  logoUrl?: string;
 };
 
 export async function generateVolunteerCertificate(input: VolunteerCertificateInput): Promise<Blob> {
   const { taskTitle, organizerName, userName, date, certificateId } = input;
-  const code = input.code || buildCertCode({ date, country: input.country || 'TR', kind: 'volunteer', idSeed: certificateId });
+  const code = input.code || buildCertCode({ date, country: input.country, city: input.city, kind: 'volunteer', idSeed: certificateId });
   const verify = certVerifyUrl(code);
   const verifyShort = verify.replace(/^https?:\/\//, '');
 
@@ -98,9 +100,10 @@ export async function generateVolunteerCertificate(input: VolunteerCertificateIn
   const CORAL_DARK = '#c5391b';
   const INK = '#1f1f1f';
 
-  const [logoUri, qrUri] = await Promise.all([
+  const [logoUri, qrUri, orgLogoUri] = await Promise.all([
     typeof window !== 'undefined' ? urlToDataUri(HANGEL_LOGO_PATH) : Promise.resolve(null),
     generateQrDataUri(verify, 600),
+    input.logoUrl ? urlToDataUri(input.logoUrl) : Promise.resolve(null),
   ]);
 
   const PX_W = 794;
@@ -146,16 +149,18 @@ export async function generateVolunteerCertificate(input: VolunteerCertificateIn
   <text x="${PX_W / 2}" y="320" font-size="15" font-weight="600" fill="${INK}" text-anchor="middle">${escXml(fit(bodyLine2, 70))}</text>
   <text x="${PX_W / 2}" y="346" font-size="12.5" font-weight="500" fill="#86868b" text-anchor="middle">${escXml(fit(bodyLine3, 92))}</text>
 
-  <text x="${PX_W / 2}" y="392" font-size="11" font-weight="700" letter-spacing="2.4" fill="#aeaeb2" text-anchor="middle">DÜZENLEYEN</text>
-  <text x="${PX_W / 2}" y="414" font-size="17" font-weight="700" fill="${CORAL_DARK}" text-anchor="middle">${escXml(fit(organizerName || 'hangel', 50))}</text>
+  ${orgLogoUri ? `<image x="${PX_W / 2 - 16}" y="360" width="32" height="32" href="${orgLogoUri}" xlink:href="${orgLogoUri}" preserveAspectRatio="xMidYMid meet"/>` : ''}
+  <text x="${PX_W / 2}" y="${orgLogoUri ? 412 : 398}" font-size="11" font-weight="700" letter-spacing="2.4" fill="#aeaeb2" text-anchor="middle">DÜZENLEYEN</text>
+  <text x="${PX_W / 2}" y="${orgLogoUri ? 434 : 420}" font-size="17" font-weight="700" fill="${CORAL_DARK}" text-anchor="middle">${escXml(fit(organizerName || 'hangel', 50))}</text>
 
-  <text x="60" y="${PX_H - 78}" font-size="11" font-weight="700" letter-spacing="2" fill="#aeaeb2">TARİH</text>
-  <text x="60" y="${PX_H - 58}" font-size="15" font-weight="500" fill="#515154">${escXml(formatTrDate(date))}</text>
+  <text x="60" y="${PX_H - 76}" font-size="11" font-weight="700" letter-spacing="2" fill="#aeaeb2">TARİH</text>
+  <text x="60" y="${PX_H - 56}" font-size="15" font-weight="500" fill="#515154">${escXml(formatTrDate(date))}</text>
 
-  ${qrUri ? `<image x="${PX_W - 60 - 76}" y="${PX_H - 122}" width="76" height="76" href="${qrUri}" xlink:href="${qrUri}"/>
-  <text x="${PX_W - 60 - 38}" y="${PX_H - 32}" font-size="9" fill="#aeaeb2" text-anchor="middle">Kontrol: ${escXml(verifyShort)}</text>` : ''}
+  ${qrUri ? `<image x="${PX_W - 54 - 40}" y="${PX_H - 54 - 44}" width="54" height="54" href="${qrUri}" xlink:href="${qrUri}"/>
+  <text x="${PX_W - 40 - 27}" y="${PX_H - 30}" font-size="8" fill="#aeaeb2" text-anchor="middle">${escXml(fit(verifyShort, 32))}</text>` : ''}
 
-  <text x="${PX_W / 2}" y="${PX_H - 22}" text-anchor="middle"><tspan font-size="12" font-weight="700" fill="${CORAL}">hangel.org.tr</tspan><tspan font-size="10" fill="#c7c7cc" dx="9">Sertifika Kodu: ${escXml(code)}</tspan></text>
+  <text x="${PX_W / 2}" y="${PX_H - 28}" font-size="12" font-weight="700" fill="${CORAL}" text-anchor="middle">hangel.org.tr</text>
+  <text x="${PX_W / 2}" y="${PX_H - 13}" font-size="9" fill="#c7c7cc" text-anchor="middle">Sertifika Kodu: ${escXml(code)}</text>
 </svg>`;
 
   const jpeg = await rasterizeSvgToJpeg(svg, PX_W, PX_H, 2);

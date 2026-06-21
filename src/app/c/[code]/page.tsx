@@ -18,6 +18,9 @@ interface VerifyResponse {
   valid: boolean;
   kind?: 'event' | 'volunteer';
   country?: string;
+  countryName?: string;
+  city?: string;
+  cityName?: string;
   date?: string;
   holderName?: string;
   subject?: string;
@@ -36,9 +39,11 @@ function kindLabel(kind?: 'event' | 'volunteer'): string {
 
 function formatTrDate(value?: string): string | null {
   if (!value) return null;
-  const d = new Date(value);
+  // "YYYY-MM" → ay + yıl; "YYYY-MM-DD" → tam tarih.
+  const monthOnly = /^\d{4}-\d{2}$/.test(value);
+  const d = new Date(monthOnly ? `${value}-01` : value);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString('tr-TR', monthOnly ? { month: 'long', year: 'numeric' } : { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default function CertificateVerifyPage() {
@@ -76,6 +81,7 @@ export default function CertificateVerifyPage() {
   const isValid = !!data?.valid;
   const hasDetails = !!(data?.holderName || data?.subject || data?.organization);
   const displayDate = formatTrDate(data?.issuedAt || data?.date);
+  const place = [data?.cityName, data?.countryName].filter(Boolean).join(' · ');
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-[#f5f5f7] px-4 py-10">
@@ -143,6 +149,14 @@ export default function CertificateVerifyPage() {
                       </dd>
                     </div>
                   ) : null}
+                  {place ? (
+                    <div className="py-3">
+                      <dt className="text-xs uppercase tracking-wide text-gray-400">Konum</dt>
+                      <dd className="mt-0.5 text-base" style={{ color: INK }}>
+                        {place}
+                      </dd>
+                    </div>
+                  ) : null}
                   {displayDate ? (
                     <div className="py-3">
                       <dt className="text-xs uppercase tracking-wide text-gray-400">Tarih</dt>
@@ -157,6 +171,7 @@ export default function CertificateVerifyPage() {
                   <p className="text-base font-medium" style={{ color: INK }}>
                     ✓ Geçerli kod
                   </p>
+                  {place ? <p className="text-sm text-gray-500">{place}</p> : null}
                   {displayDate ? (
                     <p className="text-sm text-gray-500">{displayDate}</p>
                   ) : null}
@@ -165,10 +180,6 @@ export default function CertificateVerifyPage() {
                   </p>
                 </div>
               )}
-
-              {data?.country && data.country !== 'TR' ? (
-                <p className="text-xs text-gray-400">Ülke: {data.country}</p>
-              ) : null}
 
               <span
                 className="mt-1 inline-block rounded-lg bg-gray-100 px-3 py-1.5 font-mono text-sm tracking-wider"

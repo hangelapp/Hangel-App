@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "ceb3a000",
+    "date": "2026-06-21",
+    "subject": "feat(ui): etkinlik/gönüllülük detay + STK liste Apple redesign + wallet fix (workflow)"
+  },
+  {
     "hash": "18cb7975",
     "date": "2026-06-21",
     "subject": "fix(qr): bazı Android modellerinde kamera açılmama sorununu sağlamlaştır"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "9ab70b83",
     "date": "2026-06-20",
     "subject": "feat(org): coral doğrulama tiki STK liste kartında da göster"
-  },
-  {
-    "hash": "710d1fab",
-    "date": "2026-06-20",
-    "subject": "feat(yetkili): super-admin tam kontrol + sahip her zaman listelensin"
   }
 ];

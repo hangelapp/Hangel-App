@@ -48,7 +48,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const eventRef = db.collection(COLLECTIONS.events).doc(eventId);
   const eventSnap = await eventRef.get();
   if (!eventSnap.exists) return errJson('event_not_found', 'Etkinlik bulunamadı', 404);
-  const ev = eventSnap.data() as { name?: string; organizerId?: string; organizer?: string; createdBy?: string; startDate?: string };
+  const ev = eventSnap.data() as { name?: string; organizerId?: string; organizer?: string; createdBy?: string; startDate?: string; location?: { city?: string }; organizerLogoUrl?: string };
 
   // Yetki — organizatör veya super-admin
   let authorized = isSuperAdmin || ev.createdBy === uid;
@@ -80,6 +80,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const ngoId = ev.organizerId || '';
   const ngoName = ev.organizer || 'hangel';
   const eventDate = ev.startDate || new Date().toISOString().slice(0, 10);
+  const eventCity = ev.location?.city || '';
+  const eventLogo = ev.organizerLogoUrl || '';
   let newlyCertified = 0; let alreadyDone = 0;
 
   for (const targetUid of uids) {
@@ -91,8 +93,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // girdiden (date + certId) AYNI kodu üretir → DB eşleşmesi çalışır.
     const cert = {
       id: certId, userId: targetUid, eventId, eventName, title: eventName, role: 'participant',
-      ngoId, ngoName, type: 'event', date: eventDate,
-      code: buildCertCode({ date: eventDate, country: 'TR', kind: 'event', idSeed: certId }),
+      ngoId, ngoName, type: 'event', date: eventDate, organizerLogoUrl: eventLogo,
+      code: buildCertCode({ date: eventDate, city: eventCity, kind: 'event', idSeed: certId }),
       completedAt: FieldValue.serverTimestamp(), issuedBy: uid,
     };
     await certRef.set(cert);
