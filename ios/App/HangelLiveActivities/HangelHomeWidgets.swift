@@ -158,7 +158,7 @@ struct UpcomingEventWidgetView: View {
         }
         .padding(14)
         .containerBackgroundCompat()
-        .widgetURL(URL(string: "hangel://events/nearby"))
+        .widgetURL(URL(string: "hangel://events"))
     }
 }
 
@@ -224,7 +224,7 @@ struct ImpactScoreWidgetView: View {
         }
         .padding(14)
         .containerBackgroundCompat()
-        .widgetURL(URL(string: "hangel://profile/impact"))
+        .widgetURL(URL(string: "hangel://profile"))
     }
 }
 
@@ -294,7 +294,7 @@ struct BloodStatusWidgetView: View {
         }
         .padding(14)
         .containerBackgroundCompat()
-        .widgetURL(URL(string: "hangel://emergency/blood"))
+        .widgetURL(URL(string: "hangel://blood"))
     }
 }
 

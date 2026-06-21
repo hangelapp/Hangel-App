@@ -41,7 +41,7 @@ struct EmergencyBloodControl: ControlWidget {
 
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {
-            ControlWidgetButton(action: hangelOpenURLIntent("hangel://emergency/blood")) {
+            ControlWidgetButton(action: hangelOpenURLIntent("hangel://blood")) {
                 Label("Acil Kan", systemImage: "drop.fill")
             }
             .tint(.hangelEmergency)
@@ -59,7 +59,7 @@ struct EventCheckinControl: ControlWidget {
 
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {
-            ControlWidgetButton(action: hangelOpenURLIntent("hangel://checkin")) {
+            ControlWidgetButton(action: hangelOpenURLIntent("hangel://events")) {
                 Label("Check-in", systemImage: "qrcode.viewfinder")
             }
             .tint(.hangelOrange)
@@ -77,7 +77,7 @@ struct QuickDonateControl: ControlWidget {
 
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {
-            ControlWidgetButton(action: hangelOpenURLIntent("hangel://donate")) {
+            ControlWidgetButton(action: hangelOpenURLIntent("hangel://social-impact")) {
                 Label("Hızlı Bağış", systemImage: "heart.fill")
             }
             .tint(.hangelOrange)
