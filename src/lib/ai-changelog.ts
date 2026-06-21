@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-06-21";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "6cb7f0de",
+    "date": "2026-06-21",
+    "subject": "feat(widgets): canlı veri köprüsü — widget'lar gerçek veriyi gösterir (iOS + Android)"
+  },
+  {
     "hash": "b7bb64cf",
     "date": "2026-06-21",
     "subject": "feat(design): tüm app Apple/iOS 26 kimliği + koyu tema kontrast düzeltmesi (7 ajanlı workflow)"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "0fbf4550",
     "date": "2026-06-21",
     "subject": "feat(ios): Bağışlarım widget+denetim + Etki Raporu denetim + Temu-vari Pazar Yeri"
-  },
-  {
-    "hash": "96bc1231",
-    "date": "2026-06-21",
-    "subject": "fix(ios): widget/denetim deep-link'leri gerçek sayfalara yönlendir"
   }
 ];

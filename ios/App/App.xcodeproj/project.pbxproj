@@ -28,6 +28,8 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		573BE32EB0C31FB321E29A8A /* HangelAppleSignInPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */; };
 		58DBE0CE07C6249833EC9BCE /* HangelLiveActivityPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EF0E00AA8367CCFAF92EE42 /* HangelLiveActivityPlugin.swift */; };
+		4583F0933CBA32C55E663D61 /* HangelHealthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5597C3D5CE86561CE8327CB /* HangelHealthPlugin.swift */; };
+		A1460375D853FDDC5D3B7FA3 /* HangelWidgetPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ADAF69A77B095726C897FCF /* HangelWidgetPlugin.swift */; };
 		5D1083187139087BE6090788 /* EmergencyBloodDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09F456D3C2DEA2750A80DA7 /* EmergencyBloodDetailView.swift */; };
 		600E2BE4C5D92A0B39E12708 /* WatchConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4659D98BF68E734557FA2C /* WatchConnectivityManager.swift */; };
 		64911D68D2BBEC71C134E038 /* HangelLiveActivities.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10D14FB365E21061786F5F7 /* HangelLiveActivities.swift */; };
@@ -150,6 +152,8 @@
 		5B3494FF82985F9D859D1918 /* hangel-disaster.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = "hangel-disaster.caf"; sourceTree = "<group>"; };
 		69E41BEB81AF2B49C670ECF8 /* HangelLiveActivities.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HangelLiveActivities.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6EF0E00AA8367CCFAF92EE42 /* HangelLiveActivityPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelLiveActivityPlugin.swift; sourceTree = "<group>"; };
+		F5597C3D5CE86561CE8327CB /* HangelHealthPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelHealthPlugin.swift; sourceTree = "<group>"; };
+		8ADAF69A77B095726C897FCF /* HangelWidgetPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelWidgetPlugin.swift; sourceTree = "<group>"; };
 		74B28242FE67D8EFE0A1703A /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		8A2A9BA7FDEACE01C1C6D512 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		8B684F0FAD489858800B7E00 /* Icon-180.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "Icon-180.png"; sourceTree = "<group>"; };
@@ -266,6 +270,8 @@
 				0E43DB09FAF86FA91565D659 /* hangel-event.caf */,
 				FA63C7AAD1423F27AEA4FAA3 /* HangelLiveActivityAttributes.swift */,
 				6EF0E00AA8367CCFAF92EE42 /* HangelLiveActivityPlugin.swift */,
+				F5597C3D5CE86561CE8327CB /* HangelHealthPlugin.swift */,
+				8ADAF69A77B095726C897FCF /* HangelWidgetPlugin.swift */,
 				D92D0BEF06A0E5F3FFD8B67F /* HangelSilentPushPlugin.swift */,
 				3FA6378DDB8C7CDDDEB075AB /* Icon-76.png */,
 				99089A8CC1A95EB64A153AB1 /* Icon-120.png */,
@@ -543,6 +549,8 @@
 				9CC1E2FEB0FBCBE62420577D /* HangelWatchConnectivityPlugin.swift in Sources */,
 				20F5ED9307AB604BBE28180C /* HangelLiveActivityAttributes.swift in Sources */,
 				58DBE0CE07C6249833EC9BCE /* HangelLiveActivityPlugin.swift in Sources */,
+				4583F0933CBA32C55E663D61 /* HangelHealthPlugin.swift in Sources */,
+				A1460375D853FDDC5D3B7FA3 /* HangelWidgetPlugin.swift in Sources */,
 				B1456F3727F4F9CCD994C907 /* HangelSilentPushPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
