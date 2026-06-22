@@ -111,7 +111,7 @@ export default async function ContractPage({ params, searchParams }: PageProps) 
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6 contract-page">
       <div className="flex items-center justify-between gap-2 print:hidden">
         <Link
-          href="/contracts"
+          href="/settings/contracts"
           className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
         >
           ← Tüm sözleşmeler

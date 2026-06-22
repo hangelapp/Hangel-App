@@ -181,7 +181,7 @@ export default function DonationsPage() {
     const earnings = useMemo(() => monthlyEarnings || [], [monthlyEarnings]);
 
     // Her bağışı bu STK'nın net payıyla işlem kaydına dönüştür.
-    const transactions = useMemo<DonationTransaction[]>(() => {
+    const allTransactions = useMemo<DonationTransaction[]>(() => {
         if (!ngoId) return [];
         return (donationDocs || [])
             .map((d) => ({
@@ -192,23 +192,42 @@ export default function DonationsPage() {
                 date: d.date || '',
                 period: d.period || (d.date ? d.date.slice(0, 7) : ''),
                 status: d.status || PENDING_STATUS,
-            }))
-            .sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+            }));
     }, [donationDocs, ngoId]);
+
+    // Geçmiş listesi için arama + sıralama (tarihe göre artan/azalan).
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
+
+    const transactions = useMemo<DonationTransaction[]>(() => {
+        const term = searchTerm.trim().toLowerCase();
+        const filtered = term
+            ? allTransactions.filter(tx =>
+                tx.brand.toLowerCase().includes(term) ||
+                tx.period.toLowerCase().includes(term) ||
+                tx.status.toLowerCase().includes(term)
+            )
+            : allTransactions;
+        return filtered.slice().sort((a, b) => {
+            if (a.date === b.date) return 0;
+            const cmp = a.date > b.date ? 1 : -1;
+            return sortDir === 'desc' ? -cmp : cmp;
+        });
+    }, [allTransactions, searchTerm, sortDir]);
 
     const pastTransactions = transactions.filter(tx => PAID_STATUSES.includes(tx.status));
     const futureTransactions = transactions.filter(tx => tx.status === PENDING_STATUS);
 
     const donationStats = useMemo(() => {
-        const totalNgoShare = transactions.reduce((acc, tx) => acc + (tx.ngoShare || 0), 0);
-        const pendingNgoShare = transactions
+        const totalNgoShare = allTransactions.reduce((acc, tx) => acc + (tx.ngoShare || 0), 0);
+        const pendingNgoShare = allTransactions
             .filter(tx => tx.status === PENDING_STATUS)
             .reduce((acc, tx) => acc + (tx.ngoShare || 0), 0);
-        const paidNgoShare = transactions
+        const paidNgoShare = allTransactions
             .filter(tx => PAID_STATUSES.includes(tx.status))
             .reduce((acc, tx) => acc + (tx.ngoShare || 0), 0);
-        const totalTransactions = transactions.length;
-        const donationsByBrand = transactions.reduce((acc, tx) => {
+        const totalTransactions = allTransactions.length;
+        const donationsByBrand = allTransactions.reduce((acc, tx) => {
             if (!acc[tx.brand]) {
                 acc[tx.brand] = 0;
             }
@@ -221,7 +240,7 @@ export default function DonationsPage() {
             .sort((a, b) => b.Bağış - a.Bağış);
 
         // AYLIK kırılım: period (YYYY-MM) bazında net toplamlar.
-        const byMonth = transactions.reduce((acc, tx) => {
+        const byMonth = allTransactions.reduce((acc, tx) => {
             const key = tx.period || (tx.date ? tx.date.slice(0, 7) : '—');
             acc[key] = (acc[key] || 0) + (tx.ngoShare || 0);
             return acc;
@@ -232,7 +251,7 @@ export default function DonationsPage() {
 
         // GÜNLÜK kırılım: son 30 günün date bazında net toplamları.
         const cutoff = nowMs - 30 * 24 * 60 * 60 * 1000;
-        const byDay = transactions.reduce((acc, tx) => {
+        const byDay = allTransactions.reduce((acc, tx) => {
             if (!tx.date) return acc;
             const ts = Date.parse(tx.date);
             if (Number.isNaN(ts) || ts < cutoff) return acc;
@@ -253,7 +272,7 @@ export default function DonationsPage() {
             monthlyBreakdown,
             dailyBreakdown,
         };
-    }, [transactions, nowMs]);
+    }, [allTransactions, nowMs]);
 
     const isLoading = isDonationsLoading || isEarningsLoading;
 
@@ -279,7 +298,7 @@ export default function DonationsPage() {
           <CardDescription>Bağış dağıtım motorundan derneğinize düşen gerçek net pay.</CardDescription>
         </CardHeader>
         <CardContent>
-            {transactions.length === 0 ? (
+            {allTransactions.length === 0 ? (
                 <EmptyState message="Henüz dağıtılmış bağış bulunmuyor." />
             ) : (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
@@ -305,7 +324,7 @@ export default function DonationsPage() {
       </Card>
 
       {/* AYLIK ve GÜNLÜK periyot kırılımı */}
-      {transactions.length > 0 && (
+      {allTransactions.length > 0 && (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -384,9 +403,20 @@ export default function DonationsPage() {
             <div className="flex gap-2 w-full md:w-auto">
               <div className="relative flex-grow">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder={t('ngoAdminDonations.searchPh')} className="pl-8" />
+                <Input
+                  placeholder={t('ngoAdminDonations.searchPh')}
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-              <Button variant="outline" size="icon" aria-label={t('ngoAdminDonations.sortAria')}>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={t('ngoAdminDonations.sortAria')}
+                title={sortDir === 'desc' ? 'En yeni önce' : 'En eski önce'}
+                onClick={() => setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))}
+              >
                 <ArrowDownUp className="h-4 w-4" />
               </Button>
             </div>
@@ -410,7 +440,7 @@ export default function DonationsPage() {
                     <TransactionList transactions={futureTransactions} />
                 </TabsContent>
                 <TabsContent value="stats" className="mt-4 space-y-6">
-                    {transactions.length === 0 ? (
+                    {allTransactions.length === 0 ? (
                         <EmptyState message={t('ngoAdminDonations.noStats')} />
                     ) : (
                     <>

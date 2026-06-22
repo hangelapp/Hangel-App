@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Send, Wallet, Mail, MessageSquare, MessageCircle, FileText, Filter, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Loader2, Send, Wallet, Mail, MessageSquare, MessageCircle, ChevronRight, AlertTriangle } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { messagingFetch } from '@/lib/messaging/client';
@@ -132,9 +132,6 @@ export default function NgoMessagingHub() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <NavCard href="/ngo-admin/messaging/campaigns" icon={Send} label={t('ngoAdminMessagingHub.navCampaigns')} />
-        <NavCard href="/ngo-admin/messaging/templates" icon={FileText} label={t('ngoAdminMessagingHub.navTemplates')} />
-        <NavCard href="/ngo-admin/messaging/segments" icon={Filter} label={t('ngoAdminMessagingHub.navSegments')} />
-        <NavCard href="/ngo-admin/messaging/senders" icon={Wallet} label={t('ngoAdminMessagingHub.navSenders')} />
       </div>
 
       <Card>

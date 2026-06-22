@@ -275,9 +275,7 @@ export default function SupportPage() {
                         <div className="p-6 space-y-2">
                             <h4 className="font-bold text-xl">{t('marketing.support.videoCardTitle')}</h4>
                             <p className="text-sm text-muted-foreground">{t('marketing.support.videoCardDesc')}</p>
-                             <Button asChild variant="link" className="px-0">
-                                <Link href="#">{t('marketing.support.comingSoon')}</Link>
-                            </Button>
+                             <Button variant="link" className="px-0" disabled>{t('marketing.support.comingSoon')}</Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -289,9 +287,7 @@ export default function SupportPage() {
                         <div className="p-6 space-y-2">
                             <h4 className="font-bold text-xl">{t('marketing.support.communityCardTitle')}</h4>
                             <p className="text-sm text-muted-foreground">{t('marketing.support.communityCardDesc')}</p>
-                            <Button asChild variant="link" className="px-0">
-                                <Link href="#">{t('marketing.support.comingSoon')}</Link>
-                            </Button>
+                            <Button variant="link" className="px-0" disabled>{t('marketing.support.comingSoon')}</Button>
                         </div>
                     </CardContent>
                 </Card>

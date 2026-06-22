@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -31,10 +32,17 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const { toast } = useToast();
+    const router = useRouter();
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    // "Yanıt Ver" → canlı kan/acil feed'ine yönlendir (gerçek "geleceğim" akışı /blood'da).
+    const handleRespondClick = () => {
+        setIsOpen(false);
+        router.push('/blood');
+    };
     
     const handleReportClick = (type: 'disaster' | 'blood', details?: string) => {
         const description = type === 'blood'
@@ -144,7 +152,7 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
                                   </div>
                                   <p className="text-xs text-muted-foreground">{call.time}</p>
                               </div>
-                              <Button size="sm" className="mt-2 w-full">Yanıt Ver</Button>
+                              <Button size="sm" className="mt-2 w-full" onClick={handleRespondClick}>Yanıt Ver</Button>
                           </div>
                       ))}
                         {activeCalls.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">Şu anda aktif bir acil çağrı bulunmuyor.</p>}

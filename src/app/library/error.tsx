@@ -2,7 +2,7 @@
 
 import RouteError from '@/components/shared/route-error';
 
-export default function RootError(props: {
+export default function LibraryError(props: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {

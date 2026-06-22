@@ -437,6 +437,13 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin();
     }
 
+    // Platform-içi reklam bannerları (super-admin/ads) — super-admin yönetir,
+    // herkes okur (banner timeline vb. alanlarda gösterilir).
+    match /siteAds/{adId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
     // Süper-admin kişisel panel ayarları — yalnızca super-admin kendi doc'unu okur/yazar.
     // Path: superAdminSettings/{adminUid}. Bildirim tercihleri (notifications.*),
     // gelecekteki başka kişisel ayarlar burada toplanır.

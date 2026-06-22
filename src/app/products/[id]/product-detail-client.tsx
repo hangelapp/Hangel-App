@@ -12,28 +12,102 @@ import {
   Store,
   TrendingDown,
   Sparkles,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
-import { doc } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { openExternalUrl } from '@/lib/capacitor';
 import type { CanonicalProduct } from '@/lib/feed/types';
 
 function formatPrice(value: number, currency: string): string {
   return `${value.toLocaleString('tr-TR')} ${currency}`;
 }
 
+// Affiliate sub-id ekle: kullanıcıyı dışa giden URL'de izlenebilir kıl. Çoğu ağ
+// `subId`/`sub_id` parametresini destekler ama TAM parametre adı ağa göre değişir
+// (örn. AWIN=clickref, Admitad=subid) — kesin eşleme ağ bazında doğrulanmalı.
+// Şimdilik iki yaygın anahtarı da ekliyoruz; var olan query string'i bozmuyoruz.
+function appendSubId(rawUrl: string, subId: string): string {
+  if (!subId) return rawUrl;
+  try {
+    const u = new URL(rawUrl);
+    if (!u.searchParams.has('subId')) u.searchParams.set('subId', subId);
+    if (!u.searchParams.has('sub_id')) u.searchParams.set('sub_id', subId);
+    return u.toString();
+  } catch {
+    return rawUrl; // geçersiz URL → olduğu gibi bırak
+  }
+}
+
 export function ProductDetailClient({ id }: { id: string }) {
   const db = useFirestore();
+  const { user: authUser } = useUser();
+  const { toast } = useToast();
+  const [isGoing, setIsGoing] = useState(false);
   const productRef = useMemoFirebase(
     () => doc(db, COLLECTIONS.products, id),
     [db, id]
   );
   const { data: product, isLoading } = useDoc<CanonicalProduct>(productRef);
+
+  // Kullanıcının referral kodunu (varsa) oku — affiliate sub-id olarak kullanılır.
+  const userDocRef = useMemoFirebase(
+    () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
+    [db, authUser?.uid]
+  );
+  const { data: userData } = useDoc<{ referralCode?: string }>(userDocRef);
+
+  // "Ürüne Git" — market marka CTA'sını yansıtır: oturum zorunlu + tıklama/
+  // alışveriş izi (userId+brandId+productId) bildirim olarak yazılır + dışa giden
+  // URL'e kullanıcının sub-id'si (referralCode varsa o, yoksa uid) eklenir.
+  const handleGoToProduct = async () => {
+    if (!product) return;
+    if (!authUser) {
+      toast({ variant: 'destructive', title: 'Giriş Yapmalısınız', description: 'Bağış sürecini başlatmak için lütfen oturum açın.' });
+      return;
+    }
+    if (!product.productUrl) return;
+
+    setIsGoing(true);
+    const subId = (userData?.referralCode && userData.referralCode.trim()) || authUser.uid;
+    const outboundUrl = appendSubId(product.productUrl, subId);
+
+    // Capacitor Browser ile native aç (iOS popup blocker'a takılmaz).
+    void openExternalUrl(outboundUrl);
+
+    toast({
+      title: 'Alışveriş başlatıldı',
+      description: 'Alışverişini tamamladığında bağışın otomatik hesabına işlenecek. "Bağışlarım" sayfasından takip edebilirsin.',
+    });
+
+    // Tıklama izi: bilgilendirme bildirimi (best-effort) — market CTA ile aynı desen.
+    // Bağış kaydı DEĞİL; gerçek bağış affiliate webhook'undan gelir.
+    if (db) {
+      try {
+        await addDoc(collection(db, COLLECTIONS.notifications), {
+          userId: authUser.uid,
+          type: 'donation',
+          title: 'Alışveriş başlatıldı',
+          body: `${product.brandName} alışverişin tamamlanınca bağışın işlenecek. Bağışlarım sayfasından takip et.`,
+          data: { brandId: product.brandId ?? null, productId: product.id, link: '/my-donations' },
+          read: false,
+          createdAt: serverTimestamp(),
+          createdBy: 'product-click',
+        });
+      } catch {
+        // Bildirim yazımı başarısız olsa bile alışveriş akışı devam eder.
+      }
+    }
+
+    setIsGoing(false);
+  };
 
   const images = useMemo(() => {
     if (!product) return [] as string[];
@@ -254,11 +328,20 @@ export function ProductDetailClient({ id }: { id: string }) {
             <p className="text-[11px] text-muted-foreground">Fiyat</p>
             <p className="text-lg font-black text-foreground">{formatPrice(effectivePrice, product.currency)}</p>
           </div>
-          <Button asChild size="lg" className="h-12 flex-1 gap-2 rounded-2xl text-base font-black">
-            <a href={product.productUrl} target="_blank" rel="noopener noreferrer">
-              Ürüne Git
-              <ExternalLink className="h-5 w-5" aria-hidden="true" />
-            </a>
+          <Button
+            size="lg"
+            className="h-12 flex-1 gap-2 rounded-2xl text-base font-black"
+            onClick={handleGoToProduct}
+            disabled={isGoing}
+          >
+            {isGoing ? (
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+            ) : (
+              <>
+                Ürüne Git
+                <ExternalLink className="h-5 w-5" aria-hidden="true" />
+              </>
+            )}
           </Button>
         </div>
         <p className="mx-auto mt-1.5 max-w-3xl text-center text-[10px] text-muted-foreground">

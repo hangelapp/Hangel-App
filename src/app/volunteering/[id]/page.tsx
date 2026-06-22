@@ -530,11 +530,20 @@ export default function VolunteeringDetailPage() {
       });
     })();
 
-    // Başvuru oluşunca 3 tarafa (kullanıcı + STK yöneticisi + süper-admin)
-    // fan-out bildirim. Best-effort: hata başvuru akışını bozmaz.
-    createPromise
-        .then(async (docRef) => {
-            if (!docRef) return;
+    // Gerçek yazımı BEKLE — başarı toast'ı + yönlendirme yalnızca yazma çözülünce
+    // (eskiden setTimeout(1000) ile yazımdan bağımsız "başarılı" gösteriliyordu).
+    // addDocumentNonBlocking hata olursa undefined'e çözülür (errorEmitter'a da iter).
+    (async () => {
+        try {
+            const docRef = await createPromise;
+            if (!docRef) {
+                // Yazım başarısız (izin/ağ) — kullanıcıya dürüst geri bildirim.
+                toast({ variant: 'destructive', title: 'Başvuru gönderilemedi', description: 'Lütfen tekrar dene.' });
+                return;
+            }
+
+            // Başvuru oluşunca 3 tarafa (kullanıcı + STK yöneticisi + süper-admin)
+            // fan-out bildirim. Best-effort: hata başvuru akışını bozmaz.
             try {
                 const token = await authUser.getIdToken();
                 await fetch('/api/volunteer/application-notify', {
@@ -548,18 +557,18 @@ export default function VolunteeringDetailPage() {
             } catch (notifyErr) {
                 console.error('[volunteering] application-notify failed', notifyErr);
             }
-        })
-        .catch(() => { /* addDocumentNonBlocking kendi hata kanalını yönetir */ });
 
-    // Simulated UX delay
-    setTimeout(() => {
-        setIsApplying(false);
-        toast({
-            title: "Başvurunuz Alındı",
-            description: "Gönüllülük başvurunuz başarıyla iletildi. Durumu profilinizden takip edebilirsiniz.",
-        });
-        router.push('/my-applications');
-    }, 1000);
+            toast({
+                title: 'Başvurunuz Alındı',
+                description: 'Gönüllülük başvurunuz başarıyla iletildi. Durumu profilinizden takip edebilirsiniz.',
+            });
+            router.push('/my-applications');
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Başvuru gönderilemedi', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
+        } finally {
+            setIsApplying(false);
+        }
+    })();
   };
 
   return (

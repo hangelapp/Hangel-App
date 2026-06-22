@@ -7,16 +7,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { adBanners as initialAdBanners } from "@/lib/data";
 import type { AdBanner } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Loader2 } from 'lucide-react';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
-type AdBannerWithStatus = AdBanner & { status: 'Aktif' | 'Pasif' };
+type AdStatus = 'Aktif' | 'Pasif';
 
-const AdForm = ({ ad, onSave }: { ad: Partial<AdBanner> | null, onSave: (ad: AdBanner) => void }) => {
+interface AdDoc {
+    id: string;
+    title?: string;
+    description?: string;
+    imageUrl?: string;
+    link?: string;
+    status?: AdStatus;
+}
+
+type AdFormValues = Omit<AdBanner, 'id'>;
+
+const AdForm = ({ ad, onSave, saving }: { ad: AdDoc | null, onSave: (ad: AdFormValues) => void, saving: boolean }) => {
     const [title, setTitle] = useState(ad?.title || '');
     const [description, setDescription] = useState(ad?.description || '');
     const [imageUrl, setImageUrl] = useState(ad?.imageUrl || '');
@@ -28,13 +41,7 @@ const AdForm = ({ ad, onSave }: { ad: Partial<AdBanner> | null, onSave: (ad: AdB
             toast({ variant: 'destructive', title: 'Eksik Bilgi', description: 'Lütfen tüm alanları doldurun.' });
             return;
         }
-        onSave({
-            id: ad?.id || Date.now().toString(),
-            title,
-            description,
-            imageUrl,
-            link,
-        });
+        onSave({ title, description, imageUrl, link });
     };
 
     return (
@@ -55,44 +62,85 @@ const AdForm = ({ ad, onSave }: { ad: Partial<AdBanner> | null, onSave: (ad: AdB
                 <Label htmlFor="ad-link">Yönlendirme Linki</Label>
                 <Input id="ad-link" value={link} onChange={(e) => setLink(e.target.value)} placeholder="/market" />
             </div>
-            <Button onClick={handleSave} className="w-full">Kaydet</Button>
+            <Button onClick={handleSave} disabled={saving} className="w-full">
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Kaydet
+            </Button>
         </div>
     );
 };
 
 export default function AdsPage() {
     const { toast } = useToast();
-    const [ads, setAds] = useState<AdBannerWithStatus[]>(initialAdBanners.map(ad => ({ ...ad, status: 'Aktif' })));
+    const db = useFirestore();
+
+    const adsQuery = useMemoFirebase(
+        () => (db ? query(collection(db, COLLECTIONS.siteAds), orderBy('createdAt', 'desc')) : null),
+        [db],
+    );
+    const { data: ads, isLoading } = useCollection<AdDoc>(adsQuery);
+
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingAd, setEditingAd] = useState<AdBanner | null>(null);
+    const [editingAd, setEditingAd] = useState<AdDoc | null>(null);
+    const [saving, setSaving] = useState(false);
+    const [togglingId, setTogglingId] = useState<string | null>(null);
 
-    const handleSaveAd = (ad: AdBanner) => {
-        const isEditing = ads.some(a => a.id === ad.id);
-        if (isEditing) {
-            setAds(prev => prev.map(a => a.id === ad.id ? { ...ad, status: a.status } : a));
-            toast({ title: 'Reklam Güncellendi' });
-        } else {
-            setAds(prev => [{ ...ad, status: 'Aktif' }, ...prev]);
-            toast({ title: 'Yeni Reklam Eklendi' });
-        }
-        setIsFormOpen(false);
-        setEditingAd(null);
-    };
-    
-    const handleToggleStatus = (id: string) => {
-        setAds(prev => prev.map(ad => {
-            if (ad.id === id) {
-                const newStatus = ad.status === 'Aktif' ? 'Pasif' : 'Aktif';
-                toast({ title: 'Durum Güncellendi', description: `Reklam durumu "${newStatus}" olarak ayarlandı.` });
-                return { ...ad, status: newStatus };
+    const handleSaveAd = async (values: AdFormValues) => {
+        if (!db) return;
+        setSaving(true);
+        try {
+            if (editingAd) {
+                await updateDoc(doc(db, COLLECTIONS.siteAds, editingAd.id), {
+                    ...values,
+                    updatedAt: serverTimestamp(),
+                });
+                toast({ title: 'Reklam Güncellendi' });
+            } else {
+                await addDoc(collection(db, COLLECTIONS.siteAds), {
+                    ...values,
+                    status: 'Aktif',
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                });
+                toast({ title: 'Yeni Reklam Eklendi' });
             }
-            return ad;
-        }));
+            setIsFormOpen(false);
+            setEditingAd(null);
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'İşlem tamamlanamadı.';
+            toast({ variant: 'destructive', title: 'Kaydedilemedi', description: message });
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const handleDeleteAd = (id: string) => {
-        setAds(prev => prev.filter(ad => ad.id !== id));
-        toast({ variant: 'destructive', title: 'Reklam Silindi' });
+    const handleToggleStatus = async (ad: AdDoc) => {
+        if (!db) return;
+        const newStatus: AdStatus = ad.status === 'Aktif' ? 'Pasif' : 'Aktif';
+        setTogglingId(ad.id);
+        try {
+            await updateDoc(doc(db, COLLECTIONS.siteAds, ad.id), {
+                status: newStatus,
+                updatedAt: serverTimestamp(),
+            });
+            toast({ title: 'Durum Güncellendi', description: `Reklam durumu "${newStatus}" olarak ayarlandı.` });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'İşlem tamamlanamadı.';
+            toast({ variant: 'destructive', title: 'Güncellenemedi', description: message });
+        } finally {
+            setTogglingId(null);
+        }
+    };
+
+    const handleDeleteAd = async (id: string) => {
+        if (!db) return;
+        try {
+            await deleteDoc(doc(db, COLLECTIONS.siteAds, id));
+            toast({ variant: 'destructive', title: 'Reklam Silindi' });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'İşlem tamamlanamadı.';
+            toast({ variant: 'destructive', title: 'Silinemedi', description: message });
+        }
     };
 
     return (
@@ -111,11 +159,15 @@ export default function AdsPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {ads.map(ad => (
+                    {isLoading ? (
+                        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                    ) : (ads || []).length === 0 ? (
+                        <p className="text-center text-muted-foreground py-12">Henüz reklam eklenmedi. &quot;Yeni Reklam Ekle&quot; ile başlayın.</p>
+                    ) : (ads || []).map(ad => (
                         <Card key={ad.id}>
                             <CardContent className="p-4 flex flex-col md:flex-row items-center gap-4">
                                 <div className="w-full md:w-48 h-24 relative rounded-md overflow-hidden flex-shrink-0">
-                                    <Image src={ad.imageUrl} alt={ad.title} fill className="object-cover" />
+                                    {ad.imageUrl && <Image src={ad.imageUrl} alt={ad.title || ''} fill className="object-cover" />}
                                 </div>
                                 <div className="flex-1">
                                     <p className="font-semibold">{ad.title}</p>
@@ -124,7 +176,10 @@ export default function AdsPage() {
                                 </div>
                                 <div className="flex flex-col md:flex-row gap-2 self-start md:self-center w-full md:w-auto">
                                     <Button size="sm" variant="outline" onClick={() => { setEditingAd(ad); setIsFormOpen(true); }}>Düzenle</Button>
-                                    <Button size="sm" variant="outline" onClick={() => handleToggleStatus(ad.id)}>{ad.status === 'Aktif' ? 'Pasife Al' : 'Aktif Et'}</Button>
+                                    <Button size="sm" variant="outline" disabled={togglingId === ad.id} onClick={() => handleToggleStatus(ad)}>
+                                        {togglingId === ad.id && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+                                        {ad.status === 'Pasif' ? 'Aktif Et' : 'Pasife Al'}
+                                    </Button>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button size="sm" variant="destructive">Sil</Button>
@@ -152,7 +207,7 @@ export default function AdsPage() {
                     <DialogHeader>
                         <DialogTitle>{editingAd ? 'Reklamı Düzenle' : 'Yeni Reklam Ekle'}</DialogTitle>
                     </DialogHeader>
-                    <AdForm ad={editingAd} onSave={handleSaveAd} />
+                    <AdForm ad={editingAd} onSave={handleSaveAd} saving={saving} />
                 </DialogContent>
             </Dialog>
         </div>

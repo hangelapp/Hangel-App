@@ -65,7 +65,8 @@ export default function DesignToolsPage() {
                 <CardContent className="py-8 flex flex-col items-center justify-center space-y-4">
                     <Palette className="h-16 w-16 text-primary/40" />
                     <p className="text-sm text-muted-foreground text-center max-w-sm">{t('ngoAdminDesignTools.studioBody')}</p>
-                    <Button size="lg">{t('ngoAdminDesignTools.studioCta')}</Button>
+                    <Button size="lg" disabled>{t('ngoAdminDesignTools.studioCta')}</Button>
+                    <p className="text-[11px] text-muted-foreground">Bu özellik geliştiriliyor, yakında.</p>
                 </CardContent>
             </Card>
         </div>

@@ -128,7 +128,7 @@ export const eventStartOrganizerPrompt = onSchedule(
           createdBy: 'system-event-start',
         }).then(() => { notified++; }).catch((er) => logger.warn(`[event-start] notif failed event=${eventId}`, er));
       }
-      await ev.ref.update({ startPromptSentAt: FieldValue.serverTimestamp() }).catch(() => {});
+      await ev.ref.update({ startPromptSentAt: FieldValue.serverTimestamp() }).catch((er) => logger.error(`[event-start] could not mark event ${eventId} as prompted (risk of duplicate prompt)`, er));
     }
 
     logger.info(`[event-start] handled=${handled} notified=${notified}`);

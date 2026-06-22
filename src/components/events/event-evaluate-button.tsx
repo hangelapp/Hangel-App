@@ -6,13 +6,16 @@
  * POST /api/events/[id]/evaluate (sunucu tarafında da going gating var).
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Star, Loader2 } from 'lucide-react';
+import { doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { celebrate } from '@/lib/celebrate';
+import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface Props {
   eventId: string;
@@ -23,11 +26,29 @@ interface Props {
 
 export function EventEvaluateButton({ eventId, eventName, authUser, className }: Props) {
   const { toast } = useToast();
+  const db = useFirestore();
+  const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+
+  // Mevcut değerlendirme — events/{eventId}/eventEvaluations/{uid}. Varsa "done"
+  // kalıcı olur (sayfa yenilense de "Değerlendirildi" görünür) ve form ön-dolar.
+  const evalRef = useMemoFirebase(() => {
+    if (!db || !user?.uid || !eventId) return null;
+    return doc(db, COLLECTIONS.events, eventId, COLLECTIONS.eventEvaluations, user.uid);
+  }, [db, user?.uid, eventId]);
+  const { data: existingEval } = useDoc<{ rating?: number; comment?: string }>(evalRef);
+
+  useEffect(() => {
+    if (existingEval && typeof existingEval.rating === 'number' && existingEval.rating >= 1) {
+      setDone(true);
+      setRating(existingEval.rating);
+      if (typeof existingEval.comment === 'string') setComment(existingEval.comment);
+    }
+  }, [existingEval]);
 
   const submit = async () => {
     if (!authUser || rating < 1) { toast({ variant: 'destructive', title: 'Puan seç', description: '1-5 yıldız ver.' }); return; }

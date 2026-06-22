@@ -127,15 +127,17 @@ export default function BrandProfilePage() {
   useEffect(() => {
     if (firestoreLoading || apiBrands === undefined) return;
 
-    // First try API brands (they have affiliate links)
-    const apiMatch = apiBrands.find(b => b.slug === slug);
+    // First try API brands (they have affiliate links). Slug öncelikli; ürün
+    // detayından gelen linkler brandId taşıdığı için id ile de eşleştir (fallback).
+    const apiMatch = apiBrands.find(b => b.slug === slug) || apiBrands.find(b => b.id === slug);
     if (apiMatch) {
       setBrand(apiMatch);
       return;
     }
 
-    // Then try Firestore brands
-    const fsMatch = (firestoreBrands || []).find(b => b.slug === slug);
+    // Then try Firestore brands (slug → id fallback).
+    const fsMatch = (firestoreBrands || []).find(b => b.slug === slug)
+      || (firestoreBrands || []).find(b => b.id === slug);
     if (fsMatch) {
       // If Firestore brand already has a link, use it; otherwise try API by name
       if (fsMatch.link) {
@@ -160,10 +162,8 @@ export default function BrandProfilePage() {
 
     if (!brand) return;
 
-    if (!brand.link) {
-        toast({ variant: 'destructive', title: 'Bağlantı eksik', description: `${brand.name} için affiliate bağlantısı tanımlı değil.` });
-        return;
-    }
+    // Link yoksa CTA zaten gizli/pasif (aşağıda render guard); savunma amaçlı sessiz çık.
+    if (!brand.link) return;
 
     setIsDonating(true);
     // GERÇEK bağış kaydı, marka affiliate webhook'u alışverişi onayladıktan sonra
@@ -265,9 +265,13 @@ export default function BrandProfilePage() {
                     </div>
                 )}
                 <div className="flex gap-2">
+                    {/* Affiliate link tanımlıysa "Alışverişe Başla"; yoksa CTA gizlenir
+                        (eskiden link yokken tıklayınca destructive toast ile hard-fail oluyordu). */}
+                    {brand.link && (
                     <Button className="flex-1 h-12 rounded-2xl font-bold shadow-xl shadow-primary/20" onClick={handleStartShopping} disabled={isDonating}>
                         {isDonating ? <Loader2 className="animate-spin h-5 w-5" /> : <>Alışverişe Başla <ExternalLink className="ml-2 h-4 w-4" /></>}
                     </Button>
+                    )}
                     <Button
                         variant={isFollowing ? 'default' : 'outline'}
                         className="flex-1 h-12 rounded-2xl font-bold border-border hover:bg-muted/50"

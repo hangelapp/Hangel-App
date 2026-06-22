@@ -55,10 +55,14 @@ export default function EducationSettingsPage() {
           if (cd.name) clubs.push({ id: d.id, name: cd.name, schoolName: cd.schoolName });
         });
         setAvailableClubs(clubs);
+      } catch (e) {
+        // Sessiz boş form yerine: yükleme hatasını kullanıcıya bildir.
+        toast({ variant: 'destructive', title: t('educationPage.loadError'), description: e instanceof Error ? e.message : t('common.unknownError') });
       } finally {
         setLoading(false);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast/t stable; rerun only on user/firestore
   }, [user, firestore]);
 
   const filteredClubs = useMemo(() => {

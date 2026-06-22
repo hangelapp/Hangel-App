@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import type { Volunteering, Application as UserApplication, NGO } from '@/lib/types';
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLLECTIONS } from '@/firebase/collections';
@@ -52,44 +52,39 @@ const useVolunteerApplications = (opportunities: Volunteering[]) => {
     const handleApplication = async (application: UserApplication, decision: 'approved' | 'rejected') => {
         const status = decision === 'approved' ? 'Onaylandı' : 'Reddedildi';
         try {
-            await updateDoc(doc(db, COLLECTIONS.applications, application.id), {
-                status,
-                reviewedAt: serverTimestamp(),
-                reviewedBy: authUser?.uid ?? null,
-            });
-
-            if (application.userId) {
-                await addDoc(collection(db, COLLECTIONS.notifications), {
-                    userId: application.userId,
-                    type: 'volunteer-application',
-                    title: decision === 'approved' ? 'Başvurun Onaylandı' : 'Başvurun Reddedildi',
-                    body: decision === 'approved'
-                        ? `"${application.title}" gönüllülük başvurunuz onaylandı.`
-                        : `"${application.title}" gönüllülük başvurunuz reddedildi.`,
-                    read: false,
-                    createdAt: serverTimestamp(),
+            // Güvenli rota: ownership doğrulaması + status + in-app bildirim +
+            // Gelen Kutusu mesajı + FCM push hepsini sunucu tarafında yapar.
+            // Eski client-side raw write (status + notification) bunları atlıyordu.
+            const token = await authUser?.getIdToken();
+            if (!token) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Oturum gerekli',
+                    description: 'Lütfen tekrar giriş yapıp deneyin.',
                 });
+                return;
             }
-
-            // 3 tarafa (kullanıcı + STK yöneticisi + süper-admin) fan-out bildirim.
-            // Best-effort: hata UI akışını bozmaz.
-            try {
-                const token = await authUser?.getIdToken();
-                if (token) {
-                    await fetch('/api/volunteer/application-notify', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                            applicationId: application.id,
-                            stage: decision === 'approved' ? 'approved' : 'rejected',
-                        }),
-                    });
-                }
-            } catch (notifyErr) {
-                console.error('[ngo-admin/volunteer] application-notify failed', notifyErr);
+            const res = await fetch(`/api/volunteering/applications/${application.id}/${decision === 'approved' ? 'approve' : 'reject'}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({}),
+            });
+            if (!res.ok) {
+                const data = (await res.json().catch(() => ({}))) as { errorCode?: string };
+                const friendly = data.errorCode === 'FORBIDDEN'
+                    ? 'Bu başvuruyu güncelleme yetkiniz yok.'
+                    : data.errorCode === 'NOT_FOUND'
+                        ? 'Başvuru bulunamadı.'
+                        : 'Başvuru güncellenirken bir hata oluştu. Lütfen tekrar deneyin.';
+                toast({
+                    variant: 'destructive',
+                    title: 'İşlem başarısız',
+                    description: friendly,
+                });
+                return;
             }
 
             // volunteerCount.approved bakımı: bu ilana (entityId) ait Onaylandı

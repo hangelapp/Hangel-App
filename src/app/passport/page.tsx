@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Capacitor } from '@capacitor/core';
 import { openExternalUrl } from '@/lib/capacitor';
 import { Share } from '@capacitor/share';
@@ -223,8 +224,10 @@ export default function PassportPage() {
                       <p className="font-bold text-sm truncate">{c.title}</p>
                       {c.issuedBy && <p className="text-xs text-muted-foreground truncate">{c.issuedBy}</p>}
                     </div>
-                    <Button size="sm" variant="ghost" className="rounded-full">
-                      <ExternalLink className="h-4 w-4" />
+                    <Button asChild size="sm" variant="ghost" className="rounded-full" aria-label="Sertifikayı profilde gör">
+                      <Link href="/profile?tab=badges-certificates">
+                        <ExternalLink className="h-4 w-4" />
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>

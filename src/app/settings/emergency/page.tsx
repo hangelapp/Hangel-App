@@ -54,10 +54,14 @@ export default function EmergencySettingsPage() {
           emergencyAvailable: !!data?.personalInfo?.emergencyAvailable,
           disasterAlerts: !!data?.preferences?.disasterAlerts,
         });
+      } catch (e) {
+        // Sessiz boş form yerine: yükleme hatasını kullanıcıya bildir.
+        toast({ variant: 'destructive', title: t('emergencyPage.loadError'), description: e instanceof Error ? e.message : t('common.unknownError') });
       } finally {
         setLoading(false);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast/t stable; rerun only on user/firestore
   }, [user, firestore]);
 
   const save = async () => {

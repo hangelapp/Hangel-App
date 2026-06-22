@@ -1,45 +1,97 @@
-
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-// P2-4: closed icon set for notifications lookup — replaces `import * as Icons`.
-import { Bell, Bot, FileText, Shield, UserCog } from 'lucide-react';
-import React, { useState } from 'react';
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    Bell,
-    Bot,
-    FileText,
-    Shield,
-    UserCog,
-};
+import { Bell, Loader2 } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, doc, updateDoc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
+import { formatDistanceToNow } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
-const notifications = [
-    { id: 1, icon: 'FileText', title: 'Yeni STK Başvurusu', description: 'Doğa Koruma Derneği platforma katılmak için başvurdu.', time: '15 dakika önce', read: false, link: '/super-admin/applications' },
-    { id: 2, icon: 'Shield', title: 'Şeffaflık Belgesi Onay Bekliyor', description: 'TEMA Vakfı, "2023 Faaliyet Raporu" belgesini yükledi.', time: '1 saat önce', read: false, link: '/super-admin/transparency' },
-    { id: 3, icon: 'UserCog', title: 'Kullanıcı Şikayeti', description: 'Bir kullanıcı, bir gönderi hakkında şikayette bulundu.', time: '3 saat önce', read: true, link: '/super-admin/posts' },
-    { id: 4, icon: 'Bot', title: 'Haftalık Analiz Raporu Hazır', description: 'Platformun haftalık performans raporunu görüntüleyebilirsiniz.', time: '1 gün önce', read: true, link: '/super-admin/analytics' },
-];
+// Süper-admine düşen bildirimler `notifications` koleksiyonuna her admin'in KENDİ
+// uid'i ile yazılır (bkz. super-admin/notifications). Bu sayfa aynı pattern'i
+// kullanır: where('userId','==',authUser.uid). orderBy YOK → composite index
+// gerekmesin; client-side sıralanır.
 
-const _sentMessages = [
-    { id: 101, recipient: 'Aktif Gönüllüler', subject: 'Haftalık Bilgilendirme', time: '1 gün önce', status: 'İletildi' },
-    { id: 102, recipient: 'hangel Sistem Yöneticisi', subject: 'Belge Onayı Hakkında', time: '3 gün önce', status: 'Okundu' },
-    { id: 103, recipient: 'Bağışçılarım', subject: 'Aylık Faaliyet Özeti', time: '5 gün önce', status: 'İletildi' },
-];
+interface NotifItem {
+    id: string;
+    type?: string;
+    title?: string;
+    body?: string;
+    message?: string;
+    read?: boolean;
+    createdAt?: { toDate?: () => Date; seconds?: number } | string | null;
+    link?: string;
+    data?: { link?: string; href?: string };
+}
+
+function toMillis(v: NotifItem['createdAt']): number {
+    if (!v) return 0;
+    if (typeof v === 'object') {
+        if ('toDate' in v && typeof v.toDate === 'function') return v.toDate().getTime();
+        if (typeof v.seconds === 'number') return v.seconds * 1000;
+    }
+    if (typeof v === 'string') { const t = new Date(v).getTime(); return isNaN(t) ? 0 : t; }
+    return 0;
+}
+
+function relTime(createdAt: NotifItem['createdAt']): string {
+    const ms = toMillis(createdAt);
+    if (!ms) return '';
+    try {
+        return formatDistanceToNow(new Date(ms), { addSuffix: true, locale: tr });
+    } catch {
+        return '';
+    }
+}
 
 export default function InboxPage() {
-    const [data, setData] = useState(notifications);
+    const db = useFirestore();
+    const { user: authUser } = useUser();
     const router = useRouter();
 
-    const handleMarkAsRead = (id: number) => {
-        setData(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    const notifQuery = useMemoFirebase(
+        () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.notifications), where('userId', '==', authUser.uid)) : null),
+        [db, authUser?.uid],
+    );
+    const { data: notifs, isLoading } = useCollection<NotifItem>(notifQuery);
+
+    const sorted = useMemo(
+        () => [...(notifs || [])].sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt)),
+        [notifs],
+    );
+    const unread = useMemo(() => sorted.filter(n => !n.read), [sorted]);
+    const unreadCount = unread.length;
+
+    const handleMarkAsRead = async (id: string) => {
+        if (!db) return;
+        try {
+            await updateDoc(doc(db, COLLECTIONS.notifications, id), { read: true, readAt: new Date().toISOString() });
+        } catch {
+            /* sessiz */
+        }
     };
 
-    const unreadCount = data.filter(n => !n.read).length;
+    const openLink = (n: NotifItem) => {
+        const link = n.link || n.data?.link || n.data?.href;
+        if (link) router.push(link);
+    };
+
+    const renderRow = (n: NotifItem, dim: boolean) => (
+        <div key={n.id} className={`p-4 border rounded-lg flex items-start gap-4 ${dim && n.read ? 'opacity-60' : ''}`}>
+            <Bell className="h-5 w-5 mt-1 text-muted-foreground" />
+            <div className="flex-1 cursor-pointer" onClick={() => openLink(n)}>
+                <p className="font-semibold">{n.title || 'Bildirim'}</p>
+                <p className="text-sm text-muted-foreground">{n.body || n.message || ''}</p>
+                <p className="text-xs text-muted-foreground mt-1">{relTime(n.createdAt)}</p>
+            </div>
+            {!n.read && <Button variant="outline" size="sm" onClick={() => handleMarkAsRead(n.id)}>Okundu Olarak İşaretle</Button>}
+        </div>
+    );
 
     return (
         <div className="space-y-6">
@@ -50,43 +102,25 @@ export default function InboxPage() {
                     <CardDescription>Platform ile ilgili önemli güncellemeler ve yapılması gereken işlemler.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Tabs defaultValue="all">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="all">Tümü</TabsTrigger>
-                            <TabsTrigger value="unread">Okunmamış ({unreadCount})</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="all" className="mt-4 space-y-4">
-                            {data.map(notification => {
-                                const Icon = iconMap[notification.icon] || Bell;
-                                return (
-                                <div key={notification.id} className={`p-4 border rounded-lg flex items-start gap-4 ${notification.read ? 'opacity-60' : ''}`}>
-                                    <Icon className="h-5 w-5 mt-1 text-muted-foreground" />
-                                    <div className="flex-1 cursor-pointer" onClick={() => notification.link && router.push(notification.link)}>
-                                        <p className="font-semibold">{notification.title}</p>
-                                        <p className="text-sm text-muted-foreground">{notification.description}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
-                                    </div>
-                                    {!notification.read && <Button variant="outline" size="sm" onClick={() => handleMarkAsRead(notification.id)}>Okundu Olarak İşaretle</Button>}
-                                </div>
-                            )})}
-                        </TabsContent>
-                        <TabsContent value="unread" className="mt-4 space-y-4">
-                            {data.filter(n => !n.read).map(notification => {
-                                const Icon = iconMap[notification.icon] || Bell;
-                                return (
-                                <div key={notification.id} className="p-4 border rounded-lg flex items-start gap-4">
-                                    <Icon className="h-5 w-5 mt-1 text-muted-foreground" />
-                                    <div className="flex-1 cursor-pointer" onClick={() => notification.link && router.push(notification.link)}>
-                                        <p className="font-semibold">{notification.title}</p>
-                                        <p className="text-sm text-muted-foreground">{notification.description}</p>
-                                         <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
-                                    </div>
-                                    <Button variant="outline" size="sm" onClick={() => handleMarkAsRead(notification.id)}>Okundu Say</Button>
-                                </div>
-                            )})}
-                             {unreadCount === 0 && <p className="text-center p-8 text-muted-foreground">Okunmamış bildirim bulunmuyor.</p>}
-                        </TabsContent>
-                    </Tabs>
+                    {isLoading ? (
+                        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                    ) : (
+                        <Tabs defaultValue="all">
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="all">Tümü</TabsTrigger>
+                                <TabsTrigger value="unread">Okunmamış ({unreadCount})</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="all" className="mt-4 space-y-4">
+                                {sorted.length === 0 ? (
+                                    <p className="text-center p-8 text-muted-foreground">Henüz bildirim bulunmuyor.</p>
+                                ) : sorted.map(n => renderRow(n, true))}
+                            </TabsContent>
+                            <TabsContent value="unread" className="mt-4 space-y-4">
+                                {unread.map(n => renderRow(n, false))}
+                                {unreadCount === 0 && <p className="text-center p-8 text-muted-foreground">Okunmamış bildirim bulunmuyor.</p>}
+                            </TabsContent>
+                        </Tabs>
+                    )}
                 </CardContent>
             </Card>
         </div>

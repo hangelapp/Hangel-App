@@ -62,7 +62,9 @@ const EventLineup = ({ title, date, location, image, hint, description, category
                 <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-primary" /> {location}</span>
             </div>
         </div>
-        <Button variant="outline" className="rounded-full px-8 h-12 font-bold border-border hover:bg-muted self-start md:self-center">{inspectLabel}</Button>
+        <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-border hover:bg-muted self-start md:self-center">
+            <Link href="/events">{inspectLabel}</Link>
+        </Button>
     </div>
 );
 

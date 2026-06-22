@@ -95,11 +95,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ ok: true, calls: [], message: 'Kan bağışı uygunluğu kapalı.' });
     }
 
-    // Kan ilanları TEK kaynaktan: emergencyRequests (type:'blood', status:'approved').
+    // Kan ilanları TEK kaynaktan: emergencyRequests (type:'blood', status:'sent').
+    // Yazıcılar 'pending' (oluşturma) → 'sent' (süper admin onayı) durumlarını kullanır;
+    // 'approved' hiç yazılmıyordu → feed daima boştu. Onaylı (yayında) ilan = 'sent'.
     // Böylece "Bağışa geleceğim" (respond) + ilan sahibi bağışçı listesi aynı doc'a oturur.
     const snap = await db.collection(COLLECTIONS.emergencyRequests)
       .where('type', '==', 'blood')
-      .where('status', '==', 'approved')
+      .where('status', '==', 'sent')
       .get();
 
     const compat = userBloodType ? COMPATIBILITY[userBloodType] ?? [] : null;
@@ -109,6 +111,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       const data = d.data() as {
         bloodType?: string; coordinates?: { lat: number; lng: number } | null;
         hospitalName?: string; contactPhone?: string; hospitalCity?: string; city?: string;
+        urgency?: string;
       };
       const coords = data.coordinates;
       if (!coords || typeof coords.lat !== 'number' || typeof coords.lng !== 'number') return;
@@ -119,12 +122,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         const matches = bloodTypes.some((bt) => compat.includes(bt) || bt === 'Bilinmiyor');
         if (!matches) return;
       }
-      if (urgentOnly) return; // emergencyRequests'te kritiklik ayrımı yok → urgentOnly hepsini eler
+      // Gerçek urgency alanını eşle (varsa); yoksa 'normal'. Önceden 'high' sabitti.
+      const urgency: BloodCall['urgency'] =
+        data.urgency === 'critical' || data.urgency === 'high' || data.urgency === 'normal'
+          ? data.urgency
+          : 'normal';
+      // urgentOnly: yalnızca kritik ilanları göster (eskiden hepsini eliyordu).
+      if (urgentOnly && urgency !== 'critical') return;
       calls.push({
         id: d.id,
         bloodTypes,
         donationType: 'blood',
-        urgency: 'high',
+        urgency,
         hospitalName: data.hospitalName,
         contactPhone: data.contactPhone,
         coordinates: coords,

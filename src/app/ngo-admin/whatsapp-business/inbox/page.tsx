@@ -512,7 +512,7 @@ export default function WhatsAppBusinessInboxPage() {
                                 </div>
                                 {detail?.contactId ? (
                                     <Button asChild variant="outline" size="sm">
-                                        <Link href={`/call/${detail.contactId}`}>
+                                        <Link href={`/ngo-admin/call-center/call/${detail.contactId}`}>
                                             <Phone className="mr-1.5 h-4 w-4" />
                                             Çağrı yap
                                         </Link>

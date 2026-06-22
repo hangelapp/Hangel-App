@@ -33,8 +33,27 @@ const PostBodySchema = z.object({
 interface EventDoc {
   status?: string;
   coordinates?: { lat: number; lng: number };
-  startDate?: { toDate?: () => Date };
-  endDate?: { toDate?: () => Date };
+  startDate?: { toDate?: () => Date } | string;
+  endDate?: { toDate?: () => Date } | string;
+}
+
+// Etkinlik tarihleri Firestore'da "YYYY-MM-DD HH:mm" (ya da "YYYY-MM-DD") STRING
+// olarak saklanıyor — Timestamp değil. .toDate() string'te yok → zaman penceresi
+// kontrolü hiç çalışmıyordu. Hem string hem Timestamp formatını çöz.
+function parseEventDate(v: EventDoc['startDate']): Date | undefined {
+  if (!v) return undefined;
+  if (typeof v === 'string') {
+    const s = v.trim();
+    if (!s) return undefined;
+    const normalized = s.includes(' ') ? s.replace(' ', 'T') : `${s}T00:00`;
+    const d = new Date(normalized);
+    return Number.isNaN(d.getTime()) ? undefined : d;
+  }
+  if (typeof v.toDate === 'function') {
+    const d = v.toDate();
+    return d instanceof Date && !Number.isNaN(d.getTime()) ? d : undefined;
+  }
+  return undefined;
 }
 
 function haversine(a: { latitude: number; longitude: number }, b: { lat: number; lng: number }): number {
@@ -102,6 +121,18 @@ export async function POST(
         message: `Etkinliğe ${Math.round(distance)}m uzaklıktasınız. ${CHECK_IN_RADIUS_METERS}m içinde olmalısınız.`,
       }, { status: 403 });
     }
+  }
+
+  // Zaman penceresi: check-in 1 saat öncesinden açılır, bitişten 1 saat sonra kapanır.
+  // (Tarih string parse edilmeden bu kontrol hiç çalışmıyordu.)
+  const now = new Date();
+  const start = parseEventDate(event.startDate);
+  const end = parseEventDate(event.endDate);
+  if (start && now < new Date(start.getTime() - 60 * 60 * 1000)) {
+    return NextResponse.json({ errorCode: 'TOO_EARLY', message: 'Check-in 1 saat öncesinden açılır.' }, { status: 403 });
+  }
+  if (end && now > new Date(end.getTime() + 60 * 60 * 1000)) {
+    return NextResponse.json({ errorCode: 'TOO_LATE', message: 'Check-in penceresi kapandı.' }, { status: 403 });
   }
 
   const checkinRef = eventRef.collection(COLLECTIONS.eventCheckins).doc(uid);

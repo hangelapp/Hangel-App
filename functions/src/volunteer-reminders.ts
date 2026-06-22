@@ -125,7 +125,7 @@ export const volunteerAttendeeReminders = onSchedule(
             createdBy: 'system-volunteer-reminder',
           });
           n++;
-          if (n % 450 === 0) { await batch.commit().catch(() => {}); batch = db.batch(); }
+          if (n % 450 === 0) { await batch.commit().catch((er) => logger.error(`[volunteer-reminders] mid-batch commit failed vol=${volunteeringId} (up to 450 reminders dropped)`, er)); batch = db.batch(); }
         }
         await batch.commit().catch((er) => logger.warn(`[volunteer-reminders] batch failed vol=${volunteeringId}`, er));
         totalNotified += n;

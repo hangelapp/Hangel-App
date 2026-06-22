@@ -163,7 +163,7 @@ export const eventOneHourSmsReminder = onSchedule(
       }
 
       await eventDoc.ref.update({ smsReminderSentAt: FieldValue.serverTimestamp() }).catch((e) => {
-        logger.warn(`[sms-reminder] could not mark event ${eventId}: ${e}`);
+        logger.error(`[sms-reminder] could not mark event ${eventId} as sent (risk of duplicate SMS): ${e}`);
       });
     }
 

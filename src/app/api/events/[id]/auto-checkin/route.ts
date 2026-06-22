@@ -41,6 +41,26 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): num
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Etkinlik tarihleri Firestore'da "YYYY-MM-DD HH:mm" (ya da "YYYY-MM-DD") STRING
+// olarak saklanıyor — Timestamp değil. .toDate() string'te yok → zaman penceresi
+// kontrolü sessizce çalışmıyordu. Hem string hem Timestamp formatını çöz.
+function parseEventDate(v: { toDate?: () => Date } | string | undefined): Date | undefined {
+  if (!v) return undefined;
+  if (typeof v === 'string') {
+    const s = v.trim();
+    if (!s) return undefined;
+    // "YYYY-MM-DD HH:mm" → ISO'ya çevir; saat yoksa gün başına sabitle (yerel saat).
+    const normalized = s.includes(' ') ? s.replace(' ', 'T') : `${s}T00:00`;
+    const d = new Date(normalized);
+    return Number.isNaN(d.getTime()) ? undefined : d;
+  }
+  if (typeof v.toDate === 'function') {
+    const d = v.toDate();
+    return d instanceof Date && !Number.isNaN(d.getTime()) ? d : undefined;
+  }
+  return undefined;
+}
+
 export async function POST(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> },
@@ -88,8 +108,8 @@ export async function POST(
       coordinates?: { lat: number; lng: number };
       nfcTagId?: string;
       nfcSignature?: string;
-      startDate?: { toDate?: () => Date };
-      endDate?: { toDate?: () => Date };
+      startDate?: { toDate?: () => Date } | string;
+      endDate?: { toDate?: () => Date } | string;
     };
 
     // Source-specific doğrulama
@@ -125,8 +145,8 @@ export async function POST(
 
     // Time window: etkinlik başlamamış veya bitmiş ise check-in kapalı
     const now = new Date();
-    const start = eventData.startDate?.toDate?.();
-    const end = eventData.endDate?.toDate?.();
+    const start = parseEventDate(eventData.startDate);
+    const end = parseEventDate(eventData.endDate);
     if (start && now < new Date(start.getTime() - 60 * 60 * 1000)) {
       return NextResponse.json({ errorCode: 'TOO_EARLY', message: 'Check-in 1 saat öncesinden açılır.' }, { status: 403 });
     }

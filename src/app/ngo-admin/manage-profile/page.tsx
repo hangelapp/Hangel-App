@@ -247,6 +247,8 @@ export default function ManageProfilePage() {
   const [repEmail, setRepEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingKind, setUploadingKind] = useState<string | null>(null);
+  // Kaydetmeden önce inline doğrulama hataları (alan bazlı). Boş = hata yok.
+  const [errors, setErrors] = useState<{ name?: string; email?: string; repEmail?: string }>({});
   // Formu kurum başına BİR kez doldur — canlı doc her snapshot'ta güncellenince
   // effect yeniden çalışıp kullanıcının girdiği değerleri ezmesin (adres bug'ı).
   const hydratedIdRef = useRef<string | null>(null);
@@ -371,6 +373,23 @@ export default function ManageProfilePage() {
       e.preventDefault();
       if (!activeEntity) {
         toast({ variant: 'destructive', title: t('ngo_admin_manage_profile.toastEntityNotFound'), description: t('ngo_admin_manage_profile.toastEntityNotFoundDesc') });
+        return;
+      }
+      // İstemci tarafı doğrulama — geçersizse updateDoc çağrılmaz, hatalar
+      // ilgili alanların altında inline gösterilir.
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const nextErrors: { name?: string; email?: string; repEmail?: string } = {};
+      if (!name.trim()) {
+        nextErrors.name = 'Bu alan zorunludur.';
+      }
+      if (email.trim() && !emailRegex.test(email.trim())) {
+        nextErrors.email = 'Geçerli bir e-posta adresi girin.';
+      }
+      if (repEmail.trim() && !emailRegex.test(repEmail.trim())) {
+        nextErrors.repEmail = 'Geçerli bir e-posta adresi girin.';
+      }
+      setErrors(nextErrors);
+      if (Object.keys(nextErrors).length > 0) {
         return;
       }
       setIsSaving(true);
@@ -525,7 +544,8 @@ export default function ManageProfilePage() {
 
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelFullName')}</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-xl" required />
+                <Input value={name} onChange={(e) => { setName(e.target.value); if (errors.name) setErrors(prev => ({ ...prev, name: undefined })); }} className={cn("h-11 rounded-xl", errors.name && "border-destructive focus-visible:ring-destructive")} required />
+                {errors.name && <p className="text-[11px] font-medium text-destructive ml-1">{errors.name}</p>}
             </div>
 
             <div className="space-y-2">
@@ -748,7 +768,8 @@ export default function ManageProfilePage() {
 
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelCorpEmail')}</Label>
-                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-xl" />
+                    <Input type="email" value={email} onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors(prev => ({ ...prev, email: undefined })); }} className={cn("h-11 rounded-xl", errors.email && "border-destructive focus-visible:ring-destructive")} />
+                    {errors.email && <p className="text-[11px] font-medium text-destructive ml-1">{errors.email}</p>}
                 </div>
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelCorpPhone')}</Label>
@@ -826,7 +847,8 @@ export default function ManageProfilePage() {
                 </div>
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelRepEmail')}</Label>
-                    <Input value={repEmail} onChange={(e) => setRepEmail(e.target.value)} className="h-11 rounded-xl bg-background" />
+                    <Input value={repEmail} onChange={(e) => { setRepEmail(e.target.value); if (errors.repEmail) setErrors(prev => ({ ...prev, repEmail: undefined })); }} className={cn("h-11 rounded-xl bg-background", errors.repEmail && "border-destructive focus-visible:ring-destructive")} />
+                    {errors.repEmail && <p className="text-[11px] font-medium text-destructive ml-1">{errors.repEmail}</p>}
                 </div>
             </CardContent>
         </Card>

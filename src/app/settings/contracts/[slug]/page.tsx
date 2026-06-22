@@ -265,7 +265,9 @@ export default function ContractDetailPage() {
             </nav>
           )}
 
-          {/* Footer — draft/last-update + version history link */}
+          {/* Footer — draft/last-update.
+              "Sürüm geçmişi" linki kaldırıldı: /settings/contracts/[slug]/history
+              rotası yok (404 olurdu). Geçmiş sayfası eklenince geri getirilebilir. */}
           <footer className="text-xs text-muted-foreground flex flex-wrap items-center gap-3 pt-2 border-t border-border/60">
             <span className="inline-flex items-center gap-1.5">
               <FileClock className="h-3.5 w-3.5" />
@@ -276,13 +278,6 @@ export default function ContractDetailPage() {
             {firestoreContract?.lastUpdated && (
               <span>· Son güncelleme: {firestoreContract.lastUpdated}</span>
             )}
-            <Link
-              href={`/settings/contracts/${slug}/history`}
-              className="text-primary hover:underline ml-auto print:hidden"
-              prefetch={false}
-            >
-              Sürüm geçmişi
-            </Link>
           </footer>
         </div>
       </div>

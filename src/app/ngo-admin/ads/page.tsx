@@ -1628,7 +1628,7 @@ function AiPlanBlock({
                                 {platform === 'google' && p.headlines?.[0] && (
                                     <div className="rounded-xl bg-card border border-border/50 p-2.5">
                                         <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Örnek reklam</p>
-                                        <p className="text-[13px] font-semibold text-[#1a0dab] mt-0.5">{p.headlines[0]}</p>
+                                        <p className="text-[13px] font-semibold text-[#1a0dab] mt-0.5">{p.headlines?.[0] ?? ''}</p>
                                         {p.descriptions?.[0] && <p className="text-[12px] text-muted-foreground">{p.descriptions[0]}</p>}
                                     </div>
                                 )}

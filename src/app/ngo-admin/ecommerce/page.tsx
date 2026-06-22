@@ -118,8 +118,9 @@ export default function EcommerceManagementPage() {
                 <TabsContent value="products" className="mt-6 space-y-6">
                     <div className="flex justify-between items-center">
                         <h3 className="font-bold">{t('ngo_admin_ecommerce.productsActiveTitle')}</h3>
-                        <Button size="sm"><Plus className="mr-2 h-4 w-4" /> {t('ngo_admin_ecommerce.productsAddButton')}</Button>
+                        <Button size="sm" disabled><Plus className="mr-2 h-4 w-4" /> {t('ngo_admin_ecommerce.productsAddButton')}</Button>
                     </div>
+                    <p className="text-[11px] text-muted-foreground -mt-4">Bu modül geliştiriliyor, yakında. Aşağıdaki ürünler örnek (demo) verilerdir.</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {[
                             { id: '1', name: t('ngo_admin_ecommerce.sampleProduct1'), price: '250 ₺', stock: 120, img: 'https://picsum.photos/seed/t1/200/200' },
@@ -129,8 +130,9 @@ export default function EcommerceManagementPage() {
                             <Card key={product.id} className="overflow-hidden group hover:border-primary transition-colors">
                                 <div className="relative aspect-square w-full">
                                     <Image src={product.img} alt={product.name} fill className="object-cover" />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <Button variant="secondary" size="sm">{t('ngo_admin_ecommerce.productEditButton')}</Button>
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                                        <Button variant="secondary" size="sm" disabled>{t('ngo_admin_ecommerce.productEditButton')}</Button>
+                                        <span className="text-[10px] text-white/80">geliştiriliyor</span>
                                     </div>
                                 </div>
                                 <CardContent className="p-4">

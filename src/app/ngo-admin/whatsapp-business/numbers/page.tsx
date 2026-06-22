@@ -25,7 +25,6 @@ import {
   MessageCircle,
   Phone,
   PauseCircle,
-  Eye,
   Plus,
   CheckCircle2,
   Clock,
@@ -324,16 +323,6 @@ export default function WhatsAppBusinessNumbersPage() {
                     </p>
                   </div>
                   <div className="flex gap-2 pt-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5"
-                      onClick={() =>
-                        router.push(`/ngo-admin/whatsapp-business/numbers/${n.id}`)
-                      }
-                    >
-                      <Eye className="h-3.5 w-3.5" /> Ayrıntı
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

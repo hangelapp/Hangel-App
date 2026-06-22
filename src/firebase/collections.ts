@@ -130,6 +130,17 @@ export const COLLECTIONS = {
   // Doc id = `{brandId}__{orderId}` for create-or-fail idempotency.
   affiliateConfirmations: 'affiliateConfirmations',
 
+  // Platform-içi reklam bannerları (super-admin/ads). Timeline ve diğer alanlarda
+  // gösterilen banner kayıtları. Public read (banner kullanıcıya görünür),
+  // super-admin write. Doc: { title, description, imageUrl, link, status:
+  // 'Aktif'|'Pasif', createdAt, updatedAt }.
+  siteAds: 'siteAds',
+
+  // Yardım Merkezi (super-admin/help) soru-cevap geri bildirimi. Admin
+  // "Beğendim/Beğenmedim" → kayıt. Super-admin write (global allPaths kapsar).
+  // Doc: { section, question, helpful: boolean, adminUid?, createdAt }.
+  helpFeedback: 'helpFeedback',
+
   // Reklam Yönetimi — STK Google Ad Grants plan/hesap kayıtları (Admin SDK only).
   // STK panelden "Bunu Kur" → adPlans; hangel ekibi süper-admin'den görür/yayınlar.
   adPlans: 'adPlans',

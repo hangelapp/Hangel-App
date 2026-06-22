@@ -4,12 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-    PlusCircle, Bell, Inbox, Search, Droplet, HeartHandshake,
+    Bell, Inbox, Search, Droplet, HeartHandshake,
     DollarSign, Newspaper, ShieldCheck, Loader2, ExternalLink,
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, updateDoc, writeBatch } from 'firebase/firestore';
@@ -163,9 +162,6 @@ export default function NgoNotificationsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                     {unread.length > 0 && <Button variant="outline" onClick={markAllRead}>{t('ngoAdminNotifs.markAllReadBtn')}</Button>}
-                    <Button asChild className="shadow-lg hover:shadow-primary/20 transition-all">
-                        <Link href="/ngo-admin/notifications/new"><PlusCircle className="mr-2 h-4 w-4" /> {t('ngoAdminNotifs.newMessageBtn')}</Link>
-                    </Button>
                 </div>
             </div>
 

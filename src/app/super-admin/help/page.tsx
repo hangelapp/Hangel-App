@@ -21,6 +21,58 @@ import {
   LifeBuoy
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
+import { ThumbsUp, ThumbsDown, Loader2 } from 'lucide-react';
+import { useFirestore, useUser } from '@/firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
+import { useToast } from '@/hooks/use-toast';
+
+function HelpFeedbackButtons({ section, question }: { section: string; question: string }) {
+  const db = useFirestore();
+  const { user } = useUser();
+  const { toast } = useToast();
+  const [saving, setSaving] = useState<null | 'up' | 'down'>(null);
+  const [done, setDone] = useState(false);
+
+  const record = async (helpful: boolean) => {
+    if (!db || done || saving) return;
+    setSaving(helpful ? 'up' : 'down');
+    try {
+      await addDoc(collection(db, COLLECTIONS.helpFeedback), {
+        section,
+        question,
+        helpful,
+        adminUid: user?.uid ?? null,
+        createdAt: serverTimestamp(),
+      });
+      setDone(true);
+      toast({ title: 'Teşekkürler', description: 'Geri bildiriminiz kaydedildi.' });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Kaydedilemedi.';
+      toast({ variant: 'destructive', title: 'Hata', description: message });
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  if (done) {
+    return <p className="mt-2 text-xs text-muted-foreground">Geri bildiriminiz için teşekkürler.</p>;
+  }
+
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      <Button variant="outline" size="sm" className="h-7 px-2 py-1 text-xs" disabled={saving !== null} onClick={() => record(true)}>
+        {saving === 'up' ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <ThumbsUp className="mr-1 h-3 w-3" />}
+        Beğendim
+      </Button>
+      <Button variant="outline" size="sm" className="h-7 px-2 py-1 text-xs" disabled={saving !== null} onClick={() => record(false)}>
+        {saving === 'down' ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <ThumbsDown className="mr-1 h-3 w-3" />}
+        Beğenmedim
+      </Button>
+    </div>
+  );
+}
 
 const helpSections = [
   {
@@ -150,10 +202,7 @@ export default function HelpPage() {
                                         <p className="font-semibold text-foreground">S: {item.q}</p>
                                         <div className="pl-4">
                                             <p className="mt-1">C: {item.a}</p>
-                                            <div className="mt-2 flex items-center gap-2">
-                                                <Button variant="outline" size="sm" className="h-7 px-2 py-1 text-xs">Beğendim</Button>
-                                                <Button variant="outline" size="sm" className="h-7 px-2 py-1 text-xs">Beğenmedim</Button>
-                                            </div>
+                                            <HelpFeedbackButtons section={section.title} question={item.q} />
                                         </div>
                                     </div>
                                 ))}

@@ -158,7 +158,7 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/call-center/contacts', label: 'Kişi Rehberi', icon: Contact, beta: true },
       { href: '/ngo-admin/call-center/queue', label: 'Arama Sırası', icon: Clock, beta: true },
       { href: '/ngo-admin/messaging-packages', label: 'Kontör Paketleri', icon: Wallet, beta: true },
-      { href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: MessageCircle, beta: true },
+      { href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: MessageCircle, comingSoon: true },
       { href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: Megaphone, comingSoon: true },
     ],
   },

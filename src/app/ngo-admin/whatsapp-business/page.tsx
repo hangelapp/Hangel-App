@@ -321,7 +321,7 @@ export default function WhatsAppBusinessHubPage() {
               {conversations.slice(0, 10).map((c) => (
                 <li key={c.id}>
                   <Link
-                    href={`/ngo-admin/whatsapp-business/inbox/${encodeURIComponent(c.id)}`}
+                    href="/ngo-admin/whatsapp-business/inbox"
                     className="flex items-center gap-3 py-2.5 hover:bg-muted/40 px-2 -mx-2 rounded"
                   >
                     {c.lastMessageDirection === 'inbound' ? (

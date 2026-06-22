@@ -473,15 +473,30 @@ const DonorList = ({ request, authUser }: { request: MyBloodRequest; authUser: U
                         </Badge>
                     ) : (
                         <div className="flex gap-1.5 shrink-0">
-                            <Button
-                                size="sm"
-                                className="rounded-xl h-8 px-3 font-bold"
-                                disabled={marking === d.uid}
-                                onClick={() => handleMark(d.uid, 'came')}
-                            >
-                                {marking === d.uid ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1" />}
-                                {t('emergency_root.donorMarkCame')}
-                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        size="sm"
+                                        className="rounded-xl h-8 px-3 font-bold"
+                                        disabled={marking === d.uid}
+                                    >
+                                        {marking === d.uid ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1" />}
+                                        {t('emergency_root.donorMarkCame')}
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>{t('emergency_root.donorMarkCameConfirmTitle')}</AlertDialogTitle>
+                                        <AlertDialogDescription>{t('emergency_root.donorMarkCameConfirmDesc')}</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>{t('emergency_root.cancel')}</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleMark(d.uid, 'came')}>
+                                            {t('emergency_root.donorMarkCame')}
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                             <Button
                                 size="sm"
                                 variant="outline"

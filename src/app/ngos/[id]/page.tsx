@@ -73,7 +73,31 @@ const StatRow = ({ label, value }: { label: string, value: string | number }) =>
     </div>
 );
 
-const PostCard = ({ post }: { post: Post }) => (
+const PostCard = ({ post, shareUrl, shareTitle }: { post: Post; shareUrl: string; shareTitle: string }) => {
+    const { toast } = useToast();
+    // Beğeni için Firestore subcollection yok (ngo.posts gömülü dizi) → yerel
+    // görsel toggle; dead tap yerine yanıt veren bir buton. Paylaş ise STK
+    // profil bağlantısını Web Share API / panoya kopyalama ile gerçekten paylaşır.
+    const [liked, setLiked] = useState(false);
+
+    const handleShare = async () => {
+        if (typeof navigator !== 'undefined' && navigator.share) {
+            try {
+                await navigator.share({ title: shareTitle, url: shareUrl });
+                return;
+            } catch {
+                // kullanıcı iptal etti veya desteklenmedi → kopyalamaya düş
+            }
+        }
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            toast({ title: 'Bağlantı kopyalandı', description: 'Profili paylaşmak için yapıştırabilirsin.' });
+        } catch {
+            toast({ variant: 'destructive', title: 'Paylaşılamadı', description: 'Tarayıcı izin vermedi.' });
+        }
+    };
+
+    return (
     <Card>
         <CardHeader>
             <div className="flex items-center gap-3">
@@ -96,18 +120,24 @@ const PostCard = ({ post }: { post: Post }) => (
             )}
         </CardContent>
         <CardFooter className="flex justify-start gap-0 border-t p-0">
-            <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
-                <Heart className="h-5 w-5" /> 
+            <Button
+                variant="ghost"
+                onClick={() => setLiked((v) => !v)}
+                aria-pressed={liked}
+                className={`flex-1 flex items-center gap-2 h-12 text-base ${liked ? 'text-primary' : 'text-muted-foreground'}`}
+            >
+                <Heart className={`h-5 w-5 ${liked ? 'fill-current' : ''}`} />
                 <span>Beğen</span>
             </Button>
             <div className="w-[1px] h-6 bg-border self-center" />
-            <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
-                <Share2 className="h-5 w-5" /> 
+            <Button variant="ghost" onClick={handleShare} className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
+                <Share2 className="h-5 w-5" />
                 <span>Paylaş</span>
             </Button>
         </CardFooter>
     </Card>
-);
+    );
+};
 
 const OpportunityCard = ({ opp }: { opp: Volunteering }) => (
     <Card>
@@ -888,7 +918,7 @@ export default function NgoProfilePage() {
         </TabsContent>
         <TabsContent value="posts" className="p-4 space-y-4">
             {ngo.posts && ngo.posts.length > 0 ? (
-                ngo.posts.map(post => <PostCard key={post.id} post={post} />)
+                ngo.posts.map(post => <PostCard key={post.id} post={post} shareUrl={profileUrl || `/ngos/${id}`} shareTitle={`hangel'deki ${ngo.name} profilini incele!`} />)
             ) : (
                 <div className="text-center text-muted-foreground py-16">
                     <Rss className="mx-auto h-12 w-12 text-muted-foreground/50"/>

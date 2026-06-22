@@ -176,7 +176,7 @@ export default function DonationsAdminPage() {
                 Array.isArray(d.ngoSplit) && d.ngoSplit.length > 0
                     ? d.ngoSplit.map(s => ({ ngoId: s.ngoId, name: s.ngoName || s.ngoId, amount: Number(s.amount) || 0 }))
                     : (d.ngoIds && d.ngoIds.length > 0
-                        ? d.ngoIds.map((id, i) => ({ ngoId: id, name: d.ngo?.[i] || id, amount: gross / d.ngoIds!.length }))
+                        ? d.ngoIds.map((id, i) => ({ ngoId: id, name: d.ngo?.[i] || id, amount: gross / (d.ngoIds?.length ?? 1) }))
                         : [{ ngoId: '', name: d.ngo?.[0] || 'Atanmamış', amount: gross }]);
             for (const { ngoId, name, amount } of entries) {
                 const key = ngoId || name;

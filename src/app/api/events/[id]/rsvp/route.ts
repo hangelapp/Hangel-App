@@ -153,6 +153,11 @@ export async function POST(
           { merge: true }
         );
         const newCount = wasGoing ? goingCount : goingCount + 1;
+        // capacity.current'i gerçek "going" sayısına eşitle — UI/"dolu" kapısı bu
+        // alanı okuyor ama hiç yazılmıyordu (phantom). Yeni katılımda güncelle.
+        if (!wasGoing) {
+          tx.set(eventRef, { capacity: { current: newCount } }, { merge: true });
+        }
         return { status: 'going' as const, count: newCount, newlyGoing: !wasGoing, eventName, eventSlug, role };
       }
 
@@ -169,6 +174,10 @@ export async function POST(
         );
       }
       const newCount = wasGoing ? Math.max(0, goingCount - 1) : goingCount;
+      // İptalde gerçek "going" sayısı azaldıysa capacity.current'i de düşür.
+      if (wasGoing) {
+        tx.set(eventRef, { capacity: { current: newCount } }, { merge: true });
+      }
       return { status: 'cancelled' as const, count: newCount, newlyGoing: false, eventName, eventSlug, role };
     });
 

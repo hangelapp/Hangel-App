@@ -42,7 +42,6 @@ const SUPER_ADMIN_PAGES: { slug: string; label: string }[] = [
   { slug: 'communications', label: 'DM & Bildirim' },
   { slug: 'messaging', label: 'Toplu SMS & E-Posta' },
   { slug: 'ads', label: 'Reklam Yönetimi' },
-  { slug: 'public-relations', label: 'Kamu İlişkileri' },
   { slug: 'settings', label: 'Panel Ayarları' },
   { slug: 'support', label: 'Destek Talepleri' },
 ];
@@ -291,6 +290,13 @@ export default function SetSuperAdminPage() {
                   </Button>
                 </div>
               </div>
+
+              {selectedUser.role !== 'super-admin' && (
+                <p className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                  <ShieldCheck className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <span>Bu işlem kullanıcıya seçilen sayfalar için <strong>tam panel erişimi</strong> verir. Kişi bir kez çıkış yapıp tekrar giriş yaptığında panel açılır.</span>
+                </p>
+              )}
 
               <Button
                 disabled={assigning || permissions.length === 0}

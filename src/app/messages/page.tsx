@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,7 +18,7 @@ import {
 import { Search, Inbox, SendHorizontal, MessageSquare, Building, School, Shield, ArrowLeft, Loader2, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser, useFirestore, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { addDoc, collection, doc, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -57,11 +57,12 @@ interface EntityRecord {
     adminUserId?: string;
 }
 
-export default function MessagesPage() {
+function MessagesContent() {
     const { t } = useTranslation();
     const [_activeTab, setActiveTab] = useState('inbox');
     const { toast } = useToast();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [searchTerm, setSearchTerm] = useState('');
     const { user: authUser } = useUser();
     const db = useFirestore();
@@ -238,6 +239,34 @@ export default function MessagesPage() {
     }, [entityCandidates, recipientSearch]);
 
     const hasAnyRelations = entityCandidates.length > 0;
+
+    // Yanıt ön-dolgusu: /messages?to=<id>&subject=<konu> ile gelindiğinde
+    // compose dialogunu otomatik aç, konuyu doldur ve alıcı kullanıcının
+    // ilişkili kurumlarındaysa onu ön-seç. Bir kez tetiklenir (guard ref).
+    const prefillAppliedRef = useRef(false);
+    const prefillTo = searchParams.get('to');
+    const prefillSubject = searchParams.get('subject');
+    useEffect(() => {
+        if (prefillAppliedRef.current) return;
+        if (!prefillTo && !prefillSubject) return;
+        prefillAppliedRef.current = true;
+        if (prefillSubject) setSubject(prefillSubject);
+        setComposeOpen(true);
+    }, [prefillTo, prefillSubject]);
+
+    // entityCandidates compose açılınca lazy yüklenir; alıcı yüklendiğinde
+    // ön-seçimi yap (yalnızca bir kez ve henüz seçim yoksa).
+    const recipientPreselectedRef = useRef(false);
+    useEffect(() => {
+        if (recipientPreselectedRef.current) return;
+        if (!prefillTo || !composeOpen) return;
+        if (selectedRecipient) return;
+        const match = entityCandidates.find((e) => e.id === prefillTo);
+        if (match) {
+            recipientPreselectedRef.current = true;
+            setSelectedRecipient(match);
+        }
+    }, [prefillTo, composeOpen, entityCandidates, selectedRecipient]);
 
     const resetCompose = () => {
         setRecipientSearch('');
@@ -550,5 +579,13 @@ export default function MessagesPage() {
             </Dialog>
 
         </div>
+    );
+}
+
+export default function MessagesPage() {
+    return (
+        <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+            <MessagesContent />
+        </Suspense>
     );
 }

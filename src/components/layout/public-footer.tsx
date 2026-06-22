@@ -164,7 +164,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                         ))}
                     </div>
                      <div className="h-px bg-border w-full" />
-                    <p className="text-[12px] text-muted-foreground pt-2">Diğer alışveriş seçenekleri: Yakınınızda bir <a href="#" className="text-primary font-bold hover:underline">hangel destek</a> bulun veya 0554 700 70 07 numaralı telefonu arayın.</p>
+                    <p className="text-[12px] text-muted-foreground pt-2">Diğer alışveriş seçenekleri: Yakınınızda bir <a href="/support" className="text-primary font-bold hover:underline">hangel destek</a> bulun veya 0554 700 70 07 numaralı telefonu arayın.</p>
 
                     {/* Teknoloji & Reklam İş Ortakları — diğer footer satırlarıyla aynı düz stil. */}
                     <div className="h-px bg-border w-full" />

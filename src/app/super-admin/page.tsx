@@ -168,7 +168,9 @@ const superAdminNavSections = [
             { href: '/super-admin/emergency', label: 'Acil Durum Yönetimi', icon: 'Siren', description: 'Acil kan talebi ve afet bildirimlerini yönet, hedef bildirimler gönder.' },
             { href: '/super-admin/hospitals', label: 'Hastane Yönetimi', icon: 'Building', description: 'OSM ve Sağlık Bakanlığı hastane kayıtlarını düzenle, eksik adres/il/ilçe alanlarını tamamla.' },
             { href: '/super-admin/ads', label: 'Reklam Yönetimi', icon: 'Megaphone', description: 'Platform içi reklamları yönet.' },
-            { href: '/super-admin/public-relations', label: 'Kamu İlişkileri', icon: 'Users', description: 'Kurumsal işbirliği taleplerini yönet.' },
+            // Kamu İlişkileri sayfası henüz backend'siz boş bir kabuk (talep koleksiyonu yok).
+            // Boş ölü sayfa göstermemek için menüden gizlendi; backend bağlanınca geri eklenecek.
+            // { href: '/super-admin/public-relations', label: 'Kamu İlişkileri', icon: 'Users', description: 'Kurumsal işbirliği taleplerini yönet.' },
         ],
     },
     {

@@ -1,20 +1,33 @@
 'use client';
 
+import { useState } from 'react';
 import { helpTopics } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useTranslation } from '@/components/providers/language-provider';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SupportTopicPage() {
   const router = useRouter();
   const params = useParams();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const slug = params.slug as string;
   const topic = helpTopics.find(t => t.slug === slug);
+
+  // Alt başlık başına geri bildirim (index → 'yes' | 'no'). Backend rules
+  // henüz yok → tıklamayı yerel olarak kaydet, teşekkür et ve butonları kilitle.
+  const [feedback, setFeedback] = useState<Record<number, 'yes' | 'no'>>({});
+
+  const handleFeedback = (index: number, value: 'yes' | 'no') => {
+    if (feedback[index]) return;
+    setFeedback((prev) => ({ ...prev, [index]: value }));
+    toast({ title: t('supportSlug.feedbackThanks') });
+  };
 
   if (!topic) {
     notFound();
@@ -41,11 +54,19 @@ export default function SupportTopicPage() {
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(subtopic.content) }}
                 />
                 <div className="mt-6 pt-4 text-center border-t">
-                    <p className="text-sm font-medium mb-2">{t('supportSlug.helpfulQuestion')}</p>
-                    <div className="flex justify-center gap-2">
-                        <Button variant="outline" size="sm">{t('supportSlug.yes')}</Button>
-                        <Button variant="outline" size="sm">{t('supportSlug.no')}</Button>
-                    </div>
+                    {feedback[index] ? (
+                        <p className="text-sm font-medium text-primary inline-flex items-center gap-1.5">
+                            <Check className="h-4 w-4" /> {t('supportSlug.feedbackThanks')}
+                        </p>
+                    ) : (
+                        <>
+                            <p className="text-sm font-medium mb-2">{t('supportSlug.helpfulQuestion')}</p>
+                            <div className="flex justify-center gap-2">
+                                <Button variant="outline" size="sm" onClick={() => handleFeedback(index, 'yes')}>{t('supportSlug.yes')}</Button>
+                                <Button variant="outline" size="sm" onClick={() => handleFeedback(index, 'no')}>{t('supportSlug.no')}</Button>
+                            </div>
+                        </>
+                    )}
                 </div>
               </AccordionContent>
             </AccordionItem>

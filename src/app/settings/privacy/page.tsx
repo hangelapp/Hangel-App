@@ -125,7 +125,7 @@ export default function PrivacySettingsPage() {
         hidePosts?: boolean;
         hideDonations?: boolean;
     };
-    const { data: userData } = useDoc<{ privacySettings?: PrivacySettings }>(userDocRef);
+    const { data: userData } = useDoc<{ privacySettings?: PrivacySettings; twoFactorEnabled?: boolean }>(userDocRef);
 
     const [isPrivate, setIsPrivate] = useState(false);
     const [hideScore, setHideScore] = useState(false);
@@ -137,6 +137,7 @@ export default function PrivacySettingsPage() {
     const [hideDonations, setHideDonations] = useState(false);
 
     useEffect(() => {
+        if (userData?.twoFactorEnabled !== undefined) setTwoFactorEnabled(!!userData.twoFactorEnabled);
         const p = userData?.privacySettings;
         if (!p) return;
         setIsPrivate(!!p.isPrivate);
@@ -153,6 +154,7 @@ export default function PrivacySettingsPage() {
         if (!userDocRef || saving) return;
         setSaving(true);
         const result = await updateDocumentNonBlocking(userDocRef, {
+            twoFactorEnabled,
             privacySettings: {
                 isPrivate, hideScore, hideAbout, hideVolunteer,
                 hideBadges, hideCertificates, hidePosts, hideDonations,

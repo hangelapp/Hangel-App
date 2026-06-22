@@ -205,6 +205,16 @@ export default function EventDetailPage() {
   const isGoing = rsvpData?.status === 'going';
   const [isRsvpLoading, setIsRsvpLoading] = useState(false);
 
+  // Bu etkinlik için kullanıcının katılım sertifikası — Tamamla akışı
+  // users/{uid}/certificates/evt-{eventId}-{uid} yazar. Kod varsa "Sertifika"
+  // butonu doğrudan doğrulama sayfasına (/c/{code}) gider, yoksa /my-badges.
+  const eventCertRef = useMemoFirebase(() => {
+    if (!db || !authUser?.uid || !resolvedEventId) return null;
+    return doc(db, COLLECTIONS.users, authUser.uid, COLLECTIONS.certificates, `evt-${resolvedEventId}-${authUser.uid}`);
+  }, [db, authUser?.uid, resolvedEventId]);
+  const { data: eventCert } = useDoc<{ code?: string }>(eventCertRef);
+  const eventCertCode = typeof eventCert?.code === 'string' && eventCert.code ? eventCert.code : null;
+
   // Yönetici = super-admin VEYA yönettiği kuruluş/kulüp etkinliğin organizatörü.
   // managedNgoId/managedClubId User tipinde tanımlı değil → yerelde cast et.
   const eventOrganizerId = (event as { organizerId?: string } | null)?.organizerId;
@@ -977,7 +987,7 @@ export default function EventDetailPage() {
                       const { readNdefUrl } = await import('@/lib/native-nfc');
                       const result = await readNdefUrl();
                       if (!result.ok || !result.url) {
-                        alert(result.errorMessage || 'NFC okunamadı.');
+                        toast({ variant: 'destructive', title: 'NFC okunamadı', description: result.errorMessage || 'Etiket okunamadı.' });
                         return;
                       }
                       const tagMatch = result.url.match(/\/tag\/([^/?#]+)/);
@@ -990,9 +1000,11 @@ export default function EventDetailPage() {
                       });
                       const data = await res.json();
                       if (!res.ok || !data.ok) throw new Error(data.message || 'Check-in başarısız');
-                      alert(data.already ? '✓ Zaten check-in yapılmış' : '🎉 Check-in başarılı');
+                      toast(data.already
+                        ? { title: 'Zaten check-in yapılmış ✓' }
+                        : { title: 'Check-in başarılı 🎉', description: 'Etkinliğe giriş kaydın alındı.' });
                     } catch (e) {
-                      alert(e instanceof Error ? e.message : 'NFC hatası');
+                      toast({ variant: 'destructive', title: 'NFC hatası', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
                     }
                   }}
                   className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2"
@@ -1007,7 +1019,7 @@ export default function EventDetailPage() {
                 {isEventFinished && (
                   <>
                     <Button size="lg" variant="outline" className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2" asChild>
-                      <Link href="/my-badges">🎓 Sertifika</Link>
+                      <Link href={eventCertCode ? `/c/${eventCertCode}` : '/my-badges'}>🎓 Sertifika</Link>
                     </Button>
                     <EventEvaluateButton eventId={resolvedEventId || ''} eventName={event.name} authUser={authUser ?? null} className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2" />
                   </>

@@ -1,5 +1,25 @@
 export interface NgoSiteBanner { id?: string; url: string; isPrimary?: boolean }
 
+export interface NgoSiteDonations {
+  hangel?: boolean;
+  helpSteps?: boolean;
+  sms?: boolean;
+  smsShortCode?: string;
+  smsKeyword?: string;
+  smsTurkcell?: boolean;
+  smsVodafone?: boolean;
+  smsTurkTelekom?: boolean;
+  bankTransfer?: boolean;
+}
+
+export interface NgoSiteAnalytics {
+  gaMeasurementId?: string;
+  metaPixelId?: string;
+  hotjarSiteId?: string;
+  yandexMetricaId?: string;
+  customScript?: string;
+}
+
 export interface NgoSiteSettings {
   domain?: string;
   registrar?: string;
@@ -7,6 +27,8 @@ export interface NgoSiteSettings {
   presidentName?: string;
   presidentMessage?: string;
   banners?: NgoSiteBanner[];
+  donations?: NgoSiteDonations;
+  analytics?: NgoSiteAnalytics;
   sections?: Record<string, boolean>;
   stats?: { volunteers?: number; donors?: number; foundedYear?: number; activeCampaigns?: number };
   published?: boolean;

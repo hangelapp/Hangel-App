@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber, getAuth, onAuthStateChanged, signInWithCustomToken, type ConfirmationResult } from 'firebase/auth';
+import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, RecaptchaVerifier, signInWithPhoneNumber, getAuth, onAuthStateChanged, signInWithCustomToken, type ConfirmationResult } from 'firebase/auth';
 import { QrLoginDialog } from '@/components/auth/qr-login-dialog';
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
 import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
@@ -496,6 +496,27 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
         }
     };
 
+    // FORGOT PASSWORD — Firebase şifre sıfırlama e-postası gönder.
+    const handleSendResetEmail = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const target = email.trim().toLowerCase();
+        if (!target) {
+            toast({ variant: 'destructive', title: 'E-posta gerekli', description: 'Lütfen e-posta adresini gir.' });
+            return;
+        }
+        if (!auth) return;
+        setIsLoading(true);
+        try {
+            await sendPasswordResetEmail(auth, target);
+            setStep('forgot-sent');
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Sıfırlama e-postası gönderilemedi.';
+            toast({ variant: 'destructive', title: 'Gönderilemedi', description: msg });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const renderAuthModeTabs = () => (
         // Mail + SMS tab'ları geçici olarak gizlendi (sadece WhatsApp aktif).
         // Geri açmak için aşağıdaki TabsList'i eski haline döndür.
@@ -823,16 +844,16 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
                         <MessageCircle className="h-8 w-8 text-emerald-600" />
                     </div>
-                    <p className="font-bold text-base">WhatsApp&apos;a giriş linki gönderildi 📲</p>
+                    <p className="font-bold text-base">WhatsApp&apos;a doğrulama kodu gönderildi 📲</p>
                     <p className="text-sm text-muted-foreground leading-snug">
                         <span className="font-bold text-foreground">{phoneCountryCode}{phone.replace(/\D/g, '').replace(/^0+/, '')}</span> numaralı WhatsApp&apos;ı kontrol et.
                     </p>
                     <p className="text-xs text-muted-foreground leading-snug">
-                        Mesajdaki <span className="font-bold">&quot;Hesabımı Aç&quot;</span> butonuna dokun → otomatik kayıt yapılır.
+                        Mesajdaki <span className="font-bold">6 haneli kodu</span> giriş ekranına gir.
                     </p>
                 </div>
                 <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-3 py-2 text-[11px] text-emerald-800 leading-snug">
-                    💡 Link 10 dakika geçerlidir. Mesaj gelmediyse aşağıdan yeniden gönderebilirsin.
+                    💡 Kod 10 dakika geçerlidir. Mesaj gelmediyse aşağıdan yeniden gönderebilirsin.
                 </div>
                 <Button type="button" variant="outline" className="w-full h-12 rounded-xl font-bold" onClick={() => setStep('whatsapp-enter')}>
                     Numarayı değiştir / Tekrar gönder
@@ -870,6 +891,50 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     Numarayı değiştir / Yeniden gönder
                 </Button>
             </form>
+        );
+    }
+
+    if (step === 'forgot') {
+        return (
+            <form onSubmit={handleSendResetEmail} className="space-y-4">
+                <div className="text-center space-y-2">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Mail className="h-6 w-6 text-primary" />
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-snug">
+                        Şifreni sıfırlamak için e-posta adresini gir. Sana bir sıfırlama bağlantısı gönderelim.
+                    </p>
+                </div>
+                <div className="space-y-2">
+                    <FormLabel required>E-posta</FormLabel>
+                    <FormInput type="email" placeholder="ornek@mail.com" required value={email} onChange={e => setEmail(e.target.value)} />
+                </div>
+                <Button type="submit" className="w-full h-12 rounded-xl font-bold" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="animate-spin" /> : 'Sıfırlama Bağlantısı Gönder'}
+                </Button>
+                <Button type="button" variant="link" className="w-full text-xs" onClick={() => setStep('login')}>
+                    Girişe dön
+                </Button>
+            </form>
+        );
+    }
+
+    if (step === 'forgot-sent') {
+        return (
+            <div className="space-y-6 text-center py-4">
+                <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Mail className="h-8 w-8 text-primary" />
+                </div>
+                <div className="space-y-2">
+                    <h3 className="text-xl font-bold">Bağlantı gönderildi</h3>
+                    <p className="text-sm text-muted-foreground leading-snug">
+                        <span className="font-bold text-foreground">{email.trim().toLowerCase()}</span> adresine şifre sıfırlama bağlantısı gönderdik. Gelen kutunu (ve spam klasörünü) kontrol et.
+                    </p>
+                </div>
+                <Button type="button" className="w-full h-12 rounded-xl font-bold" onClick={() => setStep('login')}>
+                    Girişe dön
+                </Button>
+            </div>
         );
     }
 

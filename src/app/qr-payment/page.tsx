@@ -4,7 +4,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, Contact, Copy, ShoppingBag } from 'lucide-react';
+import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, Contact, Copy, ShoppingBag } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -321,11 +321,6 @@ export default function QrPaymentPage() {
     <div className="p-4 space-y-6 animate-in fade-in-0 bg-secondary min-h-screen">
         <div className="flex justify-between items-center pt-4">
             <h1 className="text-3xl font-bold font-headline">Cüzdanım</h1>
-             <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="rounded-full bg-muted h-8 w-8" aria-label="Yeni kart ekle"><Plus className="h-5 w-5" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Ara"><Search className="h-5 w-5" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Daha fazla seçenek"><MoreHorizontal className="h-5 w-5" /></Button>
-            </div>
         </div>
 
         <Card>

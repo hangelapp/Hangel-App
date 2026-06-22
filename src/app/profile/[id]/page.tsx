@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useParams, useRouter, notFound } from 'next/navigation';
 import { doc } from 'firebase/firestore';
-import { ArrowLeft, MapPin, GraduationCap, Briefcase, Star, Heart, Handshake, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, GraduationCap, Briefcase, Star, Heart, Handshake, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -50,7 +50,7 @@ export default function PublicProfilePage() {
     () => (db && id ? doc(db, COLLECTIONS.users, id) : null),
     [db, id]
   );
-  const { data: userData, isLoading } = useDoc<PublicUserData>(userRef);
+  const { data: userData, isLoading, error } = useDoc<PublicUserData>(userRef);
 
   const profile = useMemo(() => userData ?? null, [userData]);
 
@@ -68,6 +68,30 @@ export default function PublicProfilePage() {
           </div>
           <Skeleton className="h-32 w-full rounded-lg" />
           <Skeleton className="h-48 w-full rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  // Başarısız fetch (izin/ağ hatası) ile gerçekten olmayan kullanıcıyı ayır:
+  // hata → tekrar dene UI; hatasız + veri yok → notFound.
+  if (error) {
+    return (
+      <div className="min-h-dvh flex flex-col items-center justify-center text-center px-6 gap-4">
+        <AlertCircle className="h-10 w-10 text-destructive opacity-70" />
+        <div className="space-y-1">
+          <p className="font-bold text-lg">Profil yüklenemedi</p>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            Bir bağlantı veya yetki sorunu oluştu. Lütfen tekrar dene.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Geri
+          </Button>
+          <Button onClick={() => router.refresh()}>
+            <RefreshCw className="h-4 w-4 mr-1.5" /> Tekrar Dene
+          </Button>
         </div>
       </div>
     );

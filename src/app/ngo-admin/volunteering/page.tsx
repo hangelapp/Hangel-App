@@ -468,7 +468,6 @@ function ApplicationsTab({
 }) {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const db = useFirestore();
   const { user: authUser } = useUser();
 
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -507,63 +506,37 @@ function ApplicationsTab({
     decision: 'approved' | 'rejected',
   ) => {
     setPendingId(app.id);
-    const opp = oppById.get(app.entityId || '');
-    const status: UserApplication['status'] = decision === 'approved' ? 'Onaylandı' : 'Reddedildi';
     try {
-      await updateDoc(doc(db, COLLECTIONS.applications, app.id), {
-        status,
-        reviewedAt: serverTimestamp(),
-        reviewedBy: authUser?.uid ?? null,
-      });
-
-      if (app.userId) {
-        const listingName = opp?.title ?? app.title;
-        const titleMsg =
-          decision === 'approved'
-            ? `${t('ngo_admin_volunteering.notif.approvedPrefix')} ${listingName}`
-            : `${t('ngo_admin_volunteering.notif.rejectedPrefix')} ${listingName}`;
-        const bodyMsg =
-          decision === 'approved'
-            ? t('ngo_admin_volunteering.notif.approvedBody')
-            : t('ngo_admin_volunteering.notif.rejectedBody');
-
-        // In-app bildirim (push tetikleyici Cloud Function notifications
-        // collection'ı dinler — burada sadece dokümanı oluşturmak yeterli).
-        await addDoc(collection(db, COLLECTIONS.notifications), {
-          userId: app.userId,
-          type: 'volunteer-application',
-          title: titleMsg,
-          body: bodyMsg,
-          data: {
-            applicationId: app.id,
-            listingId: app.entityId ?? null,
-            decision,
-          },
-          read: false,
-          createdAt: serverTimestamp(),
+      // Güvenli rota: ownership doğrulaması + status + in-app bildirim +
+      // Gelen Kutusu mesajı + FCM push hepsini sunucu tarafında yapar.
+      // Eski client-side raw write bunları (ownership + push) atlıyordu.
+      const token = await authUser?.getIdToken();
+      if (!token) {
+        toast({
+          variant: 'destructive',
+          title: t('ngo_admin_volunteering.toast.applicationFailedTitle'),
+          description: t('ngo_admin_volunteering.toast.applicationFailedDesc'),
         });
-
-        // In-app DM — kullanıcıya mesajlar sekmesinde görünür.
-        if (authUser) {
-          await addDoc(collection(db, COLLECTIONS.messages), {
-            sender: {
-              id: authUser.uid,
-              name: opp?.organization ?? t('ngo_admin_volunteering.notif.ngoFallback'),
-              avatarUrl: authUser.photoURL || null,
-            },
-            senderId: authUser.uid,
-            recipient: {
-              id: app.userId,
-              name: app.userName ?? t('ngo_admin_volunteering.review.volunteerFallback'),
-              avatarUrl: null,
-            },
-            recipientId: app.userId,
-            subject: titleMsg,
-            content: bodyMsg,
-            timestamp: serverTimestamp(),
-            status: 'sent',
-          });
-        }
+        return;
+      }
+      const res = await fetch(
+        `/api/volunteering/applications/${app.id}/${decision === 'approved' ? 'approve' : 'reject'}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({}),
+        },
+      );
+      if (!res.ok) {
+        // Sunucu {errorCode,error} döner; raw internals sızdırmadan kullanıcıya
+        // dostça Türkçe mesaj gösteriyoruz.
+        await res.json().catch(() => ({}));
+        toast({
+          variant: 'destructive',
+          title: t('ngo_admin_volunteering.toast.applicationFailedTitle'),
+          description: t('ngo_admin_volunteering.toast.applicationFailedDesc'),
+        });
+        return;
       }
 
       toast({

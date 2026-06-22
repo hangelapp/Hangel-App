@@ -225,11 +225,15 @@ export default function PostsPage() {
             const existing = await getDoc(likeRef);
             if (existing.exists()) {
                 await deleteDoc(likeRef);
-                await updateDoc(postRef, { likes: increment(-1) }).catch(() => {});
+                await updateDoc(postRef, { likes: increment(-1) }).catch(() => {
+                    toast({ variant: 'destructive', title: 'Beğeni güncellenemedi, lütfen tekrar deneyin.' });
+                });
                 toast({ title: t('ngo_admin_posts.toastLikeRemoved') });
             } else {
                 await setDoc(likeRef, { createdAt: Timestamp.now(), userId: authUser.uid });
-                await updateDoc(postRef, { likes: increment(1) }).catch(() => {});
+                await updateDoc(postRef, { likes: increment(1) }).catch(() => {
+                    toast({ variant: 'destructive', title: 'Beğeni güncellenemedi, lütfen tekrar deneyin.' });
+                });
                 toast({ title: t('ngo_admin_posts.toastLiked') });
             }
         } catch (error) {

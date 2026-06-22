@@ -9,10 +9,24 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { collection, orderBy, query, Timestamp } from 'firebase/firestore';
+import { collection, orderBy, query, Timestamp, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const STATUS_OPTIONS = [
+    { value: 'yeni', label: 'Yeni' },
+    { value: 'inceleniyor', label: 'İnceleniyor' },
+    { value: 'cozuldu', label: 'Çözüldü' },
+] as const;
+
+const STATUS_LABEL: Record<string, string> = {
+    yeni: 'Yeni',
+    inceleniyor: 'İnceleniyor',
+    cozuldu: 'Çözüldü',
+};
 
 interface FeedbackDoc {
     id: string;
@@ -52,6 +66,8 @@ const MODULE_LABEL: Record<string, string> = {
 
 export default function SuperAdminFeedbackPage() {
     const firestore = useFirestore();
+    const { toast } = useToast();
+    const [savingStatus, setSavingStatus] = useState(false);
 
     const feedbackRef = useMemoFirebase(
         () => (firestore ? query(collection(firestore, COLLECTIONS.userFeedback), orderBy('createdAt', 'desc')) : null),
@@ -64,6 +80,24 @@ export default function SuperAdminFeedbackPage() {
     const [moduleFilter, setModuleFilter] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState<FeedbackDoc | null>(null);
+
+    const handleStatusChange = async (value: string) => {
+        if (!firestore || !selectedItem) return;
+        setSavingStatus(true);
+        try {
+            await updateDoc(doc(firestore, COLLECTIONS.userFeedback, selectedItem.id), {
+                status: value,
+                statusUpdatedAt: serverTimestamp(),
+            });
+            setSelectedItem(prev => (prev ? { ...prev, status: value } : prev));
+            toast({ title: 'Durum güncellendi', description: STATUS_LABEL[value] || value });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Güncellenemedi.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
+        } finally {
+            setSavingStatus(false);
+        }
+    };
 
     const filtered = useMemo(() => {
         const list = feedbacks || [];
@@ -256,6 +290,14 @@ export default function SuperAdminFeedbackPage() {
                                                             ? f.createdAt.toDate().toLocaleString('tr-TR')
                                                             : ''}
                                                     </span>
+                                                    {f.status && STATUS_LABEL[f.status] && (
+                                                        <Badge
+                                                            variant={f.status === 'cozuldu' ? 'default' : 'outline'}
+                                                            className={cn('text-[10px]', f.status === 'cozuldu' && 'bg-emerald-600 hover:bg-emerald-600')}
+                                                        >
+                                                            {STATUS_LABEL[f.status]}
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                                 {f.kind === 'survey' ? (
                                                     <div className="text-sm">
@@ -316,6 +358,26 @@ export default function SuperAdminFeedbackPage() {
                                         Kullanıcı profili →
                                     </Link>
                                 )}
+                            </div>
+
+                            {/* Durum yönetimi */}
+                            <div className="border rounded-lg p-3 space-y-2">
+                                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                    Durum
+                                    {savingStatus && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                </div>
+                                <Select
+                                    value={selectedItem.status && STATUS_LABEL[selectedItem.status] ? selectedItem.status : 'yeni'}
+                                    onValueChange={handleStatusChange}
+                                    disabled={savingStatus}
+                                >
+                                    <SelectTrigger className="w-full sm:w-56"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {STATUS_OPTIONS.map(o => (
+                                            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             {/* Survey answers */}

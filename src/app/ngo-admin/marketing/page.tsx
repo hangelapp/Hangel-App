@@ -64,8 +64,9 @@ export default function MarketingPage() {
                 <CardContent className="text-sm text-blue-700 leading-relaxed">
                     {t('ngoAdminMarketing.googleGrantsDesc')}
                 </CardContent>
-                <CardFooter>
-                    <Button variant="outline" className="border-blue-300 text-blue-800 hover:bg-blue-100">{t('ngoAdminMarketing.moreInfoBtn')}</Button>
+                <CardFooter className="flex flex-col items-start gap-1.5">
+                    <Button variant="outline" disabled className="border-blue-300 text-blue-800 hover:bg-blue-100">{t('ngoAdminMarketing.moreInfoBtn')}</Button>
+                    <p className="text-[11px] text-muted-foreground">Bu özellik geliştiriliyor, yakında.</p>
                 </CardFooter>
             </Card>
         </div>

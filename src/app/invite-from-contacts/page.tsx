@@ -9,9 +9,9 @@
  * Eşleşmeyenler → SMS/WhatsApp invite link (web fallback)
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Users, Loader2, UserPlus, Search } from 'lucide-react';
+import { Users, Loader2, UserPlus, Search, Smartphone, ArrowRight } from 'lucide-react';
 
 import { useUser } from '@/firebase';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,6 +36,12 @@ export default function InviteFromContactsPage() {
   const [contacts, setContacts] = useState<MatchedContact[]>([]);
   const [search, setSearch] = useState('');
   const [scanned, setScanned] = useState(false);
+  // Native platform tespiti (web'de rehber taraması mümkün değil).
+  // Capacitor.isNativePlatform yalnızca client'ta güvenilir → effect ile set.
+  const [isNative, setIsNative] = useState(false);
+  useEffect(() => {
+    setIsNative(Capacitor.isNativePlatform());
+  }, []);
 
   const scan = async () => {
     if (!user) return;
@@ -109,7 +115,24 @@ export default function InviteFromContactsPage() {
         </p>
       </div>
 
-      {!scanned && (
+      {!scanned && !isNative && (
+        // Web hard-wall: rehber taraması yalnızca mobil uygulamada çalışır.
+        // Dead-end yerine net mesaj + çalışan alternatif (/invite → vCard/CSV).
+        <Card><CardContent className="pt-6 text-center text-sm space-y-4">
+          <Smartphone className="h-10 w-10 text-muted-foreground mx-auto" />
+          <div className="space-y-1.5">
+            <p className="font-semibold text-foreground">{t('inviteContactsPage.nativeRequiredTitle')}</p>
+            <p className="text-muted-foreground leading-relaxed">{t('inviteContactsPage.nativeRequiredDesc')}</p>
+          </div>
+          <Button asChild className="w-full h-12 rounded-xl">
+            <Link href="/invite">
+              {t('inviteContactsPage.webAlternativeCta')} <ArrowRight className="h-4 w-4 ml-1.5" />
+            </Link>
+          </Button>
+        </CardContent></Card>
+      )}
+
+      {!scanned && isNative && (
         <Card><CardContent className="pt-6 text-center text-sm space-y-3">
           <Users className="h-10 w-10 text-muted-foreground mx-auto" />
           <p className="text-muted-foreground leading-relaxed">
@@ -132,6 +155,12 @@ export default function InviteFromContactsPage() {
             <Input placeholder={t('inviteContactsPage.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
           </div>
           <div className="space-y-1.5">
+            {filtered.length === 0 && (
+              <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">
+                <Users className="h-8 w-8 mx-auto mb-3 opacity-30" />
+                <p>{t('inviteContactsPage.noResults')}</p>
+              </CardContent></Card>
+            )}
             {filtered.map((m, idx) => (
               <Card key={`${m.contact.name}-${idx}`}>
                 <CardContent className="py-2.5 flex items-center gap-3">

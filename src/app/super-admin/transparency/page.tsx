@@ -368,7 +368,7 @@ export default function TransparencyPage() {
                         <CardDescription>{p.items.length} belge/bilgi onay bekliyor</CardDescription>
                       </div>
                       {p.ngo?.id && (
-                        <Button size="sm" variant="outline" className="rounded-xl shrink-0" onClick={() => setEditorTarget({ ngoId: p.ngo!.id, ownerUid: p.ownerUid, name: p.ngo!.name })}>
+                        <Button size="sm" variant="outline" className="rounded-xl shrink-0" onClick={() => setEditorTarget({ ngoId: p.ngo!.id, ownerUid: p.ownerUid, name: p.ngo?.name ?? '—' })}>
                           <Edit3 className="h-4 w-4 mr-1.5" /> İncele & Düzenle
                         </Button>
                       )}

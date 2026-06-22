@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 // PERF: getImpactStory dynamic import (AI flow ~50KB, sadece kullanıcı
@@ -170,6 +170,12 @@ export default function ProfilePage() {
     const { t } = useTranslation();
     const [_profileUrl, setProfileUrl] = useState('');
     const router = useRouter();
+    const searchParams = useSearchParams();
+    // Deep-link sekme desteği: /profile?tab=badges-certificates gibi (örn. passport
+    // sertifika linki). Geçerli sekme değilse "impact"e düş.
+    const PROFILE_TABS = ['impact', 'about', 'volunteering', 'connections', 'badges-certificates', 'story'] as const;
+    const requestedTab = searchParams.get('tab');
+    const initialTab = requestedTab && (PROFILE_TABS as readonly string[]).includes(requestedTab) ? requestedTab : 'impact';
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
     const [filters, setFilters] = useState<string[]>([]);
     const { toast } = useToast();
@@ -584,7 +590,7 @@ export default function ProfilePage() {
                     <UserAvatar className="w-24 h-24 mb-4" />
                     <h1 className="text-3xl font-bold break-words max-w-full">{currentUser.name}</h1>
                 </div>
-                <Tabs defaultValue="impact" className="w-full">
+                <Tabs defaultValue={initialTab} className="w-full">
                     <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex sm:justify-center">
                         <TabsList className="inline-flex h-auto w-max gap-1 p-1 sm:w-auto">
                             <TabsTrigger value="impact" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabImpact')}</TabsTrigger>
@@ -788,7 +794,9 @@ export default function ProfilePage() {
                                          action={{ label: t('profilePage.exploreEvents'), href: '/events' }}
                                      />
                                  )}
-                                 <Button variant="secondary" className='w-full'>{t('profilePage.seeAllPastVolunteering')}</Button>
+                                 <Button asChild variant="secondary" className='w-full'>
+                                     <Link href="/volunteering">{t('profilePage.seeAllPastVolunteering')}</Link>
+                                 </Button>
                              </CardContent>
                         </Card>
                     </TabsContent>

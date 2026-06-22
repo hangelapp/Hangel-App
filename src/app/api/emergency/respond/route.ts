@@ -99,10 +99,23 @@ export async function POST(req: NextRequest) {
   const hospitalPhone = s('hospitalPhone');
   const bloodType = s('bloodType');
   const patientName = s('patientName') || 'Hasta';
-  const patientAgeRaw = d['patientAge'] ?? d['age'];
-  const patientAge = typeof patientAgeRaw === 'number'
-    ? String(patientAgeRaw)
-    : typeof patientAgeRaw === 'string' ? patientAgeRaw.trim() : '';
+  // Oluşturma akışı yaşı DEĞİL doğum yılını (patientBirthYear) yazar → yaşı ondan hesapla.
+  // Geriye dönük uyumluluk için patientAge/age varsa onları da kabul et.
+  const computeAge = (): string => {
+    const directRaw = d['patientAge'] ?? d['age'];
+    if (typeof directRaw === 'number' && directRaw > 0) return String(directRaw);
+    if (typeof directRaw === 'string' && directRaw.trim()) return directRaw.trim();
+    const birthYearRaw = d['patientBirthYear'];
+    const birthYear = typeof birthYearRaw === 'number'
+      ? birthYearRaw
+      : typeof birthYearRaw === 'string' ? parseInt(birthYearRaw.trim(), 10) : NaN;
+    const nowYear = new Date().getFullYear();
+    if (Number.isFinite(birthYear) && birthYear > 1900 && birthYear <= nowYear) {
+      return String(nowYear - birthYear);
+    }
+    return '';
+  };
+  const patientAge = computeAge();
   const contactName = s('contactName') || s('requestedByName') || 'İrtibat kişisi';
   const contactPhone = s('contactPhone');
   const hospitalLocation = [hospitalDistrict, hospitalCity].filter(Boolean).join(', ');
@@ -200,6 +213,40 @@ Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu sü
   const shortBody = `${hospital} • ${bloodType} • ${contactName}${contactPhone ? ` (${contactPhone})` : ''}`;
 
   try {
+    // 0) donors alt-koleksiyonu — bildirim akışından "geleceğim" diyen bağışçı da
+    //    ilan sahibinin BAĞIŞÇI LİSTESİ'ne düşmeli (geldi/gelmedi + sertifika için).
+    //    api/emergency/[id]/respond payload'ı ile birebir aynı (uid, name, phoneLast4,
+    //    status:'coming'). İdempotent: zaten geldi/gelmedi işaretliyse EZME.
+    try {
+      const donorSnap = await fs.collection(COLLECTIONS.users).doc(caller.uid).get();
+      const donorData = (donorSnap.data() ?? {}) as { name?: string; personalInfo?: { phone?: string } };
+      let donorName = (donorData.name ?? '').trim();
+      if (!donorName) donorName = callerDisplayName;
+      if (!donorName) donorName = 'Bağışçı';
+      const phoneDigits = (donorData.personalInfo?.phone ?? '').replace(/\D/g, '');
+      const phoneLast4 = phoneDigits.slice(-4);
+
+      const donorRef = fs.collection(COLLECTIONS.emergencyRequests).doc(requestId)
+        .collection(COLLECTIONS.emergencyDonors).doc(caller.uid);
+      const existing = await donorRef.get();
+      const existingStatus = existing.exists ? (existing.data() as { status?: string }).status : undefined;
+      if (existingStatus !== 'came' && existingStatus !== 'noshow') {
+        await donorRef.set(
+          {
+            uid: caller.uid,
+            name: donorName,
+            phoneLast4,
+            status: 'coming',
+            respondedAt: FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+      }
+    } catch (donorErr) {
+      // Bağışçı listesine yazılamasa bile detay mesajı yine de gitsin.
+      console.warn('emergency/respond donors write failed', donorErr);
+    }
+
     // 1) Messages — kalıcı, /messages gelen kutusunda
     const msgRef = await fs.collection(COLLECTIONS.messages).add({
       sender: { id: 'hangel-system', name: 'Hangel Acil', avatarUrl: '' },
