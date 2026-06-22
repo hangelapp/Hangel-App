@@ -1,24 +1,30 @@
 'use client';
 
 /**
- * /corporate — Kamu (belediyeler & bakanlıklar) için "Daha Fazla Bilgi Al".
- * Apple kimliği, tek aksan rengi narçiçeği (#f34723). Üniversite & lise
- * ortaklıkları ikincil bölüm. İçerik inline TR/EN; hero CMS (slug='corporate')
- * üzerinden override edilebilir.
+ * /corporate — STK, dernek, vakıf ve kulüp yöneticileri için "Daha Fazla Bilgi Al".
+ * Apple/iOS kimliği, tek aksan rengi narçiçeği (#f34723). hangel'in BUGÜN sunduğu
+ * ücretsiz kurumsal değeri (panel, çağrı merkezi, reklam, CRM, AI raporlar, sertifika,
+ * şeffaflık, kurumsal site, ürün feed) vitrine çıkarır. İçerik inline TR/EN; hero CMS
+ * (slug='corporate') üzerinden override edilebilir. Koyu tema güvenli token'lar.
  */
 
 import {
-  Users,
+  Sparkles,
+  PhoneCall,
+  Megaphone,
+  UsersRound,
+  Mail,
+  Bot,
+  Award,
   ShieldCheck,
-  Coins,
-  GraduationCap,
-  Lock,
-  Handshake,
-  Map,
-  Building2,
-  Banknote,
-  BarChart3,
-  Scale,
+  Globe,
+  PackageSearch,
+  LayoutDashboard,
+  Calculator,
+  FileText,
+  CalendarHeart,
+  HeartHandshake,
+  Wallet,
 } from 'lucide-react';
 import {
   MarketingNav,
@@ -34,150 +40,183 @@ import { useTranslation } from '@/components/providers/language-provider';
 
 const SLUG = 'corporate';
 
-const REGISTER_HREF = '/login/selection?action=register&type=corporate';
-const PARTNERSHIP_HREF = '/contact/municipalities';
-const LEGISLATION_HREF = '/hangelassociation/legislation';
+/** Kurumsal kayıt — STK/dernek/vakıf/kulüp yöneticisi buradan katılır. */
+const REGISTER_HREF = '/register-organization';
+const PANEL_HREF = '/ngo-admin/dashboard';
+const ADS_HREF = '/ngo-admin/ads';
+const CALL_HREF = '/ngo-admin/call-center';
+const REPORTS_HREF = '/ngo-admin/reports';
+const TRANSPARENCY_HREF = '/ngo-admin/transparency';
+const WEBSITE_HREF = '/ngo-admin/website';
+const EVENTS_HREF = '/events';
+const VOLUNTEERING_HREF = '/volunteering';
 
 const TR = {
-  navLabel: 'Kamu Ortaklıkları',
-  navCta: 'Daha Fazla Bilgi Al',
+  navLabel: 'STK & Kulüpler',
+  navCta: 'STK Olarak Katıl',
   back: 'Ana Sayfa',
 
-  heroEyebrow: 'Kamu için',
-  heroTitle: 'Toplumsal projeleri veriyle yönetin.',
-  heroSubtitle: 'Gönüllü, şeffaflık ve sosyal etki; kurumunuz için tek panelde.',
+  heroEyebrow: 'STK · Dernek · Vakıf · Kulüp için',
+  heroTitle: 'Umudu birlikte büyütüyoruz.',
+  heroSubtitle: 'Kurumunuzu yöneten her şey tek panelde — ve tamamen ücretsiz.',
   heroDescription:
-    'hangel; belediyeler ve bakanlıklar için gönüllü mobilizasyonunu, şeffaf STK iş birliğini ve sosyal etkinin ölçülmesini bir araya getirir. Uzun vadeli, kanıta dayalı bir kamu-STK altyapısı.',
+    'hangel; STK, dernek, vakıf ve kulüpler için panel, çağrı merkezi, reklam yönetimi, CRM, toplu mail/SMS, AI raporlar, sertifika ve şeffaflık skorunu tek çatıda toplar. Yok öyle yalnız başına mücadele etmek — toplumsal sorunlar için birlikte çalışıyoruz. 🧡',
   heroImage:
-    'https://images.unsplash.com/photo-1577086664693-894d8405334a?q=80&w=2071&auto=format&fit=crop',
-  heroCtaPrimary: 'Daha Fazla Bilgi Al',
-  heroCtaSecondary: 'İşbirliği Kur',
+    'https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=2070&auto=format&fit=crop',
+  heroCtaPrimary: 'STK Olarak Katıl',
+  heroCtaSecondary: 'Paneli keşfet',
 
-  mobEyebrow: 'Gönüllü Mobilizasyonu',
-  mobTitle: 'Acil durumda doğru gönüllü, doğru yerde.',
-  mobSubtitle: 'Yetenek, uygunluk ve konumla hazır gönüllü ağı.',
-  mobDescription:
-    'Kayıtlı gönüllüler yetenek, uygunluk ve konum bilgisiyle tutulur. Afet ve acil durumda kurumunuz, bölgedeki gönüllüleri saatler içinde hızlıca seferber edebilir.',
-  mobImage:
-    'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?q=80&w=2070&auto=format&fit=crop',
+  freeEyebrow: 'Neden hangel · Ücretsiz',
+  freeTitle: 'Tek kuruş ödemeden, kurumsal güçte.',
+  freeSubtitle: 'Kurulum ücreti yok, aylık abonelik yok, gizli kalem yok.',
+  freeDescription:
+    'Diğer kurumlar ayrı ayrı çağrı merkezi, reklam ajansı, CRM, e-posta aracı ve raporlama yazılımı için bütçe ayırır. hangel’de bunların tamamı kurumunuza ücretsiz açılır. Kütük numaranızı girin, eşleştirin; panel dakikalar içinde hazır.',
+  freeImage:
+    'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2074&auto=format&fit=crop',
+  freeBadge: 'Ücretsiz',
 
-  valueEyebrow: 'Şeffaflık & Mali Değer',
-  valueTitle: 'Sosyal faydayı sayılarla görün.',
-  valueSubtitle: 'Şeffaflık endeksi ve sosyal etkinin mali değeri yan yana.',
-  valueDescription:
-    'Bölgedeki STK’ların şeffaflık puanıyla güvenilir partnerler seçin. Gönüllü saatlerinin ve bağışların meslek ve göreve göre mali değerini, etki puanıyla birlikte planlamanıza ve bütçenize dahil edin.',
-  valueImage:
-    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop',
+  callEyebrow: 'Çağrı Merkezi / Santral',
+  callTitle: 'Tarayıcıdan gerçek arama yapın.',
+  callSubtitle: 'Kendi SIP geçidimiz üzerinden WebRTC ile sesli görüşme.',
+  callDescription:
+    'Bağışçınızı, gönüllünüzü ya da paydaşınızı tarayıcıdan, kulaklıkla arayın — ek santral donanımı olmadan. Panel içindeki çağrı merkezi panosundan ekibinizin görüşmelerini tek yerden yürütün.',
+  callImage:
+    'https://images.unsplash.com/photo-1556745757-8d76bdb6984b?q=80&w=2070&auto=format&fit=crop',
 
-  liveEyebrow: 'Canlı',
-  liveTitle: 'Kamu için bugün hazır.',
+  adsEyebrow: 'Reklam Yönetimi',
+  adsTitle: 'Google, Meta ve TikTok tek panelden.',
+  adsSubtitle: 'Hesabınızı bağlayın, kampanyanızı yayınlayın.',
+  adsDescription:
+    'Google Ad Grants, Meta ve TikTok reklam hesaplarınızı panelden bağlayın; kampanyalarınızı hangel üzerinden yayınlayıp yönetin. Ulaşmak istediğiniz kitleye, davanız için doğru mecradan ulaşın.',
+  adsImage:
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop',
+
+  aiEyebrow: 'AI Asistan',
+  aiTitle: 'Sürdürülebilirlik raporu ve proje yazma asistanı.',
+  aiSubtitle: 'Apple standardında çıktı, yapay zekâ desteğiyle.',
+  aiDescription:
+    'AI sürdürülebilirlik raporu, kurumunuzun etkisini düzenli ve sunulabilir bir belgeye dönüştürür. Proje yazma asistanı ise hibe ve fon başvurularınız için metni birlikte oluşturmanıza yardım eder.',
+  aiImage:
+    'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2070&auto=format&fit=crop',
+  aiBadge: 'AI',
+
+  liveEyebrow: 'Bugün Hazır',
+  liveTitle: 'Kurumunuzun bugün kullanabileceği araçlar.',
   liveDescription:
-    'Kurumunuzun bugün kullanabileceği, üretimde çalışan kamu yetenekleri.',
+    'Hepsi üretimde çalışıyor, hepsi tek panelde ve hepsi ücretsiz. Kaydolduğunuz an aktif olur.',
 
-  soonEyebrow: 'Yol Haritası',
-  soonTitle: 'Yakında planlamayı derinleştiriyoruz.',
-  soonDescription:
-    'Geliştirme aşamasındaki ya da yönetim panelinde yakında olarak işaretli kamu yetenekleri.',
+  trustEyebrow: 'Güven & Şeffaflık',
+  trustTitle: 'Şeffaflık skorunuzla öne çıkın.',
+  trustDescription:
+    'Kütük/dernek otomatik eşleştirme ile profiliniz hızlıca doğrulanır; coral onay tikiyle listede güven verirsiniz. Şeffaflık skoru, kurumunuzun açıklığını bağışçı ve gönüllüye gösterir.',
+  trustCta: 'Şeffaflık panelini gör',
 
-  legEyebrow: 'Mevzuat Vizyonu',
-  legTitle: 'Sosyal Girişimcilik Mevzuatı Taslağı',
-  legDescription:
-    'TBMM hedefli bir kanun teklifi taslağı üzerinde çalışıyoruz. Vizyonun bir parçası olarak sosyal ihtiyaçların “kırmızı / turuncu / sarı” kodlarla önceliklendirilmesini öneriyoruz. Bu, bir ürün değil; kamu-STK iş birliği için ortak bir çerçeve önerisidir.',
-  legCta: 'Mevzuat taslağını incele',
-
-  secEyebrow: 'Üniversite & Lise Ortaklıkları',
-  secTitle: 'Kampüsten başlayan gönüllülük.',
-  secSubtitle: 'Öğrenci kulüpleri, etkinlik koordinasyonu ve genç gönüllü ağı.',
-  secDescription:
-    'Üniversite ve liselerle kurulan ortaklıklarla kampüs gönüllülüğünü, kulüpleri ve etkinlikleri tek yerden koordine edin. Kamu projeleriyle genç gönüllüleri buluşturun.',
-  secImage:
-    'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop',
-  secCtaPrimary: 'Ortaklık başlat',
-  secCtaLink: 'Daha Fazla Bilgi Al',
+  reachEyebrow: 'Topluluğa Ulaş',
+  reachTitle: 'Gönüllünüz, bağışçınız ve kitleniz burada.',
+  reachSubtitle: 'Etkinlik, gönüllülük ve pazar; hepsi hazır bir toplulukla.',
+  reachDescription:
+    'Etkinlik ve gönüllülük ilanlarınızı yayınlayın, QR/NFC ile katılımcı alın, otomatik sertifika verin. Markalarla bağış oranlı ürün feed’i üzerinden “tıkla-alışveriş” bağışı toplayın. Kullanıcı ödeme yapmaz; bağış marka ve kurum aracılığıyla büyür.',
+  reachImage:
+    'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?q=80&w=2070&auto=format&fit=crop',
+  reachCtaPrimary: 'Etkinlikleri gör',
+  reachCtaLink: 'Gönüllülük ilanları',
 
   compare:
-    "Kamu için sosyal projeleri veri, gönüllü ve şeffaflıkla aynı yerde yöneten bütünleşik bir kamu-STK altyapısı; Türkiye'ye özel.",
+    'Dünyada STK’lara ayrı ayrı araçlar satan platformlar var; hangel’de panel, çağrı merkezi, reklam, CRM, AI rapor ve şeffaflık tek çatıda, Türkiye’ye özel ve ücretsiz. Siz davanıza odaklanın; altyapıyı biz taşıyalım.',
 
-  finalEyebrow: 'İş Birliği',
-  finalTitle: 'Kurumunuzla uzun vadeli bir ortaklık kuralım.',
-  finalSubtitle: 'Belediye ve bakanlık iş birlikleri için iletişime geçin.',
+  finalEyebrow: '#wearehangel',
+  finalTitle: 'Kurumunuzu iyiliğin merkezine taşıyın.',
+  finalSubtitle: 'Kayıt ücretsiz, kurulum hızlı.',
   finalDescription:
-    'Ekibimiz; gönüllü mobilizasyonu, şeffaf STK iş birliği ve sosyal etki planlaması için kurumunuza özel bir başlangıç planı hazırlasın.',
-  finalCtaPrimary: 'İşbirliği Kur',
-  finalCtaSecondary: 'Kurum kaydı oluştur',
+    'Kütük numaranızla eşleşin, taslak profilinizi oluşturun ve onaylanın. Yok öyle yalnız başına mücadele etmek — birlikte çalışıyoruz. 🧡',
+  finalCtaPrimary: 'STK Olarak Katıl',
+  finalCtaSecondary: 'Paneli keşfet',
 
-  footer: 'Kamu Ortaklıkları',
+  footer: 'STK & Kulüpler',
 };
 
 const EN = {
-  navLabel: 'Public Sector Partnerships',
-  navCta: 'Learn More',
+  navLabel: 'NGOs & Clubs',
+  navCta: 'Join as an NGO',
   back: 'Home',
 
-  heroEyebrow: 'For the public sector',
-  heroTitle: 'Run social programs with data.',
-  heroSubtitle: 'Volunteers, transparency and social impact — in one panel for your institution.',
+  heroEyebrow: 'For NGOs · Associations · Foundations · Clubs',
+  heroTitle: 'We grow hope together.',
+  heroSubtitle: 'Everything that runs your organization in one panel — and entirely free.',
   heroDescription:
-    'hangel brings together volunteer mobilization, transparent NGO collaboration and impact measurement for municipalities and ministries. A long-term, evidence-based public–NGO infrastructure.',
+    'hangel brings the panel, call center, ad management, CRM, bulk mail/SMS, AI reports, certificates and a transparency score together for NGOs, associations, foundations and clubs. No more struggling alone — we work together for social causes. 🧡',
   heroImage:
-    'https://images.unsplash.com/photo-1577086664693-894d8405334a?q=80&w=2071&auto=format&fit=crop',
-  heroCtaPrimary: 'Learn More',
-  heroCtaSecondary: 'Start a partnership',
+    'https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=2070&auto=format&fit=crop',
+  heroCtaPrimary: 'Join as an NGO',
+  heroCtaSecondary: 'Explore the panel',
 
-  mobEyebrow: 'Volunteer Mobilization',
-  mobTitle: 'In an emergency, the right volunteer in the right place.',
-  mobSubtitle: 'A ready volunteer network by skill, availability and location.',
-  mobDescription:
-    'Registered volunteers are kept with their skills, availability and location. In disasters and emergencies, your institution can mobilize volunteers in the region within hours.',
-  mobImage:
-    'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?q=80&w=2070&auto=format&fit=crop',
+  freeEyebrow: 'Why hangel · Free',
+  freeTitle: 'Enterprise-grade, without paying a cent.',
+  freeSubtitle: 'No setup fee, no monthly subscription, no hidden line items.',
+  freeDescription:
+    'Other organizations budget separately for a call center, an ad agency, a CRM, an email tool and reporting software. On hangel all of these open up to your organization for free. Enter your registry number, match it, and your panel is ready in minutes.',
+  freeImage:
+    'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2074&auto=format&fit=crop',
+  freeBadge: 'Free',
 
-  valueEyebrow: 'Transparency & Financial Value',
-  valueTitle: 'See social benefit in numbers.',
-  valueSubtitle: 'A transparency index and the financial value of impact, side by side.',
-  valueDescription:
-    'Choose reliable partners using a transparency score for NGOs in your region. Bring the financial value and impact score of volunteer hours and donations — by profession and role — into your planning and budget.',
-  valueImage:
-    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop',
+  callEyebrow: 'Call Center / Switchboard',
+  callTitle: 'Make real calls from your browser.',
+  callSubtitle: 'Voice calls over WebRTC through our own SIP gateway.',
+  callDescription:
+    'Call your donor, volunteer or stakeholder from the browser with a headset — no extra switchboard hardware. Run your team’s conversations from a single call-center dashboard inside the panel.',
+  callImage:
+    'https://images.unsplash.com/photo-1556745757-8d76bdb6984b?q=80&w=2070&auto=format&fit=crop',
 
-  liveEyebrow: 'Live',
-  liveTitle: 'Ready for the public sector today.',
+  adsEyebrow: 'Ad Management',
+  adsTitle: 'Google, Meta and TikTok from one panel.',
+  adsSubtitle: 'Connect your account, publish your campaign.',
+  adsDescription:
+    'Connect your Google Ad Grants, Meta and TikTok ad accounts from the panel; publish and manage your campaigns through hangel. Reach the audience you want, for your cause, through the right channel.',
+  adsImage:
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop',
+
+  aiEyebrow: 'AI Assistant',
+  aiTitle: 'Sustainability report and project-writing assistant.',
+  aiSubtitle: 'Apple-grade output, with AI support.',
+  aiDescription:
+    'The AI sustainability report turns your organization’s impact into a tidy, presentable document. The project-writing assistant helps you draft the text for your grant and fund applications together.',
+  aiImage:
+    'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2070&auto=format&fit=crop',
+  aiBadge: 'AI',
+
+  liveEyebrow: 'Ready Today',
+  liveTitle: 'Tools your organization can use today.',
   liveDescription:
-    'Public-sector capabilities running in production that your institution can use today.',
+    'All running in production, all in one panel and all free. They go live the moment you register.',
 
-  soonEyebrow: 'Roadmap',
-  soonTitle: 'Deeper planning, coming soon.',
-  soonDescription:
-    'Public-sector capabilities in development or marked as coming soon in the admin panel.',
+  trustEyebrow: 'Trust & Transparency',
+  trustTitle: 'Stand out with your transparency score.',
+  trustDescription:
+    'Automatic registry/association matching verifies your profile quickly; the coral verified tick builds trust in the list. The transparency score shows your organization’s openness to donors and volunteers.',
+  trustCta: 'See the transparency panel',
 
-  legEyebrow: 'Legislative Vision',
-  legTitle: 'Social Entrepreneurship Legislation Draft',
-  legDescription:
-    'We are working on a draft bill aimed at the Turkish Parliament. As part of the vision, we propose prioritizing social needs with “red / orange / yellow” codes. This is not a product; it is a proposed shared framework for public–NGO collaboration.',
-  legCta: 'Review the legislation draft',
-
-  secEyebrow: 'University & High School Partnerships',
-  secTitle: 'Volunteering that starts on campus.',
-  secSubtitle: 'Student clubs, event coordination and a young volunteer network.',
-  secDescription:
-    'Coordinate campus volunteering, clubs and events from one place through partnerships with universities and high schools. Connect young volunteers with public programs.',
-  secImage:
-    'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop',
-  secCtaPrimary: 'Start a partnership',
-  secCtaLink: 'Learn More',
+  reachEyebrow: 'Reach the Community',
+  reachTitle: 'Your volunteers, donors and audience are here.',
+  reachSubtitle: 'Events, volunteering and a market; all with a ready community.',
+  reachDescription:
+    'Publish your event and volunteering listings, take attendance via QR/NFC, issue automatic certificates. Collect “shop-to-donate” support through a donation-rated product feed with brands. The user never pays; donations grow through brands and organizations.',
+  reachImage:
+    'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?q=80&w=2070&auto=format&fit=crop',
+  reachCtaPrimary: 'See events',
+  reachCtaLink: 'Volunteering listings',
 
   compare:
-    'An integrated public–NGO infrastructure that manages social programs together with data, volunteers and transparency — built for Türkiye.',
+    'There are platforms around the world that sell tools to NGOs one by one; on hangel the panel, call center, ads, CRM, AI reports and transparency are under one roof, built for Türkiye and free. You focus on your cause; we carry the infrastructure.',
 
-  finalEyebrow: 'Collaboration',
-  finalTitle: 'Let’s build a long-term partnership with your institution.',
-  finalSubtitle: 'Get in touch for municipality and ministry collaborations.',
+  finalEyebrow: '#wearehangel',
+  finalTitle: 'Move your organization to the heart of good.',
+  finalSubtitle: 'Registration is free, setup is fast.',
   finalDescription:
-    'Let our team prepare a tailored starting plan for volunteer mobilization, transparent NGO collaboration and social impact planning for your institution.',
-  finalCtaPrimary: 'Start a partnership',
-  finalCtaSecondary: 'Create an institution account',
+    'Match with your registry number, create your draft profile and get approved. No more struggling alone — we work together. 🧡',
+  finalCtaPrimary: 'Join as an NGO',
+  finalCtaSecondary: 'Explore the panel',
 
-  footer: 'Public Sector Partnerships',
+  footer: 'NGOs & Clubs',
 };
 
 export default function CorporateShowcasePage() {
@@ -189,130 +228,202 @@ export default function CorporateShowcasePage() {
   const liveFeatures: FeatureItem[] = en
     ? [
         {
-          icon: Users,
-          title: 'Volunteer Coordination & Emergency Mobilization',
+          icon: LayoutDashboard,
+          title: 'Free Management Panel',
           description:
-            'Registered volunteers held with skill, availability and location, so your municipality can mobilize fast in disasters and emergencies.',
+            'Profile, QR, community invite and everything that runs your organization in one place — completely free.',
           badge: { kind: 'hangel' },
+        },
+        {
+          icon: PhoneCall,
+          title: 'Call Center / Switchboard',
+          description:
+            'Make real calls from your browser over WebRTC through our own SIP gateway, with a team call dashboard.',
+        },
+        {
+          icon: Megaphone,
+          title: 'Ad Management (Google · Meta · TikTok)',
+          description:
+            'Connect your ad accounts and publish campaigns on Google Ad Grants, Meta and TikTok from the panel.',
+        },
+        {
+          icon: UsersRound,
+          title: 'CRM, Team & Accounting',
+          description:
+            'Manage your CRM, team and roles, accounting integration and payout tracking from a single screen.',
+        },
+        {
+          icon: Mail,
+          title: 'Bulk Mail & SMS',
+          description:
+            'Workspace bulk mail with a per-organization SMTP and an SMS/mail quota system, throttled and gated.',
+        },
+        {
+          icon: Bot,
+          title: 'AI Sustainability Report & Project Assistant',
+          description:
+            'An Apple-grade sustainability report and a project-writing assistant for your grant and fund applications.',
+          badge: { kind: 'hangel' },
+        },
+        {
+          icon: Award,
+          title: 'Certificate Generator',
+          description:
+            'Issue redesigned certificates automatically to your event and volunteering participants.',
         },
         {
           icon: ShieldCheck,
-          title: 'Transparency Index',
+          title: 'Transparency Score & Registry Matching',
           description:
-            'A transparency score for NGOs in your region, helping the public sector choose reliable partners.',
+            'Automatic registry/association matching, a coral verified tick and a transparency score that builds trust.',
         },
         {
-          icon: Coins,
-          title: 'Financial Value of Social Impact',
+          icon: Globe,
+          title: 'Your Own Corporate Website',
           description:
-            'Calculates the financial value and impact score of volunteer hours and donations by profession and role — for budgeting and planning.',
+            'Publish your organization’s own website on a *.hangel.org.tr address, ready to share.',
+        },
+        {
+          icon: PackageSearch,
+          title: 'Product Feed / PIM (donation-rated)',
+          description:
+            'List products with a donation rate via the product feed, so brands and supporters can shop to donate.',
+        },
+        {
+          icon: CalendarHeart,
+          title: 'Events & Volunteering Listings',
+          description:
+            'Create and manage events and volunteering listings; live mode, countdown, QR/NFC check-in and evaluation.',
+        },
+        {
+          icon: HeartHandshake,
+          title: 'Payment-free Donations',
+          description:
+            'Donations grow through brands and organizations — shop-to-donate or download-to-use, never a card payment.',
           badge: { kind: 'hangel' },
-        },
-        {
-          icon: GraduationCap,
-          title: 'Student Clubs & University / High School Partnerships',
-          description: 'Campus volunteering and event coordination across universities and high schools.',
-        },
-        {
-          icon: Lock,
-          title: 'KVKK-Compliant Volunteer Verification & Data Protection',
-          description: 'Secure vetting and data handling for public-sector partnerships.',
-        },
-        {
-          icon: Handshake,
-          title: 'Public Collaboration Portal',
-          description: 'Start a partnership through a live contact and application form.',
         },
       ]
     : [
         {
-          icon: Users,
-          title: 'Gönüllülük Koordinasyonu & Acil Mobilizasyon',
+          icon: LayoutDashboard,
+          title: 'Ücretsiz Yönetim Paneli',
           description:
-            'Yetenek, uygunluk ve konum bilgisiyle tutulan kayıtlı gönüllüler; afet ve acil durumda belediyeniz için hızlı mobilizasyon.',
+            'Profil, QR, topluluk daveti ve kurumunuzu yöneten her şey tek yerde — tamamen ücretsiz.',
           badge: { kind: 'hangel' },
+        },
+        {
+          icon: PhoneCall,
+          title: 'Çağrı Merkezi / Santral',
+          description:
+            'Kendi SIP geçidimiz üzerinden WebRTC ile tarayıcıdan gerçek arama; ekip için çağrı panosu.',
+        },
+        {
+          icon: Megaphone,
+          title: 'Reklam Yönetimi (Google · Meta · TikTok)',
+          description:
+            'Reklam hesaplarınızı bağlayın; Google Ad Grants, Meta ve TikTok kampanyalarını panelden yayınlayın.',
+        },
+        {
+          icon: UsersRound,
+          title: 'CRM, Ekip & Muhasebe',
+          description:
+            'CRM, ekip ve rol yönetimi, muhasebe entegrasyonu ve hak ediş/ödeme takibini tek ekrandan yönetin.',
+        },
+        {
+          icon: Mail,
+          title: 'Toplu Mail & SMS',
+          description:
+            'Workspace toplu mail, kuruma özel SMTP ve SMS/mail kota sistemi; throttle’lı ve kontrollü.',
+        },
+        {
+          icon: Bot,
+          title: 'AI Sürdürülebilirlik Raporu & Proje Asistanı',
+          description:
+            'Apple standardında sürdürülebilirlik raporu ve hibe/fon başvuruları için proje yazma asistanı.',
+          badge: { kind: 'hangel' },
+        },
+        {
+          icon: Award,
+          title: 'Sertifika Üreteci',
+          description:
+            'Etkinlik ve gönüllülük katılımcılarınıza yeniden tasarlanmış sertifikaları otomatik verin.',
         },
         {
           icon: ShieldCheck,
-          title: 'Şeffaflık Endeksi',
+          title: 'Şeffaflık Skoru & Kütük Eşleştirme',
           description:
-            'Bölgenizdeki STK’ların şeffaflık puanı; kamu için güvenilir partner seçimi.',
+            'Otomatik kütük/dernek eşleştirme, coral onay tiki ve güven veren şeffaflık skoru.',
         },
         {
-          icon: Coins,
-          title: 'Sosyal Etkinin Mali Değeri',
+          icon: Globe,
+          title: 'Kendi Kurumsal Siteniz',
           description:
-            'Gönüllü saat ve bağışların meslek ve göreve göre mali değeri ve etki puanı; bütçe ve planlama için.',
+            'Kurumunuzun kendi sitesini *.hangel.org.tr adresinde yayınlayın; paylaşmaya hazır.',
+        },
+        {
+          icon: PackageSearch,
+          title: 'Ürün Feed / PIM (bağış oranlı)',
+          description:
+            'Ürün feed ile bağış oranlı ürün listeleyin; markalar ve destekçiler alışverişle bağış yapsın.',
+        },
+        {
+          icon: CalendarHeart,
+          title: 'Etkinlik & Gönüllülük İlanları',
+          description:
+            'Etkinlik ve gönüllülük ilanları oluşturup yönetin; canlı mod, geri sayım, QR/NFC check-in ve değerlendirme.',
+        },
+        {
+          icon: HeartHandshake,
+          title: 'Ödemesiz Bağış',
+          description:
+            'Bağış marka ve kurum aracılığıyla büyür — tıkla-alışveriş ya da indir-kullan; klasik kart bağışı yok.',
           badge: { kind: 'hangel' },
-        },
-        {
-          icon: GraduationCap,
-          title: 'Öğrenci Kulüpleri & Üniversite / Lise Partnerlikleri',
-          description: 'Kampüs gönüllülüğü ve etkinlik koordinasyonu; üniversite ve liselerle.',
-        },
-        {
-          icon: Lock,
-          title: 'KVKK Uyumlu Gönüllü Doğrulama & Veri Koruma',
-          description: 'Kamu ortaklığı için güvenli vetting ve veri işleme.',
-        },
-        {
-          icon: Handshake,
-          title: 'Kamu İşbirlikleri Portalı',
-          description: 'Canlı iletişim ve başvuru formuyla ortaklık başlatma.',
         },
       ];
 
-  const soonFeatures: FeatureItem[] = en
+  const opsFeatures: FeatureItem[] = en
     ? [
         {
-          icon: Map,
-          title: 'Social Impact Atlas',
-          description: 'A map of social needs and solutions by city and district.',
-          badge: { kind: 'yakinda' },
+          icon: Calculator,
+          title: 'Accounting & Payout',
+          description: 'Accounting integration plus earnings and payout tracking, transparent end to end.',
         },
         {
-          icon: Building2,
-          title: 'Event & Venue Sharing',
-          description: 'Opening municipality and partner venues to clubs and programs.',
-          badge: { kind: 'yakinda' },
+          icon: FileText,
+          title: 'Project & Grant Drafting',
+          description: 'Draft the text for your grant and fund applications with the AI project assistant.',
         },
         {
-          icon: Banknote,
-          title: 'Grants & Funds',
-          description: 'Discovering grants and funds suitable for institutions.',
-          badge: { kind: 'yakinda' },
+          icon: Wallet,
+          title: 'Funds & Grants Discovery',
+          description: 'Bring your funds and grant workflow into the panel alongside your impact reporting.',
         },
         {
-          icon: BarChart3,
-          title: 'Demographics & Social Impact Reporting',
-          description: 'Demographic and social-impact reporting for public planning.',
-          badge: { kind: 'beta' },
+          icon: Sparkles,
+          title: 'Community Invite',
+          description: 'Invite your community with shared codes and match them to existing hangel users.',
         },
       ]
     : [
         {
-          icon: Map,
-          title: 'Sosyal Etki Atlası',
-          description: 'Şehir ve ilçe bazında sosyal ihtiyaç ve çözüm haritası.',
-          badge: { kind: 'yakinda' },
+          icon: Calculator,
+          title: 'Muhasebe & Hak Ediş',
+          description: 'Muhasebe entegrasyonu ve hak ediş/ödeme (payout) takibi; baştan sona şeffaf.',
         },
         {
-          icon: Building2,
-          title: 'Etkinlik & Mekan Paylaşımı',
-          description: 'Belediye ve iş ortağı mekanlarının kulüplere ve programlara açılması.',
-          badge: { kind: 'yakinda' },
+          icon: FileText,
+          title: 'Proje & Hibe Yazımı',
+          description: 'Hibe ve fon başvurularınızın metnini AI proje asistanıyla birlikte oluşturun.',
         },
         {
-          icon: Banknote,
-          title: 'Hibeler & Fonlar',
-          description: 'Kurumlara uygun hibe ve fon keşfi.',
-          badge: { kind: 'yakinda' },
+          icon: Wallet,
+          title: 'Fon & Hibe Keşfi',
+          description: 'Fon ve hibe akışınızı etki raporlamanızla aynı panelde toplayın.',
         },
         {
-          icon: BarChart3,
-          title: 'Demografi & Sosyal Etki Raporlama',
-          description: 'Kamu planlaması için demografi ve sosyal etki raporlaması.',
-          badge: { kind: 'beta' },
+          icon: Sparkles,
+          title: 'Topluluk Daveti',
+          description: 'Topluluğunuzu paylaşılan kodlarla davet edin; mevcut hangel kullanıcılarıyla eşleştirin.',
         },
       ];
 
@@ -325,41 +436,64 @@ export default function CorporateShowcasePage() {
         backLabel={C.back}
       />
 
-      {/* Hero — kamu için ortaklık */}
+      {/* Hero — STK/kulüp için kurumsal değer */}
       <AppleSection
         eyebrow={C.heroEyebrow}
         title={cms.title || C.heroTitle}
         subtitle={cms.subtitle || C.heroSubtitle}
         description={cms.description || C.heroDescription}
-        image={{ url: cms.heroImageUrl || C.heroImage, hint: 'modern city hall public sector' }}
+        image={{ url: cms.heroImageUrl || C.heroImage, hint: 'volunteers collaborating community nonprofit' }}
         actions={[
           { label: C.heroCtaPrimary, href: REGISTER_HREF, variant: 'primary' },
-          { label: C.heroCtaSecondary, href: PARTNERSHIP_HREF, variant: 'link' },
+          { label: C.heroCtaSecondary, href: PANEL_HREF, variant: 'link' },
         ]}
       />
 
-      {/* Gönüllü mobilizasyonu slaytı */}
+      {/* Neden hangel — ücretsiz vurgusu */}
       <AppleSection
         theme="dark"
-        eyebrow={C.mobEyebrow}
-        title={C.mobTitle}
-        subtitle={C.mobSubtitle}
-        description={C.mobDescription}
-        image={{ url: C.mobImage, hint: 'volunteers coordinating emergency response' }}
-        badges={[{ kind: 'hangel' }]}
+        eyebrow={C.freeEyebrow}
+        title={C.freeTitle}
+        subtitle={C.freeSubtitle}
+        description={C.freeDescription}
+        image={{ url: C.freeImage, hint: 'team meeting nonprofit office collaboration' }}
+        badges={[{ kind: 'hangel', label: C.freeBadge }]}
+        actions={[{ label: C.heroCtaPrimary, href: REGISTER_HREF, variant: 'secondary' }]}
       />
 
-      {/* Şeffaflık & mali değer slaytı */}
+      {/* Çağrı merkezi / santral */}
       <AppleSection
-        eyebrow={C.valueEyebrow}
-        title={C.valueTitle}
-        subtitle={C.valueSubtitle}
-        description={C.valueDescription}
-        image={{ url: C.valueImage, hint: 'data dashboard analytics planning' }}
-        badges={[{ kind: 'hangel' }]}
+        eyebrow={C.callEyebrow}
+        title={C.callTitle}
+        subtitle={C.callSubtitle}
+        description={C.callDescription}
+        image={{ url: C.callImage, hint: 'call center headset agent browser' }}
+        actions={[{ label: C.heroCtaSecondary, href: CALL_HREF, variant: 'link' }]}
       />
 
-      {/* Canlı kamu özellikleri */}
+      {/* Reklam yönetimi */}
+      <AppleSection
+        theme="dark"
+        eyebrow={C.adsEyebrow}
+        title={C.adsTitle}
+        subtitle={C.adsSubtitle}
+        description={C.adsDescription}
+        image={{ url: C.adsImage, hint: 'analytics campaign dashboard advertising' }}
+        actions={[{ label: C.heroCtaSecondary, href: ADS_HREF, variant: 'link' }]}
+      />
+
+      {/* AI sürdürülebilirlik + proje asistanı */}
+      <AppleSection
+        eyebrow={C.aiEyebrow}
+        title={C.aiTitle}
+        subtitle={C.aiSubtitle}
+        description={C.aiDescription}
+        image={{ url: C.aiImage, hint: 'ai assistant document report writing' }}
+        badges={[{ kind: 'hangel', label: C.aiBadge }]}
+        actions={[{ label: C.trustCta, href: REPORTS_HREF, variant: 'link' }]}
+      />
+
+      {/* Canlı kurumsal araçlar ızgarası */}
       <AppleSection compact theme="light">
         <SectionHeading
           eyebrow={C.liveEyebrow}
@@ -370,56 +504,63 @@ export default function CorporateShowcasePage() {
         <CompareNote>{C.compare}</CompareNote>
       </AppleSection>
 
-      {/* Yakında / Beta */}
+      {/* Operasyon araçları (ikincil ızgara) */}
       <AppleSection compact theme="dark">
         <SectionHeading
           theme="dark"
-          eyebrow={C.soonEyebrow}
-          title={C.soonTitle}
-          description={C.soonDescription}
+          eyebrow="Operasyon & Büyüme"
+          title={en ? 'Operations & growth, in one flow.' : 'Operasyon ve büyüme, tek akışta.'}
+          description={
+            en
+              ? 'Accounting, project drafting, funds and community invite — alongside your impact reporting.'
+              : 'Muhasebe, proje yazımı, fonlar ve topluluk daveti — etki raporlamanızla yan yana.'
+          }
         />
-        <FeatureGrid items={soonFeatures} columns={2} theme="dark" />
+        <FeatureGrid items={opsFeatures} columns={2} theme="dark" />
       </AppleSection>
 
-      {/* Mevzuat güven bloğu */}
+      {/* Güven & şeffaflık bloğu */}
       <AppleSection
         compact
-        eyebrow={C.legEyebrow}
-        title={C.legTitle}
-        description={C.legDescription}
-        actions={[{ label: C.legCta, href: LEGISLATION_HREF, variant: 'link' }]}
+        eyebrow={C.trustEyebrow}
+        title={C.trustTitle}
+        description={C.trustDescription}
+        actions={[
+          { label: C.trustCta, href: TRANSPARENCY_HREF, variant: 'link' },
+          { label: en ? 'Publish your website' : 'Kurumsal siteni yayınla', href: WEBSITE_HREF, variant: 'link' },
+        ]}
       >
         <div className="flex justify-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10">
-            <Scale className="h-7 w-7 text-primary" aria-hidden="true" />
+            <ShieldCheck className="h-7 w-7 text-primary" aria-hidden="true" />
           </div>
         </div>
       </AppleSection>
 
-      {/* Üniversite & lise — ikincil bölüm */}
+      {/* Topluluğa ulaş — etkinlik / gönüllülük / pazar */}
       <AppleSection
-        id="universiteler"
+        id="topluluk"
         theme="dark"
-        eyebrow={C.secEyebrow}
-        title={C.secTitle}
-        subtitle={C.secSubtitle}
-        description={C.secDescription}
-        image={{ url: C.secImage, hint: 'university students collaborating' }}
+        eyebrow={C.reachEyebrow}
+        title={C.reachTitle}
+        subtitle={C.reachSubtitle}
+        description={C.reachDescription}
+        image={{ url: C.reachImage, hint: 'community event volunteers gathering' }}
         actions={[
-          { label: C.secCtaPrimary, href: PARTNERSHIP_HREF, variant: 'secondary' },
-          { label: C.secCtaLink, href: REGISTER_HREF, variant: 'link' },
+          { label: C.reachCtaPrimary, href: EVENTS_HREF, variant: 'secondary' },
+          { label: C.reachCtaLink, href: VOLUNTEERING_HREF, variant: 'link' },
         ]}
       />
 
-      {/* Final CTA — İşbirliği Kur */}
+      {/* Final CTA — STK olarak katıl */}
       <AppleSection
         eyebrow={C.finalEyebrow}
         title={C.finalTitle}
         subtitle={C.finalSubtitle}
         description={C.finalDescription}
         actions={[
-          { label: C.finalCtaPrimary, href: PARTNERSHIP_HREF, variant: 'primary' },
-          { label: C.finalCtaSecondary, href: REGISTER_HREF, variant: 'secondary' },
+          { label: C.finalCtaPrimary, href: REGISTER_HREF, variant: 'primary' },
+          { label: C.finalCtaSecondary, href: PANEL_HREF, variant: 'secondary' },
         ]}
       />
 

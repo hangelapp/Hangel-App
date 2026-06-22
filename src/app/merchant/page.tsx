@@ -11,6 +11,11 @@ import {
   ScanLine,
   Leaf,
   Award,
+  Megaphone,
+  Mail,
+  UsersRound,
+  Calculator,
+  Globe,
 } from 'lucide-react';
 
 import {
@@ -60,6 +65,17 @@ interface MerchantContent {
   feedSubtitle: string;
   feedDescription: string;
   feedBadge: string;
+
+  freeEyebrow: string;
+  freeTitle: string;
+  freeSubtitle: string;
+  freeDescription: string;
+  freeBadge: string;
+
+  growthEyebrow: string;
+  growthTitle: string;
+  growthSubtitle: string;
+  growthDescription: string;
 
   toolsEyebrow: string;
   toolsTitle: string;
@@ -114,6 +130,19 @@ const TR: MerchantContent = {
   feedDescription:
     'Var olan ürün kataloğunuzu GelirOrtakları Go Feed ya da Google Merchant XML üzerinden hangel’e aktarın. Ürünleriniz hangel pazarında listelensin, alışverişe açılan her ürün bağışa dönüşsün.',
   feedBadge: 'Yeni',
+
+  freeEyebrow: 'Neden hangel · Ücretsiz',
+  freeTitle: 'Marka paneli tamamen ücretsiz.',
+  freeSubtitle: 'Kurulum ücreti yok, aylık abonelik yok, gizli kalem yok.',
+  freeDescription:
+    'Markanızı kaydetmek ve paneli kullanmak ücretsizdir. Reklam yönetimi, CRM, ekip rolleri, toplu mail/SMS ve ürün feed’i; ayrı araçlara bütçe ayırmadan tek panelde açılır. Siz satışa odaklanın, iyilik tarafını biz taşıyalım.',
+  freeBadge: 'Ücretsiz',
+
+  growthEyebrow: 'Büyüme araçları',
+  growthTitle: 'Reklam, CRM ve ekibiniz tek panelde.',
+  growthSubtitle: 'Google · Meta · TikTok reklamları, müşteri ilişkileri ve roller.',
+  growthDescription:
+    'Google, Meta ve TikTok reklam hesaplarınızı panelden bağlayın; kampanyalarınızı hangel üzerinden yayınlayın. CRM ile müşteri ilişkilerinizi, ekip ve rol yönetimiyle yetkilerinizi, toplu mail/SMS ile iletişiminizi tek yerden yürütün.',
 
   toolsEyebrow: 'Canlı araçlar',
   toolsTitle: 'Bugünden kullanabileceğiniz her şey.',
@@ -173,10 +202,34 @@ const TR: MerchantContent = {
         'Markanız hangel pazarında kategoriye göre, bağış oranıyla birlikte listelenir. Bilinçli tüketici sizi kolayca bulur.',
     },
     {
-      icon: BarChart3,
-      title: 'Demografi Analizi & Yetkili Yönetimi',
+      icon: Megaphone,
+      title: 'Reklam Yönetimi (Google · Meta · TikTok)',
       description:
-        'Etkinizin demografik dağılımını inceleyin, ekibinize yetkili kullanıcı ekleyin ve rollerini yönetin.',
+        'Reklam hesaplarınızı bağlayın; Google, Meta ve TikTok kampanyalarınızı panelden yayınlayıp yönetin.',
+    },
+    {
+      icon: UsersRound,
+      title: 'CRM, Ekip & Roller',
+      description:
+        'Müşteri ilişkilerinizi CRM ile yönetin; ekibinize yetkili kullanıcı ekleyin ve rollerini düzenleyin.',
+    },
+    {
+      icon: Mail,
+      title: 'Toplu Mail & SMS',
+      description:
+        'Workspace toplu mail ve SMS/mail kota sistemiyle iletişiminizi tek panelden, kontrollü biçimde yürütün.',
+    },
+    {
+      icon: Calculator,
+      title: 'Muhasebe & Hak Ediş',
+      description:
+        'Muhasebe entegrasyonu ve hak ediş/ödeme (payout) takibiyle bağış hacminizi baştan sona şeffaf izleyin.',
+    },
+    {
+      icon: BarChart3,
+      title: 'Demografi Analizi',
+      description:
+        'Etkinizin demografik dağılımını inceleyin; markanızın bilinçli tüketiciye ulaşımını panelde görün.',
     },
   ],
 
@@ -190,10 +243,17 @@ const TR: MerchantContent = {
     },
     {
       icon: Leaf,
-      title: 'Sürdürülebilirlik & KSS Raporları',
+      title: 'AI Sürdürülebilirlik & KSS Raporları',
       description:
-        'ESG yayını için sürdürülebilirlik ve kurumsal sosyal sorumluluk raporları. Test aşamasında.',
+        'ESG yayını için yapay zekâ destekli sürdürülebilirlik ve kurumsal sosyal sorumluluk raporları. Test aşamasında.',
       badge: { kind: 'beta' },
+    },
+    {
+      icon: Globe,
+      title: 'Kurumsal Site Yayını',
+      description:
+        'Markanızın kendi sitesini *.hangel.org.tr adresinde yayınlama altyapısı kuruluyor.',
+      badge: { kind: 'yakinda' },
     },
     {
       icon: Award,
@@ -239,6 +299,19 @@ const EN: MerchantContent = {
   feedDescription:
     'Bring your existing product catalog into hangel via GelirOrtakları Go Feed or Google Merchant XML. Let your products be listed on the hangel market, and let every product opened for purchase turn into a donation.',
   feedBadge: 'New',
+
+  freeEyebrow: 'Why hangel · Free',
+  freeTitle: 'The brand panel is completely free.',
+  freeSubtitle: 'No setup fee, no monthly subscription, no hidden line items.',
+  freeDescription:
+    'Registering your brand and using the panel is free. Ad management, CRM, team roles, bulk mail/SMS and the product feed open up in one panel — without budgeting for separate tools. You focus on sales; we carry the good-deed side.',
+  freeBadge: 'Free',
+
+  growthEyebrow: 'Growth tools',
+  growthTitle: 'Ads, CRM and your team in one panel.',
+  growthSubtitle: 'Google · Meta · TikTok ads, customer relations and roles.',
+  growthDescription:
+    'Connect your Google, Meta and TikTok ad accounts from the panel and publish campaigns through hangel. Run customer relations with the CRM, permissions with team and role management, and communication with bulk mail/SMS — all from one place.',
 
   toolsEyebrow: 'Live tools',
   toolsTitle: 'Everything you can use today.',
@@ -298,10 +371,34 @@ const EN: MerchantContent = {
         'Your brand is listed by category on the hangel market, together with its donation rate. The conscious consumer finds you easily.',
     },
     {
-      icon: BarChart3,
-      title: 'Demographics & Member Management',
+      icon: Megaphone,
+      title: 'Ad Management (Google · Meta · TikTok)',
       description:
-        'Explore the demographic distribution of your impact, add authorized users to your team and manage their roles.',
+        'Connect your ad accounts and publish and manage your Google, Meta and TikTok campaigns from the panel.',
+    },
+    {
+      icon: UsersRound,
+      title: 'CRM, Team & Roles',
+      description:
+        'Manage customer relations with the CRM, add authorized users to your team and manage their roles.',
+    },
+    {
+      icon: Mail,
+      title: 'Bulk Mail & SMS',
+      description:
+        'Run your communication from one panel with Workspace bulk mail and an SMS/mail quota system, in a controlled way.',
+    },
+    {
+      icon: Calculator,
+      title: 'Accounting & Payout',
+      description:
+        'Track your donation volume transparently end to end with accounting integration and payout tracking.',
+    },
+    {
+      icon: BarChart3,
+      title: 'Demographics Analysis',
+      description:
+        'Explore the demographic distribution of your impact and see how your brand reaches the conscious consumer.',
     },
   ],
 
@@ -315,10 +412,17 @@ const EN: MerchantContent = {
     },
     {
       icon: Leaf,
-      title: 'Sustainability & CSR Reports',
+      title: 'AI Sustainability & CSR Reports',
       description:
-        'Sustainability and corporate social responsibility reports for ESG publishing. In testing.',
+        'AI-assisted sustainability and corporate social responsibility reports for ESG publishing. In testing.',
       badge: { kind: 'beta' },
+    },
+    {
+      icon: Globe,
+      title: 'Corporate Website Publishing',
+      description:
+        'Infrastructure to publish your brand’s own website on a *.hangel.org.tr address is being built.',
+      badge: { kind: 'yakinda' },
     },
     {
       icon: Award,
@@ -336,7 +440,7 @@ export default function MerchantAdvantagesPage() {
   const cms = useWebPage(SLUG);
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+    <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
       <MarketingNav
         label={C.navLabel}
         ctaLabel={C.ctaLabel}
@@ -369,13 +473,34 @@ export default function MerchantAdvantagesPage() {
         image={{ url: 'https://images.unsplash.com/photo-1556742049-02e1f6c40b12?q=80&w=2070&auto=format&fit=crop', hint: 'smartphone scanning qr code checkout' }}
       />
 
+      {/* Statement — why hangel / free */}
+      <AppleSection
+        eyebrow={C.freeEyebrow}
+        title={C.freeTitle}
+        subtitle={C.freeSubtitle}
+        description={C.freeDescription}
+        badges={[{ kind: 'hangel', label: C.freeBadge }]}
+        actions={[{ label: C.heroSecondaryCta, href: REGISTER_HREF, variant: 'primary' }]}
+        image={{ url: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2070&auto=format&fit=crop', hint: 'brand team collaborating modern office' }}
+      />
+
       {/* Statement — transparent commission & panel */}
       <AppleSection
+        theme="dark"
         eyebrow={C.panelEyebrow}
         title={C.panelTitle}
         subtitle={C.panelSubtitle}
         description={C.panelDescription}
         image={{ url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop', hint: 'sleek minimalist dashboard on tablet screen' }}
+      />
+
+      {/* Statement — growth tools (ads, CRM, team) */}
+      <AppleSection
+        eyebrow={C.growthEyebrow}
+        title={C.growthTitle}
+        subtitle={C.growthSubtitle}
+        description={C.growthDescription}
+        image={{ url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop', hint: 'marketing analytics campaign dashboard' }}
       />
 
       {/* Statement — product feed (new) */}
@@ -408,7 +533,7 @@ export default function MerchantAdvantagesPage() {
         eyebrow={C.roadmapEyebrow}
         title={C.roadmapTitle}
         description={C.roadmapDescription}
-        className="bg-[#f5f5f7]"
+        className="bg-muted"
       >
         <FeatureGrid items={C.roadmap} columns={3} />
         <CompareNote>{C.compareNote}</CompareNote>

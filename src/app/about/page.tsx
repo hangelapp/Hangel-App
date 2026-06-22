@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, ShieldCheck, Target, Globe } from 'lucide-react';
+import { ChevronRight, ArrowLeft, ShieldCheck, Target, Globe, HeartHandshake, Droplet, ShoppingBag, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -156,6 +156,44 @@ export default function AboutPage() {
                             title={t('marketing.about.valueKureselTitle')}
                             description={t('marketing.about.valueKureselDesc')}
                         />
+                    </div>
+                </div>
+            </section>
+
+            {/* Bireysel kullanıcı değeri — bugün canlı özellikler. */}
+            <section className="py-32 px-6 bg-background border-b border-border">
+                <div className="container mx-auto max-w-6xl space-y-16">
+                    <div className="text-center space-y-4 max-w-3xl mx-auto">
+                        <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full">{t('marketing.about.individualBadge')}</Badge>
+                        <h2 className="text-4xl md:text-6xl font-black tracking-tighter">{t('marketing.about.individualTitle')}</h2>
+                        <p className="text-lg md:text-xl text-muted-foreground font-medium">{t('marketing.about.individualSubtitle')}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FeatureCard
+                            icon={HeartHandshake}
+                            title={t('marketing.about.individualVolunteeringTitle')}
+                            description={t('marketing.about.individualVolunteeringDesc')}
+                        />
+                        <FeatureCard
+                            icon={Droplet}
+                            title={t('marketing.about.individualEmergencyTitle')}
+                            description={t('marketing.about.individualEmergencyDesc')}
+                        />
+                        <FeatureCard
+                            icon={ShoppingBag}
+                            title={t('marketing.about.individualDonationTitle')}
+                            description={t('marketing.about.individualDonationDesc')}
+                        />
+                        <FeatureCard
+                            icon={Sparkles}
+                            title={t('marketing.about.individualImpactTitle')}
+                            description={t('marketing.about.individualImpactDesc')}
+                        />
+                    </div>
+                    <div className="text-center">
+                        <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
+                            <Link href="/login/selection?action=register">{t('marketing.about.individualCta')}</Link>
+                        </Button>
                     </div>
                 </div>
             </section>

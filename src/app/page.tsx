@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, TrendingUp, Users, ShieldCheck, FileText, Siren, Globe } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, TrendingUp, Users, ShieldCheck, FileText, Siren, Globe, CalendarClock, Droplet, BookOpen, Sparkles, Watch, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
@@ -331,6 +331,24 @@ const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: s
     </div>
 );
 
+// Bireysel kullanıcı özellik vitrini — "neler sunuyoruz". Bağlanılan her özellik
+// bugün canlı (gönüllülük, etkinlik, acil kan, ödemesiz bağış, pazar, kütüphane,
+// etki hikayem, Apple Watch). Koyu tema güvenli semantik token kullanır.
+const FeatureTile = ({ title, description, link, linkText, icon: Icon }: { title: string, description: string, link: string, linkText: string, icon: React.ElementType }) => (
+    <Link href={link} className="group block h-full">
+        <div className="bg-card border border-border rounded-3xl p-6 flex flex-col h-full text-left shadow-sm hover:shadow-md transition-shadow min-h-[44px]">
+            <div className="p-3 bg-primary/10 rounded-2xl w-fit mb-4">
+                <Icon className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold text-lg text-card-foreground">{title}</h3>
+            <p className="text-sm text-muted-foreground mt-2 flex-1">{description}</p>
+            <span className="mt-4 text-sm font-semibold text-primary flex items-center">
+                {linkText} <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
+            </span>
+        </div>
+    </Link>
+);
+
 export default function LoginPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -492,6 +510,16 @@ export default function LoginPage() {
             linkText: t('landing.discovery.emergency.linkText'),
             linkText2: t('landing.discovery.emergency.linkText2'),
             href2: "/emergency/about"
+        },
+        {
+            title: t('landing.features.market.title'),
+            description: t('landing.features.market.description'),
+            href: "/market",
+            imageUrl: "https://picsum.photos/seed/hangel-market/1080/1080",
+            imageHint: "minimal product grid with coral donation badge",
+            linkText: t('landing.features.market.linkText'),
+            linkText2: t('landing.features.library.linkText'),
+            href2: "/library"
         },
         {
             title: t('landing.discovery.public.title'),
@@ -665,6 +693,80 @@ export default function LoginPage() {
                     </div>
                 </ProductShowcaseSection>
                 
+                {/* Bireysel kullanıcı özellik vitrini — "neler sunuyoruz". Tüm
+                    özellikler bugün canlı; her tile ilgili sayfaya link verir. */}
+                <section id="ozellikler" className="py-16 md:py-24 bg-muted border-b border-border">
+                    <div className="container mx-auto px-4 max-w-7xl">
+                        <div className="text-center mb-12 space-y-3">
+                            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-balance">{t('landing.featuresTitle')}</h2>
+                            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('landing.featuresDescription')}</p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
+                            <FeatureTile
+                                icon={HeartHandshake}
+                                title={t('landing.features.volunteering.title')}
+                                description={t('landing.features.volunteering.description')}
+                                link="/volunteering"
+                                linkText={t('landing.features.volunteering.linkText')}
+                            />
+                            <FeatureTile
+                                icon={CalendarClock}
+                                title={t('landing.features.events.title')}
+                                description={t('landing.features.events.description')}
+                                link="/events"
+                                linkText={t('landing.features.events.linkText')}
+                            />
+                            <FeatureTile
+                                icon={Droplet}
+                                title={t('landing.features.emergency.title')}
+                                description={t('landing.features.emergency.description')}
+                                link="/emergency"
+                                linkText={t('landing.features.emergency.linkText')}
+                            />
+                            <FeatureTile
+                                icon={ShoppingBag}
+                                title={t('landing.features.donation.title')}
+                                description={t('landing.features.donation.description')}
+                                link="/social-impact"
+                                linkText={t('landing.features.donation.linkText')}
+                            />
+                            <FeatureTile
+                                icon={Store}
+                                title={t('landing.features.market.title')}
+                                description={t('landing.features.market.description')}
+                                link="/market"
+                                linkText={t('landing.features.market.linkText')}
+                            />
+                            <FeatureTile
+                                icon={BookOpen}
+                                title={t('landing.features.library.title')}
+                                description={t('landing.features.library.description')}
+                                link="/library"
+                                linkText={t('landing.features.library.linkText')}
+                            />
+                            <FeatureTile
+                                icon={Sparkles}
+                                title={t('landing.features.impact.title')}
+                                description={t('landing.features.impact.description')}
+                                link="/social-impact"
+                                linkText={t('landing.features.impact.linkText')}
+                            />
+                            <FeatureTile
+                                icon={Watch}
+                                title={t('landing.features.apple.title')}
+                                description={t('landing.features.apple.description')}
+                                link="/login/selection?action=register"
+                                linkText={t('landing.features.apple.linkText')}
+                            />
+                        </div>
+                        <div className="text-center mt-10">
+                            <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
+                                <Link href="/login/selection?action=register">{t('landing.featuresCta')}</Link>
+                            </Button>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="kurumlar-grid" className="py-16 md:py-24 bg-background">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-12 space-y-2">

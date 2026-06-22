@@ -2,7 +2,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Building2, Users, FileText, Eye, UserCheck, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Building2, Users, FileText, Eye, UserCheck, ChevronRight, ArrowLeft, HeartHandshake, Droplet, ShoppingBag, Sparkles, Watch } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,15 @@ export default function InformationSocietyServicesPage() {
     { name: t('marketing.info.legalDocTicaret'), url: '#' },
     { name: t('marketing.info.legalDocVergi'), url: '#' },
     { name: t('marketing.info.legalDocFaaliyet'), url: '#' },
+  ];
+
+  // Bireysel kullanıcı değer vitrini — bugün canlı özellikler, ilgili sayfalara link.
+  const platformFeatures = [
+    { icon: HeartHandshake, title: t('marketing.info.platformVolunteeringTitle'), desc: t('marketing.info.platformVolunteeringDesc'), href: '/volunteering', cta: t('marketing.info.platformVolunteeringCta') },
+    { icon: Droplet, title: t('marketing.info.platformEmergencyTitle'), desc: t('marketing.info.platformEmergencyDesc'), href: '/emergency', cta: t('marketing.info.platformEmergencyCta') },
+    { icon: ShoppingBag, title: t('marketing.info.platformDonationTitle'), desc: t('marketing.info.platformDonationDesc'), href: '/market', cta: t('marketing.info.platformDonationCta') },
+    { icon: Sparkles, title: t('marketing.info.platformImpactTitle'), desc: t('marketing.info.platformImpactDesc'), href: '/library', cta: t('marketing.info.platformImpactCta') },
+    { icon: Watch, title: t('marketing.info.platformAppleTitle'), desc: t('marketing.info.platformAppleDesc'), href: '/login/selection?action=register', cta: t('marketing.info.platformJoinCta') },
   ];
 
   return (
@@ -53,6 +62,35 @@ export default function InformationSocietyServicesPage() {
             <div className="prose prose-lg max-w-3xl mt-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(cms.body) }} />
           )}
         </div>
+
+        {/* Bireysel kullanıcı değer vitrini — hangel'in bugün sunduğu canlı özellikler. */}
+        <section className="space-y-8">
+          <div className="space-y-3">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t('marketing.info.platformTitle')}</h2>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl">{t('marketing.info.platformDescription')}</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {platformFeatures.map((f) => (
+              <Link key={f.title} href={f.href} className="group block h-full">
+                <Card className="rounded-3xl border-border bg-card p-6 h-full flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                  <div className="p-3 bg-primary/10 rounded-2xl w-fit mb-4">
+                    <f.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-card-foreground">{f.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-2 flex-1">{f.desc}</p>
+                  <span className="mt-4 text-sm font-semibold text-primary flex items-center">
+                    {f.cta} <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </Card>
+              </Link>
+            ))}
+          </div>
+          <div>
+            <Button asChild size="lg" className="rounded-full px-8 h-12 font-bold shadow-lg shadow-primary/20">
+              <Link href="/login/selection?action=register">{t('marketing.info.platformJoinCta')}</Link>
+            </Button>
+          </div>
+        </section>
 
         <Card className="rounded-[2.5rem] border-border shadow-xl">
           <CardHeader>

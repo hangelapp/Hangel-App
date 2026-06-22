@@ -12,16 +12,20 @@
  */
 
 import React from 'react';
+import Link from 'next/link';
 import {
   LayoutGrid,
   CalendarDays,
   BarChart3,
-  Megaphone,
   UserPlus,
-  Inbox,
   QrCode,
   Globe,
   Eye,
+  Award,
+  HeartHandshake,
+  Sparkles,
+  Trophy,
+  ScanLine,
 } from 'lucide-react';
 import {
   MarketingNav,
@@ -41,43 +45,50 @@ const REGISTER_HREF = '/login/selection?action=register&type=corporate&entity=CL
 /* ----------------------------- TR içerik ----------------------------- */
 
 const TR = {
-  navLabel: 'hangel Kulüpler',
+  navLabel: 'hangel Kampüs',
   navCta: 'Ücretsiz Başla',
   back: 'Ana sayfa',
 
-  heroEyebrow: 'hangel Kulüpler',
+  heroEyebrow: 'hangel Kampüs',
   heroTitle: 'Kampüste başlar, dünyayı değiştirir.',
-  heroSubtitle: 'Kulübünüzün enerjisini gerçek etkiye dönüştürün.',
+  heroSubtitle: 'Kulübünün enerjisini gerçek etkiye dönüştür.',
   heroDescription:
-    'hangel, üniversite ve lise kulüpleri için bütünleşik bir yönetim platformudur. Üyelerinizi, etkinliklerinizi ve etki hikayenizi tek bir panelden yönetin; kampüsteki gücünüzü görünür kılın.',
+    'hangel; öğrenciler ve kampüs kulüpleri için ücretsiz bir etki platformudur. Etkinlik ve gönüllülük ilanları oluştur, QR/NFC ile yoklama al, otomatik sertifika ver, etki puanını biriktir. Yok öyle yalnız başına mücadele etmek — toplumsal sorunlar için birlikte çalışıyoruz. 🧡',
   heroImage:
     'https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2400&auto=format&fit=crop',
   heroPrimary: 'Ücretsiz Başla',
   heroLink: 'Daha Fazla',
 
+  // Bireysel öğrenci değeri (gönüllülük + CV)
+  studentEyebrow: 'Öğrenci İçin',
+  studentTitle: 'Gönüllülük artık CV’nde sayılıyor.',
+  studentDescription:
+    'Katıldığın her etkinlik ve gönüllülük ilanı etki puanına dönüşür; QR/NFC ile kampüste check-in yap, bittiğinde otomatik sertifikanı al. Streak (günlük seri), rozetler, Etki Haritan ve lider tablosuyla emeğin görünür olsun — staj ve burs başvurularında anlatacak bir hikayen olsun.',
+  studentBadge: { kind: 'hangel' as const },
+
   panelEyebrow: 'Dijital Yönetim Paneli',
-  panelTitle: 'Kulübünüzün her şeyi, tek bir yerde.',
+  panelTitle: 'Kulübünün her şeyi, tek bir yerde.',
   panelDescription:
-    'Profil, üyeler, QR, gelen kutusu, bildirimler, gönderiler ve etki hikayeniz; hepsi tek bir panelde. Dağınık tablolar ve grup sohbetleri yerine, kulübünüzü tek ekrandan yönetin.',
+    'Profil, üyeler, QR, gelen kutusu, bildirimler, gönderiler ve etki hikayen; hepsi tek bir panelde ve tamamen ücretsiz. Dağınık tablolar ve grup sohbetleri yerine, kulübünü tek ekrandan yönet.',
   panelImage:
     'https://images.unsplash.com/photo-1531545514256-b1400bc00f31?q=80&w=2400&auto=format&fit=crop',
 
   karneEyebrow: 'Etki Hikayemiz',
-  karneTitle: 'Kulübünüzün etkisini anlatan bir karne.',
+  karneTitle: 'Kulübünün etkisini anlatan bir karne.',
   karneDescription:
-    'Sosyal Etki Karnesi, kulübünüzün hikayesini 7 slaytta anlatır: üye sayısı, etkinlik ve gönderi istatistikleri, gönüllü saatleri. Yaptığınız işi tek bakışta gösterilebilir, paylaşılabilir bir karneye dönüştürün.',
+    'Sosyal Etki Karnesi, kulübünün hikayesini slaytlarla anlatır: üye sayısı, etkinlik ve gönüllülük istatistikleri, gönüllü saatleri. Yaptığınız işi tek bakışta gösterilebilir, paylaşılabilir bir karneye dönüştür.',
   karneBadge: { kind: 'hangel' as const },
 
-  eventsEyebrow: 'Etkinlik Yönetimi',
-  eventsTitle: 'Etkinliğinizi oluşturun, yayınlayın, doldurun.',
+  eventsEyebrow: 'Etkinlik & Gönüllülük',
+  eventsTitle: 'Oluştur, yayınla, doldur.',
   eventsDescription:
-    'Kulüp etkinliğinizi dakikalar içinde oluşturup yayınlayın. Kayıt ve RSVP toplayın, kapasite belirleyin; kimlerin geleceğini baştan görün. Söyleşiden atölyeye, her etkinlik tek akışta.',
+    'Kulüp etkinliğini ve gönüllülük ilanını dakikalar içinde oluşturup yayınla. Başvuru ve katılım topla, kapasite belirle; otomatik canlı mod ve geri sayımla gün gelince akış kendiliğinden başlasın. Katılımcılar takvime ekleyebilir (.ics) ve Apple Wallet biletini cebinde taşıyabilir.',
   eventsBadge: { kind: 'yeni' as const },
 
   toolsEyebrow: 'Canlı Araçlar',
-  toolsTitle: 'Kulübünüzü büyütmek için her şey hazır.',
+  toolsTitle: 'Kulübünü büyütmek için her şey hazır.',
   toolsDescription:
-    'Bugün hesabınızı açtığınızda kullanmaya başlayabileceğiniz, gerçek ve çalışan araçlar.',
+    'Bugün hesabını açtığında kullanmaya başlayabileceğin, gerçek ve çalışan araçlar — hepsi ücretsiz.',
 
   betaSoonEyebrow: 'Yolda',
   betaSoonTitle: 'Daha fazlası geliyor.',
@@ -87,90 +98,96 @@ const TR = {
   compareNote:
     "Kampüs kulüpleri için böyle bütünleşik bir araç seti çoğu yerde yok; hangel'de hepsi tek panelde ve ücretsiz.",
 
-  ctaTitle: 'Kulübünüzün etkisi bugün başlasın.',
+  ctaTitle: 'Kulübünün etkisi bugün başlasın.',
   ctaDescription:
-    'Birkaç dakikada hesabınızı açın, kulübünüzü dijitalleştirin ve kampüsteki hikayenizi anlatmaya başlayın. Tamamen ücretsiz.',
+    'Birkaç dakikada hesabını aç, kulübünü dijitalleştir ve kampüsteki hikayeni anlatmaya başla. Tamamen ücretsiz. #wearehangel',
   ctaPrimary: 'Ücretsiz Başla',
 
-  footerLabel: 'Kulüp Avantajları',
+  footerLabel: 'Kampüs Avantajları',
 
   // Canlı araçlar
-  liveDijitalTitle: 'Dijital Yönetim Paneli',
-  liveDijitalDesc:
-    'Profil, üyeler, QR, gelen kutusu, bildirimler, gönderiler ve etki hikayeniz tek panelde toplanır.',
+  liveEventsTitle: 'Etkinlik & Gönüllülük İlanları',
+  liveEventsDesc:
+    'Etkinlik ve gönüllülük ilanı oluştur, yayınla; başvuru/katılım topla, kapasite belirle. Canlı mod ve geri sayım otomatik.',
+  liveCheckinTitle: 'QR / NFC Check-in',
+  liveCheckinDesc:
+    'Kampüste katılımcıları QR veya NFC ile saniyeler içinde yokla; kimin geldiğini anlık gör.',
+  liveCertTitle: 'Otomatik Sertifika & Değerlendirme',
+  liveCertDesc:
+    'Etkinlik veya gönüllülük bitince katılımcıya otomatik sertifika; katkıyı puanla, geri bildirim topla.',
+  liveImpactTitle: 'Etki Puanı & Lider Tablosu',
+  liveImpactDesc:
+    'Her katılım etki puanına dönüşür; streak, rozet ve lider tablosuyla kulüp topluluğunu canlı tut.',
   liveKarneTitle: 'Sosyal Etki Karnesi',
   liveKarneDesc:
-    '7 slaytlık etki karnesi: üye sayısı, etkinlik ve gönderi istatistikleri, gönüllü saatleri.',
-  liveEventsTitle: 'Etkinlik Yönetimi',
-  liveEventsDesc:
-    'Kulüp etkinliği oluşturun ve yayınlayın; kayıt/RSVP toplayın, kapasite belirleyin.',
-  liveDemografiTitle: 'Demografi Analizi',
+    'Slaytlık etki karnesi: üye sayısı, etkinlik ve gönüllülük istatistikleri, gönüllü saatleri.',
+  liveDemografiTitle: 'Demografi & Topluluk Analizi',
   liveDemografiDesc:
-    'Üyelerinizin şehir, okul, yetenek ve ilgi dağılımını görün; kulübünüzün etki puanını izleyin.',
-  livePostsTitle: 'Gönderiler',
-  livePostsDesc:
-    'Haber ve duyurularınızı yayınlayın; gönderileriniz toplulukta görünür hale gelir.',
+    'Üyelerinin şehir, okul, yetenek ve ilgi dağılımını gör; kulübünün etki puanını izle.',
   liveInviteTitle: 'Topluluğunu Davet Et & Rol Yönetimi',
   liveInviteDesc:
-    'Üyelerinizi davet edin, Kulüp Başkanı ve Genel Yönetici gibi rolleri tanımlayın.',
-  liveInboxTitle: 'Gelen Kutusu & Bildirim Merkezi',
-  liveInboxDesc:
-    'Mesajlarınızı ve bildirimlerinizi tek yerden takip edin; hiçbir gelişmeyi kaçırmayın.',
-  liveQrTitle: 'Yetkili Yönetimi & Kulüp QR',
+    'Üyelerini davet et, Kulüp Başkanı ve Genel Yönetici gibi rolleri tanımla.',
+  liveQrTitle: 'Kulüp QR & Profil',
   liveQrDesc:
-    'Yetkililerinizi yönetin; kulübünüze özel QR kod ile üye kazanın ve profilinizi paylaşın.',
+    'Kulübüne özel QR kod ile üye kazan, profilini paylaş; gelen kutusu ve bildirim merkezini tek yerden takip et.',
 
   // Beta / Yakında
   webTitle: 'Ücretsiz Kulüp Web Sitesi',
   webDesc:
-    'Markanıza özel, içeriğiniz değiştikçe otomatik güncellenen bir web sitesi. Erişim kademeli olarak açılıyor.',
+    'Markana özel, içeriğin değiştikçe otomatik güncellenen bir web sitesi (*.hangel.org.tr). Erişim kademeli olarak açılıyor.',
   webBadge: { kind: 'beta' as const },
   visibilityTitle: 'Görünürlük & Reklam Desteği',
   visibilityDesc:
-    'Etkinlik ve gönderilerinizi öne çıkararak daha fazla kişiye ulaşma desteği. Yol haritasında, yakında.',
+    'Etkinlik ve gönderilerini öne çıkararak daha fazla kişiye ulaşma desteği. Yol haritasında, yakında.',
   visibilityBadge: { kind: 'yakinda' as const },
 };
 
 /* ----------------------------- EN içerik ----------------------------- */
 
 const EN: typeof TR = {
-  navLabel: 'hangel Clubs',
+  navLabel: 'hangel Campus',
   navCta: 'Start Free',
   back: 'Home',
 
-  heroEyebrow: 'hangel Clubs',
+  heroEyebrow: 'hangel Campus',
   heroTitle: 'Starts on campus, changes the world.',
   heroSubtitle: "Turn your club's energy into real impact.",
   heroDescription:
-    'hangel is an integrated management platform for university and high-school clubs. Manage your members, events and impact story from a single panel; make your presence on campus visible.',
+    "hangel is a free impact platform for students and campus clubs. Create event and volunteering listings, take attendance with QR/NFC, issue automatic certificates and earn impact points. You don't have to fight alone — we work together for social causes. 🧡",
   heroImage:
     'https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2400&auto=format&fit=crop',
   heroPrimary: 'Start Free',
   heroLink: 'Learn More',
 
+  studentEyebrow: 'For Students',
+  studentTitle: 'Volunteering now counts on your CV.',
+  studentDescription:
+    'Every event and volunteering listing you join turns into impact points; check in on campus with QR/NFC and get your certificate automatically when it ends. With streaks, badges, your Impact Map and the leaderboard, your effort becomes visible — so you have a real story to tell in internship and scholarship applications.',
+  studentBadge: { kind: 'hangel' as const },
+
   panelEyebrow: 'Digital Management Panel',
   panelTitle: 'Everything about your club, in one place.',
   panelDescription:
-    'Profile, members, QR, inbox, notifications, posts and your impact story; all in a single panel. Instead of scattered spreadsheets and group chats, run your club from one screen.',
+    'Profile, members, QR, inbox, notifications, posts and your impact story; all in a single panel and completely free. Instead of scattered spreadsheets and group chats, run your club from one screen.',
   panelImage:
     'https://images.unsplash.com/photo-1531545514256-b1400bc00f31?q=80&w=2400&auto=format&fit=crop',
 
   karneEyebrow: 'Our Impact Story',
   karneTitle: "A scorecard that tells your club's impact.",
   karneDescription:
-    "The Social Impact Scorecard tells your club's story in 7 slides: member count, event and post statistics, volunteer hours. Turn your work into a shareable scorecard you can show at a glance.",
+    "The Social Impact Scorecard tells your club's story in slides: member count, event and volunteering statistics, volunteer hours. Turn your work into a shareable scorecard you can show at a glance.",
   karneBadge: { kind: 'hangel' as const },
 
-  eventsEyebrow: 'Event Management',
-  eventsTitle: 'Create your event, publish it, fill it up.',
+  eventsEyebrow: 'Events & Volunteering',
+  eventsTitle: 'Create, publish, fill it up.',
   eventsDescription:
-    "Create and publish your club's event in minutes. Collect registrations and RSVPs, set capacity, and see who's coming in advance. From talks to workshops, every event in one flow.",
+    'Create and publish your club event or volunteering listing in minutes. Collect applications and attendance, set capacity; with automatic live mode and a countdown, the flow starts on its own when the day arrives. Attendees can add it to their calendar (.ics) and carry an Apple Wallet ticket in their pocket.',
   eventsBadge: { kind: 'yeni' as const },
 
   toolsEyebrow: 'Live Tools',
   toolsTitle: 'Everything you need to grow your club.',
   toolsDescription:
-    'Real, working tools you can start using the moment you open your account today.',
+    'Real, working tools you can start using the moment you open your account today — all free.',
 
   betaSoonEyebrow: 'On the Way',
   betaSoonTitle: 'More is coming.',
@@ -182,39 +199,39 @@ const EN: typeof TR = {
 
   ctaTitle: "Let your club's impact start today.",
   ctaDescription:
-    'Open your account in minutes, digitize your club and start telling your story on campus. Completely free.',
+    'Open your account in minutes, digitize your club and start telling your story on campus. Completely free. #wearehangel',
   ctaPrimary: 'Start Free',
 
-  footerLabel: 'Club Advantages',
+  footerLabel: 'Campus Advantages',
 
-  liveDijitalTitle: 'Digital Management Panel',
-  liveDijitalDesc:
-    'Profile, members, QR, inbox, notifications, posts and your impact story, gathered in one panel.',
+  liveEventsTitle: 'Event & Volunteering Listings',
+  liveEventsDesc:
+    'Create and publish events and volunteering listings; collect applications/attendance and set capacity. Live mode and countdown are automatic.',
+  liveCheckinTitle: 'QR / NFC Check-in',
+  liveCheckinDesc:
+    'Take attendance on campus with QR or NFC in seconds; see who showed up in real time.',
+  liveCertTitle: 'Automatic Certificate & Evaluation',
+  liveCertDesc:
+    'When an event or volunteering ends, attendees get an automatic certificate; score the contribution and collect feedback.',
+  liveImpactTitle: 'Impact Points & Leaderboard',
+  liveImpactDesc:
+    'Every participation turns into impact points; keep the club community alive with streaks, badges and a leaderboard.',
   liveKarneTitle: 'Social Impact Scorecard',
   liveKarneDesc:
-    'A 7-slide impact scorecard: member count, event and post statistics, volunteer hours.',
-  liveEventsTitle: 'Event Management',
-  liveEventsDesc:
-    'Create and publish club events; collect registrations/RSVPs and set capacity.',
-  liveDemografiTitle: 'Demographic Analysis',
+    'A slide-based impact scorecard: member count, event and volunteering statistics, volunteer hours.',
+  liveDemografiTitle: 'Demographics & Community Analysis',
   liveDemografiDesc:
     "See your members' distribution by city, school, talent and interest; track your club's impact score.",
-  livePostsTitle: 'Posts',
-  livePostsDesc:
-    'Publish your news and announcements; your posts become visible across the community.',
   liveInviteTitle: 'Invite Your Community & Role Management',
   liveInviteDesc:
     'Invite your members and define roles such as Club President and General Manager.',
-  liveInboxTitle: 'Inbox & Notification Center',
-  liveInboxDesc:
-    'Track your messages and notifications in one place; never miss an update.',
-  liveQrTitle: 'Authority Management & Club QR',
+  liveQrTitle: 'Club QR & Profile',
   liveQrDesc:
-    'Manage your authorities; gain members and share your profile with a club-specific QR code.',
+    'Gain members with a club-specific QR code and share your profile; track your inbox and notification center in one place.',
 
   webTitle: 'Free Club Website',
   webDesc:
-    'A brand-specific website that updates automatically as your content changes. Access is rolling out gradually.',
+    'A brand-specific website that updates automatically as your content changes (*.hangel.org.tr). Access is rolling out gradually.',
   webBadge: { kind: 'beta' as const },
   visibilityTitle: 'Visibility & Promotion Support',
   visibilityDesc:
@@ -235,23 +252,23 @@ export default function CampusAdvantagesPage() {
   const heroImage = cms.heroImageUrl || C.heroImage;
 
   const liveTools: FeatureItem[] = [
-    { icon: LayoutGrid, title: C.liveDijitalTitle, description: C.liveDijitalDesc },
-    {
-      icon: BarChart3,
-      title: C.liveKarneTitle,
-      description: C.liveKarneDesc,
-      badge: C.karneBadge,
-    },
     {
       icon: CalendarDays,
       title: C.liveEventsTitle,
       description: C.liveEventsDesc,
       badge: C.eventsBadge,
     },
-    { icon: BarChart3, title: C.liveDemografiTitle, description: C.liveDemografiDesc },
-    { icon: Megaphone, title: C.livePostsTitle, description: C.livePostsDesc },
+    { icon: ScanLine, title: C.liveCheckinTitle, description: C.liveCheckinDesc },
+    { icon: Award, title: C.liveCertTitle, description: C.liveCertDesc },
+    { icon: Trophy, title: C.liveImpactTitle, description: C.liveImpactDesc },
+    {
+      icon: BarChart3,
+      title: C.liveKarneTitle,
+      description: C.liveKarneDesc,
+      badge: C.karneBadge,
+    },
+    { icon: LayoutGrid, title: C.liveDemografiTitle, description: C.liveDemografiDesc },
     { icon: UserPlus, title: C.liveInviteTitle, description: C.liveInviteDesc },
-    { icon: Inbox, title: C.liveInboxTitle, description: C.liveInboxDesc },
     { icon: QrCode, title: C.liveQrTitle, description: C.liveQrDesc },
   ];
 
@@ -288,13 +305,25 @@ export default function CampusAdvantagesPage() {
         theme="light"
       />
 
+      {/* Statement: Öğrenci için — gönüllülük CV değeri */}
+      <AppleSection
+        eyebrow={C.studentEyebrow}
+        title={C.studentTitle}
+        description={C.studentDescription}
+        badges={[C.studentBadge]}
+        actions={[
+          { label: 'Gönüllülüğü Keşfet', href: '/volunteering', variant: 'link' },
+        ]}
+        theme="dark"
+      />
+
       {/* Statement: Dijital Yönetim Paneli */}
       <AppleSection
         eyebrow={C.panelEyebrow}
         title={C.panelTitle}
         description={C.panelDescription}
         image={{ url: C.panelImage, hint: 'club dashboard panel' }}
-        theme="dark"
+        theme="light"
       />
 
       {/* Statement: Etki Karnesi (Sadece hangel'da) */}
@@ -303,16 +332,17 @@ export default function CampusAdvantagesPage() {
         title={C.karneTitle}
         description={C.karneDescription}
         badges={[C.karneBadge]}
-        theme="light"
+        theme="dark"
       />
 
-      {/* Statement: Etkinlikler (Yeni) */}
+      {/* Statement: Etkinlikler & Gönüllülük (Yeni) */}
       <AppleSection
         eyebrow={C.eventsEyebrow}
         title={C.eventsTitle}
         description={C.eventsDescription}
         badges={[C.eventsBadge]}
-        theme="dark"
+        actions={[{ label: 'Etkinlikleri Gör', href: '/events', variant: 'link' }]}
+        theme="light"
       />
 
       {/* Canlı araçlar */}
@@ -323,6 +353,38 @@ export default function CampusAdvantagesPage() {
           description={C.toolsDescription}
         />
         <FeatureGrid items={liveTools} columns={4} />
+
+        {/* Kampüs topluluğu için keşif bağlantıları */}
+        <div className="mx-auto max-w-4xl px-6 mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Link
+            href="/volunteering"
+            className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 min-h-[44px] shadow-sm transition-shadow hover:shadow-md"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+              <HeartHandshake className="h-5 w-5 text-primary" aria-hidden="true" />
+            </span>
+            <span className="text-sm font-bold text-foreground">Gönüllülük İlanları</span>
+          </Link>
+          <Link
+            href="/library"
+            className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 min-h-[44px] shadow-sm transition-shadow hover:shadow-md"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+              <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
+            </span>
+            <span className="text-sm font-bold text-foreground">Veri Kütüphanesi</span>
+          </Link>
+          <Link
+            href="/events"
+            className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 min-h-[44px] shadow-sm transition-shadow hover:shadow-md"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+              <CalendarDays className="h-5 w-5 text-primary" aria-hidden="true" />
+            </span>
+            <span className="text-sm font-bold text-foreground">Etkinlik Akışı</span>
+          </Link>
+        </div>
+
         <CompareNote>{C.compareNote}</CompareNote>
       </section>
 
