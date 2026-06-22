@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -204,6 +204,22 @@ export default function IncomeModelConferencePage() {
   const router = useRouter();
   const db = useFirestore();
 
+  // Reklam dönüşüm izleme: UTM/gclid yakala → sessionStorage (kayıt sırasında atfedilebilir).
+  // useSearchParams yerine window.location (Next 15 Suspense gereksinimi olmasın).
+  useEffect(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid'];
+      const attr: Record<string, string> = {};
+      for (const k of keys) { const v = p.get(k); if (v) attr[k] = v; }
+      if (Object.keys(attr).length > 0) {
+        attr.page = 'gelir-modeli-konferanslari';
+        attr.landedAt = new Date().toISOString();
+        sessionStorage.setItem('hangel_ad_attribution', JSON.stringify(attr));
+      }
+    } catch { /* sessionStorage erişilemezse sessizce geç */ }
+  }, []);
+
   const eventsQuery = useMemoFirebase(
     () => (db ? query(collection(db, COLLECTIONS.events), where('tags', 'array-contains', SERIES_TAG)) : null),
     [db],
@@ -220,7 +236,16 @@ export default function IncomeModelConferencePage() {
   const eventCount = (liveEvents.length || fallbackSchedule.length) + comingSoonCities.length;
 
   return (
-    <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
+    <div className="min-h-screen bg-background font-sans selection:bg-primary/30 pb-24 sm:pb-0">
+      {/* Mobil sticky kayıt CTA — reklamdan gelen ziyaretçi her zaman görür (dönüşüm) */}
+      <div
+        className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/90 backdrop-blur-lg px-4 py-3 sm:hidden"
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+      >
+        <Button asChild size="lg" className="w-full h-12 rounded-full font-bold shadow-lg shadow-primary/20">
+          <Link href="#takvim">Şehrini Seç, Ücretsiz Kayıt Ol 🧡</Link>
+        </Button>
+      </div>
       {/* Header */}
       <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
