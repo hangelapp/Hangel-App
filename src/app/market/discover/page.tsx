@@ -53,6 +53,7 @@ import {
   getCountFromServer,
 } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
+import type { Brand } from '@/lib/types';
 
 type SortOption =
   | 'recommended' // varsayılan — feed rastgele sırası (popüler vitrin)
@@ -113,6 +114,36 @@ export default function DiscoverPage() {
   );
   const { data: products, isLoading } =
     useCollection<CanonicalProduct>(productsQuery);
+
+  // Markaların bağış oranı — ürünün, linkine sahip olduğu markanın oranını kartta göster.
+  // firestore brands + affiliate (api) brands birleşiminden brandId/brandName ile eşlenir.
+  const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
+  const { data: firestoreBrands } = useCollection<Brand>(brandsQuery);
+  const [apiBrands, setApiBrands] = useState<Brand[]>([]);
+  useEffect(() => {
+    fetch('/api/offers')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: Brand[]) => setApiBrands(Array.isArray(data) ? data : []))
+      .catch(() => setApiBrands([]));
+  }, []);
+  const brandRate = useMemo(() => {
+    const byId = new Map<string, number>();
+    const byName = new Map<string, number>();
+    for (const b of [...(firestoreBrands || []), ...apiBrands]) {
+      const r = Number(b?.donationRate);
+      if (!b || !Number.isFinite(r) || r <= 0) continue;
+      if (b.id) byId.set(b.id, r);
+      if (b.name) byName.set(b.name.trim().toLowerCase(), r);
+    }
+    return { byId, byName };
+  }, [firestoreBrands, apiBrands]);
+  const resolveProductRate = (p: CanonicalProduct): number | null => {
+    if (typeof p.donationRate === 'number' && p.donationRate > 0) return p.donationRate;
+    if (p.brandId && brandRate.byId.has(p.brandId)) return brandRate.byId.get(p.brandId) ?? null;
+    const n = p.brandName?.trim().toLowerCase();
+    if (n && brandRate.byName.has(n)) return brandRate.byName.get(n) ?? null;
+    return null;
+  };
 
   // Kategori filtresi: ürün `category` alanından türetilir; yoksa marka adı
   // ikincil grup olarak kullanılır (her ürünün en az markası vardır).
@@ -309,7 +340,7 @@ export default function DiscoverPage() {
       {/* Ürün grid */}
       <main className="flex-1 overflow-y-auto p-4 pb-32">
         {isLoading && (!products || products.length === 0) ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
             {[...Array(8)].map((_, i) => (
               <Card key={i} variant="glass" className="h-72 animate-pulse" />
             ))}
@@ -330,9 +361,9 @@ export default function DiscoverPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
             {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} donationRate={resolveProductRate(product)} />
             ))}
           </div>
         )}
