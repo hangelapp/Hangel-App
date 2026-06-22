@@ -36,6 +36,7 @@ import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { COLLECTIONS } from '@/firebase/collections';
 import { TimelineBanner } from '@/components/shared/timeline-banner';
+import { ListenButton } from '@/components/shared/listen-button';
 import { useTranslation } from '@/components/providers/language-provider';
 
 const AdCarousel = () => {
@@ -461,6 +462,18 @@ export default function TimelinePage() {
                                 >
                                     <Share2 className="h-5 w-5" /> <span>{t('timelinePage.shareCta')}</span>
                                 </Button>
+                                {post.content?.trim() ? (
+                                    <>
+                                        <div className="w-[1px] h-6 bg-border self-center" />
+                                        {/* Sesli "Dinle" — erişilebilirlik + multitasking; gönderi metnini okur */}
+                                        <ListenButton
+                                            getText={() => post.content || ''}
+                                            variant="ghost"
+                                            size="default"
+                                            className="flex-1 justify-center [&>button]:h-12 [&>button]:w-full [&>button]:text-base"
+                                        />
+                                    </>
+                                ) : null}
                             </CardFooter>
                         </Card>
                         {(index + 1) % 5 === 0 && <AdCarousel />}

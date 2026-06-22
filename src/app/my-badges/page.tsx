@@ -142,7 +142,7 @@ const VectorBadge = ({ badge, t }: { badge: TierBadge; t: (key: string) => strin
             </div>
             <div className="space-y-1 w-full">
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">{badge.level}</p>
-                <h4 className="font-bold text-sm leading-tight h-10 flex items-center justify-center">{badge.name}</h4>
+                <h4 className="font-bold text-sm leading-tight h-10 flex items-center justify-center overflow-hidden"><span className="line-clamp-2 break-words">{badge.name}</span></h4>
                 <div className="pt-2">
                     {/* Narçiçeği (#E34234) ilerleme çubuğu — profile sayfası ile aynı renk */}
                     <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -453,6 +453,13 @@ export default function MyBadgesPage() {
         );
         if (newlyEarned.length === 0) return;
 
+        // Kutlama: yeni rozet kazanma anı — konfeti + native haptik + bant.
+        // (En yüksek/ilk rozeti banttta göster; çoklu kazanımda bildirim hepsini yazar.)
+        const top = newlyEarned[0];
+        void import('@/lib/celebrate')
+            .then((m) => m.celebrate({ title: `Yeni rozet 🧡 ${top.name}`, message: `${top.level} · ${top.socialArea}` }))
+            .catch(() => undefined);
+
         // Yeni rozet(ler) için bildirim yaz
         (async () => {
             for (const badge of newlyEarned) {
@@ -486,9 +493,11 @@ export default function MyBadgesPage() {
 
             <Tabs defaultValue="badges" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 h-14 bg-muted/50 p-1.5 rounded-2xl backdrop-blur-xl">
-                    <TabsTrigger value="impact-score" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">{t('dashboard.badges.tabImpactScore')}</TabsTrigger>
-                    <TabsTrigger value="badges" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">{t('dashboard.badges.tabBadges')}</TabsTrigger>
-                    <TabsTrigger value="certificates" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">{t('dashboard.badges.tabCertificates')}</TabsTrigger>
+                    {/* min-w-0 + line-clamp + px-1: dar ekranda (≤375px) "Sertifikalar"
+                        gibi uzun etiketler taşmasın/kırpılmasın. */}
+                    <TabsTrigger value="impact-score" className="min-w-0 rounded-xl px-1 text-xs font-bold leading-tight data-[state=active]:bg-background data-[state=active]:shadow-lg sm:text-sm"><span className="line-clamp-1">{t('dashboard.badges.tabImpactScore')}</span></TabsTrigger>
+                    <TabsTrigger value="badges" className="min-w-0 rounded-xl px-1 text-xs font-bold leading-tight data-[state=active]:bg-background data-[state=active]:shadow-lg sm:text-sm"><span className="line-clamp-1">{t('dashboard.badges.tabBadges')}</span></TabsTrigger>
+                    <TabsTrigger value="certificates" className="min-w-0 rounded-xl px-1 text-xs font-bold leading-tight data-[state=active]:bg-background data-[state=active]:shadow-lg sm:text-sm"><span className="line-clamp-1">{t('dashboard.badges.tabCertificates')}</span></TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="impact-score" className="mt-8 space-y-6">
@@ -520,14 +529,16 @@ export default function MyBadgesPage() {
                         const areaCurrent = Number(effectiveAreaPoints[socialArea]) || 0;
                         return (
                             <div key={socialArea} className="space-y-6">
-                                <div className="px-1 flex items-center justify-between">
-                                    <div>
-                                        <h2 className="text-2xl font-bold tracking-tight">{socialArea} {t('dashboard.badges.areaSuffix')}</h2>
+                                <div className="px-1 flex items-center justify-between gap-2">
+                                    {/* min-w-0: uzun sosyal alan başlığı (text-2xl) dar
+                                        ekranda Badge'i itip taşmasın; sayaç Badge shrink-0. */}
+                                    <div className="min-w-0">
+                                        <h2 className="text-xl sm:text-2xl font-bold tracking-tight break-words">{socialArea} {t('dashboard.badges.areaSuffix')}</h2>
                                         <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mt-0.5">
                                             {t('dashboard.badges.areaScoreLabel')}: {areaCurrent.toLocaleString('tr-TR')}
                                         </p>
                                     </div>
-                                    <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest">
+                                    <Badge variant="outline" className="shrink-0 text-[10px] font-black uppercase tracking-widest">
                                         {areaBadges.filter(b => b.currentPoints >= b.pointsRequired).length} / {areaBadges.length} {t('dashboard.badges.badgeWord')}
                                     </Badge>
                                 </div>

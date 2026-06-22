@@ -21,6 +21,7 @@ import { parseBookMetadata } from '@/lib/library';
 import { BookRatingStars } from '../_components/books';
 import { cn } from '@/lib/utils';
 import { isAllowedImageHost } from '@/lib/image-host';
+import { ListenButton } from '@/components/shared/listen-button';
 
 // Bir içeriği ilk kez "okudum" işaretleyince verilen etki puanı (kötüye kullanım
 // engellemek için yalnızca daha önce ödüllenmemiş içeriklerde verilir).
@@ -404,7 +405,11 @@ export default function LibraryItemPage() {
           {/* Synopsis */}
           {bookMeta.synopsis && bookMeta.synopsis !== bookMeta.shortDescription && (
             <Card className="glass-surface rounded-3xl p-5 sm:p-6">
-              <h2 className="text-lg font-semibold mb-3">{t('library.books.synopsisTitle')}</h2>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">{t('library.books.synopsisTitle')}</h2>
+                {/* Sesli "Dinle" — kitap tanıtımını yüksek sesle okur (erişilebilirlik + multitasking) */}
+                <ListenButton getText={() => bookMeta.synopsis} />
+              </div>
               <p className="text-sm sm:text-base leading-relaxed whitespace-pre-line text-foreground/90">
                 {bookMeta.synopsis}
               </p>
@@ -773,6 +778,14 @@ export default function LibraryItemPage() {
       )}
 
       <SocialSensitivities item={item} />
+
+      {/* Sesli "Dinle" — uzun makale/bilgi içeriğini yüksek sesle okur (erişilebilirlik + multitasking) */}
+      {item.content?.trim() && (
+        <div className="flex items-center gap-2">
+          <ListenButton getText={() => item.content || ''} size="default" />
+          <span className="text-xs text-muted-foreground">İçeriği sesli dinle</span>
+        </div>
+      )}
 
       <article
         className="prose prose-sm sm:prose-base dark:prose-invert max-w-none space-y-4"

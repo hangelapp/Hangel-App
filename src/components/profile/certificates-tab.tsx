@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { isNativeApp } from '@/lib/capacitor';
 import { generateEventCertificate, eventCertificateFileName } from '@/lib/event-certificate';
 import { generateVolunteerCertificate } from '@/lib/volunteer-certificate';
+import { celebrate } from '@/lib/celebrate';
 
 // Sertifikalar: users/{uid}/certificates alt koleksiyonu. Etkinlik sertifikaları
 // title yerine eventName/ngoName/completedAt tutar → ortak şekle normalize edilir,
@@ -182,6 +183,7 @@ export function CertificatesTab() {
                 } catch {
                     // user dismissed share — file is already saved
                 }
+                celebrate({ title: `Sertifikan hazır 🧡`, message: cert.title });
                 toast({ title: t('dashboard.badges.certSavedTitle'), description: `${filename} ${t('dashboard.badges.certSavedSuffix')}` });
                 return;
             }
@@ -193,6 +195,7 @@ export function CertificatesTab() {
             a.click();
             a.remove();
             setTimeout(() => { try { URL.revokeObjectURL(url); } catch { /* ignore */ } }, 1500);
+            celebrate({ title: `Sertifikan hazır 🧡`, message: cert.title });
             toast({ title: t('dashboard.badges.certDownloadedTitle'), description: `${cert.title} ${t('dashboard.badges.certDownloadedSuffix')}` });
         } catch (error) {
             console.error('Certificate PDF download failed:', error);

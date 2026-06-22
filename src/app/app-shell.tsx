@@ -81,6 +81,8 @@ import { VerifyEmailBanner } from '@/components/shared/verify-email-banner';
 import { ProfileNudgeBanner } from '@/components/shared/profile-nudge-banner';
 import { useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
+import { OnboardingTour } from '@/components/onboarding/onboarding-tour';
+import { useOnboardingTour } from '@/components/onboarding/use-onboarding-tour';
 
 const group1Items: SideNavItem[] = [
   { href: '/timeline', label: 'nav.timeline', icon: 'layout-grid' },
@@ -256,6 +258,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             return true;
         });
     }, [isSuperAdmin, isNgoAdmin]);
+
+    // İlk-açılış rehberli karşılama turu (yalnız bir kez, localStorage işaretli).
+    // Yalnız: girişli + profili yüklenmiş + STK seçim gate'ine yönlenmeyen
+    // bireysel/yönetici kullanıcıya gösterilir. Yeni kullanıcı önce
+    // /settings/ngo-selection'a gider; oraya yönlendirilenler için tur
+    // looksGenuinelyNew kontrolüyle ertelenir (gate önce, tur sonra).
+    const onboardingEligible = useMemo(() => {
+        if (isUserLoading || !authUser || !userData) return false;
+        const oc = (userData as { onboardingComplete?: boolean }).onboardingComplete;
+        const hasSupportedNgos = Array.isArray(userData.supportedNgos) && userData.supportedNgos.length > 0;
+        const hasVolunteerInfo = !!(userData as { volunteerInfo?: unknown }).volunteerInfo;
+        const role = (userData as { role?: string }).role;
+        const isPlainUser = !role || role === 'user';
+        // STK-seçim gate'ine düşecek "gerçekten yeni" bireysel kullanıcıya tur
+        // gösterme — önce gate tamamlansın (oraya dönünce supportedNgos dolacak).
+        const willHitNgoGate = isPlainUser && oc !== true && !hasSupportedNgos && !hasVolunteerInfo;
+        return !willHitNgoGate;
+    }, [isUserLoading, authUser, userData]);
+
+    const { open: showOnboardingTour, complete: completeOnboardingTour } =
+        useOnboardingTour({ enabled: onboardingEligible });
 
     // Track whether the user was signed in last frame so we can detect
     // session expiration (auth → null transition without an explicit signOut).
@@ -591,7 +614,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     if (isLoggedOut && isGuestDiscoveryPage && !isPublicPage && !isNgoSitePage) {
         return (
-            <div className="min-h-dvh bg-background">
+            <div className="min-h-dvh overflow-x-hidden bg-background">
                 <header className="sticky top-0 z-30 flex h-12 items-center justify-between gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-lg" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
                     <Link href="/" aria-label="hangel ana sayfa">
                         <HangelLogo className="text-xl" href={null} />
@@ -618,7 +641,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const currentUserHandle = authUser?.email ? `@${authUser.email.split('@')[0]}` : '';
 
     return (
-        <div className="relative mx-auto flex min-h-dvh w-full flex-col bg-background">
+        <div className="relative mx-auto flex min-h-dvh w-full max-w-full flex-col overflow-x-hidden bg-background">
           <SideNav
             mainItems={translateItems(group1Items)}
             navItems={translateItems(group2Items)}
@@ -675,13 +698,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </SheetContent>
           </Sheet>
 
-          <div className="lg:pl-64 flex flex-col flex-1">
+          <div className="lg:pl-64 flex flex-col flex-1 min-w-0">
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
             <VerifyEmailBanner />
             {/* Üst: header h-12 (3rem) + safe-area-inset-top — içerik header altına girmez.
                 Alt: bottom-nav h-16 (4rem) + safe-area-inset-bottom + 1rem nefes payı =
-                5rem + safe-area → içerik tab-bar'a ve home-indicator'a girmez. */}
-            <main className="flex-1" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
+                5rem + safe-area → içerik tab-bar'a ve home-indicator'a girmez.
+                min-w-0 + overflow-x-hidden: hiçbir geniş alt içerik (uzun metin,
+                geniş grid/satır) sayfayı viewport'tan geniş yapıp yatay kaydırma
+                yaratamaz. */}
+            <main className="flex-1 min-w-0 overflow-x-hidden" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
               <ProfileNudgeBanner />
               <AutoBreadcrumb />
               {children}
@@ -709,6 +735,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          {/* İlk-açılış rehberli karşılama turu — yalnız bir kez gösterilir. */}
+          <OnboardingTour open={showOnboardingTour} onComplete={completeOnboardingTour} />
         </div>
     );
 }

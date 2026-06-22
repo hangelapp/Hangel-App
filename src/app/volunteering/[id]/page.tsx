@@ -37,6 +37,7 @@ import { scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
 import { useVerifiedAction } from '@/hooks/use-verified-action';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { startVolunteerTaskActivity } from '@/lib/native-live-activity';
+import { celebrate } from '@/lib/celebrate';
 import { socialImpactValueTRY, formatTRY, socialImpactExplanation } from '@/lib/social-impact';
 import { DetailHero } from '@/components/detail/detail-hero';
 import { DetailStickyBar } from '@/components/detail/detail-body';
@@ -445,6 +446,8 @@ export default function VolunteeringDetailPage() {
         throw new Error(e?.message || 'Değerlendirme gönderilemedi.');
       }
       setIsEvalOpen(false);
+      // Kutlama: gönüllülük değerlendirmesi tamamlandı — konfeti + native haptik + bant.
+      celebrate({ title: 'Değerlendirmen alındı 🧡', message: 'Birlikte umudu büyütüyoruz' });
       toast({ title: 'Değerlendirmen alındı 🧡', description: 'Geri bildirimin için teşekkürler.' });
     } catch (e) {
       toast({ variant: 'destructive', title: 'Gönderilemedi', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
@@ -1041,7 +1044,11 @@ export default function VolunteeringDetailPage() {
             </div>
         </div>
 
-        <DetailStickyBar>
+        {/* Alt sabit nav (z-40, h-16) gönüllülük detayında gizlenmiyor; sticky CTA
+            barını onun ÜSTÜNE kaldır (bottom = nav yüksekliği + safe-area) ve z'yi
+            yükselt ki "Hemen Başvur" butonu nav'ın arkasında kalıp tıklanamaz olmasın.
+            lg'de nav yok → bar tekrar dibe (bottom-0) oturur. */}
+        <DetailStickyBar className="bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 lg:bottom-0">
              {applicationStatus === 'Beklemede' ? (
                 <div className="w-full h-14 rounded-full flex items-center justify-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-base font-semibold px-4 text-center">
                     <Clock className="h-5 w-5 shrink-0" /> Başvurun alındı, onay bekliyorsunuz

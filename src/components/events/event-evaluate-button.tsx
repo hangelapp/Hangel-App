@@ -40,7 +40,7 @@ export function EventEvaluateButton({ eventId, eventName, authUser, className }:
         body: JSON.stringify({ rating, comment }),
       });
       if (!res.ok) { const e = await res.json().catch(() => null); throw new Error(e?.message || 'Hata'); }
-      celebrate();
+      celebrate({ title: 'Değerlendirmen alındı 🧡', message: eventName });
       setDone(true);
       setOpen(false);
       toast({ title: 'Değerlendirmen alındı 🧡', description: 'Teşekkürler!' });

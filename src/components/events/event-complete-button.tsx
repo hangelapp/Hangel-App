@@ -25,6 +25,7 @@ import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { roleLabelTr } from '@/lib/event-roles';
 import type { EventUserRole } from '@/lib/event-roles';
+import { celebrate } from '@/lib/celebrate';
 
 interface Participant {
   uid: string;
@@ -118,6 +119,8 @@ export function EventCompleteButton({ eventId }: { eventId: string }) {
       const res = await fetch(`/api/events/${eventId}/complete`, { method: 'POST', headers: { authorization: `Bearer ${token}` } });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || 'Tamamlanamadı');
+      // Kutlama: etkinlik tamamlama + sertifikalar gönderildi — konfeti + native haptik + bant.
+      celebrate({ title: 'Etkinlik tamamlandı 🧡', message: `${body.newlyCertified} kişiye sertifika gönderildi` });
       toast({
         title: 'Etkinlik kapatıldı 🎉',
         description: `${body.newlyCertified} kişiye sertifika DM olarak gönderildi${body.alreadyDone ? ` · ${body.alreadyDone} zaten almıştı` : ''}.`,
