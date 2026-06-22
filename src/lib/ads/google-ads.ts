@@ -546,12 +546,14 @@ export async function createSearchCampaign(
   ], lcid);
   const budgetResourceName = firstResourceName(budgetOut, 'budget');
 
-  // 2) Campaign — PAUSED start, SEARCH channel, conservative defaults.
+  // 2) Campaign — ENABLED start. "Yayınla" = gerçekten yayına alma demek; PAUSED
+  //    başlatınca kampanya hiç servis etmiyordu (kullanıcı yayınladı sanıyor, $0
+  //    harcanıyordu). Google reklamları yine de inceler; onaylanınca servise girer.
   const campaignOut = await mutate(config, accessToken, id, 'campaigns', [
     {
       create: {
         name: `${title}-${stamp}`,
-        status: 'PAUSED',
+        status: 'ENABLED',
         advertisingChannelType: 'SEARCH',
         // AB siyasi reklam mevzuatı (yeni zorunlu alan): sosyal fayda reklamı → içermez.
         containsEuPoliticalAdvertising: 'DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING',
