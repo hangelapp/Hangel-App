@@ -12,17 +12,23 @@ function formatPrice(value: number, currency: string): string {
   return `${value.toLocaleString('tr-TR')} ${sym}`;
 }
 
-export function ProductCard({ product }: { product: CanonicalProduct }) {
+export function ProductCard({
+  product,
+  donationRate: donationRateProp,
+}: {
+  product: CanonicalProduct;
+  /** Markadan çözülen bağış oranı (ürünün kendi oranı yoksa kullanılır). */
+  donationRate?: number | null;
+}) {
   const hasSale =
     typeof product.salePrice === 'number' && product.salePrice < product.price;
   const salePrice = product.salePrice as number;
   const discountPct = hasSale
     ? Math.round((1 - salePrice / product.price) * 100)
     : 0;
+  const rawRate = donationRateProp ?? product.donationRate;
   const donationRate =
-    typeof product.donationRate === 'number' && product.donationRate > 0
-      ? product.donationRate
-      : null;
+    typeof rawRate === 'number' && rawRate > 0 ? rawRate : null;
 
   // Trendyol imzası: favori kalbi. Şimdilik yerel görsel durum (ileride
   // kullanıcı favorilerine kalıcılaştırılabilir).

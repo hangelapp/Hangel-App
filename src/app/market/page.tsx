@@ -59,6 +59,28 @@ export default function MarketPage() {
       .finally(() => setApiLoading(false));
   }, []);
 
+  // Ürünün, linkine sahip olduğu markanın bağış oranı — markalardan eşlenir.
+  // Öncelik: ürünün kendi donationRate'i → brandId eşleşmesi → brandName eşleşmesi.
+  const brandRate = useMemo(() => {
+    const byId = new Map<string, number>();
+    const byName = new Map<string, number>();
+    for (const b of [...(firestoreBrands || []), ...apiBrands]) {
+      const r = Number(b?.donationRate);
+      if (!b || !Number.isFinite(r) || r <= 0) continue;
+      if (b.id) byId.set(b.id, r);
+      if (b.name) byName.set(b.name.trim().toLowerCase(), r);
+    }
+    return { byId, byName };
+  }, [firestoreBrands, apiBrands]);
+
+  const resolveProductRate = (p: CanonicalProduct): number | null => {
+    if (typeof p.donationRate === 'number' && p.donationRate > 0) return p.donationRate;
+    if (p.brandId && brandRate.byId.has(p.brandId)) return brandRate.byId.get(p.brandId) ?? null;
+    const n = p.brandName?.trim().toLowerCase();
+    if (n && brandRate.byName.has(n)) return brandRate.byName.get(n) ?? null;
+    return null;
+  };
+
   // Onboarding'i "Formu daha sonra dolduracağım" ile atlayan kullanıcılar için
   // hoşgeldin popup'ı: settings/volunteer flag'i kontrol eder, bir kez gösterip
   // localStorage'dan siler.
@@ -262,7 +284,7 @@ export default function MarketPage() {
         <main className="flex-1 overflow-y-auto p-4 pb-32">
           {activeCategory === 'Ürünler' ? (
             productsLoading && (allProducts?.length ?? 0) === 0 ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
                 {[...Array(8)].map((_, i) => <Card key={i} variant="glass" className="h-64 animate-pulse" />)}
               </div>
             ) : productsToShow.length === 0 ? (
@@ -272,8 +294,8 @@ export default function MarketPage() {
                 description={searchTerm ? 'Aramanıza uygun ürün yok.' : 'Henüz listelenecek ürün yok.'}
               />
             ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {productsToShow.map((p) => <ProductCard key={p.id} product={p} />)}
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
+                {productsToShow.map((p) => <ProductCard key={p.id} product={p} donationRate={resolveProductRate(p)} />)}
               </div>
             )
           ) : isLoading && brandsToShow.length === 0 ? (
