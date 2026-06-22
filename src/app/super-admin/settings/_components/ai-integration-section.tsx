@@ -76,6 +76,30 @@ export function AiIntegrationSection() {
     if (settingsDoc?.aiContextNotes !== undefined) setNotes(settingsDoc.aiContextNotes || '');
   }, [settingsDoc?.aiContextNotes]);
 
+  // Yapay Zeka ile üretilen projeler — canlı liste (15 sn poll; "kim ne yapmış" denetimi).
+  const [aiProjects, setAiProjects] = useState<Array<{
+    id: string; userName: string; ngoName: string | null; institution: string;
+    title: string; sectionsFilled: string[]; proposalLength: number; createdAt: number | null;
+  }>>([]);
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    const load = async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/super-admin/ai-project-log', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (active && Array.isArray(data.items)) setAiProjects(data.items);
+      } catch { /* sessiz geç */ }
+    };
+    void load();
+    const timer = setInterval(() => void load(), 15000);
+    return () => { active = false; clearInterval(timer); };
+  }, [user]);
+
   const baseContext = lang === 'en' ? HANGEL_AI_CONTEXT_EN : HANGEL_AI_CONTEXT;
   // "Son değişiklikler" git commit'lerinden otomatik (her deploy'da prebuild yeniler).
   const changelogText = AI_CHANGELOG.length
@@ -283,6 +307,40 @@ export function AiIntegrationSection() {
           <p className="text-[11px] text-muted-foreground">
             ⚠️ Güvenlik: Buraya <strong>API anahtarı / şifre yazma</strong>. Sadece referans (ad, tür, link, not). Anahtar gerektiren gerçek entegrasyon sunucu tarafında güvenli saklanır.
           </p>
+        </div>
+
+        {/* Yapay Zeka ile Üretilen Projeler — canlı denetim ("kim ne yapmış") */}
+        <div className="space-y-3 pt-5 border-t border-border">
+          <Label className="text-sm font-bold flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" /> Yapay Zeka ile Üretilen Projeler
+            <Badge variant="secondary" className="ml-1">{aiProjects.length}</Badge>
+          </Label>
+          <p className="text-[11px] text-muted-foreground">
+            Proje yazma asistanıyla üretilen son projeler — kim, hangi kuruma, ne zaman (canlı, 15 sn).
+          </p>
+          {aiProjects.length === 0 ? (
+            <p className="text-xs italic text-muted-foreground">Henüz proje üretilmedi.</p>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {aiProjects.map((p) => (
+                <div key={p.id} className="rounded-xl border border-border bg-card p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold">{p.title || p.institution || 'Proje'}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {p.userName}{p.ngoName ? ` · ${p.ngoName}` : ''} → {p.institution || '—'}
+                      </p>
+                    </div>
+                    <span className="whitespace-nowrap text-[11px] text-muted-foreground">
+                      {p.createdAt
+                        ? new Date(p.createdAt).toLocaleString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                        : ''}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

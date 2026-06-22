@@ -25,7 +25,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeProjectProposal, type ProjectWriterInput } from '@/ai/flows/project-writer-flow';
 import { AIQuotaExceededError } from '@/ai/flow-auth';
-import { getAdminFirestore } from '@/lib/firebase-admin';
+import { getAdminFirestore, getAdminAuth } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { librarySections, type LibrarySection } from '@/lib/library';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -185,6 +186,42 @@ export async function POST(req: NextRequest) {
             idToken ?? undefined,
             runtimeConfig,
         );
+
+        // AI proje üretim logu — süper-admin "kim ne yapmış" denetimi (best-effort, eş zamanlı).
+        try {
+            const logDb = getAdminFirestore();
+            let userId = 'anonim';
+            let userName = 'Giriş yapmamış kullanıcı';
+            let ngoName: string | null = null;
+            if (idToken) {
+                try {
+                    const decoded = await getAdminAuth().verifyIdToken(idToken);
+                    userId = decoded.uid;
+                    userName = (decoded.name as string) || decoded.email || userId;
+                    const userSnap = await logDb.collection(COLLECTIONS.users).doc(decoded.uid).get();
+                    const u = userSnap.data();
+                    if (u) {
+                        userName = (u.fullName as string) || (u.name as string) || userName;
+                        if (typeof u.managedNgoName === 'string') ngoName = u.managedNgoName;
+                    }
+                } catch { /* token çözülemezse anonim logla */ }
+            }
+            const filled = Object.entries(sections)
+                .filter(([, v]) => typeof v === 'string' && v.length > 0)
+                .map(([k]) => k);
+            await logDb.collection(COLLECTIONS.aiProjectLog).add({
+                userId,
+                userName,
+                ngoName,
+                institution,
+                title: (sections.summary || institution).slice(0, 120),
+                sectionsFilled: filled,
+                proposalLength: result.fullProposal.length,
+                createdAt: FieldValue.serverTimestamp(),
+            });
+        } catch (logErr) {
+            console.warn('library/project: log failed', logErr);
+        }
 
         return NextResponse.json({ fullProposal: result.fullProposal });
     } catch (err: unknown) {
