@@ -21,29 +21,12 @@ import { NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
-import { notifyUser } from '@/lib/notify-user';
-import { buildCertCode } from '@/lib/certificate-code';
-import { awardBadgesForUser } from '@/lib/award-badges';
+import { awardBloodDonation, endDonorBloodLiveActivity } from '@/lib/blood-award';
 
 export const runtime = 'nodejs';
 
-// Kan bağışı puanı — "geldi" işaretlenince verilir.
-const BLOOD_IMPACT_POINTS = 50;
-
 function errJson(errorCode: string, message: string, status: number) {
   return NextResponse.json({ errorCode, message }, { status });
-}
-
-// Atomik sıralı sayaç (counters/{name}.next) — faaliyet/kişi numaraları için.
-// (api/events/[id]/complete/route.ts ile birebir aynı desen.)
-async function nextSeq(db: FirebaseFirestore.Firestore, name: string, start: number): Promise<number> {
-  const ref = db.collection('counters').doc(name);
-  return db.runTransaction(async (tx) => {
-    const snap = await tx.get(ref);
-    const cur = snap.exists ? ((snap.data() as { next?: number }).next ?? start) : start;
-    tx.set(ref, { next: cur + 1 }, { merge: true });
-    return cur;
-  });
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -93,83 +76,33 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const alreadyCame = donor.status === 'came';
   const certIssued = donor.certIssued === true;
 
-  // Status'u güncelle (her durumda).
+  // Status'u güncelle (her durumda). Önceki status 'coming' VEYA 'donor_reported'
+  // (bağışçı kendisi bildirdi → ilan sahibi onaylıyor) olabilir; ikisi de buraya düşer.
   await donorRef.set(
     { status, statusAt: FieldValue.serverTimestamp() },
     { merge: true },
   );
 
   // 'came' OLDU ve daha önce sertifika verilmediyse → ödül zinciri.
+  // (Önceki status 'coming' ya da 'donor_reported' farketmez; idempotency
+  //  certIssued + alreadyCame ile sağlanır.)
   if (status === 'came' && !alreadyCame && !certIssued) {
-    const year = new Date().getFullYear();
     const ngoName = request.hospitalName || 'hangel Kan';
-    const today = new Date().toISOString().slice(0, 10);
-
-    // Faaliyet no — talebe bir kez atanır; kişi no sıralı artar (talepte saklanır).
-    let activityNo = request.bloodActivityNo ?? 0;
-    if (!(activityNo >= 1)) {
-      activityNo = await nextSeq(db, `cert-act-blood-${year}`, 1);
-    }
-    const personSeq = (request.bloodPersonSeq ?? 0) + 1;
-    await reqRef.set({ bloodActivityNo: activityNo, bloodPersonSeq: personSeq }, { merge: true });
-
-    // a. Sertifika (TİP-3 kan).
-    const certId = `blood-${id}-${donorUid}`;
-    const cert = {
-      id: certId,
-      userId: donorUid,
-      type: 'blood',
-      title: 'Kan Bağışı Sertifikası',
-      role: 'donor',
+    await awardBloodDonation({
+      db,
+      requestId: id,
+      donorUid,
       ngoName,
-      date: today,
-      code: buildCertCode({ kind: 'blood', country: '90', year, activityNo, personNo: personSeq }),
-      certCountry: '90',
-      certYear: year,
-      certActivityNo: activityNo,
-      certPersonNo: personSeq,
-      completedAt: FieldValue.serverTimestamp(),
       issuedBy: uid,
-    };
-    await db.collection(COLLECTIONS.certificates).doc(certId).set(cert);
-    await db.collection(COLLECTIONS.users).doc(donorUid)
-      .collection(COLLECTIONS.certificates).doc(certId).set(cert);
+      bloodActivityNo: request.bloodActivityNo,
+      bloodPersonSeq: request.bloodPersonSeq,
+    });
 
-    // b. pastVolunteering kaydı → kan rozeti (puan).
-    await db.collection(COLLECTIONS.users).doc(donorUid)
-      .collection(COLLECTIONS.pastVolunteering).doc(`blood-${id}`).set({
-        socialArea: 'Kan Bağışı Gönüllüsü',
-        points: 100,
-        title: 'Kan Bağışı',
-        ngoName,
-        completedAt: FieldValue.serverTimestamp(),
-      });
-    await awardBadgesForUser(db, donorUid, { notify: true });
-
-    // c. impactScore += 50.
-    await db.collection(COLLECTIONS.users).doc(donorUid)
-      .update({ impactScore: FieldValue.increment(BLOOD_IMPACT_POINTS) })
-      .catch(() => undefined);
-
-    // d. Teşekkür DM'i.
-    try {
-      await notifyUser({
-        userId: donorUid,
-        type: 'badge_earned',
-        title: 'Kan bağışın için teşekkürler 🩸',
-        body: 'Bir hayata dokundun. Kan bağışı sertifikan ve rozetin hazır — /my-badges',
-        link: '/my-badges',
-        data: { kind: 'blood-certificate', requestId: id, certificateId: certId },
-        storeAsMessage: true,
-        messageSubject: 'Kan Bağışın İçin Teşekkürler 🩸',
-        messageContent: `Bir hayata dokundun. ${ngoName} için yaptığın kan bağışı kaydedildi.\n\nKan bağışı sertifikan ve Kan Bağışı rozetin profiline yüklendi (+${BLOOD_IMPACT_POINTS} impact puanı). Rozetlerine ve sertifikana ulaşmak için "Rozetlerim" sayfasına dokun 🧡`,
-      });
-    } catch (e) {
-      console.warn('[emergency/donor-status] notify failed', donorUid, e);
-    }
-
-    // e. Çift vermeyi önle.
+    // Çift vermeyi önle.
     await donorRef.set({ certIssued: true }, { merge: true });
+
+    // Bağışçının kan Live Activity token'larını temizle (bayat update push'u önler).
+    await endDonorBloodLiveActivity(db, donorUid, id);
   }
 
   return NextResponse.json({ ok: true });

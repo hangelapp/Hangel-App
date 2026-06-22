@@ -21,7 +21,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { collection, doc, updateDoc, deleteDoc, query, where, orderBy, limit, documentId, addDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
 import { useNgoRealtimeStats } from '@/hooks/use-ngo-stats';
@@ -78,10 +78,11 @@ interface CanonicalManagerRow {
   isOwner: boolean;
 }
 
-const TransferAdminDialog = ({ ngo, allUsers, onAssign }: {
+const TransferAdminDialog = ({ ngo, allUsers, onAssign, onNeedUsers }: {
   ngo: NgoItem;
   allUsers: SimpleNgoUser[] | null;
   onAssign: (ngoId: string, newUserId: string, newUserName: string, role: NgoRole) => Promise<void>;
+  onNeedUsers: () => void;
 }) => {
   const { user: authUser } = useUser();
   const { toast } = useToast();
@@ -193,7 +194,9 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign }: {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    // Üye listesi (users) yalnızca diyalog AÇILINCA yüklenir (lazy): tüm users
+    // koleksiyonunu sayfa açılışında indirmek yerine yetkili atama niyetinde abone ol.
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) onNeedUsers(); }}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4">
           <UserCog className="mr-2 h-4 w-4" /> Yetkili
@@ -319,7 +322,14 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign }: {
             </div>
           )}
 
-          {normalizedSearch.length >= 3 && !matchedUser && (
+          {normalizedSearch.length >= 3 && !allUsers && (
+            <div className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Üyeler yükleniyor...</span>
+            </div>
+          )}
+
+          {normalizedSearch.length >= 3 && allUsers && !matchedUser && (
             <div className="flex items-center gap-2 p-3 border border-destructive/30 bg-destructive/5 rounded-2xl text-sm text-destructive">
               <XCircle className="h-4 w-4" />
               <span>{isEmailSearch ? 'Bu e-posta ile kayıtlı üye bulunamadı.' : 'Bu telefon numarasıyla kayıtlı üye bulunamadı.'}</span>
@@ -350,11 +360,18 @@ export default function NgosPage() {
   const [typeFilter, setTypeFilter] = useState<'all' | 'Dernek' | 'Vakıf' | 'Spor Kulübü' | 'Özel İzinli'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'nameAsc'>('newest');
+  const NGOS_PAGE_SIZE = 100;
+  const [ngosLimit, setNgosLimit] = useState(NGOS_PAGE_SIZE);
+  // Üye listesi yalnızca yetkili atama diyaloğu açıldığında yüklenir (lazy abonelik).
+  const [loadUsers, setLoadUsers] = useState(false);
 
-  const ngosQuery = useMemoFirebase(() => collection(db, COLLECTIONS.ngos), [db]);
+  // NGO listesi büyüyen limit ile bağlanır; orderBy(documentId()) seçilir çünkü NGO
+  // dokümanları createdAt taşımayabilir ve alan bazlı orderBy bunları sessizce eler.
+  const ngosQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.ngos), orderBy(documentId()), limit(ngosLimit)), [db, ngosLimit]);
   const { data: rawNgos, isLoading: ngosLoading } = useCollection<NGO>(ngosQuery);
   const { enrich: enrichNgoStats } = useNgoRealtimeStats();
   const ngos = useMemo(() => enrichNgoStats(rawNgos), [enrichNgoStats, rawNgos]);
+  const hasMoreNgos = (rawNgos?.length || 0) >= ngosLimit;
 
   const applicationsQuery = useMemoFirebase(() =>
     query(collection(db, COLLECTIONS.applications), where('entityType', '==', 'NGO')),
@@ -362,7 +379,8 @@ export default function NgosPage() {
   );
   const { data: applications, isLoading: appsLoading } = useCollection<NgoApplication>(applicationsQuery);
 
-  const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
+  // Yetkili atama diyaloğu açılana kadar users koleksiyonuna abone OLMA (null = no-op).
+  const usersQuery = useMemoFirebase(() => (loadUsers ? collection(db, COLLECTIONS.users) : null), [db, loadUsers]);
   const { data: allUsers } = useCollection<SimpleNgoUser>(usersQuery);
 
   const items = useMemo<NgoItem[]>(() => {
@@ -679,7 +697,7 @@ export default function NgosPage() {
                         <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3" asChild>
                           <Link href={`/super-admin/ngos/${ngo.id}/edit`}><Edit3 className="mr-1.5 h-3.5 w-3.5" />Düzelt</Link>
                         </Button>
-                        <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} />
+                        <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} onNeedUsers={() => setLoadUsers(true)} />
                         {isDraft ? (
                           <Button size="sm" className="rounded-xl font-bold h-9 px-3 bg-green-600 hover:bg-green-700 text-white"
                                   onClick={() => handleApproveDraft(ngo.id, ngo.name)}>
@@ -726,6 +744,12 @@ export default function NgosPage() {
               );
             }) : (
               <div className="p-16 text-center text-muted-foreground italic">Bu filtreyle eşleşen kuruluş bulunmuyor.</div>
+            )}
+            {/* Arama yalnızca yüklenen kümeyi kapsadığı için arama aktifken gizli. */}
+            {hasMoreNgos && !searchTerm && (
+              <div className="flex justify-center p-4 border-t border-border">
+                <Button variant="outline" className="rounded-xl font-bold" onClick={() => setNgosLimit((n) => n + NGOS_PAGE_SIZE)}>Daha fazla yükle</Button>
+              </div>
             )}
           </div>
         </CardContent>

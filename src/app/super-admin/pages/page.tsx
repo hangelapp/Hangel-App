@@ -21,7 +21,7 @@ import {
 import { Plus, Pencil, Trash2, Loader2, Search, Eye, FileText, Info, ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, query, orderBy, limit, documentId } from 'firebase/firestore';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize-html';
@@ -189,7 +189,7 @@ export default function SitePagesAdmin() {
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const pagesQuery = useMemoFirebase(() => collection(db, COLLECTIONS.sitePages), [db]);
+  const pagesQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.sitePages), orderBy(documentId()), limit(200)), [db]);
   const { data: pages, isLoading } = useCollection<SitePage>(pagesQuery);
 
   const filtered = useMemo(() => {

@@ -31,6 +31,9 @@ import {
   deleteDoc,
   getCountFromServer,
   serverTimestamp,
+  query,
+  orderBy,
+  limit,
 } from 'firebase/firestore';
 import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -174,8 +177,18 @@ export default function TimelinePage() {
     }
   };
 
-  const postsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.posts), [db]);
+  // PERF: gönderiler en yeni → eski sıralı ve sınırlı çekilir (eskiden TÜM
+  // posts koleksiyonu sınırsız indiriliyordu). "Daha fazla" ile limit artar;
+  // arama/filtre/sıralama yine yüklenen küme üzerinde çalışır.
+  const POSTS_PAGE_SIZE = 50;
+  const [postsLimit, setPostsLimit] = useState(POSTS_PAGE_SIZE);
+  const postsQuery = useMemoFirebase(
+    () => query(collection(db, COLLECTIONS.posts), orderBy('createdAt', 'desc'), limit(postsLimit)),
+    [db, postsLimit],
+  );
   const { data: postsData, isLoading } = useCollection<Post>(postsQuery);
+  // Çekilen sayı limiti dolduruyorsa muhtemelen daha fazla gönderi var.
+  const hasMorePosts = (postsData?.length ?? 0) >= postsLimit;
 
   // Canlı kurum logoları + profil linkleri — statik @/lib/data'da logolar boş/eski
   // olabildiğinden gönderi yazarını Firestore'daki ngo/marka/kulüp ile eşleştir.
@@ -480,6 +493,17 @@ export default function TimelinePage() {
                      </React.Fragment>
                     );
                     })}
+                    {!isLoading && list.length > 0 && hasMorePosts && (
+                        <div className="flex justify-center pt-2">
+                            <Button
+                                variant="outline"
+                                className="rounded-2xl"
+                                onClick={() => setPostsLimit((n) => n + POSTS_PAGE_SIZE)}
+                            >
+                                {t('timelinePage.loadMore')}
+                            </Button>
+                        </div>
+                    )}
                 </div>
   );
 

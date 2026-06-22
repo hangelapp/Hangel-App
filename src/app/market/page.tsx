@@ -45,9 +45,9 @@ export default function MarketPage() {
     return lower ? list.filter((p) => p.title?.toLowerCase().includes(lower) || p.brandName?.toLowerCase().includes(lower)) : list;
   }, [allProducts, searchTerm]);
 
-  // API brands from affiliate networks (Tune/ReklamAction + others)
+  // API brands from affiliate networks (Tune/ReklamAction + others).
+  // İlk boyamayı bloklamaz: hazır oldukça merge listesine akarak eklenir.
   const [apiBrands, setApiBrands] = useState<Brand[]>([]);
-  const [apiLoading, setApiLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/offers')
@@ -55,8 +55,7 @@ export default function MarketPage() {
       .then((data: Brand[]) => {
         setApiBrands(Array.isArray(data) ? data : []);
       })
-      .catch(() => setApiBrands([]))
-      .finally(() => setApiLoading(false));
+      .catch(() => setApiBrands([]));
   }, []);
 
   // Ürünün, linkine sahip olduğu markanın bağış oranı — markalardan eşlenir.
@@ -95,7 +94,10 @@ export default function MarketPage() {
     } catch { /* localStorage erişilemedi — popup atlanır */ }
   }, []);
 
-  const isLoading = firestoreLoading || apiLoading;
+  // İlk boyamayı affiliate (/api/offers) yavaş cevabına BAĞLAMA: skeleton yalnız
+  // Firestore markaları yüklenirken gösterilir; API markaları hazır oldukça
+  // (apiBrands set edilince) merge listesine eklenip akarak görünür.
+  const isLoading = firestoreLoading;
 
   // Per-session random seed: Math.random() lives in an effect (pure-in-render
   // compliant); the shuffle below is deterministic given this seed.

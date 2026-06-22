@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Droplets, Siren, MapPin, Loader2, Check, X, Phone } from 'lucide-react';
+import { Droplets, Siren, MapPin, Loader2, Check, X, Phone, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -455,8 +455,24 @@ const DonorList = ({ request, authUser }: { request: MyBloodRequest; authUser: U
 
     return (
         <div className="space-y-2 pt-2">
-            {donors.map((d) => (
-                <div key={d.uid} className="flex items-center justify-between gap-2 rounded-xl border bg-background p-3">
+            {donors.map((d) => {
+              // Bağışçı "kan verdim" dedi → ihtiyaç sahibinin onayı bekleniyor: vurgulanır.
+              const isReported = d.status === 'donor_reported';
+              return (
+                <div
+                    key={d.uid}
+                    className={
+                        isReported
+                            ? 'rounded-xl border-2 border-primary bg-primary/5 p-3 space-y-2'
+                            : 'flex items-center justify-between gap-2 rounded-xl border bg-background p-3'
+                    }
+                >
+                  {isReported && (
+                    <p className="flex items-center gap-1.5 text-xs font-bold text-primary">
+                        <Heart className="h-3.5 w-3.5 fill-current" /> Kan verdiğini bildirdi — onayını bekliyor 🧡
+                    </p>
+                  )}
+                  <div className={isReported ? 'flex items-center justify-between gap-2' : 'contents'}>
                     <div className="min-w-0">
                         <p className="font-bold text-sm truncate">{d.name}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -508,8 +524,10 @@ const DonorList = ({ request, authUser }: { request: MyBloodRequest; authUser: U
                             </Button>
                         </div>
                     )}
+                  </div>
                 </div>
-            ))}
+              );
+            })}
         </div>
     );
 };

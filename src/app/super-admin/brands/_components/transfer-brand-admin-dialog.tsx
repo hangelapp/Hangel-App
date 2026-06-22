@@ -24,6 +24,7 @@ interface TransferBrandAdminDialogProps {
     brand: BrandItem;
     allUsers: SimpleUser[] | null;
     onAssign: (brandId: string, userId: string, userName: string, role: BrandRole) => Promise<void>;
+    onNeedUsers: () => void;
 }
 
 // Kanonik /api/ngo-admin/users/managers route'unun döndürdüğü yetkili satırı.
@@ -38,7 +39,7 @@ interface CanonicalManagerRow {
     isOwner: boolean;
 }
 
-export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign }: TransferBrandAdminDialogProps) => {
+export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign, onNeedUsers }: TransferBrandAdminDialogProps) => {
     const { user: authUser } = useUser();
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
@@ -148,8 +149,9 @@ export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign }: Transfer
         }
     };
 
+    // Diyalog açıldığında kullanıcı listesini tembel yükle (Firestore okuma optimizasyonu).
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) onNeedUsers(); }}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4">
                     <UserCog className="mr-2 h-4 w-4" /> Yetkili
@@ -274,7 +276,15 @@ export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign }: Transfer
                         </div>
                     )}
 
-                    {normalizedSearch.length >= 3 && !matchedUser && (
+                    {/* Üyeler henüz yüklenmediyse "bulunamadı" yerine yükleniyor göster. */}
+                    {normalizedSearch.length >= 3 && !allUsers && (
+                        <div className="flex items-center gap-2 p-3 text-xs text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Üyeler yükleniyor...</span>
+                        </div>
+                    )}
+
+                    {normalizedSearch.length >= 3 && allUsers && !matchedUser && (
                         <div className="flex items-center gap-2 p-3 border border-destructive/30 bg-destructive/5 rounded-2xl text-sm text-destructive">
                             <XCircle className="h-4 w-4" />
                             <span>{isEmailSearch ? 'Bu e-posta ile kayıtlı üye bulunamadı.' : 'Bu telefon numarasıyla kayıtlı üye bulunamadı.'}</span>

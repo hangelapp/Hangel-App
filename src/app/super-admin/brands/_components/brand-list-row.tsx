@@ -22,6 +22,7 @@ interface BrandListRowProps {
     onEditFormDataChange: (next: EditFormData) => void;
     logoUploading: boolean;
     allUsers: SimpleUser[] | null;
+    onNeedUsers: () => void;
     onStartEdit: (brand: BrandItem) => void;
     onCancelEdit: () => void;
     onSaveEdit: () => void | Promise<void>;
@@ -38,6 +39,7 @@ export const BrandListRow = ({
     onEditFormDataChange,
     logoUploading,
     allUsers,
+    onNeedUsers,
     onStartEdit,
     onCancelEdit,
     onSaveEdit,
@@ -103,7 +105,7 @@ export const BrandListRow = ({
                 {(brand.source === 'brands' || isApiOnly) && (
                     <>
                         {brand.source === 'brands' && (
-                            <TransferBrandAdminDialog brand={brand} allUsers={allUsers} onAssign={onAssignBrandAdmin} />
+                            <TransferBrandAdminDialog brand={brand} allUsers={allUsers} onAssign={onAssignBrandAdmin} onNeedUsers={onNeedUsers} />
                         )}
                         <Button
                             variant="outline"

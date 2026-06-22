@@ -12,7 +12,7 @@ import { Search, ShieldAlert, Loader2, ArrowDownUp } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase, useAuth, useUser, initiatePasswordResetEmail } from '@/firebase';
-import { collection, doc, updateDoc } from 'firebase/firestore';
+import { collection, doc, updateDoc, query, orderBy, limit, documentId } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { ProfileViewDialog } from './_components/profile-view-dialog';
 import { SessionLogDialog } from './_components/session-log-dialog';
@@ -35,8 +35,19 @@ export default function UsersPage() {
   const [assigningUser, setAssigningUser] = useState<UserRow | null>(null);
   const [permError, setPermError] = useState<string | null>(null);
 
-  const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
+  // PERF — users koleksiyonu sınırsız canlı dinlenmek yerine sayfalanır. İlk 100
+  // kullanıcı yüklenir; "Daha fazla yükle" limiti büyütür ve canlı dinleyici daha
+  // geniş limitle yeniden bağlanır. orderBy(documentId()) eksik createdAt alanı
+  // olan kullanıcıları da kapsar (alan-bazlı orderBy bunları atlardı). Arama ve
+  // toplu-silme yüklenmiş küme üzerinde çalışır; sunucu-taraflı arama gelecekte.
+  const USERS_PAGE_SIZE = 100;
+  const [usersLimit, setUsersLimit] = useState(USERS_PAGE_SIZE);
+  const usersQuery = useMemoFirebase(
+    () => query(collection(db, COLLECTIONS.users), orderBy(documentId()), limit(usersLimit)),
+    [db, usersLimit],
+  );
   const { data: users, isLoading, error: usersError } = useCollection<UserRow>(usersQuery);
+  const hasMoreUsers = (users?.length || 0) >= usersLimit;
 
   React.useEffect(() => {
     if (!usersError) { setPermError(null); return; }
@@ -374,6 +385,17 @@ export default function UsersPage() {
               <div className="p-16 text-center text-muted-foreground italic">Eşleşen kullanıcı bulunamadı.</div>
             )}
           </div>
+          {hasMoreUsers && !searchTerm && (
+            <div className="flex justify-center p-4 border-t border-border">
+              <Button
+                variant="outline"
+                className="rounded-xl font-bold"
+                onClick={() => setUsersLimit((n) => n + USERS_PAGE_SIZE)}
+              >
+                Daha fazla yükle
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 

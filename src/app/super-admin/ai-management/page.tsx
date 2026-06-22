@@ -41,7 +41,11 @@ import {
   collection,
   deleteDoc,
   doc,
+  documentId,
   getDoc,
+  limit,
+  orderBy,
+  query,
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
@@ -652,7 +656,7 @@ function ProjectCriteriaManager() {
 export default function AIManagementPage() {
   const db = useFirestore();
 
-  const libQuery = useMemoFirebase(() => collection(db, COLLECTIONS.library), [db]);
+  const libQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.library), orderBy(documentId()), limit(200)), [db]);
   const { data: libData, isLoading } = useCollection<LibrarySection>(libQuery);
 
   const sectionOptions = useMemo(() => {

@@ -2,10 +2,11 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, deleteDoc, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, setDoc, orderBy, limit, documentId } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getApp } from 'firebase/app';
 import { Loader2, Inbox } from 'lucide-react';
@@ -37,9 +38,22 @@ export default function BrandsPage() {
     const [editFormData, setEditFormData] = useState<EditFormData>({});
     const [logoUploading, setLogoUploading] = useState(false);
 
-    // Load approved brands
-    const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
+    // Firestore okuma optimizasyonu: marka listesi büyüyen limit ile sayfalanır.
+    const BRANDS_PAGE_SIZE = 100;
+    const [brandsLimit, setBrandsLimit] = useState(BRANDS_PAGE_SIZE);
+    // Yetkili atama diyalogu açılana kadar tüm kullanıcıları yükleme (lazy).
+    const [loadUsers, setLoadUsers] = useState(false);
+
+    // Load approved brands (limitli — brand doc'larında güvenilir timestamp
+    // olmayabilir, bu yüzden field-orderBy yerine documentId() ile sırala
+    // (eksik alanlı doc'lar düşmez).
+    const brandsQuery = useMemoFirebase(() =>
+        query(collection(db, COLLECTIONS.brands), orderBy(documentId()), limit(brandsLimit)),
+        [db, brandsLimit]
+    );
     const { data: brands, isLoading: brandsLoading } = useCollection<Brand>(brandsQuery);
+    // Load-more yalnızca Firestore brands listener'ına uygulanır (apiBrands hariç).
+    const hasMoreBrands = (brands?.length || 0) >= brandsLimit;
 
     // Load all brand applications (any status)
     const applicationsQuery = useMemoFirebase(() =>
@@ -48,8 +62,9 @@ export default function BrandsPage() {
     );
     const { data: applications, isLoading: appsLoading } = useCollection(applicationsQuery);
 
-    // Yetkili atama için tüm kullanıcılar
-    const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
+    // Yetkili atama için tüm kullanıcılar — yalnızca diyalog açıldığında yüklenir
+    // (lazy). loadUsers false iken sorgu null → useCollection no-op (okuma yapmaz).
+    const usersQuery = useMemoFirebase(() => (loadUsers ? collection(db, COLLECTIONS.users) : null), [db, loadUsers]);
     const { data: allUsers } = useCollection<SimpleUser>(usersQuery);
 
     // /api/offers affiliate kataloğu (Tune/ReklamAction'dan gelen markalar) —
@@ -545,6 +560,7 @@ export default function BrandsPage() {
                                     onEditFormDataChange={setEditFormData}
                                     logoUploading={logoUploading}
                                     allUsers={allUsers || null}
+                                    onNeedUsers={() => setLoadUsers(true)}
                                     onStartEdit={handleStartEdit}
                                     onCancelEdit={() => setEditingBrand(null)}
                                     onSaveEdit={handleSaveEdit}
@@ -561,6 +577,11 @@ export default function BrandsPage() {
                             </div>
                         )}
                     </div>
+                    {hasMoreBrands && !searchTerm && (
+                        <div className="flex justify-center p-4 border-t border-border">
+                            <Button variant="outline" className="rounded-xl font-bold" onClick={() => setBrandsLimit((n) => n + BRANDS_PAGE_SIZE)}>Daha fazla yükle</Button>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

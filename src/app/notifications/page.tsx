@@ -28,6 +28,10 @@ const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   'emergency-blood-contact': Droplet,
   'emergency-blood-received': Droplet,
   'emergency-blood-thanks': Heart,
+  // Bağışçıya giden hatırlatma (1s/2s/3s) — "Kan verdim" aksiyonunu taşır.
+  'emergency-blood-reminder': Droplet,
+  // İhtiyaç sahibine giden onay isteği (bağışçı "verdim" dedi → geldi/gelmedi).
+  'emergency-blood-confirm': Heart,
   'volunteer': Heart,
   'donation': Sparkles,
   'authorization': ShieldCheck,

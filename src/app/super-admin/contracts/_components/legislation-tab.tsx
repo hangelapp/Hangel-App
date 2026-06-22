@@ -19,7 +19,7 @@ import {
 import { Plus, Pencil, Trash2, Loader2, Search, BookText, Scale, Link2, ExternalLink, ScanSearch, Sparkles, Info, CheckCircle2, BookOpen, FileText, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, serverTimestamp, query, orderBy, limit, documentId } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { contractsData as seedContracts } from '@/lib/contracts';
 import Link from 'next/link';
@@ -290,11 +290,11 @@ export function LegislationTab() {
   const [addingIds, setAddingIds] = useState<Set<string>>(new Set());
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
 
-  const legQuery = useMemoFirebase(() => collection(db, COLLECTIONS.legislations), [db]);
+  const legQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.legislations), orderBy(documentId()), limit(200)), [db]);
   const { data: legislations, isLoading } = useCollection<Legislation>(legQuery);
 
   // İlişkilendirme için sözleşme/politika listesi (firestore + varsayılan seed birleşik)
-  const contractsRef = useMemoFirebase(() => collection(db, COLLECTIONS.contracts), [db]);
+  const contractsRef = useMemoFirebase(() => query(collection(db, COLLECTIONS.contracts), orderBy(documentId()), limit(200)), [db]);
   const { data: fsContracts } = useCollection<{ id: string; slug?: string; title?: string }>(contractsRef);
   const contractOptions = useMemo(() => {
     const map = new Map<string, string>();

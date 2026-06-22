@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Download, Library, Package, RefreshCw, Search, Link2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, setDoc, writeBatch, query, orderBy, limit, documentId } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { LISTING_MODE_LABELS, DEFAULT_LISTING_MODE, type ListingMode, type ProductFeed } from '@/lib/feed/types';
 
@@ -46,7 +46,7 @@ export default function FeedAdminPage() {
   const [manualDonation, setManualDonation] = useState('');
   const [manualBusy, setManualBusy] = useState(false);
 
-  const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
+  const brandsQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.brands), orderBy(documentId()), limit(200)), [db]);
   const { data: brands, isLoading: brandsLoading } = useCollection<BrandRow>(brandsQuery);
 
   const authedFetch = async (init: RequestInit) => {

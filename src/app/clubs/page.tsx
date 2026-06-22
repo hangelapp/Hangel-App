@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { StudentClub } from '@/lib/types';
 import { useFirestore, useMemoFirebase, useCollection, useUser, useDoc } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, query, orderBy, limit } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 
@@ -83,8 +83,18 @@ export default function ClubsPage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  const clubsRef = useMemoFirebase(() => collection(db, COLLECTIONS.clubs), [db]);
+  // PERF: kulüpler isme göre sıralı + sınırlı çekilir (eskiden TÜM koleksiyon
+  // sınırsız indiriliyordu). "Daha fazla" ile limit artar → arama/filtre yine
+  // yüklenen küme üzerinde çalışır, hiçbir kulüp kalıcı gizlenmez.
+  const CLUBS_PAGE_SIZE = 60;
+  const [clubsLimit, setClubsLimit] = useState(CLUBS_PAGE_SIZE);
+  const clubsRef = useMemoFirebase(
+    () => query(collection(db, COLLECTIONS.clubs), orderBy('name'), limit(clubsLimit)),
+    [db, clubsLimit],
+  );
   const { data: clubs, isLoading } = useCollection<StudentClub>(clubsRef);
+  // Çekilen sayı limiti dolduruyorsa muhtemelen daha fazla kulüp var → buton görünür.
+  const hasMoreClubs = (clubs?.length ?? 0) >= clubsLimit;
 
   // PERF: allUsers'ı SADECE bir üniversite expand edildiğinde yükle.
   // Default'ta kulüp/puan stats /api/clubs/stats endpoint'inden gelir
@@ -563,6 +573,17 @@ export default function ClubsPage() {
                 </Card>
               );
             })}
+            {hasMoreClubs && (
+              <div className="flex justify-center pt-3">
+                <Button
+                  variant="outline"
+                  className="rounded-2xl"
+                  onClick={() => setClubsLimit((n) => n + CLUBS_PAGE_SIZE)}
+                >
+                  {t('clubsPage.loadMore')}
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

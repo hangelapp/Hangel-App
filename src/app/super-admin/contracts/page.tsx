@@ -28,7 +28,7 @@ import {
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, query, orderBy, limit, documentId } from 'firebase/firestore';
 import { contractsData as seedContracts } from '@/lib/contracts';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -586,7 +586,7 @@ export default function ContractsAdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [countryFilter, pathname, router]);
 
-  const contractsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.contracts), [db]);
+  const contractsQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.contracts), orderBy(documentId()), limit(200)), [db]);
   const { data: firestoreContracts, isLoading } = useCollection<Contract>(contractsQuery);
 
   const allContracts = useMemo<Contract[]>(() => {

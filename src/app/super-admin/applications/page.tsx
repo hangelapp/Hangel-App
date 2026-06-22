@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, CheckCircle, XCircle, Clock, ShieldCheck, Building, Store, School, Mail, MapPin, User } from "lucide-react";
 import { useFirestore, useUser, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
-import { collection, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, addDoc, getDoc, serverTimestamp, query, orderBy, limit, documentId } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 
@@ -321,8 +321,18 @@ export default function ApplicationsPage() {
   const { user: authUser } = useUser();
   const { toast } = useToast();
 
-  const appsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.applications), [db]);
+  // PERF — başvuru koleksiyonu sınırsız canlı dinlenmek yerine sayfalanır.
+  // İlk 100 başvuru yüklenir; "Daha fazla yükle" limiti büyütür ve canlı
+  // dinleyici daha geniş limitle yeniden bağlanır. orderBy(documentId()) tüm
+  // dokümanları kapsar (eksik alan olan doküman atlanmaz).
+  const APPS_PAGE_SIZE = 100;
+  const [appsLimit, setAppsLimit] = useState(APPS_PAGE_SIZE);
+  const appsQuery = useMemoFirebase(
+    () => query(collection(db, COLLECTIONS.applications), orderBy(documentId()), limit(appsLimit)),
+    [db, appsLimit],
+  );
   const { data: applications, isLoading } = useCollection(appsQuery);
+  const hasMoreApps = (applications?.length || 0) >= appsLimit;
 
   const slugify = (s: string) =>
     (s || '')
@@ -731,6 +741,18 @@ export default function ApplicationsPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {hasMoreApps && (
+        <div className="flex justify-center pt-2">
+          <Button
+            variant="outline"
+            className="rounded-xl font-bold"
+            onClick={() => setAppsLimit((n) => n + APPS_PAGE_SIZE)}
+          >
+            Daha fazla yükle
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

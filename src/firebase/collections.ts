@@ -91,6 +91,9 @@ export const COLLECTIONS = {
   // Doc id = institution slug. { institution, slug, requirements, format, deadline,
   // keywords, focusAreas, updatedAt }. Super-admin write; signed-in read.
   projectCallCriteria: 'projectCallCriteria',
+  // Proje yazma asistanıyla üretilen projelerin denetim logu (kim / hangi kurum / ne zaman).
+  // SADECE Admin SDK yazar (api/library/project); süper-admin GET API ile okunur.
+  aiProjectLog: 'aiProjectLog',
   mailQueue: 'mailQueue',
 
   // Transparency

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Loader2, Search, Archive, FileText, Building2, ShoppingBag, GraduationCap, CheckCircle2, Circle, Eye, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, doc, updateDoc, serverTimestamp, type Timestamp } from 'firebase/firestore';
+import { collection, doc, updateDoc, serverTimestamp, query, orderBy, limit, documentId, type Timestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -64,7 +64,7 @@ export function ArchiveTab() {
     return () => { cancelled = true; };
   }, [user]);
 
-  const archiveQuery = useMemoFirebase(() => collection(db, COLLECTIONS.documentArchive), [db]);
+  const archiveQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.documentArchive), orderBy(documentId()), limit(200)), [db]);
   const { data: docs, isLoading } = useCollection<ArchiveDoc>(archiveQuery);
 
   const reviewStats = useMemo(() => {

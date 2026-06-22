@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, Send, Bell, Users, Search, Phone, X, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useUser, useMemoFirebase } from '@/firebase';
-import { collection, getDocs, query, where, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, writeBatch, serverTimestamp, orderBy, limit, documentId } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
 interface ContractLite { id: string; slug?: string; title?: string; version?: string; }
@@ -35,7 +35,7 @@ export function PublishTab() {
   const db = useFirestore();
   const { user: authUser } = useUser();
 
-  const contractsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.contracts), [db]);
+  const contractsQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.contracts), orderBy(documentId()), limit(200)), [db]);
   const { data: contracts } = useCollection<ContractLite>(contractsQuery);
 
   const [selectedContract, setSelectedContract] = useState('');
@@ -47,7 +47,8 @@ export function PublishTab() {
   const [testSearch, setTestSearch] = useState('');
   const [testUser, setTestUser] = useState<UserLite | null>(null);
   const testMode = targetGroups.includes(TEST_GROUP);
-  const usersQuery = useMemoFirebase(() => (testMode ? collection(db, COLLECTIONS.users) : null), [db, testMode]);
+  // Sadece test önizleme listesi için sınırlı; gerçek bildirim fan-out'u aşağıda getDocs ile sınırsız çalışır.
+  const usersQuery = useMemoFirebase(() => (testMode ? query(collection(db, COLLECTIONS.users), orderBy(documentId()), limit(200)) : null), [db, testMode]);
   const { data: usersData } = useCollection<UserLite>(usersQuery);
   const matchedTestUsers = useMemo(() => {
     const q = onlyDigits(testSearch);

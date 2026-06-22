@@ -74,6 +74,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       phoneLast4,
       status: 'coming',
       respondedAt: FieldValue.serverTimestamp(),
+      // comingAt = "geleceğim" anı. Hatırlatma cron'u (blood-donor-reminders)
+      // bu damgaya göre 1h/2h/3h sonra "kan verebildin mi?" push'u atar.
+      comingAt: FieldValue.serverTimestamp(),
     },
     { merge: true },
   );

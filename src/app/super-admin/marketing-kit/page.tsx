@@ -55,7 +55,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, limit } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
 import {
@@ -114,7 +114,7 @@ export default function MarketingKitPage() {
   const { user: currentUser } = useUser();
   const { toast } = useToast();
 
-  const assetsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.marketingAssets), [db]);
+  const assetsQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.marketingAssets), orderBy('createdAt', 'desc'), limit(200)), [db]);
   const { data: assets, isLoading, error: assetsError } = useCollection<MarketingAsset>(assetsQuery);
 
   const [dialogOpen, setDialogOpen] = useState(false);

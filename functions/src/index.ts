@@ -150,6 +150,11 @@ export { eventAttendeeReminders } from './event-reminders';
 // (volunteering.reminders.{day|hour|tenMin}). See ./volunteer-reminders.ts
 export { volunteerAttendeeReminders } from './volunteer-reminders';
 
+// Kan bağışı takip — "geleceğim" diyen bağışçılara 1/2/3 saat sonra nazik
+// "kan verdin mi?" hatırlatması; "verdim" deyip ilan sahibi 48 saat onaylamazsa
+// güven esaslı otomatik onay (rozet+sertifika+puan). See ./blood-donor-reminders.ts
+export { bloodDonorReminders } from './blood-donor-reminders';
+
 // Daily 11:00 Europe/Istanbul nudge for users who registered ~24h / ~72h ago
 // but never completed onboarding. Writes notifications doc (push via
 // onNotificationCreated) and stamps the user doc for idempotency.

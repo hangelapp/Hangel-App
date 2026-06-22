@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useUser, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query as fsQuery, orderBy, limit, documentId } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { cn } from '@/lib/utils';
 
@@ -176,7 +176,7 @@ function pctRing(pct: number): { ring: string; text: string; bar: string } {
 
 function ContractsComplianceOverview({ contracts }: { contracts: ContractLite[] }) {
   const db = useFirestore();
-  const ccQuery = useMemoFirebase(() => collection(db, COLLECTIONS.contractCompliance), [db]);
+  const ccQuery = useMemoFirebase(() => fsQuery(collection(db, COLLECTIONS.contractCompliance), orderBy(documentId()), limit(200)), [db]);
   const { data: ccRows, isLoading } = useCollection<ComplianceRowLite>(ccQuery);
 
   const [query, setQuery] = useState('');
@@ -496,7 +496,7 @@ export function ComplianceTab({ contracts }: { contracts: ContractLite[] }) {
   const db = useFirestore();
   const { user } = useUser();
 
-  const legQuery = useMemoFirebase(() => collection(db, COLLECTIONS.legislations), [db]);
+  const legQuery = useMemoFirebase(() => fsQuery(collection(db, COLLECTIONS.legislations), orderBy(documentId()), limit(200)), [db]);
   const { data: legislations } = useCollection<LegislationLite>(legQuery);
 
   const [contractSlug, setContractSlug] = useState('');

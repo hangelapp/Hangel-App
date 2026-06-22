@@ -17,15 +17,15 @@
  * - Sezon ödülleri info kartı
  */
 
-import { useMemo, useState } from 'react';
-import { collection } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
+import { collection, doc, getCountFromServer, limit, orderBy, query } from 'firebase/firestore';
 import { Globe, Handshake, Heart, MapPin, School, Sparkles, Star } from 'lucide-react';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { COLLECTIONS } from '@/firebase/collections';
-import { useFirestore, useMemoFirebase, useCollection, useUser } from '@/firebase';
+import { useFirestore, useMemoFirebase, useCollection, useDoc, useUser } from '@/firebase';
 import { useTranslation } from '@/components/providers/language-provider';
 import { cn } from '@/lib/utils';
 
@@ -47,6 +47,11 @@ import {
 
 const PAGE_SIZE = 7;
 const MAX_LIST = 50;
+// PERF: tüm `users` koleksiyonunu indirmek yerine en yüksek etki puanlı ilk 100
+// kullanıcı çekilir (board zaten yalnız üst sıraları gösterir). Kullanıcının
+// kendi doc'u ayrıca alınıp birleştirilir → top 100 dışındaysa bile "senin sıran"
+// kartı doğru çalışır.
+const LEADERBOARD_FETCH_LIMIT = 100;
 // Liderlik tablosu, topluluk bu üye sayısına ulaşınca OTOMATİK açılır; altında gizli.
 const LEADERBOARD_MIN_USERS = 1000;
 
@@ -195,15 +200,53 @@ export default function LeaderboardPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
   const [metric, setMetric] = useState<MetricKey>('impactScore');
 
-  const usersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
-  const { data: allUsers, isLoading } = useCollection<LeaderboardUser>(usersRef);
+  // PERF: en yüksek etki puanlı ilk 100 kullanıcı (top-level impactScore alanı —
+  // tüm puan yazımları buraya increment edilir). Tüm koleksiyonu indirmez.
+  const usersRef = useMemoFirebase(
+    () => query(collection(db, COLLECTIONS.users), orderBy('impactScore', 'desc'), limit(LEADERBOARD_FETCH_LIMIT)),
+    [db],
+  );
+  const { data: topUsers, isLoading } = useCollection<LeaderboardUser>(usersRef);
+
+  // Kullanıcının kendi doc'u — top 100 dışındaysa bile "senin sıran" kartı için
+  // ayrıca çekilir ve listeye birleştirilir (top 100 içindeyse mükerrer eklenmez).
+  const myUserRef = useMemoFirebase(
+    () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
+    [db, authUser?.uid],
+  );
+  const { data: myUser } = useDoc<LeaderboardUser>(myUserRef);
+
+  const allUsers = useMemo<LeaderboardUser[] | null>(() => {
+    if (!topUsers) return null;
+    if (!myUser?.id || topUsers.some((u) => u.id === myUser.id)) return topUsers;
+    return [...topUsers, myUser];
+  }, [topUsers, myUser]);
+
+  // GATE: liderlik tablosu 1000 üyeye ulaşınca OTOMATİK açılır; altında gizli kalır.
+  // Toplam üye sayısı artık tüm koleksiyonu indirmeden getCountFromServer ile sayılır.
+  const [userCount, setUserCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!db) return;
+    let active = true;
+    getCountFromServer(collection(db, COLLECTIONS.users))
+      .then((snap) => { if (active) setUserCount(snap.data().count); })
+      .catch(() => { /* sayım best-effort; gate aşağıdaki isLoading ile beklenir */ });
+    return () => { active = false; };
+  }, [db]);
 
   const activeMetric = METRICS.find((m) => m.key === metric) ?? METRICS[0];
 
-  // GATE: liderlik tablosu 1000 üyeye ulaşınca OTOMATİK açılır; altında gizli kalır.
-  // allUsers zaten yüklü → ekstra sorgu yok. Yükleme bitmeden gate'i tetikleme.
-  const userCount = allUsers?.length ?? 0;
-  if (!isLoading && userCount < LEADERBOARD_MIN_USERS) {
+  // Gate kararı için sayım çözülmesini bekle (henüz null ise yükleme durumunda kal).
+  if (isLoading || userCount === null) {
+    return (
+      <div className="mx-auto w-full max-w-3xl space-y-5 p-4 pb-32 sm:p-6">
+        <LeaderboardHero />
+        <LeaderboardSkeleton />
+      </div>
+    );
+  }
+
+  if (userCount < LEADERBOARD_MIN_USERS) {
     return (
       <div className="mx-auto w-full max-w-3xl space-y-5 p-4 pb-32 sm:p-6">
         <LeaderboardHero />

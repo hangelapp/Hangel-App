@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import {
     collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTimestamp, getDoc,
+    orderBy, limit, documentId,
 } from 'firebase/firestore';
 import {
     Loader2, ShieldCheck, Trash2, Edit3, Power, PowerOff, UserCog, CheckCircle, XCircle,
@@ -70,10 +71,11 @@ interface CanonicalManagerRow {
     isOwner: boolean;
 }
 
-const TransferAdminDialog = ({ club, allUsers, onAssign }: {
+const TransferAdminDialog = ({ club, allUsers, onAssign, onNeedUsers }: {
     club: ClubItem;
     allUsers: SimpleClubUser[] | null;
     onAssign: (clubId: string, newUserId: string, newUserName: string, role: ClubRole) => Promise<void>;
+    onNeedUsers: () => void;
 }) => {
     const { user: authUser } = useUser();
     const { toast } = useToast();
@@ -185,7 +187,8 @@ const TransferAdminDialog = ({ club, allUsers, onAssign }: {
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        // Dialog açılınca onNeedUsers ile üyeler lazy yüklenir; gereksiz tüm-kullanıcı okuması engellenir.
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) onNeedUsers(); }}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4">
                     <UserCog className="mr-2 h-4 w-4" /> Yetkili
@@ -313,7 +316,15 @@ const TransferAdminDialog = ({ club, allUsers, onAssign }: {
                         </div>
                     )}
 
-                    {normalizedSearch.length >= 3 && !matchedUser && (
+                    {/* Üyeler henüz yüklenirken yanıltıcı "bulunamadı" mesajı göstermemek için yükleme göstergesi. */}
+                    {normalizedSearch.length >= 3 && !allUsers && (
+                        <div className="flex items-center gap-2 p-3 border border-border bg-muted/20 rounded-2xl text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Üyeler yükleniyor...</span>
+                        </div>
+                    )}
+
+                    {normalizedSearch.length >= 3 && allUsers && !matchedUser && (
                         <div className="flex items-center gap-2 p-3 border border-destructive/30 bg-destructive/5 rounded-2xl text-sm text-destructive">
                             <XCircle className="h-4 w-4" />
                             <span>{isEmailSearch ? 'Bu e-posta ile kayıtlı üye bulunamadı.' : 'Bu telefon numarasıyla kayıtlı üye bulunamadı.'}</span>
@@ -342,8 +353,15 @@ export default function ClubsAdminPage() {
     const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'passive' | 'rejected'>('all');
     const [searchTerm, setSearchTerm] = useState('');
 
-    const clubsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.clubs), [db]);
+    // Kulüp listesi sayfalı: büyüyen limit + "Daha fazla yükle" ile sınırsız listener engellenir.
+    const CLUBS_PAGE_SIZE = 100;
+    const [clubsLimit, setClubsLimit] = useState(CLUBS_PAGE_SIZE);
+    const clubsQuery = useMemoFirebase(
+        () => query(collection(db, COLLECTIONS.clubs), orderBy(documentId()), limit(clubsLimit)),
+        [db, clubsLimit],
+    );
     const { data: clubs, isLoading: clubsLoading } = useCollection<StudentClub>(clubsQuery);
+    const hasMoreClubs = (clubs?.length || 0) >= clubsLimit;
 
     const applicationsQuery = useMemoFirebase(
         () => query(collection(db, COLLECTIONS.applications), where('entityType', '==', 'CLUB')),
@@ -351,8 +369,10 @@ export default function ClubsAdminPage() {
     );
     const { data: applications, isLoading: appsLoading } = useCollection<ClubApplication>(applicationsQuery);
 
-    // Yetkili atama için tüm kullanıcılar
-    const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
+    // Yetkili atama için tüm kullanıcılar — yalnızca yetkili dialog'u açıldığında yüklenir (lazy).
+    // Dialog eşleştirme TÜM kullanıcılarda yapıldığından limit kullanılmaz.
+    const [loadUsers, setLoadUsers] = useState(false);
+    const usersQuery = useMemoFirebase(() => (loadUsers ? collection(db, COLLECTIONS.users) : null), [db, loadUsers]);
     const { data: allUsers } = useCollection<SimpleClubUser>(usersQuery);
 
     // Realtime kulüp stats — /api/clubs/stats (30s polling)
@@ -685,7 +705,7 @@ export default function ClubsAdminPage() {
                                                         <Edit3 className="mr-2 h-4 w-4" /> Düzelt
                                                     </Link>
                                                 </Button>
-                                                <TransferAdminDialog club={club} allUsers={allUsers || null} onAssign={handleAssignAdmin} />
+                                                <TransferAdminDialog club={club} allUsers={allUsers || null} onAssign={handleAssignAdmin} onNeedUsers={() => setLoadUsers(true)} />
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -731,6 +751,11 @@ export default function ClubsAdminPage() {
                             <div className="p-16 text-center text-muted-foreground italic">Bu filtreyle eşleşen kulüp bulunmuyor.</div>
                         )}
                     </div>
+                    {hasMoreClubs && !searchTerm && (
+                        <div className="flex justify-center p-4 border-t border-border">
+                            <Button variant="outline" className="rounded-xl font-bold" onClick={() => setClubsLimit((n) => n + CLUBS_PAGE_SIZE)}>Daha fazla yükle</Button>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

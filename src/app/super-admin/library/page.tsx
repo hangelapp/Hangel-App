@@ -39,7 +39,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, query, orderBy, limit, documentId } from 'firebase/firestore';
 
 // Define a type that includes the section slug for easier manipulation
 type ItemWithSection = LibraryItem & { sectionSlug: string };
@@ -139,7 +139,7 @@ export default function LibraryPage() {
     const { toast } = useToast();
     const db = useFirestore();
 
-    const libQuery = useMemoFirebase(() => collection(db, COLLECTIONS.library), [db]);
+    const libQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.library), orderBy(documentId()), limit(200)), [db]);
     const { data: libData, isLoading } = useCollection<LibrarySection>(libQuery);
 
     // State for dialogs
