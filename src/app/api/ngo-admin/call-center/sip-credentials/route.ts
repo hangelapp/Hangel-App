@@ -14,7 +14,9 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -52,6 +54,16 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // Rate-limit: SIP credential enumeration/abuse'ı önle (kullanıcı başına 30/dk).
+  const rl = await checkRateLimit({ bucket: 'sip-credentials', key: ctx.uid, limit: 30, windowMs: 60_000 });
+  if (!rl.allowed) {
+    const retryAfter = Math.max(0, Math.ceil((rl.resetAt - Date.now()) / 1000));
+    return NextResponse.json(
+      { errorCode: 'RATE_LIMITED', message: 'Çok fazla istek. Lütfen biraz bekleyin.' },
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } },
+    );
+  }
+
   // Önce non-public, sonra NEXT_PUBLIC fallback — değerler artık client bundle'a
   // GİRMEZ; sadece server runtime'ında okunur.
   const wssUrl = process.env.SANTRAL_WSS_URL || process.env.NEXT_PUBLIC_SANTRAL_WSS_URL || '';
@@ -72,23 +84,39 @@ export async function GET(req: NextRequest) {
   // Tenant-özel SIP kullanıcı adı: ngoCallCenter/{ngoId}.sipUsername doluysa
   // env'deki yerine kullanılır.
   let sipUsername = envSipUser;
+  let tenantPassword: string | undefined;
   try {
     const ccSnap = await getAdminFirestore().collection('ngoCallCenter').doc(ctx.ngoId).get();
     if (ccSnap.exists) {
-      const cc = ccSnap.data() as { sipUsername?: string };
+      const cc = ccSnap.data() as { sipUsername?: string; sipPassword?: string };
       if (cc?.sipUsername) sipUsername = cc.sipUsername;
+      if (cc?.sipPassword) tenantPassword = cc.sipPassword;
     }
   } catch {
     // ngoCallCenter okunamadıysa env fallback ile devam.
   }
+  // Per-tenant izolasyon: STK'nın kendi SIP parolası provize edilmişse paylaşılan env
+  // yerine onu döndür (Asterisk tenant başına kullanıcı tanımlandığında toll-fraud yüzeyi daralır).
+  const effectivePassword = tenantPassword || sipPassword;
 
   const iceServers: RTCIceServer[] = [
     { urls: 'stun:stun.l.google.com:19302' },
     ...(turnUrl ? [{ urls: turnUrl, username: turnUser, credential: turnPass }] : []),
   ];
 
+  // Audit: kim / hangi STK / ne zaman SIP credential aldı (hesap verebilirlik + anomali tespiti).
+  try {
+    await getAdminFirestore().collection('callCenterCredAudit').add({
+      uid: ctx.uid,
+      ngoId: ctx.ngoId,
+      email: ctx.email ?? null,
+      perTenant: !!tenantPassword,
+      at: FieldValue.serverTimestamp(),
+    });
+  } catch { /* audit best-effort, isteği bloklamaz */ }
+
   return NextResponse.json(
-    { ok: true, wssUrl, sipUsername, sipPassword, sipDomain, iceServers },
+    { ok: true, wssUrl, sipUsername, sipPassword: effectivePassword, sipDomain, iceServers },
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }
