@@ -46,7 +46,8 @@ import {
 } from './_components/leaderboard-types';
 
 const PAGE_SIZE = 7;
-const MAX_LIST = 50;
+// İlk 100 kullanıcı listelenebilsin (kullanıcı isteği) — Firestore zaten 100 çekiyor.
+const MAX_LIST = 100;
 // PERF: tüm `users` koleksiyonunu indirmek yerine en yüksek etki puanlı ilk 100
 // kullanıcı çekilir (board zaten yalnız üst sıraları gösterir). Kullanıcının
 // kendi doc'u ayrıca alınıp birleştirilir → top 100 dışındaysa bile "senin sıran"

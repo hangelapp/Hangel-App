@@ -78,7 +78,7 @@ const STORE_PLATFORMS: PlatformCard[] = [
   },
   {
     name: 'Mac App',
-    description: 'macOS 11+ — Mac Catalyst (iOS app Mac\'te çalışır)',
+    description: 'MacBook · macOS 11+ (iOS app Mac\'te çalışır)',
     icon: Laptop,
     href: 'https://apps.apple.com/tr/app/hangel/id6664058822',
     badge: 'beta',
