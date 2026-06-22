@@ -751,14 +751,17 @@ export default function EmergencyPage() {
         <div className="px-4">
             <Tabs defaultValue="report" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1.5 h-14 rounded-3xl backdrop-blur-xl shrink-0">
-                    <TabsTrigger value="report" className="rounded-2xl text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">
-                        {t('emergency_root.tabReport')}
+                    {/* min-w-0 + whitespace-normal + line-clamp: dar ekranda (≤375px)
+                        uzun sekme etiketleri ("Çağrılar & Kayıtlar") taşıp yatay
+                        kaydırma yaratmasın; min-h-[44px] dokunma hedefi korunur. */}
+                    <TabsTrigger value="report" className="min-w-0 min-h-[44px] whitespace-normal rounded-2xl px-1 text-xs font-bold leading-tight data-[state=active]:bg-background data-[state=active]:shadow-md sm:text-sm">
+                        <span className="line-clamp-2">{t('emergency_root.tabReport')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="calls" className="rounded-2xl text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">
-                        {t('emergency_root.tabCalls')}
+                    <TabsTrigger value="calls" className="min-w-0 min-h-[44px] whitespace-normal rounded-2xl px-1 text-xs font-bold leading-tight data-[state=active]:bg-background data-[state=active]:shadow-md sm:text-sm">
+                        <span className="line-clamp-2">{t('emergency_root.tabCalls')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="my-requests" className="rounded-2xl text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">
-                        {t('emergency_root.tabMyRequests')}
+                    <TabsTrigger value="my-requests" className="min-w-0 min-h-[44px] whitespace-normal rounded-2xl px-1 text-xs font-bold leading-tight data-[state=active]:bg-background data-[state=active]:shadow-md sm:text-sm">
+                        <span className="line-clamp-2">{t('emergency_root.tabMyRequests')}</span>
                     </TabsTrigger>
                 </TabsList>
 

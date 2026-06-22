@@ -216,7 +216,7 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
     const countdownText = daysRemaining > 0 ? t('volunteering_root.remainingDays').replace('{days}', String(daysRemaining)) : (daysRemaining === 0 ? t('volunteering_root.lastDay') : t('volunteering_root.expired'));
 
     return (
-        <Card className="overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-primary/20 h-full">
+        <Card className="overflow-hidden border border-border/60 shadow-sm transition-all hover:shadow-md hover:border-primary/30 h-full">
             <Link href={`/volunteering/${opp.id}`} className="block group h-full">
                 <CardContent className="p-3 flex flex-col justify-between h-full">
                     <div>
@@ -534,7 +534,7 @@ export default function VolunteeringPage() {
   return (
     <div className="space-y-4 animate-in fade-in-0">
       <div className="p-4 space-y-4">
-        <div className="space-y-3 sticky top-12 bg-background/95 backdrop-blur-xl z-10 py-2">
+        <div className="space-y-3 sticky top-[calc(3rem+env(safe-area-inset-top))] bg-background/95 backdrop-blur-xl z-10 py-2">
           <h1 className="text-2xl font-bold font-headline">{t('volunteeringPage.title')}</h1>
           <div className="flex gap-2">
               <div className="relative flex-grow min-w-0">
@@ -596,7 +596,7 @@ export default function VolunteeringPage() {
           </div>
         </div>
 
-        <div id="imece-all-listings" className="space-y-2 scroll-mt-32">
+        <div id="imece-all-listings" className="space-y-3 scroll-mt-32">
           {isLoading ? (
               [...Array(3)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)
           ) : filteredOpps.length > 0 ? (

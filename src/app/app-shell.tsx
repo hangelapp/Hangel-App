@@ -668,7 +668,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                                 <Link href="/login" onClick={() => setDrawerOpen(false)}>
                                     <HangelLogo className="text-2xl" href={null} />
                                 </Link>
-                                <SheetClose className="flex h-10 w-10 items-center justify-center rounded-full -mr-2 hover:bg-glass-black-5 dark:hover:bg-glass-white-8 active:scale-95 transition" aria-label="Menüyü kapat">
+                                <SheetClose className="flex h-11 w-11 items-center justify-center rounded-full -mr-2 hover:bg-glass-black-5 dark:hover:bg-glass-white-8 active:scale-95 transition" aria-label="Menüyü kapat">
                                     <X className="h-6 w-6 text-muted-foreground" />
                                 </SheetClose>
                             </div>

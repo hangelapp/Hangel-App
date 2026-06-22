@@ -414,8 +414,8 @@ function EventsPageContent() {
                   />
                   {/* Alt scrim — beyaz rozet/metin görselin üstünde her zaman okunsun */}
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />
-                  <div className="absolute top-2 left-2">
-                    <Badge className="bg-white/90 backdrop-blur-md text-primary border-none font-black uppercase text-xs tracking-widest px-2 py-0.5 rounded-full shadow-sm">{event.type}</Badge>
+                  <div className="absolute top-2 left-2 max-w-[60%]">
+                    <Badge className="block max-w-full truncate bg-white/90 backdrop-blur-md text-primary border-none font-black uppercase text-xs tracking-widest px-2 py-0.5 rounded-full shadow-sm">{event.type}</Badge>
                   </div>
                   <div className="absolute top-2.5 right-2.5">
                     {isEnded

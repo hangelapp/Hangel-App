@@ -38,21 +38,21 @@ import { CertificatesTab } from '@/components/profile/certificates-tab';
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
     const ValueComponent = href ? (
-        <Link href={href} className="flex items-center gap-1 text-muted-foreground hover:underline">
-            <span>{value}</span>
-            <ChevronRight className="h-4 w-4" />
+        <Link href={href} className="flex items-center gap-1 text-muted-foreground hover:underline min-w-0">
+            <span className="truncate">{value}</span>
+            <ChevronRight className="h-4 w-4 shrink-0" />
         </Link>
     ) : (
-        <p className="text-muted-foreground">{Array.isArray(value) ? value.join(', ') : value}</p>
+        <p className="text-muted-foreground break-words min-w-0">{Array.isArray(value) ? value.join(', ') : value}</p>
     );
 
     return (
-        <div className="flex justify-between items-start py-2 text-sm">
-            <div className='flex items-start'>
-                <Icon className="h-4 w-4 text-muted-foreground mt-0.5" />
+        <div className="flex justify-between items-start gap-3 py-2 text-sm">
+            <div className='flex items-start shrink-0 max-w-[45%]'>
+                <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                 <p className="font-medium ml-3">{label}</p>
             </div>
-            <div className="flex items-center gap-2 text-right">
+            <div className="flex items-center gap-2 text-right min-w-0">
                 {ValueComponent}
                 {verified && <CheckCircle className="h-4 w-4 text-primary shrink-0" />}
             </div>
@@ -582,7 +582,7 @@ export default function ProfilePage() {
             <div className="p-4 space-y-6">
                 <div className="flex flex-col items-center text-center">
                     <UserAvatar className="w-24 h-24 mb-4" />
-                    <h1 className="text-3xl font-bold">{currentUser.name}</h1>
+                    <h1 className="text-3xl font-bold break-words max-w-full">{currentUser.name}</h1>
                 </div>
                 <Tabs defaultValue="impact" className="w-full">
                     <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex sm:justify-center">
@@ -663,15 +663,15 @@ export default function ProfilePage() {
                                 ) : sortedAndFilteredTransactions.slice(0, 5).map((tx, index) => {
                                     const Icon = tx.icon;
                                     return (
-                                    <div key={index} className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-3">
-                                            <Icon className="h-5 w-5 text-muted-foreground" />
-                                            <div>
-                                                <p>{tx.description}</p>
+                                    <div key={index} className="flex items-center justify-between gap-3 text-sm">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <Icon className="h-5 w-5 text-muted-foreground shrink-0" />
+                                            <div className="min-w-0">
+                                                <p className="break-words">{tx.description}</p>
                                                 {tx.time && <p className="text-xs text-muted-foreground">{format(parseISO(tx.time), 'dd MMMM yyyy, HH:mm', { locale: tr })}</p>}
                                             </div>
                                         </div>
-                                        <p className="font-bold text-green-600">+{tx.points} {t('profilePage.pointSuffix')}</p>
+                                        <p className="font-bold text-green-600 shrink-0">+{tx.points} {t('profilePage.pointSuffix')}</p>
                                     </div>
                                 )})}
                             </CardContent>
@@ -688,11 +688,11 @@ export default function ProfilePage() {
                          {Array.isArray((userData as { preferences?: { intents?: string[] } } | undefined)?.preferences?.intents) &&
                           ((userData as { preferences?: { intents?: string[] } }).preferences!.intents!.length > 0) && (
                             <Card variant="glass">
-                                <CardHeader className="flex flex-row justify-between items-center pb-2">
-                                    <CardTitle className='text-lg flex items-center gap-2'>
-                                        <Sparkles className='h-5 w-5 text-fuchsia-500' /> {t('profilePage.usagePreferences')}
+                                <CardHeader className="flex flex-row justify-between items-center gap-2 pb-2">
+                                    <CardTitle className='text-lg flex items-center gap-2 min-w-0'>
+                                        <Sparkles className='h-5 w-5 text-fuchsia-500 shrink-0' /> <span className="truncate">{t('profilePage.usagePreferences')}</span>
                                     </CardTitle>
-                                    <Button asChild variant="ghost" size="icon" aria-label={t('profilePage.editLabel')}>
+                                    <Button asChild variant="ghost" size="icon" className="shrink-0" aria-label={t('profilePage.editLabel')}>
                                         <Link href="/settings/intents">
                                             <Edit className="h-4 w-4" />
                                         </Link>

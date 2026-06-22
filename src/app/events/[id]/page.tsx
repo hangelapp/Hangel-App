@@ -594,8 +594,8 @@ export default function EventDetailPage() {
             <div className="space-y-8">
                 <Tabs defaultValue="details" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 h-12 rounded-2xl glass-surface border border-white/40 p-1">
-                        <TabsTrigger value="details" className="rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Etkinlik Detayları</TabsTrigger>
-                        <TabsTrigger value="organization" className="rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Kuruluş Hakkında</TabsTrigger>
+                        <TabsTrigger value="details" className="min-w-0 truncate rounded-xl px-2 text-xs font-bold sm:px-3 sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white">Etkinlik Detayları</TabsTrigger>
+                        <TabsTrigger value="organization" className="min-w-0 truncate rounded-xl px-2 text-xs font-bold sm:px-3 sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white">Kuruluş Hakkında</TabsTrigger>
                     </TabsList>
                     <TabsContent value="details" className="mt-6 space-y-6">
                         <Card className="glass-surface rounded-3xl border-white/40 shadow-sm">
@@ -609,7 +609,7 @@ export default function EventDetailPage() {
                                     <div className="flex flex-col gap-2">
                                         <span>{event.location.type === 'Online' ? 'Online' : `${event.location.address}`}</span>
                                         {event.location.type !== 'Online' && (
-                                            <Button variant="outline" size="sm" className="w-fit h-9 rounded-xl text-xs font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location.address + ' ' + event.location.district + ' ' + event.location.city)}`, '_blank')}>
+                                            <Button variant="outline" size="sm" className="w-fit h-10 rounded-xl text-xs font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location.address + ' ' + event.location.district + ' ' + event.location.city)}`, '_blank')}>
                                                 <Map className="h-3 w-3" /> Adres Tarifi Al
                                             </Button>
                                         )}
@@ -655,7 +655,7 @@ export default function EventDetailPage() {
                                     <Link href={organizerLink} className="text-muted-foreground hover:underline font-bold text-primary">{event.organizer}</Link>
                                 </InfoRow>
                                 <InfoRow icon={MapPin} label="Konum (İlçe / İl)">
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-wrap gap-2">
                                         <Link href={`/events?tag=${encodeURIComponent(event.location.district)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{event.location.district}</Badge></Link>
                                         <Link href={`/events?tag=${encodeURIComponent(event.location.city)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{event.location.city}</Badge></Link>
                                     </div>

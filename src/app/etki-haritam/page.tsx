@@ -353,14 +353,14 @@ export default function EtkiHaritamPage() {
                           selectedCity === c.city ? 'bg-primary/10' : 'hover:bg-accent/60',
                         )}
                       >
-                        <span className="flex items-center gap-2.5">
+                        <span className="flex items-center gap-2.5 min-w-0">
                           <span
-                            className="inline-block h-2.5 w-2.5 rounded-full"
+                            className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
                             style={{ backgroundColor: '#f34723', opacity: 0.55 + 0.45 * (c.total / (cities[0]?.total || 1)) }}
                           />
-                          <span className="text-sm font-semibold text-foreground">{c.city}</span>
+                          <span className="truncate text-sm font-semibold text-foreground">{c.city}</span>
                         </span>
-                        <span className="text-xs font-medium text-muted-foreground">
+                        <span className="shrink-0 text-xs font-medium text-muted-foreground">
                           {c.total} katkı
                         </span>
                       </button>
@@ -422,9 +422,9 @@ function StatCard({
         >
           <Icon className="h-[18px] w-[18px]" />
         </span>
-        <div>
+        <div className="min-w-0">
           <p className="text-lg font-bold leading-none">{value}</p>
-          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="truncate text-xs text-muted-foreground">{label}</p>
         </div>
       </CardContent>
     </Card>

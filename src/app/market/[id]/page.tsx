@@ -24,9 +24,9 @@ import { BrandLogo } from '@/components/market/brand-logo';
 const StatRow = ({ label, value }: { label: string, value: string | number | undefined }) => {
     if (value === undefined) return null;
     return (
-        <div className="flex justify-between items-center py-4 text-sm border-b last:border-b-0">
-            <p className="text-muted-foreground font-medium">{label}</p>
-            <p className="font-bold text-foreground">{typeof value === 'number' ? value.toLocaleString('tr-TR') : value}{label.includes('Oranı') ? '%' : ''}</p>
+        <div className="flex justify-between items-center gap-3 py-4 text-sm border-b last:border-b-0">
+            <p className="text-muted-foreground font-medium min-w-0">{label}</p>
+            <p className="font-bold text-foreground shrink-0 text-right">{typeof value === 'number' ? value.toLocaleString('tr-TR') : value}{label.includes('Oranı') ? '%' : ''}</p>
         </div>
     );
 };
@@ -250,10 +250,10 @@ export default function BrandProfilePage() {
                 <div className="relative h-24 w-24 rounded-full border-4 border-background shrink-0 bg-white shadow-xl overflow-hidden">
                     <BrandLogo brand={brand} />
                 </div>
-                 <div className="flex-1">
+                 <div className="flex-1 min-w-0">
                     <div>
-                         <h1 className="text-3xl font-black font-headline tracking-tighter leading-tight">{brand.name}</h1>
-                         <p className="text-muted-foreground text-sm font-medium capitalize">{brand.category}</p>
+                         <h1 className="text-2xl sm:text-3xl font-black font-headline tracking-tighter leading-tight break-words">{brand.name}</h1>
+                         <p className="text-muted-foreground text-sm font-medium capitalize break-words">{brand.category}</p>
                     </div>
                 </div>
             </div>
@@ -353,9 +353,9 @@ export default function BrandProfilePage() {
                     <Card className="rounded-[2rem] shadow-sm border-border">
                         <CardHeader><CardTitle className="text-lg flex items-center gap-2 font-bold"><Mail className="h-5 w-5 text-primary"/> İletişim</CardTitle></CardHeader>
                         <CardContent className="text-sm space-y-3 font-medium">
-                            {email && <a href={`mailto:${email}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary"><Mail className="h-4 w-4 shrink-0"/>{email}</a>}
-                            {phone && <a href={`tel:${phoneCC || ''}${phone}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary"><Phone className="h-4 w-4 shrink-0"/>{phoneCC ? `${phoneCC} ` : ''}{phone}</a>}
-                            {web && <a href={web.startsWith('http') ? web : `https://${web}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-primary"><Globe className="h-4 w-4 shrink-0"/>{web}</a>}
+                            {email && <a href={`mailto:${email}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary"><Mail className="h-4 w-4 shrink-0"/><span className="min-w-0 break-all">{email}</span></a>}
+                            {phone && <a href={`tel:${phoneCC || ''}${phone}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary"><Phone className="h-4 w-4 shrink-0"/><span className="min-w-0 break-all">{phoneCC ? `${phoneCC} ` : ''}{phone}</span></a>}
+                            {web && <a href={web.startsWith('http') ? web : `https://${web}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-primary"><Globe className="h-4 w-4 shrink-0"/><span className="min-w-0 break-all">{web}</span></a>}
                             {(ig || tw || li) && (
                                 <div className="flex items-center gap-3 pt-2 border-t border-dashed">
                                     {ig && <a href={ig.startsWith('http') ? ig : `https://instagram.com/${ig.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Instagram className="h-5 w-5"/></a>}
@@ -386,11 +386,11 @@ export default function BrandProfilePage() {
             {brand.donationRate > 0 && (
                  <Card className="rounded-[2rem] shadow-sm border-border overflow-hidden">
                     <CardHeader className="bg-primary/5 pb-6">
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg flex items-center gap-2 text-primary font-bold">
-                                <Percent className="h-5 w-5"/> Bağış Oranları
+                        <div className="flex items-center justify-between gap-2">
+                            <CardTitle className="text-lg flex items-center gap-2 text-primary font-bold min-w-0">
+                                <Percent className="h-5 w-5 shrink-0"/> <span className="truncate">Bağış Oranları</span>
                             </CardTitle>
-                            <Badge className="bg-primary text-white font-black text-xl px-4 py-1.5 h-auto rounded-xl">%{brand.donationRate}</Badge>
+                            <Badge className="bg-primary text-white font-black text-xl px-4 py-1.5 h-auto rounded-xl shrink-0">%{brand.donationRate}</Badge>
                         </div>
                         <CardDescription className="text-muted-foreground mt-2 font-medium">
                             Bu markadan yapacağınız her alışverişin belirtilen oranı seçtiğiniz STK'ya bağışlanır.
@@ -400,9 +400,9 @@ export default function BrandProfilePage() {
                         {brand.donationByCategory && brand.donationByCategory.length > 0 ? (
                             <div className="divide-y border-t border-border">
                                 {brand.donationByCategory.map(item => (
-                                    <div key={item.category} className="flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
-                                        <span className="font-bold text-sm text-foreground">{item.category}</span>
-                                        <span className="font-black text-primary text-lg tracking-tighter">%{item.rate.toFixed(2)}</span>
+                                    <div key={item.category} className="flex items-center justify-between gap-3 p-5 hover:bg-muted/30 transition-colors">
+                                        <span className="font-bold text-sm text-foreground min-w-0 break-words">{item.category}</span>
+                                        <span className="font-black text-primary text-lg tracking-tighter shrink-0">%{item.rate.toFixed(2)}</span>
                                     </div>
                                 ))}
                             </div>

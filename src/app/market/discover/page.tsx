@@ -226,11 +226,11 @@ export default function DiscoverPage() {
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-xl font-black leading-none text-foreground">
               Ürünleri Keşfet
             </h1>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 truncate text-xs text-muted-foreground">
               Her alışveriş bir bağış · umudu büyütüyoruz
             </p>
           </div>
