@@ -1044,11 +1044,9 @@ export default function VolunteeringDetailPage() {
             </div>
         </div>
 
-        {/* Alt sabit nav (z-40, h-16) gönüllülük detayında gizlenmiyor; sticky CTA
-            barını onun ÜSTÜNE kaldır (bottom = nav yüksekliği + safe-area) ve z'yi
-            yükselt ki "Hemen Başvur" butonu nav'ın arkasında kalıp tıklanamaz olmasın.
-            lg'de nav yok → bar tekrar dibe (bottom-0) oturur. */}
-        <DetailStickyBar className="bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 lg:bottom-0">
+        {/* Alt sabit nav bu sayfada artık GİZLİ (bottom-nav: events|volunteering detay),
+            o yüzden CTA barı varsayılan dibe oturur — workaround'a gerek kalmadı. */}
+        <DetailStickyBar>
              {applicationStatus === 'Beklemede' ? (
                 <div className="w-full h-14 rounded-full flex items-center justify-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-base font-semibold px-4 text-center">
                     <Clock className="h-5 w-5 shrink-0" /> Başvurun alındı, onay bekliyorsunuz

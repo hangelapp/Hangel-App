@@ -60,10 +60,11 @@ export default function AppBottomNav() {
   const isAppPath = appPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
   if (!isAppPath) return null;
 
-  // Etkinlik detay sayfasının kendi alt aksiyon barı (Katıl / Yaka Kartı) var;
-  // bottom-nav (z-40) onu örtmesin diye detay sayfasında gizlenir.
-  const isEventDetail = /^\/events\/[^/]+/.test(pathname);
-  if (isEventDetail) return null;
+  // Etkinlik VE gönüllülük detay sayfalarının kendi alt aksiyon barı
+  // (Katıl / Hemen Başvur / Yaka Kartı) var; bottom-nav (z-40) onu örtüp
+  // butonu tıklanamaz yapmasın diye bu detay sayfalarında gizlenir.
+  const isOwnBottomBarDetail = /^\/(events|volunteering)\/[^/]+/.test(pathname);
+  if (isOwnBottomBarDetail) return null;
 
   // Etkinlik sekmesini sadece kulüp üyesi/yöneticisine göster.
   const visibleItems = navItems.filter((item) => item.href !== '/events' || isClubMember);
