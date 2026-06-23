@@ -76,7 +76,7 @@ export function EventAttendanceButton({ eventId, eventName, authUser, className 
                 {going.map((p) => (
                   <li key={p.uid} className="flex items-center justify-between gap-2 py-2.5">
                     <span className="min-w-0">
-                      <span className="block truncate font-semibold">{p.name}</span>
+                      <span className="block break-words font-semibold">{p.name}</span>
                       {p.email && <span className="block truncate text-xs text-muted-foreground">{p.email}</span>}
                     </span>
                     {p.checkedIn && (

@@ -134,7 +134,7 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
             </span>
           )}
           {event.organizer && (
-            <span className="min-w-0 truncate text-xs font-bold uppercase tracking-wider text-muted-foreground">{event.organizer}</span>
+            <span className="min-w-0 break-words text-xs font-bold uppercase tracking-wider text-muted-foreground">{event.organizer}</span>
           )}
         </div>
       )}
@@ -178,7 +178,7 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
           <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Konuşmacılar</p>
           {contributors.map((c, idx) => (
             <div key={idx} className="rounded-2xl bg-muted/40 p-3.5">
-              <p className="truncate font-bold leading-tight">{c.name}</p>
+              <p className="break-words font-bold leading-tight">{c.name}</p>
               {c.title && <p className="truncate text-xs font-medium text-muted-foreground">{c.title}</p>}
               {isGoing ? (
                 <div className="mt-1.5 flex flex-wrap items-center gap-0.5">

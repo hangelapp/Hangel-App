@@ -197,7 +197,7 @@ export function CompletedVolunteerTasks({
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="min-w-0">
-                                            <p className="font-medium leading-tight truncate">
+                                            <p className="font-medium leading-tight break-words">
                                                 {orgName || t('profile_completed_volunteer.unknownOrg')}
                                             </p>
                                             {title && (

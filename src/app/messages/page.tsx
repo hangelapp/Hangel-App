@@ -438,7 +438,7 @@ function MessagesContent() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-center gap-2 mb-1">
                                         <div className="flex items-center gap-2 min-w-0">
-                                            <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="font-bold text-sm truncate hover:underline text-left min-w-0">{senderName}</button>
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="font-bold text-sm break-words hover:underline text-left min-w-0">{senderName}</button>
                                             {msg.senderType && (
                                                 <div className="p-1 bg-muted rounded-full text-muted-foreground shrink-0">{senderTypeIcons[msg.senderType] || null}</div>
                                             )}
@@ -487,7 +487,7 @@ function MessagesContent() {
                                         <div className="flex justify-between items-center gap-2 mb-1">
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground shrink-0">{t('dashboard.messages.recipientLabel')}</span>
-                                                <span className="font-bold text-sm truncate min-w-0">{recipientName}</span>
+                                                <span className="font-bold text-sm break-words min-w-0">{recipientName}</span>
                                             </div>
                                             <span className="text-[10px] text-muted-foreground shrink-0">{formatMsgTime(msg.timestamp) || msg.time}</span>
                                         </div>
@@ -529,7 +529,7 @@ function MessagesContent() {
                                         <AvatarFallback>{(selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name || '?')[0]}</AvatarFallback>
                                     </Avatar>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-semibold truncate">{selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name}</p>
+                                        <p className="text-sm font-semibold break-words">{selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name}</p>
                                         <p className="text-xs text-muted-foreground truncate">{selectedRecipient.recipientKind === 'ngo' ? t('dashboard.messages.kindNgo') : selectedRecipient.recipientKind === 'brand' ? t('dashboard.messages.kindBrand') : selectedRecipient.recipientKind === 'club' ? t('dashboard.messages.kindClub') : ''}</p>
                                     </div>
                                 </div>
@@ -556,7 +556,7 @@ function MessagesContent() {
                                                     <AvatarFallback>{name[0]}</AvatarFallback>
                                                 </Avatar>
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-medium truncate">{name}</p>
+                                                    <p className="text-sm font-medium break-words">{name}</p>
                                                     {kindLabel ? <p className="text-xs text-muted-foreground truncate">{kindLabel}</p> : null}
                                                 </div>
                                             </button>

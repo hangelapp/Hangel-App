@@ -333,7 +333,7 @@ export default function MarketPage() {
                           %{safeDonationRate}
                         </div>
                       </div>
-                      <p className="text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
+                      <p className="text-xs font-bold leading-tight text-foreground group-hover:text-primary break-words">{brand.name}</p>
                     </div>
                   </Link>
                 );

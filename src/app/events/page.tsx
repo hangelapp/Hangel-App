@@ -425,7 +425,7 @@ function EventsPageContent() {
                 </div>
                 <CardContent className="p-3 flex-1 space-y-2">
                   <h2 className="text-sm font-bold font-headline leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">{eventName}</h2>
-                  <p className="text-xs font-bold text-primary truncate">{event.organizer}</p>
+                  <p className="text-xs font-bold text-primary break-words">{event.organizer}</p>
                   <div className="space-y-1 pt-1 border-t border-dashed border-border">
                     <div className="text-xs text-muted-foreground font-bold flex items-center gap-1.5 min-w-0">
                         <Calendar className='h-3 w-3 text-primary shrink-0'/>

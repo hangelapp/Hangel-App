@@ -213,12 +213,12 @@ function Section({ icon: Icon, title, items, hrefPrefix, getLogo }: {
                                         <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0 leading-tight">
-                                        <p className="font-semibold text-sm truncate leading-tight">{name}</p>
+                                        <p className="font-semibold text-sm break-words leading-tight">{name}</p>
                                         {item.location?.city && (
                                             <p className="text-[11px] text-muted-foreground truncate leading-tight">{item.location.city}</p>
                                         )}
                                         {(item.organizer || item.organization) && (
-                                            <p className="text-[11px] text-muted-foreground truncate leading-tight">{item.organizer || item.organization}</p>
+                                            <p className="text-[11px] text-muted-foreground break-words leading-tight">{item.organizer || item.organization}</p>
                                         )}
                                     </div>
                                 </CardContent>

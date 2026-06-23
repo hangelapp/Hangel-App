@@ -125,7 +125,7 @@ export function EventCheckinQR({ eventId }: { eventId: string }) {
                 return (
                   <div key={p.uid} className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2 ${green ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30' : 'border-border'}`}>
                     <div className="min-w-0">
-                      <p className={`truncate text-sm font-semibold ${green ? 'text-emerald-700 dark:text-emerald-400' : ''}`}>{p.name}</p>
+                      <p className={`break-words text-sm font-semibold ${green ? 'text-emerald-700 dark:text-emerald-400' : ''}`}>{p.name}</p>
                       {p.email && <p className="truncate text-xs text-muted-foreground">{p.email}</p>}
                     </div>
                     {mode === 'checkin' && (

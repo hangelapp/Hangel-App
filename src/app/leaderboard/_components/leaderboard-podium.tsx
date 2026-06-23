@@ -85,8 +85,8 @@ const PodiumCard = ({ user, rank, unit }: { user: RankedUser; rank: 0 | 1 | 2; u
         )}
       </div>
       <div className="flex w-full min-w-0 flex-col items-center gap-0.5">
-        <p className="line-clamp-1 max-w-full break-words font-semibold text-foreground">{name}</p>
-        {handle && <p className="line-clamp-1 max-w-full break-all text-xs text-muted-foreground">{handle}</p>}
+        <p className="max-w-full break-words font-semibold text-foreground">{name}</p>
+        {handle && <p className="max-w-full break-all text-xs text-muted-foreground">{handle}</p>}
       </div>
       <div className="mt-auto flex items-center gap-1.5 rounded-full bg-background/60 px-3 py-1 text-sm font-bold text-foreground backdrop-blur">
         <Medal className={cn('h-4 w-4', style.icon)} />

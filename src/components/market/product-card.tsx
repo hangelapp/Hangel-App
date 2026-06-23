@@ -84,7 +84,7 @@ export function ProductCard({
 
       {/* Bilgi — Trendyol kompakt */}
       <div className="flex flex-1 flex-col gap-0.5 px-2 pb-2 pt-1.5">
-        <p className="truncate text-xs font-bold text-foreground">{product.brandName}</p>
+        <p className="break-words text-xs font-bold text-foreground">{product.brandName}</p>
         <p className="line-clamp-2 min-h-[1.9rem] text-[11px] leading-tight text-muted-foreground">
           {product.title}
         </p>

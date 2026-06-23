@@ -226,7 +226,7 @@ const TransferAdminDialog = ({ club, allUsers, onAssign, onNeedUsers }: {
                                             </Avatar>
                                             <div className="flex-1 min-w-[140px]">
                                                 <div className="flex items-center gap-1.5">
-                                                    <p className="font-bold text-sm truncate">{row.name}</p>
+                                                    <p className="font-bold text-sm break-words min-w-0">{row.name}</p>
                                                     {row.isOwner && (
                                                         <Badge variant="outline" className="text-[9px] font-bold px-1.5 py-0 bg-amber-100 text-amber-800 border-amber-300/50">Sahip</Badge>
                                                     )}
@@ -675,7 +675,7 @@ export default function ClubsAdminPage() {
                                         </Avatar>
                                         <div className="space-y-1 min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <p className="font-black text-base text-foreground tracking-tight truncate">{club.name}</p>
+                                                <p className="font-black text-base text-foreground tracking-tight break-words">{club.name}</p>
                                                 {isApproved && <Badge className="bg-green-600 text-white text-[9px] font-black uppercase">YAYINDA</Badge>}
                                                 {isPending && <Badge className="bg-amber-500 text-white text-[9px] font-black uppercase">ONAY BEKLİYOR</Badge>}
                                                 {isPassive && <Badge variant="secondary" className="text-[9px] font-black uppercase">PASİF</Badge>}

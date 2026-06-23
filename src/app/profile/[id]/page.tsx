@@ -135,7 +135,7 @@ export default function PublicProfilePage() {
           </Avatar>
           <div className="space-y-1 pt-16 min-w-0">
             <h1 className="text-2xl font-bold font-headline break-words">{profile.name ?? 'İsimsiz Kullanıcı'}</h1>
-            {profile.username && <p className="text-muted-foreground text-sm truncate">@{profile.username}</p>}
+            {profile.username && <p className="text-muted-foreground text-sm break-words">@{profile.username}</p>}
             {locationLine && (
               <div className="flex items-center gap-1 text-muted-foreground text-xs">
                 <MapPin className="h-3.5 w-3.5 shrink-0" />

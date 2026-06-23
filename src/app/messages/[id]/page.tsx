@@ -119,7 +119,7 @@ export default function MessageDetailPage() {
           <AvatarFallback>{otherName[0]?.toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold truncate">{otherName}</p>
+          <p className="text-sm font-bold break-words">{otherName}</p>
           {timestampText && <p className="text-[11px] text-muted-foreground truncate">{timestampText}</p>}
         </div>
         {!isSystemMessage && otherId && (

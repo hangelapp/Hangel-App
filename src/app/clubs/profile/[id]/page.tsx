@@ -37,7 +37,7 @@ const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: str
             <AvatarFallback>{(name || 'Ü').charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-            <p className="font-semibold text-sm truncate">{name}</p>
+            <p className="font-semibold text-sm break-words">{name}</p>
             <p className="text-xs text-muted-foreground truncate">{role}</p>
         </div>
     </div>
@@ -243,10 +243,10 @@ export default function ClubProfilePage() {
                 <AvatarFallback>{club.name.slice(0,2)}</AvatarFallback>
             </Avatar>
              <div className="space-y-1 pt-16 min-w-0">
-                 <h1 className="text-2xl font-bold font-headline truncate">{club.name}</h1>
+                 <h1 className="text-2xl font-bold font-headline break-words">{club.name}</h1>
                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                    <School className="h-3.5 w-3.5" />
-                    <span className="truncate">{club.university}</span>
+                    <School className="h-3.5 w-3.5 shrink-0" />
+                    <span className="break-words">{club.university}</span>
                  </div>
                  {/* Kulüp rozetleri — Doğrulanmış / Aktif / Kampüs Elçisi */}
                  <div className="flex flex-wrap items-center gap-1.5 pt-1">

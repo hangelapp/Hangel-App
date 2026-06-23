@@ -63,11 +63,11 @@ export function NgoListItem({ ngo, href, onClick, rightSlot, className }: NgoLis
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h3 className="font-semibold text-[15px] leading-snug text-foreground flex min-w-0 items-center gap-1.5">
-                <span className="truncate">{ngo.name}</span>
+                <span className="break-words">{ngo.name}</span>
                 {isVerifiedOrg(ngo as unknown as Record<string, unknown>) && <VerifiedBadge size={15} />}
               </h3>
               {shortName && (
-                <p className="text-xs text-muted-foreground font-medium mt-0.5 truncate">{shortName}</p>
+                <p className="text-xs text-muted-foreground font-medium mt-0.5 break-words">{shortName}</p>
               )}
             </div>
             {rightSlot && <div className="shrink-0">{rightSlot}</div>}

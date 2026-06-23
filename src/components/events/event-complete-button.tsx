@@ -168,7 +168,7 @@ export function EventCompleteButton({ eventId }: { eventId: string }) {
                       <AvatarFallback className="text-xs font-bold">{p.name.slice(0, 1).toLocaleUpperCase('tr')}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold leading-tight">{p.name}</p>
+                      <p className="break-words text-sm font-bold leading-tight">{p.name}</p>
                       <p className="truncate text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         {roleLabelTr((p.role as EventUserRole) || 'participant')}
                       </p>

@@ -691,7 +691,7 @@ export function InviteHub({
                     <AvatarFallback className="bg-secondary text-foreground/60 text-sm font-semibold">{contact.name.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
-                    <p className="font-medium text-[15px] text-foreground truncate leading-tight">{contact.name}</p>
+                    <p className="font-medium text-[15px] text-foreground break-words leading-tight">{contact.name}</p>
                     {contact.phones[0] ? <p className="text-[13px] text-muted-foreground truncate">{contact.phones[0]}</p> : null}
                 </div>
             </div>
@@ -1015,7 +1015,7 @@ export function InviteHub({
                                 <div className="flex items-center gap-2.5 min-w-0">
                                     <Avatar className="h-9 w-9 ring-1 ring-border/50"><AvatarFallback className="bg-secondary text-foreground/60 text-[13px] font-semibold">{c.name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
                                     <div className="min-w-0">
-                                        <p className="text-[14px] font-medium text-foreground truncate leading-tight">{c.name}</p>
+                                        <p className="text-[14px] font-medium text-foreground break-words leading-tight">{c.name}</p>
                                         <p className="text-[12px] text-muted-foreground truncate">{c.emails[0] || c.phones[0] || ''}</p>
                                     </div>
                                 </div>

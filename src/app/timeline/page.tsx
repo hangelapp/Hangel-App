@@ -422,7 +422,7 @@ export default function TimelinePage() {
                                             href={getEntityLink(post.author.name)}
                                             className="flex items-baseline gap-1.5 min-w-0 hover:underline"
                                         >
-                                            <span className="font-bold text-sm truncate">{post.author.name}</span>
+                                            <span className="font-bold text-sm break-words">{post.author.name}</span>
                                             <span className="text-muted-foreground text-xs shrink-0">· {post.timestamp}</span>
                                         </Link>
                                         <div className="flex items-center gap-1 shrink-0">

@@ -38,8 +38,8 @@ const ClubCard = ({
                         <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0 overflow-hidden leading-tight">
-                        <p className="font-semibold text-sm truncate leading-tight">{name}</p>
-                        <p className="text-[11px] text-muted-foreground truncate leading-tight">{university}</p>
+                        <p className="font-semibold text-sm break-words leading-tight">{name}</p>
+                        <p className="text-[11px] text-muted-foreground break-words leading-tight">{university}</p>
                         <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground leading-tight">
                             <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {actualMembers.toLocaleString('tr-TR')} {t('clubsPage.memberLabel')}</span>
                             <span className="flex items-center gap-1"><BrainCircuit className="h-3 w-3" /> {actualPoints.toLocaleString('tr-TR')} {t('clubsPage.pointLabel')}</span>
@@ -533,7 +533,7 @@ export default function ClubsPage() {
                       <GraduationCap className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0 leading-tight">
-                      <p className="font-bold text-sm truncate leading-tight">{university}</p>
+                      <p className="font-bold text-sm break-words leading-tight">{university}</p>
                       <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground flex-wrap leading-tight">
                         <Badge variant="secondary" className="text-[10px] font-bold">{uClubs.length} {t('clubsPage.clubsSuffix')}</Badge>
                         <span className="flex items-center gap-1 font-medium">

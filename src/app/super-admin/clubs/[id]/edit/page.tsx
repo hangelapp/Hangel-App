@@ -168,7 +168,7 @@ export default function SuperAdminClubEditPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-black tracking-tight truncate">{club.name}</h1>
+          <h1 className="text-2xl font-black tracking-tight break-words">{club.name}</h1>
           <p className="text-xs text-muted-foreground">Kulüp profilini düzenle</p>
         </div>
       </div>

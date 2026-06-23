@@ -193,7 +193,7 @@ export default function PassportPage() {
                         ? <img src={b.iconUrl} alt={b.name} className="w-10 h-10 object-contain" />
                         : <Award className="h-7 w-7 text-primary" />}
                     </div>
-                    <p className="text-[11px] font-bold truncate">{b.name}</p>
+                    <p className="text-[11px] font-bold break-words">{b.name}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -222,7 +222,7 @@ export default function PassportPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{c.title}</p>
-                      {c.issuedBy && <p className="text-xs text-muted-foreground truncate">{c.issuedBy}</p>}
+                      {c.issuedBy && <p className="text-xs text-muted-foreground break-words">{c.issuedBy}</p>}
                     </div>
                     <Button asChild size="sm" variant="ghost" className="rounded-full" aria-label="Sertifikayı profilde gör">
                       <Link href="/profile?tab=badges-certificates">

@@ -637,7 +637,7 @@ export function VolunteeringCertificates({
                                         </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-muted-foreground truncate">
+                                        <p className="text-sm font-semibold text-muted-foreground break-words">
                                             {cert.organization}
                                         </p>
                                         <h3 className="font-semibold leading-snug break-words">

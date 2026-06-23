@@ -229,7 +229,7 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
                                     </Avatar>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium text-muted-foreground truncate leading-tight">{opp.organization}</p>
+                                    <p className="text-xs font-medium text-muted-foreground break-words leading-tight">{opp.organization}</p>
                                     <h3 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors line-clamp-2">{opp.title}</h3>
                                     {appStatus && (
                                         <span className={`inline-flex items-center gap-x-1 mt-1 rounded-full px-2 py-0.5 text-xs font-bold ${

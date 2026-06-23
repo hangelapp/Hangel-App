@@ -719,7 +719,7 @@ export default function VolunteeringDetailPage() {
                                 <AvatarFallback className="text-sm font-bold text-primary">{organizerInitials}</AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1 space-y-2">
-                                <p className="text-sm font-semibold tracking-tight text-foreground truncate">{organizerName}</p>
+                                <p className="text-sm font-semibold tracking-tight text-foreground break-words">{organizerName}</p>
                                 <DualCountdown start={opp.dates?.eventStart} startTime={opp.dates?.eventStartTime} end={opp.dates?.eventEnd} endTime={opp.dates?.eventEndTime} />
                             </div>
                         </div>
@@ -866,7 +866,7 @@ export default function VolunteeringDetailPage() {
                                         {/* Orta: en belirgin öğe — gönüllünün adı; altında faaliyet adı */}
                                         <div className="px-6 flex-1 flex flex-col justify-center min-h-0">
                                             <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-muted-foreground">{taskType || 'Gönüllü'}</p>
-                                            <p className="mt-2 text-[28px] font-black leading-[1] tracking-tight text-foreground line-clamp-3">{cardUser.name}</p>
+                                            <p className="mt-2 text-[28px] font-black leading-[1] tracking-tight text-foreground break-words">{cardUser.name}</p>
                                             <div className="mt-3 h-px w-10 bg-primary" />
                                             <p className="mt-3 text-[12px] font-bold leading-snug text-foreground/90 line-clamp-2">{opportunity.title}</p>
                                         </div>
@@ -897,7 +897,7 @@ export default function VolunteeringDetailPage() {
                                                         {organizerLogo && <AvatarImage src={organizerLogo} alt={organizerName} className="p-0.5 object-contain" />}
                                                         <AvatarFallback className="text-[10px] font-black text-primary">{organizerInitials}</AvatarFallback>
                                                     </Avatar>
-                                                    <p className="text-[11px] font-bold text-foreground/80 truncate">{organizerName}</p>
+                                                    <p className="text-[11px] font-bold text-foreground/80 break-words min-w-0">{organizerName}</p>
                                                 </div>
                                             </div>
                                             <Image src={nameQrCodeUrl} alt="Doğrulama QR Kodu" width={60} height={60} className="rounded-lg bg-white shrink-0" />
@@ -945,7 +945,7 @@ export default function VolunteeringDetailPage() {
                                             </div>
                                         </div>
                                         <div className="px-6 pb-5 pt-3 shrink-0 flex items-center justify-between gap-2 border-t border-black/5">
-                                            <p className="text-[10px] font-bold text-foreground/70 truncate">{cardUser.name}</p>
+                                            <p className="text-[10px] font-bold text-foreground/70 break-words min-w-0">{cardUser.name}</p>
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-primary shrink-0">Gönüllülük</p>
                                         </div>
                                     </div>

@@ -707,7 +707,7 @@ export default function EventDetailPage() {
                                                 <AvatarFallback className="bg-primary/10 text-primary font-bold">{getInitials(c.name)}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-foreground truncate">{c.name}</p>
+                                                <p className="font-bold text-foreground break-words">{c.name}</p>
                                                 {c.title && (
                                                     <p className="text-xs text-muted-foreground font-medium truncate">{c.title}</p>
                                                 )}
@@ -840,7 +840,7 @@ export default function EventDetailPage() {
                         {/* Orta: en belirgin öğe — kişinin adı; altında etkinlik adı */}
                         <div className="px-6 flex-1 flex flex-col justify-center min-h-0">
                             <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Katılımcı</p>
-                            <p className="mt-2 text-[28px] font-black leading-[1] tracking-tight text-foreground line-clamp-3">{user.name}</p>
+                            <p className="mt-2 text-[28px] font-black leading-[1] tracking-tight text-foreground break-words">{user.name}</p>
                             <div className="mt-3 h-px w-10 bg-primary" />
                             <p className="mt-3 text-[12px] font-bold leading-snug text-foreground/90 line-clamp-2">{event.name}</p>
                         </div>
@@ -871,7 +871,7 @@ export default function EventDetailPage() {
                                         {organizerLogo && <AvatarImage src={organizerLogo} alt={event.organizer} className="p-0.5 object-contain"/>}
                                         <AvatarFallback className="text-[10px] font-black text-primary">{event.organizer.slice(0, 2)}</AvatarFallback>
                                     </Avatar>
-                                    <p className="text-[11px] font-bold text-foreground/80 truncate">{event.organizer}</p>
+                                    <p className="text-[11px] font-bold text-foreground/80 break-words min-w-0">{event.organizer}</p>
                                 </div>
                             </div>
                             <Image src={nameQrCodeUrl} alt="Doğrulama QR Kodu" width={60} height={60} className="rounded-lg bg-white shrink-0" />
@@ -919,7 +919,7 @@ export default function EventDetailPage() {
                             </div>
                         </div>
                         <div className="px-6 pb-5 pt-3 shrink-0 flex items-center justify-between gap-2 border-t border-black/5">
-                            <p className="text-[10px] font-bold text-foreground/70 truncate">{user.name}</p>
+                            <p className="text-[10px] font-bold text-foreground/70 break-words min-w-0">{user.name}</p>
                             <p className="text-[9px] font-bold uppercase tracking-widest text-primary shrink-0">{eventHashtag}</p>
                         </div>
                     </div>

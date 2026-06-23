@@ -59,9 +59,9 @@ export function LeaderboardRow({ user, unit, valueKey, isMe }: RowProps) {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="line-clamp-1 text-sm font-medium text-foreground sm:text-base">{name}</p>
+        <p className="break-words text-sm font-medium text-foreground sm:text-base">{name}</p>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-          {handle && <span className="min-w-0 truncate">{handle}</span>}
+          {handle && <span className="min-w-0 break-words">{handle}</span>}
           {impactScore > 0 && (
             <span className="inline-flex shrink-0 items-center gap-1">
               <Star className="h-3 w-3 text-amber-500" />

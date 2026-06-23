@@ -156,7 +156,7 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
                                         {(item.name || '?').charAt(0).toUpperCase()}
                                     </AvatarFallback>
                                 </Avatar>
-                                <p className="text-sm font-semibold truncate flex-1 min-w-0">{item.name || '—'}</p>
+                                <p className="text-sm font-semibold break-words flex-1 min-w-0">{item.name || '—'}</p>
                             </Link>
                         ))}
                     </div>
