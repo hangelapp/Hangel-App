@@ -132,9 +132,9 @@ export default function NotificationSettingsPage() {
                                     <span title={t('dashboard.settingsNotifications.channelSms')}><MessageSquare className="h-5 w-5 text-muted-foreground" /></span>
                                 </div>
                                 {group.items.map((item) => (
-                                    <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                        <label className="font-medium text-sm flex-1">{t(item.labelKey)}</label>
-                                        <div className="flex items-center gap-4">
+                                    <div key={item.id} className="flex items-center justify-between gap-3 p-4 border rounded-lg">
+                                        <label className="font-medium text-sm flex-1 min-w-0">{t(item.labelKey)}</label>
+                                        <div className="flex items-center gap-4 shrink-0">
                                             <Switch checked={!!settings[`${item.id}-push`]} onCheckedChange={() => handleToggle(`${item.id}-push`)} />
                                             <Switch checked={!!settings[`${item.id}-email`]} onCheckedChange={() => handleToggle(`${item.id}-email`)} />
                                             <Switch checked={!!settings[`${item.id}-sms`]} onCheckedChange={() => handleToggle(`${item.id}-sms`)} />
@@ -225,29 +225,29 @@ function MarketingConsentCard() {
                 <CardDescription>{t('dashboard.settingsMarketing.cardDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-md bg-blue-100 flex items-center justify-center">
+                <div className="flex items-center justify-between gap-3 p-3 border rounded-lg">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-9 w-9 rounded-md bg-blue-100 flex items-center justify-center shrink-0">
                             <Mail className="h-4 w-4 text-blue-700" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <Label className="text-sm font-medium">{t('dashboard.settingsMarketing.emailRowLabel')}</Label>
                             <p className="text-xs text-muted-foreground">{t('dashboard.settingsMarketing.emailRowDesc')}</p>
                         </div>
                     </div>
-                    <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
+                    <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} className="shrink-0" />
                 </div>
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-md bg-emerald-100 flex items-center justify-center">
+                <div className="flex items-center justify-between gap-3 p-3 border rounded-lg">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-9 w-9 rounded-md bg-emerald-100 flex items-center justify-center shrink-0">
                             <MessageSquare className="h-4 w-4 text-emerald-700" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <Label className="text-sm font-medium">{t('dashboard.settingsMarketing.smsRowLabel')}</Label>
                             <p className="text-xs text-muted-foreground">{t('dashboard.settingsMarketing.smsRowDesc')}</p>
                         </div>
                     </div>
-                    <Switch checked={smsEnabled} onCheckedChange={setSmsEnabled} />
+                    <Switch checked={smsEnabled} onCheckedChange={setSmsEnabled} className="shrink-0" />
                 </div>
                 <Button onClick={handleSave} disabled={saving} className="w-full" variant="outline">
                     {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

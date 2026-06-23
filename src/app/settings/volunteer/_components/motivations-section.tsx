@@ -74,8 +74,9 @@ export const MotivationsSection = ({
                   <Checkbox
                     checked={value.includes(item)}
                     onCheckedChange={c => onChange(c ? [...value, item] : value.filter(x => x !== item))}
+                    className="shrink-0"
                   />
-                  <span className="text-xs">{item}</span>
+                  <span className="text-xs min-w-0 break-words">{item}</span>
                 </label>
               ))}
             </div>

@@ -623,9 +623,9 @@ export default function ProfilePage() {
                             supportedNgos={(supportedNgosData ?? []) as Parameters<typeof EtkiTabContent>[0]['supportedNgos']}
                         />
                         <Card variant="glass">
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle>{t('profilePage.lastTransactions')}</CardTitle>
-                                <div>
+                            <CardHeader className="flex flex-row items-center justify-between gap-2">
+                                <CardTitle className="min-w-0 truncate">{t('profilePage.lastTransactions')}</CardTitle>
+                                <div className="shrink-0">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t('aria.filter')}>
@@ -714,9 +714,9 @@ export default function ProfilePage() {
                             </Card>
                          )}
                          <Card variant="glass">
-                            <CardHeader className="flex flex-row justify-between items-center">
-                                <CardTitle className='text-lg'>{t('profilePage.personalInfoTitle')}</CardTitle>
-                                 <Button asChild variant="ghost" size="icon" aria-label={t('profilePage.editProfileAria')}>
+                            <CardHeader className="flex flex-row justify-between items-center gap-2">
+                                <CardTitle className='text-lg min-w-0 truncate'>{t('profilePage.personalInfoTitle')}</CardTitle>
+                                 <Button asChild variant="ghost" size="icon" className="shrink-0" aria-label={t('profilePage.editProfileAria')}>
                                     <Link href="/settings/profile">
                                         <Edit className="h-4 w-4" />
                                     </Link>
@@ -751,9 +751,9 @@ export default function ProfilePage() {
 
                     <TabsContent value="volunteering" className="p-4 space-y-4">
                          <Card variant="glass">
-                            <CardHeader className="flex flex-row justify-between items-center">
-                                <CardTitle className='text-lg'>{t('profilePage.volunteerInfoTitle')}</CardTitle>
-                                <Button asChild variant="ghost" size="icon" aria-label={t('profilePage.editVolunteerAria')}>
+                            <CardHeader className="flex flex-row justify-between items-center gap-2">
+                                <CardTitle className='text-lg min-w-0 truncate'>{t('profilePage.volunteerInfoTitle')}</CardTitle>
+                                <Button asChild variant="ghost" size="icon" className="shrink-0" aria-label={t('profilePage.editVolunteerAria')}>
                                     <Link href="/settings/volunteer">
                                         <Edit className="h-4 w-4" />
                                     </Link>

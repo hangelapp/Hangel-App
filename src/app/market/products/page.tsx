@@ -90,7 +90,7 @@ export default function ProductsPage() {
           <h1 className="text-xl font-black">Ürünler</h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="relative flex-grow">
+          <div className="relative min-w-0 flex-grow">
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={`${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün arasında seçiniz`}
@@ -103,7 +103,7 @@ export default function ProductsPage() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="h-12 shrink-0 rounded-2xl border-none bg-background shadow-sm"
+                className="h-12 max-w-[40%] shrink-0 truncate rounded-2xl border-none bg-background shadow-sm"
               >
                 {activeBrand}
               </Button>

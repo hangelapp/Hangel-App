@@ -111,22 +111,22 @@ export default function MessageDetailPage() {
     <div className="min-h-dvh bg-secondary/30">
       {/* Sticky header — Instagram benzeri */}
       <div className="sticky top-0 z-10 glass-prominent backdrop-blur-xl border-b border-border/40 px-4 py-3 flex items-center gap-3 pt-[env(safe-area-inset-top)]">
-        <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Geri">
+        <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Geri" className="shrink-0">
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <Avatar className="h-9 w-9 border">
+        <Avatar className="h-9 w-9 border shrink-0">
           {otherAvatar ? <AvatarImage src={otherAvatar} /> : null}
           <AvatarFallback>{otherName[0]?.toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold truncate">{otherName}</p>
-          {timestampText && <p className="text-[11px] text-muted-foreground">{timestampText}</p>}
+          {timestampText && <p className="text-[11px] text-muted-foreground truncate">{timestampText}</p>}
         </div>
         {!isSystemMessage && otherId && (
           <Button
             variant="outline"
             size="sm"
-            className="rounded-xl"
+            className="rounded-xl shrink-0"
             onClick={() => router.push(`/u/${otherId}`)}
             aria-label="Profili görüntüle"
           >
@@ -138,7 +138,7 @@ export default function MessageDetailPage() {
       {/* Mesaj içerik */}
       <div className="p-4 space-y-4">
         {msg.subject && (
-          <h1 className="text-xl font-black tracking-tight">{msg.subject}</h1>
+          <h1 className="text-xl font-black tracking-tight break-words">{msg.subject}</h1>
         )}
         <Card>
           <CardContent className="p-5">
@@ -150,7 +150,7 @@ export default function MessageDetailPage() {
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(msg.contentHtml) }}
               />
             ) : (
-              <div className="text-sm whitespace-pre-wrap leading-relaxed">
+              <div className="text-sm whitespace-pre-wrap break-words leading-relaxed">
                 {msg.content || msg.excerpt || t('dashboard.messages.noContent') || 'İçerik yok.'}
               </div>
             )}

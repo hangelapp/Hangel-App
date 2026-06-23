@@ -602,12 +602,12 @@ export function VolunteeringCertificates({
 
     return (
         <Card variant="glass">
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
+                <CardTitle className="text-lg min-w-0 truncate">
                     {t('profile_certificates.sectionTitle')}
                 </CardTitle>
                 {certificates.length > 0 && (
-                    <Badge variant="secondary" className="rounded-full">
+                    <Badge variant="secondary" className="rounded-full shrink-0">
                         {certificates.length}
                     </Badge>
                 )}
@@ -640,7 +640,7 @@ export function VolunteeringCertificates({
                                         <p className="text-sm font-semibold text-muted-foreground truncate">
                                             {cert.organization}
                                         </p>
-                                        <h3 className="font-semibold leading-snug">
+                                        <h3 className="font-semibold leading-snug break-words">
                                             {cert.title}
                                         </h3>
                                         {cert.completedAt && (

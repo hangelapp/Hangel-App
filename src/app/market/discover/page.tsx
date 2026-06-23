@@ -591,11 +591,11 @@ export default function DiscoverPage() {
                           <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent" />
 
                           {/* Üst satır: kicker + ikon rozeti */}
-                          <div className="relative flex items-center justify-between">
-                            <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide backdrop-blur-sm">
+                          <div className="relative flex items-center justify-between gap-2">
+                            <span className="inline-flex min-w-0 items-center truncate rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide backdrop-blur-sm">
                               {b.eyebrow}
                             </span>
-                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
                               <Icon className="h-5 w-5" aria-hidden="true" />
                             </span>
                           </div>
@@ -774,9 +774,9 @@ function ProductStrip({
   return (
     <section className="w-full max-w-full pt-6">
       <div className="mb-2.5 flex items-center justify-between gap-2 px-4">
-        <h2 className="flex items-center gap-1.5 text-base font-black text-foreground">
+        <h2 className="flex min-w-0 items-center gap-1.5 text-base font-black text-foreground">
           {emoji ? <span aria-hidden="true">{emoji}</span> : null}
-          {Icon ? <Icon className="h-4 w-4 text-primary" aria-hidden="true" /> : null}
+          {Icon ? <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" /> : null}
           <span className="truncate">{title}</span>
         </h2>
         {onSeeAll && (

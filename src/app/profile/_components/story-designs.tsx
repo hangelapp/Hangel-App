@@ -57,7 +57,7 @@ const DESIGNS: Design[] = [
             <AvatarImage src={d.avatarUrl} />
             <AvatarFallback className="text-2xl font-black bg-white/20 text-white">{d.name.charAt(0)}</AvatarFallback>
           </Avatar>
-          <p className="text-sm font-bold opacity-90">{d.name}</p>
+          <p className="text-sm font-bold opacity-90 break-words max-w-full">{d.name}</p>
           <div className="space-y-1">
             <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">Etki Puanım</p>
             <p className="text-7xl font-black tabular-nums leading-none drop-shadow-lg">{fmt(d.impactScore)}</p>

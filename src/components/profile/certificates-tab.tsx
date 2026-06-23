@@ -366,7 +366,7 @@ export function CertificatesTab() {
                         <DialogTitle className="text-base font-semibold truncate flex-1">
                             {previewState?.cert.title ?? ''}
                         </DialogTitle>
-                        <Button variant="ghost" size="icon" onClick={closePreview} aria-label="Kapat">
+                        <Button variant="ghost" size="icon" className="shrink-0" onClick={closePreview} aria-label="Kapat">
                             <XIcon className="h-5 w-5" />
                         </Button>
                     </DialogHeader>

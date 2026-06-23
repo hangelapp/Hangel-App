@@ -32,13 +32,13 @@ interface ClubInvitation {
 
 const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl?: string }) => (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
-        <Avatar className="h-10 w-10">
+        <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src={avatarUrl} alt={name} />
             <AvatarFallback>{(name || 'Ü').charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
-        <div>
-            <p className="font-semibold text-sm">{name}</p>
-            <p className="text-xs text-muted-foreground">{role}</p>
+        <div className="min-w-0">
+            <p className="font-semibold text-sm truncate">{name}</p>
+            <p className="text-xs text-muted-foreground truncate">{role}</p>
         </div>
     </div>
 );
@@ -414,20 +414,20 @@ export default function ClubProfilePage() {
                     <CardContent className="flex flex-wrap gap-2">
                         {club.contact.instagram && (
                             <a href={club.contact.instagram.startsWith('http') ? club.contact.instagram : `https://instagram.com/${club.contact.instagram.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer"
-                               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border bg-card hover:bg-accent transition-colors">
-                                <Instagram className="h-4 w-4" /> <span className="text-sm">{club.contact.instagram}</span>
+                               className="inline-flex min-w-0 max-w-full items-center gap-1.5 px-3 py-2 rounded-xl border bg-card hover:bg-accent transition-colors">
+                                <Instagram className="h-4 w-4 shrink-0" /> <span className="text-sm truncate">{club.contact.instagram}</span>
                             </a>
                         )}
                         {club.contact.linkedin && (
                             <a href={club.contact.linkedin.startsWith('http') ? club.contact.linkedin : `https://linkedin.com/company/${club.contact.linkedin.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer"
-                               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border bg-card hover:bg-accent transition-colors">
-                                <Linkedin className="h-4 w-4" /> <span className="text-sm">{club.contact.linkedin}</span>
+                               className="inline-flex min-w-0 max-w-full items-center gap-1.5 px-3 py-2 rounded-xl border bg-card hover:bg-accent transition-colors">
+                                <Linkedin className="h-4 w-4 shrink-0" /> <span className="text-sm truncate">{club.contact.linkedin}</span>
                             </a>
                         )}
                         {club.contact.twitter && (
                             <a href={club.contact.twitter.startsWith('http') ? club.contact.twitter : `https://x.com/${club.contact.twitter.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer"
-                               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border bg-card hover:bg-accent transition-colors">
-                                <Twitter className="h-4 w-4" /> <span className="text-sm">{club.contact.twitter}</span>
+                               className="inline-flex min-w-0 max-w-full items-center gap-1.5 px-3 py-2 rounded-xl border bg-card hover:bg-accent transition-colors">
+                                <Twitter className="h-4 w-4 shrink-0" /> <span className="text-sm truncate">{club.contact.twitter}</span>
                             </a>
                         )}
                     </CardContent>

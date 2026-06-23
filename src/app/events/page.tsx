@@ -427,13 +427,13 @@ function EventsPageContent() {
                   <h2 className="text-sm font-bold font-headline leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">{eventName}</h2>
                   <p className="text-xs font-bold text-primary truncate">{event.organizer}</p>
                   <div className="space-y-1 pt-1 border-t border-dashed border-border">
-                    <div className="text-xs text-muted-foreground font-bold flex items-center gap-1.5">
+                    <div className="text-xs text-muted-foreground font-bold flex items-center gap-1.5 min-w-0">
                         <Calendar className='h-3 w-3 text-primary shrink-0'/>
-                        <span className="truncate">{formatEventDate(event.startDate)}</span>
+                        <span className="min-w-0 truncate">{formatEventDate(event.startDate)}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground font-bold flex items-center gap-1.5">
+                    <div className="text-xs text-muted-foreground font-bold flex items-center gap-1.5 min-w-0">
                         <MapPin className='h-3 w-3 text-primary shrink-0'/>
-                        <span className="truncate">{event.location?.type === 'Online' ? t('eventsPageExtra.onlineLabel') : event.location?.city}</span>
+                        <span className="min-w-0 truncate">{event.location?.type === 'Online' ? t('eventsPageExtra.onlineLabel') : event.location?.city}</span>
                     </div>
                   </div>
                 </CardContent>

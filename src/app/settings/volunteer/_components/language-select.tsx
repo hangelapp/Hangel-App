@@ -64,8 +64,8 @@ export const LanguageSelect = ({
           <div className="max-h-60 overflow-y-auto p-1">
             {filtered.map(lang => (
               <label key={lang} className="flex items-center gap-2 px-3 py-1.5 hover:bg-muted cursor-pointer rounded-sm text-sm">
-                <Checkbox checked={selected.includes(lang)} onCheckedChange={() => toggle(lang)} />
-                <span>{lang}</span>
+                <Checkbox checked={selected.includes(lang)} onCheckedChange={() => toggle(lang)} className="shrink-0" />
+                <span className="min-w-0 break-words">{lang}</span>
               </label>
             ))}
           </div>
@@ -83,9 +83,9 @@ export const LanguageSelect = ({
         <div className="space-y-2 pt-1">
           {selected.map(lang => (
             <div key={lang} className="flex items-center gap-2">
-              <span className="text-sm flex-1">{lang}</span>
+              <span className="text-sm flex-1 min-w-0 truncate">{lang}</span>
               <Select value={levels[lang] || ''} onValueChange={v => onLevelChange(lang, v)}>
-                <SelectTrigger className="w-36 h-8 text-sm">
+                <SelectTrigger className="w-36 h-8 text-sm shrink-0">
                   <SelectValue placeholder="Seviye..." />
                 </SelectTrigger>
                 <SelectContent>

@@ -390,7 +390,7 @@ export function SectionAccordion({
           <AccordionTrigger className="p-3 hover:no-underline">
             <div className="flex items-center gap-3">
               <Icon className="h-5 w-5 text-primary shrink-0" />
-              <div className="text-left">
+              <div className="text-left min-w-0">
                 <p className="font-semibold text-sm leading-tight">{section.title}</p>
                 <p className="text-[12px] text-muted-foreground leading-snug">{section.description}</p>
               </div>
@@ -421,9 +421,9 @@ export function SectionAccordion({
                     <div key={item.slug} className="border-b last:border-b-0 hover:bg-muted/50">
                       <Link
                         href={`/library/${item.slug}`}
-                        className="flex items-center justify-between px-3 pt-2.5 pb-1"
+                        className="flex items-center justify-between gap-2 px-3 pt-2.5 pb-1"
                       >
-                        <span className="text-sm font-medium pr-2">{item.title}</span>
+                        <span className="text-sm font-medium min-w-0 break-words">{item.title}</span>
                         <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                       </Link>
                       {/* "kaynağa git" linki yalnız DETAY sayfasında; listede künye satırı
@@ -455,7 +455,7 @@ export function SectionAccordion({
                       className="block px-3 py-2.5 border-b last:border-b-0 hover:bg-muted/50"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-medium pr-2">{item.title}</span>
+                        <span className="text-sm font-medium min-w-0 break-words">{item.title}</span>
                         <div className="flex items-center gap-1 shrink-0">
                           {typeof imdbScore === 'number' && (
                             <Badge variant="secondary" className="gap-1 px-1.5 py-0.5">
@@ -497,7 +497,7 @@ export function SectionAccordion({
                       className="block px-3 py-2.5 border-b last:border-b-0 hover:bg-muted/50"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-medium pr-2">{item.title}</span>
+                        <span className="text-sm font-medium min-w-0 break-words">{item.title}</span>
                         <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                       </div>
                       {meta && (
@@ -510,10 +510,10 @@ export function SectionAccordion({
                   <Link
                     href={`/library/${item.slug}`}
                     key={item.slug}
-                    className="flex items-center justify-between px-3 py-2.5 border-b last:border-b-0 hover:bg-muted/50"
+                    className="flex items-center justify-between gap-2 px-3 py-2.5 border-b last:border-b-0 hover:bg-muted/50"
                   >
-                    <span className="text-sm font-medium">{item.title}</span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium min-w-0 break-words">{item.title}</span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                   </Link>
                 );
               })

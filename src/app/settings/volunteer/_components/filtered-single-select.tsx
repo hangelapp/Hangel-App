@@ -46,7 +46,7 @@ export const FilteredSingleSelect = ({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" className="w-full justify-between text-left font-normal h-10">
-            <span className={value ? '' : 'text-muted-foreground'}>{value || `${title} seçin...`}</span>
+            <span className={`min-w-0 truncate ${value ? '' : 'text-muted-foreground'}`}>{value || `${title} seçin...`}</span>
             <ChevronDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
           </Button>
         </PopoverTrigger>
@@ -66,7 +66,7 @@ export const FilteredSingleSelect = ({
               <button
                 key={item}
                 type="button"
-                className={`w-full text-left px-3 py-1.5 text-sm rounded-sm hover:bg-muted ${value === item ? 'bg-muted font-medium' : ''}`}
+                className={`w-full text-left px-3 py-1.5 text-sm rounded-sm hover:bg-muted break-words ${value === item ? 'bg-muted font-medium' : ''}`}
                 onClick={() => select(item)}
               >
                 {item}

@@ -228,12 +228,13 @@ export default function PrivacySettingsPage() {
                     <CardDescription>{t('dashboard.settingsPrivacy.twoFaDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
+                    <div className="flex items-center justify-between gap-3 p-4 border rounded-lg">
+                        <div className="min-w-0">
                             <Label htmlFor="2fa-switch">{t('dashboard.settingsPrivacy.twoFaPhoneLabel')}</Label>
                             <p className="text-xs text-muted-foreground">{t('dashboard.settingsPrivacy.twoFaPhoneDesc')}</p>
                         </div>
                         <Switch
+                            className="shrink-0"
                             id="2fa-switch"
                             checked={twoFactorEnabled}
                             onCheckedChange={(c) => {

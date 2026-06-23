@@ -232,7 +232,7 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                                 <p className="text-emerald-800 dark:text-emerald-200">📍 {[formData.hospitalDistrict, formData.hospitalCity].filter(Boolean).join(', ')}</p>
                             )}
                             {formData.hospitalAddress && (
-                                <p className="text-emerald-800 leading-snug dark:text-emerald-200">{formData.hospitalAddress}</p>
+                                <p className="text-emerald-800 leading-snug dark:text-emerald-200 break-words">{formData.hospitalAddress}</p>
                             )}
                             {formData.hospitalPhone && (
                                 <p className="text-emerald-800 dark:text-emerald-200">☎ {formData.hospitalPhone}</p>
@@ -565,9 +565,9 @@ const MyBloodRequestsTab = ({ authUser }: { authUser: User }) => {
             {requests.map((r) => (
                 <Card key={r.id} className="rounded-[1.5rem] border-none shadow-sm overflow-hidden">
                     <div className="bg-destructive/5 p-4 space-y-1">
-                        <div className="flex items-center gap-2">
-                            <Droplets className="h-4 w-4 text-red-600" />
-                            <p className="font-bold text-base tracking-tight leading-tight">{r.hospitalName || t('emergency_root.bloodRequestFallback')}</p>
+                        <div className="flex items-center gap-2 min-w-0">
+                            <Droplets className="h-4 w-4 text-red-600 shrink-0" />
+                            <p className="font-bold text-base tracking-tight leading-tight min-w-0 break-words">{r.hospitalName || t('emergency_root.bloodRequestFallback')}</p>
                         </div>
                         <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
                             {r.bloodType && <span className="font-mono font-bold text-foreground">{r.bloodType}</span>}
@@ -815,16 +815,16 @@ export default function EmergencyPage() {
                         <div className="space-y-3">
                             {activeCalls.map(call => (
                                 <Card key={call.id} className="rounded-[1.5rem] border-none shadow-sm hover:shadow-md transition-all overflow-hidden group">
-                                    <div className="bg-destructive/5 p-4 flex justify-between items-start">
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-2 h-2 rounded-full bg-destructive animate-ping" />
-                                                <p className="font-black text-sm text-destructive uppercase tracking-widest">{call.type}</p>
+                                    <div className="bg-destructive/5 p-4 flex justify-between items-start gap-2">
+                                        <div className="space-y-1 min-w-0">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <div className="w-2 h-2 rounded-full bg-destructive animate-ping shrink-0" />
+                                                <p className="font-black text-sm text-destructive uppercase tracking-widest min-w-0 break-words">{call.type}</p>
                                             </div>
-                                            <p className="text-lg font-bold tracking-tight leading-tight">{call.details}</p>
-                                            <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> {call.location}</p>
+                                            <p className="text-lg font-bold tracking-tight leading-tight break-words">{call.details}</p>
+                                            <p className="text-xs text-muted-foreground flex items-center gap-1 min-w-0"><MapPin className="h-3 w-3 shrink-0" /> <span className="min-w-0 break-words">{call.location}</span></p>
                                         </div>
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase">{call.time}</p>
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase shrink-0">{call.time}</p>
                                     </div>
                                     <div className="p-3 bg-background border-t border-dashed">
                                         <Button
@@ -850,12 +850,12 @@ export default function EmergencyPage() {
                         <div className="space-y-3">
                             {pastApplications.map(app => (
                                 <Card key={app.id} className="rounded-2xl border-none shadow-sm hover:bg-accent/5 transition-colors">
-                                    <CardContent className="p-4 flex justify-between items-center">
-                                        <div className="space-y-1">
-                                            <p className="font-bold text-sm">{app.type}</p>
-                                            <p className="text-xs text-muted-foreground">{app.details} • {app.location}</p>
+                                    <CardContent className="p-4 flex justify-between items-center gap-2">
+                                        <div className="space-y-1 min-w-0">
+                                            <p className="font-bold text-sm truncate">{app.type}</p>
+                                            <p className="text-xs text-muted-foreground break-words">{app.details} • {app.location}</p>
                                         </div>
-                                        <Badge variant={app.status === 'Başvuruldu' ? 'default' : 'secondary'} className="rounded-full text-[10px] font-black uppercase px-3">
+                                        <Badge variant={app.status === 'Başvuruldu' ? 'default' : 'secondary'} className="rounded-full text-[10px] font-black uppercase px-3 shrink-0">
                                             {app.status}
                                         </Badge>
                                     </CardContent>
@@ -973,14 +973,14 @@ function HospitalAutocompleteField({
                             onClick={() => { onChange(h.name || '', h); setOpen(false); }}
                             className="w-full text-left p-2.5 hover:bg-accent transition-colors"
                         >
-                            <p className="font-semibold text-sm leading-tight">{h.name}</p>
+                            <p className="font-semibold text-sm leading-tight break-words">{h.name}</p>
                             {(h.city || h.district || h.address) && (
-                                <p className="text-[11px] text-muted-foreground leading-tight">
+                                <p className="text-[11px] text-muted-foreground leading-tight break-words">
                                     {[h.district, h.city, h.address].filter(Boolean).join(' · ').slice(0, 100)}
                                 </p>
                             )}
                             {h.phone && (
-                                <p className="text-[11px] text-primary leading-tight">{h.phone}</p>
+                                <p className="text-[11px] text-primary leading-tight break-words">{h.phone}</p>
                             )}
                         </button>
                     ))}

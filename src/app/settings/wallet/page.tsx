@@ -31,9 +31,9 @@ export default function WalletSettingsPage() {
                 <CardContent className="space-y-4">
                     {qrPaymentCardData.map(card => (
                         <div key={card.id} className={cn("p-4 rounded-lg text-primary-foreground", card.bgColor)}>
-                            <div className="flex justify-between items-center">
-                                <p className="text-lg font-semibold">{card.type}{t('dashboard.settingsWallet.cardTypeSuffix')}</p>
-                                <p className="text-2xl font-bold">{card.balance}</p>
+                            <div className="flex justify-between items-center gap-2">
+                                <p className="text-lg font-semibold min-w-0 truncate">{card.type}{t('dashboard.settingsWallet.cardTypeSuffix')}</p>
+                                <p className="text-2xl font-bold shrink-0">{card.balance}</p>
                             </div>
                         </div>
                     ))}

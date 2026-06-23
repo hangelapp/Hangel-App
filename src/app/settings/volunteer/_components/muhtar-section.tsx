@@ -38,9 +38,9 @@ export const MuhtarSection = ({
     <Card>
       <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Mahalle Muhtarıyım</CardTitle></CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between p-4 border rounded-lg">
-          <Label htmlFor="is-muhtar" className="font-medium">Mahalle muhtarıyım</Label>
-          <Switch id="is-muhtar" checked={isMuhtar} onCheckedChange={onIsMuhtarChange} />
+        <div className="flex items-center justify-between gap-3 p-4 border rounded-lg">
+          <Label htmlFor="is-muhtar" className="font-medium min-w-0">Mahalle muhtarıyım</Label>
+          <Switch id="is-muhtar" checked={isMuhtar} onCheckedChange={onIsMuhtarChange} className="shrink-0" />
         </div>
         {isMuhtar && (
           <div className="space-y-3">

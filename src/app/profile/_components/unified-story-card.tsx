@@ -135,7 +135,7 @@ export function UnifiedStoryCard({ data }: { data: UnifiedStoryData }) {
                                     {data.name.charAt(0).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
-                            <p className="text-sm font-bold tracking-tight text-white">{data.name}</p>
+                            <p className="text-sm font-bold tracking-tight text-white break-words max-w-full">{data.name}</p>
                             {data.countryRank && (
                                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/90">
                                     🇹🇷 Türkiye Sıralaması · {data.countryRank}

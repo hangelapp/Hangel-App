@@ -220,11 +220,11 @@ export default function NgosPage() {
 
             <Tabs defaultValue="Tümü" className="w-full" onValueChange={(value) => setTypeFilter(value as NgoType)}>
                 <TabsList className="grid w-full grid-cols-5 h-11 rounded-2xl p-1">
-                    <TabsTrigger value="Tümü" className="rounded-xl text-xs sm:text-sm">{t('ngosPageExtra.tabAll')}</TabsTrigger>
-                    <TabsTrigger value="Dernek" className="rounded-xl text-xs sm:text-sm">{t('ngosPageExtra.tabAssociation')}</TabsTrigger>
-                    <TabsTrigger value="Vakıf" className="rounded-xl text-xs sm:text-sm">{t('ngosPageExtra.tabFoundation')}</TabsTrigger>
-                    <TabsTrigger value="Spor Kulübü" className="rounded-xl text-xs sm:text-sm">{t('ngosPageExtra.tabSportClub')}</TabsTrigger>
-                    <TabsTrigger value="Özel İzinli" className="rounded-xl text-xs sm:text-sm">{t('ngosPageExtra.tabSpecialPermit')}</TabsTrigger>
+                    <TabsTrigger value="Tümü" className="rounded-xl text-xs sm:text-sm truncate">{t('ngosPageExtra.tabAll')}</TabsTrigger>
+                    <TabsTrigger value="Dernek" className="rounded-xl text-xs sm:text-sm truncate">{t('ngosPageExtra.tabAssociation')}</TabsTrigger>
+                    <TabsTrigger value="Vakıf" className="rounded-xl text-xs sm:text-sm truncate">{t('ngosPageExtra.tabFoundation')}</TabsTrigger>
+                    <TabsTrigger value="Spor Kulübü" className="rounded-xl text-xs sm:text-sm truncate">{t('ngosPageExtra.tabSportClub')}</TabsTrigger>
+                    <TabsTrigger value="Özel İzinli" className="rounded-xl text-xs sm:text-sm truncate">{t('ngosPageExtra.tabSpecialPermit')}</TabsTrigger>
                 </TabsList>
             </Tabs>
 

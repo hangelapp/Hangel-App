@@ -645,16 +645,16 @@ export default function NgoSelectionPage() {
                                                 <AvatarImage src={ngo.avatarUrl} alt={ngo.name} className="object-contain p-1" />
                                                 <AvatarFallback className="text-primary font-bold">{ngo.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
-                                            <div className="min-w-0">
+                                            <div className="min-w-0 flex-1">
                                                 <p className="font-medium text-sm truncate">{ngo.name}</p>
-                                                <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">
-                                                    {ngo.category}
-                                                    {ngo.category && <span className="text-muted-foreground/50">|</span>}
-                                                    <span>{ngo.type}</span>
+                                                <p className="text-xs text-muted-foreground flex items-center gap-1.5 min-w-0 overflow-hidden">
+                                                    <span className="truncate">{ngo.category}</span>
+                                                    {ngo.category && <span className="text-muted-foreground/50 shrink-0">|</span>}
+                                                    <span className="shrink-0">{ngo.type}</span>
                                                     {typeof ngo.transparencyScore === 'number' && (
                                                         <>
-                                                            <span className="text-muted-foreground/50">|</span>
-                                                            <span>%{ngo.transparencyScore} {t('settings_ngo_selection.transparencyLabel')}</span>
+                                                            <span className="text-muted-foreground/50 shrink-0">|</span>
+                                                            <span className="shrink-0">%{ngo.transparencyScore} {t('settings_ngo_selection.transparencyLabel')}</span>
                                                         </>
                                                     )}
                                                 </p>

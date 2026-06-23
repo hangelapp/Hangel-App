@@ -208,8 +208,8 @@ export default function ContractsPage() {
             <div className="divide-y">
               {group.items.map((contract) => (
                 <Link href={`/settings/contracts/${contract.slug}`} key={contract.title} className="block">
-                  <div className="flex items-center justify-between p-3 hover:bg-accent/50 transition-colors">
-                    <span className="font-medium text-sm flex-1 pr-2">{contract.title}</span>
+                  <div className="flex items-center justify-between gap-2 p-3 hover:bg-accent/50 transition-colors">
+                    <span className="font-medium text-sm flex-1 min-w-0 break-words pr-2">{contract.title}</span>
                     <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                   </div>
                 </Link>

@@ -62,7 +62,7 @@ export function NgoListItem({ ngo, href, onClick, rightSlot, className }: NgoLis
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="font-semibold text-[15px] leading-snug text-foreground inline-flex items-center gap-1.5">
+              <h3 className="font-semibold text-[15px] leading-snug text-foreground flex min-w-0 items-center gap-1.5">
                 <span className="truncate">{ngo.name}</span>
                 {isVerifiedOrg(ngo as unknown as Record<string, unknown>) && <VerifiedBadge size={15} />}
               </h3>

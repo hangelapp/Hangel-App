@@ -49,21 +49,21 @@ export const HealthSection = ({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center justify-between p-4 border rounded-lg">
-          <div className="flex items-start gap-3">
-            <Bell className="h-4 w-4 text-primary mt-0.5" />
-            <div>
+        <div className="flex items-center justify-between gap-3 p-4 border rounded-lg">
+          <div className="flex items-start gap-3 min-w-0">
+            <Bell className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <div className="min-w-0">
               <p className="font-semibold text-sm">Kan ilanlarında bildirim al</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Senin kan grubuna uygun acil kan ihtiyacı bildirimleri telefonuna ve uygulamaya iletilir.
               </p>
             </div>
           </div>
-          <Switch checked={bloodNotifications} onCheckedChange={onBloodNotificationsChange} />
+          <Switch checked={bloodNotifications} onCheckedChange={onBloodNotificationsChange} className="shrink-0" />
         </div>
-        <div className="flex items-center justify-between p-4 border rounded-lg">
-          <Label htmlFor="emergency-available" className="font-medium">Acil durumlarda gönüllülüğe uygunum</Label>
-          <Switch id="emergency-available" checked={emergencyAvailable} onCheckedChange={onEmergencyAvailableChange} />
+        <div className="flex items-center justify-between gap-3 p-4 border rounded-lg">
+          <Label htmlFor="emergency-available" className="font-medium min-w-0">Acil durumlarda gönüllülüğe uygunum</Label>
+          <Switch id="emergency-available" checked={emergencyAvailable} onCheckedChange={onEmergencyAvailableChange} className="shrink-0" />
         </div>
         <div className="flex items-center space-x-2 p-4 border rounded-lg">
           <Checkbox id="chronic-illness" checked={hasChronicIllness} onCheckedChange={c => onHasChronicIllnessChange(!!c)} />

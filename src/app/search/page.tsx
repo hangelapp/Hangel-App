@@ -162,7 +162,7 @@ function GlobalSearchPageInner() {
                 {term && totalResults === 0 && (
                     <div className="text-center py-12 space-y-2">
                         <p className="text-sm font-bold">{t('search.noResultsTitle')}</p>
-                        <p className="text-xs text-muted-foreground">&quot;{q}&quot; {t('search.noResultsDescPrefix')}</p>
+                        <p className="text-xs text-muted-foreground break-words">&quot;{q}&quot; {t('search.noResultsDescPrefix')}</p>
                     </div>
                 )}
 
@@ -197,9 +197,9 @@ function Section({ icon: Icon, title, items, hrefPrefix, getLogo }: {
     return (
         <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                <Icon className="h-3.5 w-3.5" />
-                <span>{title}</span>
-                <span className="text-muted-foreground/60">({items.length})</span>
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{title}</span>
+                <span className="text-muted-foreground/60 shrink-0">({items.length})</span>
             </div>
             <div className="space-y-1.5">
                 {items.map(item => {
@@ -208,7 +208,7 @@ function Section({ icon: Icon, title, items, hrefPrefix, getLogo }: {
                         <Link key={item.id} href={`${hrefPrefix}/${item.id}`} className="block">
                             <Card className="hover:bg-accent transition-colors">
                                 <CardContent className="p-2.5 flex items-center gap-2.5">
-                                    <Avatar className="h-9 w-9">
+                                    <Avatar className="h-9 w-9 shrink-0">
                                         <AvatarImage src={getLogo(item)} alt={name} />
                                         <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                                     </Avatar>

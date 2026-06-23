@@ -36,8 +36,9 @@ export const ConsentsSection = ({
             <Checkbox
               checked={value[key]}
               onCheckedChange={c => onChange({ ...value, [key]: !!c })}
+              className="shrink-0 mt-0.5"
             />
-            <span className="text-sm leading-snug">{label}</span>
+            <span className="text-sm leading-snug min-w-0 break-words">{label}</span>
           </label>
         ))}
       </CardContent>

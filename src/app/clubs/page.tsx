@@ -37,7 +37,7 @@ const ClubCard = ({
                         <AvatarImage src={club?.avatarUrl} alt={name} />
                         <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 overflow-hidden leading-tight">
+                    <div className="flex-1 min-w-0 overflow-hidden leading-tight">
                         <p className="font-semibold text-sm truncate leading-tight">{name}</p>
                         <p className="text-[11px] text-muted-foreground truncate leading-tight">{university}</p>
                         <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground leading-tight">

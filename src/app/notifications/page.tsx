@@ -278,10 +278,10 @@ export default function NotificationsPage() {
         <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('aria.back')}>
           <ArrowLeft className="h-6 w-6" />
         </Button>
-        <h1 className="text-2xl font-bold font-headline flex items-center gap-2">
-          {t('dashboard.notifications.heading')}
+        <h1 className="text-2xl font-bold font-headline flex items-center gap-2 min-w-0">
+          <span className="truncate">{t('dashboard.notifications.heading')}</span>
           {unreadCount > 0 && (
-            <Badge className="bg-primary">{unreadCount} {t('dashboard.notifications.newBadge')}</Badge>
+            <Badge className="bg-primary shrink-0">{unreadCount} {t('dashboard.notifications.newBadge')}</Badge>
           )}
         </h1>
       </div>
@@ -325,10 +325,10 @@ export default function NotificationsPage() {
                   </div>
                   <div className="flex-1 min-w-0 space-y-0.5">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className={cn('text-sm leading-tight', !n.read ? 'font-bold text-foreground' : 'font-medium text-muted-foreground')}>{n.title}</p>
+                      <p className={cn('text-sm leading-tight min-w-0 break-words', !n.read ? 'font-bold text-foreground' : 'font-medium text-muted-foreground')}>{n.title}</p>
                       {!n.read && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
                     </div>
-                    <p className={cn('text-[13px] leading-snug whitespace-pre-line', !n.read ? 'text-foreground/80' : 'text-muted-foreground')}>{n.body}</p>
+                    <p className={cn('text-[13px] leading-snug whitespace-pre-line break-words', !n.read ? 'text-foreground/80' : 'text-muted-foreground')}>{n.body}</p>
                     {(n.type === 'emergency-blood' || n.type === 'emergency-blood-received' || n.type === 'emergency-blood-contact') && n.data?.coordinates && (
                       <DistanceBadge target={{ lat: n.data.coordinates.lat, lon: n.data.coordinates.lng }} className="pt-0.5" />
                     )}

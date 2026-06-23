@@ -253,7 +253,7 @@ export default function BrandProfilePage() {
               <ShareButtons url={profileUrl} title={`hangel'deki ${brand.name} mağazasını incele!`} qrTitle={`Mağaza QR Kodu — ${brand.name}`} buttonClassName="bg-background/80 shadow-sm" />
             </div>
 
-            <div className="flex gap-4 items-center">
+            <div className="flex gap-4 items-center pr-12 sm:pr-0">
                 <div className="relative h-24 w-24 rounded-full border-4 border-background shrink-0 bg-white shadow-xl overflow-hidden">
                     <BrandLogo brand={brand} />
                 </div>

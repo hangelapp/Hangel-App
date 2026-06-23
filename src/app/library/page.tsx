@@ -299,7 +299,7 @@ export default function LibraryPage() {
           className="flex items-center gap-3 rounded-2xl border bg-card p-4 text-left shadow-sm hover:bg-accent transition-colors"
         >
           <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></span>
-          <span>
+          <span className="min-w-0">
             <span className="block font-semibold text-sm">{t('library.ctaLibraryAssistant')}</span>
             <span className="block text-xs text-muted-foreground">{t('library.ctaLibraryAssistantDesc')}</span>
           </span>

@@ -61,9 +61,9 @@ export function LeaderboardRow({ user, unit, valueKey, isMe }: RowProps) {
       <div className="min-w-0 flex-1">
         <p className="line-clamp-1 text-sm font-medium text-foreground sm:text-base">{name}</p>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-          {handle && <span className="line-clamp-1">{handle}</span>}
+          {handle && <span className="min-w-0 truncate">{handle}</span>}
           {impactScore > 0 && (
-            <span className="inline-flex items-center gap-1">
+            <span className="inline-flex shrink-0 items-center gap-1">
               <Star className="h-3 w-3 text-amber-500" />
               {impactScore.toLocaleString('tr-TR')} {t('leaderboardPage.unitPoints')}
             </span>

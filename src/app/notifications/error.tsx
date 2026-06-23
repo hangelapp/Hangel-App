@@ -25,7 +25,7 @@ export default function NotificationsError({
     <div className="flex min-h-[60vh] flex-col items-center justify-center p-6 text-center animate-in fade-in-0">
       <AlertTriangle className="h-14 w-14 text-destructive mb-4" aria-hidden="true" />
       <h1 className="text-xl font-semibold font-headline">Bir sorun oluştu</h1>
-      <p className="mt-2 max-w-md text-sm text-muted-foreground">{safeMessage}</p>
+      <p className="mt-2 max-w-md text-sm text-muted-foreground break-words">{safeMessage}</p>
       {process.env.NODE_ENV === 'development' && error?.digest && (
         <p className="mt-2 text-xs text-muted-foreground/80">digest: {error.digest}</p>
       )}

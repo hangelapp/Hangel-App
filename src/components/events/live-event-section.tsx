@@ -134,7 +134,7 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
             </span>
           )}
           {event.organizer && (
-            <span className="truncate text-xs font-bold uppercase tracking-wider text-muted-foreground">{event.organizer}</span>
+            <span className="min-w-0 truncate text-xs font-bold uppercase tracking-wider text-muted-foreground">{event.organizer}</span>
           )}
         </div>
       )}

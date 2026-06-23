@@ -60,17 +60,17 @@ export type EtkiTabContentProps = {
 
 const InfoRow = ({ icon: Icon, label, value, href }: { icon: React.ElementType; label: string; value?: string | number | null; href?: string }) => {
     const ValueComponent = href ? (
-        <Link href={href} className="flex items-center gap-1 text-muted-foreground hover:underline">
-            <span>{value ?? '-'}</span>
-            <ChevronRight className="h-4 w-4" />
+        <Link href={href} className="flex items-center gap-1 text-muted-foreground hover:underline min-w-0">
+            <span className="truncate">{value ?? '-'}</span>
+            <ChevronRight className="h-4 w-4 shrink-0" />
         </Link>
     ) : (
-        <p className="text-muted-foreground">{value ?? '-'}</p>
+        <p className="text-muted-foreground break-words min-w-0">{value ?? '-'}</p>
     );
 
     return (
         <div className="flex justify-between items-start gap-3 py-2 text-sm">
-            <div className="flex items-start min-w-0">
+            <div className="flex items-start shrink-0 max-w-[45%]">
                 <Icon className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                 <p className="font-medium ml-4">{label}</p>
             </div>

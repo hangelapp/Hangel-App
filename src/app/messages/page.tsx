@@ -374,14 +374,14 @@ function MessagesContent() {
 
     return (
         <div className="p-4 sm:p-6 space-y-6 animate-in fade-in-0 max-w-4xl mx-auto">
-            <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('aria.back')}>
+            <div className="flex justify-between items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2 shrink-0" aria-label={t('aria.back')}>
                         <ArrowLeft className="h-6 w-6" />
                     </Button>
-                    <h1 className="text-2xl font-bold font-headline">{t('dashboard.messages.heading')}</h1>
+                    <h1 className="text-2xl font-bold font-headline truncate">{t('dashboard.messages.heading')}</h1>
                 </div>
-                <Button size="sm" onClick={() => setComposeOpen(true)}>
+                <Button size="sm" onClick={() => setComposeOpen(true)} className="shrink-0">
                     <MessageSquare className="mr-2 h-4 w-4" /> {t('dashboard.messages.newMessage')}
                 </Button>
             </div>
@@ -429,18 +429,18 @@ function MessagesContent() {
                             isUnread(msg) && "border-l-4 border-l-primary"
                         )}>
                             <CardContent className="p-4 flex items-center gap-4">
-                                <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary" aria-label={`${senderName} ${t('dashboard.messages.profileAriaSuffix')}`}>
+                                <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary shrink-0" aria-label={`${senderName} ${t('dashboard.messages.profileAriaSuffix')}`}>
                                     <Avatar className="h-12 w-12 border">
                                         {senderAvatar ? <AvatarImage src={senderAvatar} /> : null}
                                         <AvatarFallback>{senderName[0]}</AvatarFallback>
                                     </Avatar>
                                 </button>
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <div className="flex items-center gap-2">
-                                            <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="font-bold text-sm truncate hover:underline text-left">{senderName}</button>
+                                    <div className="flex justify-between items-center gap-2 mb-1">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="font-bold text-sm truncate hover:underline text-left min-w-0">{senderName}</button>
                                             {msg.senderType && (
-                                                <div className="p-1 bg-muted rounded-full text-muted-foreground">{senderTypeIcons[msg.senderType] || null}</div>
+                                                <div className="p-1 bg-muted rounded-full text-muted-foreground shrink-0">{senderTypeIcons[msg.senderType] || null}</div>
                                             )}
                                         </div>
                                         <span className="text-[10px] text-muted-foreground shrink-0">{formatMsgTime(msg.timestamp) || msg.time}</span>
@@ -479,15 +479,15 @@ function MessagesContent() {
                         return (
                             <Card key={msg.id} onClick={() => router.push(`/messages/${msg.id}?sent=1`)} className="cursor-pointer hover:bg-accent/50 transition-colors">
                                 <CardContent className="p-4 flex items-center gap-4">
-                                    <Avatar className="h-12 w-12 border">
+                                    <Avatar className="h-12 w-12 border shrink-0">
                                         {recipientAvatar ? <AvatarImage src={recipientAvatar} /> : null}
                                         <AvatarFallback>{recipientName[0]}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-center mb-1">
+                                        <div className="flex justify-between items-center gap-2 mb-1">
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{t('dashboard.messages.recipientLabel')}</span>
-                                                <span className="font-bold text-sm truncate">{recipientName}</span>
+                                                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground shrink-0">{t('dashboard.messages.recipientLabel')}</span>
+                                                <span className="font-bold text-sm truncate min-w-0">{recipientName}</span>
                                             </div>
                                             <span className="text-[10px] text-muted-foreground shrink-0">{formatMsgTime(msg.timestamp) || msg.time}</span>
                                         </div>
@@ -522,18 +522,18 @@ function MessagesContent() {
 
                     <div className="space-y-3">
                         {selectedRecipient ? (
-                            <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
-                                <div className="flex items-center gap-3">
-                                    <Avatar className="h-9 w-9">
+                            <div className="flex items-center justify-between gap-2 p-3 rounded-lg border bg-muted/30">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <Avatar className="h-9 w-9 shrink-0">
                                         {(selectedRecipient.photoURL || selectedRecipient.avatarUrl) ? <AvatarImage src={selectedRecipient.photoURL || selectedRecipient.avatarUrl} /> : null}
                                         <AvatarFallback>{(selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name || '?')[0]}</AvatarFallback>
                                     </Avatar>
-                                    <div>
-                                        <p className="text-sm font-semibold">{selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name}</p>
-                                        <p className="text-xs text-muted-foreground">{selectedRecipient.recipientKind === 'ngo' ? t('dashboard.messages.kindNgo') : selectedRecipient.recipientKind === 'brand' ? t('dashboard.messages.kindBrand') : selectedRecipient.recipientKind === 'club' ? t('dashboard.messages.kindClub') : ''}</p>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-semibold truncate">{selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{selectedRecipient.recipientKind === 'ngo' ? t('dashboard.messages.kindNgo') : selectedRecipient.recipientKind === 'brand' ? t('dashboard.messages.kindBrand') : selectedRecipient.recipientKind === 'club' ? t('dashboard.messages.kindClub') : ''}</p>
                                     </div>
                                 </div>
-                                <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedRecipient(null)}>{t('dashboard.messages.changeCta')}</Button>
+                                <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedRecipient(null)} className="shrink-0">{t('dashboard.messages.changeCta')}</Button>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -551,7 +551,7 @@ function MessagesContent() {
                                         const kindLabel = u.recipientKind === 'ngo' ? t('dashboard.messages.kindNgo') : u.recipientKind === 'brand' ? t('dashboard.messages.kindBrand') : u.recipientKind === 'club' ? t('dashboard.messages.kindClub') : '';
                                         return (
                                             <button key={`${u.recipientKind || 'entity'}-${u.id}`} type="button" onClick={() => setSelectedRecipient(u)} className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50">
-                                                <Avatar className="h-8 w-8">
+                                                <Avatar className="h-8 w-8 shrink-0">
                                                     {(u.photoURL || u.avatarUrl) ? <AvatarImage src={u.photoURL || u.avatarUrl} /> : null}
                                                     <AvatarFallback>{name[0]}</AvatarFallback>
                                                 </Avatar>

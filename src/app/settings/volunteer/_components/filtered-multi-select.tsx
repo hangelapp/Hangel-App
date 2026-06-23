@@ -40,8 +40,8 @@ export const FilteredMultiSelect = ({
     if (filtered.length === 0) return null;
     return filtered.map(item => (
       <label key={item} className="flex items-center gap-2 px-3 py-1.5 hover:bg-muted cursor-pointer rounded-sm text-sm">
-        <Checkbox checked={selected.includes(item)} onCheckedChange={() => toggle(item)} />
-        <span>{item}</span>
+        <Checkbox checked={selected.includes(item)} onCheckedChange={() => toggle(item)} className="shrink-0" />
+        <span className="min-w-0 break-words">{item}</span>
       </label>
     ));
   };

@@ -68,10 +68,10 @@ function AdminVisibleAccordion({
   return (
     <div className="relative">
       <SectionAccordion section={section} />
-      <span className="pointer-events-none absolute right-12 top-3 sm:right-14">
+      <span className="pointer-events-none absolute right-12 top-3 hidden max-w-[55%] sm:right-14 sm:block">
         <Badge
           variant="destructive"
-          className="text-[10px] px-2 py-0 leading-4 font-semibold"
+          className="text-[10px] px-2 py-0 leading-4 font-semibold truncate"
           aria-label={badgeText}
         >
           {badgeText}
