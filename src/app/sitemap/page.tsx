@@ -282,7 +282,7 @@ export default function SitemapPage() {
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 pt-32 pb-32 max-w-4xl space-y-12">
+            <main className="container mx-auto px-4 pt-[calc(8rem+env(safe-area-inset-top))] pb-32 max-w-4xl space-y-12">
                 <div className="text-left space-y-4">
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">{t('sitemapPage.heroTitle')}</h1>
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium">{t('sitemapPage.heroSubtitle')}</p>

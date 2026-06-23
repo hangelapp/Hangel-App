@@ -43,7 +43,7 @@ interface DetailSectionProps {
 
 const DetailSection = ({ title, subtitle, description, image, hint, theme = 'light' }: DetailSectionProps) => (
     <section className={cn(
-        "relative min-h-[80vh] flex flex-col items-center pt-24 text-center border-b border-border overflow-hidden",
+        "relative min-h-[80vh] flex flex-col items-center pt-[calc(6rem+env(safe-area-inset-top))] text-center border-b border-border overflow-hidden",
         theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground"
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">

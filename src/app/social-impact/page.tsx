@@ -207,6 +207,7 @@ export default function SocialImpactPage() {
 
             {/* Total Reach */}
             <ImpactSection
+                className="pt-[calc(6rem+env(safe-area-inset-top))]"
                 title={cms.title || t('marketing.socialImpact.heroTitleFallback')}
                 stat={peopleReachedStat}
                 subtitle={cms.subtitle || t('marketing.socialImpact.heroSubtitleFallback')}

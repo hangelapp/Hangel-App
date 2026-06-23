@@ -11,7 +11,7 @@ import { useTranslation } from '@/components/providers/language-provider';
 
 const ImpactSection = ({ title, subtitle, description, theme = 'light', className, children, id }: { title: string; subtitle?: string; description?: string; theme?: 'light' | 'dark'; className?: string; children?: React.ReactNode; id?: string }) => (
   <section id={id} className={cn(
-    'relative min-h-[80vh] flex flex-col items-center justify-center pt-24 pb-16 text-center overflow-hidden border-b border-black/5',
+    'relative min-h-[80vh] flex flex-col items-center justify-center pt-[calc(6rem+env(safe-area-inset-top))] pb-16 text-center overflow-hidden border-b border-black/5',
     theme === 'dark' ? 'bg-[#042654] text-white' : 'bg-white text-[#1d1d1f]',
     className,
   )}>

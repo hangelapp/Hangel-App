@@ -76,6 +76,7 @@ export default function InvestorRelationsPage() {
 
             {/* Hero */}
             <InvestorSection
+                className="pt-[calc(6rem+env(safe-area-inset-top))]"
                 title={cms.title || t('investorPage.heroTitle')}
                 subtitle={cms.subtitle || t('investorPage.heroSubtitle')}
                 description={cms.description || t('investorPage.heroDescription')}

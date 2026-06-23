@@ -322,7 +322,7 @@ export default function LogoPage() {
                 </div>
             </header>
 
-            <main className="pt-24">
+            <main className="pt-[calc(6rem+env(safe-area-inset-top))]">
                 <Section className="text-center pt-24 pb-20 md:pt-32 md:pb-28">
                     <h1 className="text-3xl sm:text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-none">
                        {t('marketing.logo.heroTitle')}

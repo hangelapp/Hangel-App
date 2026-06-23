@@ -77,6 +77,7 @@ export default function SocialEntrepreneurshipPage() {
 
             {/* Hero */}
             <InfoSection
+                className="pt-[calc(6rem+env(safe-area-inset-top))]"
                 title={cms.title || t('socialEnterprisePage.heroTitle')}
                 subtitle={cms.subtitle || t('socialEnterprisePage.heroSubtitle')}
                 description={cms.description || t('socialEnterprisePage.heroDescription')}

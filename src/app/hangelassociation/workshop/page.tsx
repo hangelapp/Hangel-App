@@ -43,12 +43,14 @@ type MetricSectionProps = {
     desc: string;
     image: string;
     theme?: 'light' | 'dark';
+    className?: string;
 };
 
-const MetricSection = ({ title, stat, subtitle, desc, image, theme = 'light' }: MetricSectionProps) => (
+const MetricSection = ({ title, stat, subtitle, desc, image, theme = 'light', className }: MetricSectionProps) => (
     <section className={cn(
         "relative min-h-screen flex flex-col items-center pt-32 text-center border-b border-border overflow-hidden",
-        theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground"
+        theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground",
+        className
     )}>
         <div className="relative z-10 space-y-8 px-6 max-w-5xl">
             <div className="space-y-4">
@@ -77,6 +79,7 @@ export default function AssociationWorkshopPage() {
             <AssociationHeader currentPage="workshop" />
 
             <MetricSection
+                className="pt-[calc(8rem+env(safe-area-inset-top))]"
                 title={get('workshop.title', 'Sınırları Aşan Diyalog.')}
                 stat="54"
                 subtitle={get('workshop.subtitle', 'Farklı ülkeden vizyoner katılımcı.')}

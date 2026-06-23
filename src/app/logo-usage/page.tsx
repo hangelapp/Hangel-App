@@ -460,7 +460,7 @@ export default function LogoUsagePage() {
                 </div>
             </header>
 
-            <main className="pt-24">
+            <main className="pt-[calc(6rem+env(safe-area-inset-top))]">
                 <Section className="text-center pt-24 pb-20 md:pt-32 md:pb-28">
                     {cms.subtitle && (
                         <p className="text-sm font-bold uppercase tracking-widest text-primary mb-4">{cms.subtitle}</p>

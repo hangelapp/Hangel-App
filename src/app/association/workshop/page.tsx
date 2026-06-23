@@ -40,12 +40,14 @@ interface ShowcaseSectionProps {
     image: string;
     hint: string;
     theme?: 'light' | 'dark';
+    className?: string;
 }
 
-const ShowcaseSection = ({ title, subtitle, stat, description, image, hint, theme = 'light' }: ShowcaseSectionProps) => (
+const ShowcaseSection = ({ title, subtitle, stat, description, image, hint, theme = 'light', className }: ShowcaseSectionProps) => (
     <section className={cn(
         "relative min-h-screen flex flex-col items-center pt-32 text-center border-b border-border overflow-hidden",
-        theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground"
+        theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground",
+        className
     )}>
         <div className="relative z-10 space-y-6 px-6 max-w-4xl">
             <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
@@ -68,6 +70,7 @@ export default function AssociationWorkshopPage() {
             <AssociationHeader currentPage="workshop" />
 
             <ShowcaseSection
+                className="pt-[calc(8rem+env(safe-area-inset-top))]"
                 title={t('associationWorkshop.heroTitle')}
                 stat="54"
                 subtitle={t('associationWorkshop.heroSubtitle')}

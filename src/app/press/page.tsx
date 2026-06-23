@@ -358,7 +358,7 @@ export default function PressPage() {
                 </div>
             </header>
 
-            <main className="pt-24">
+            <main className="pt-[calc(6rem+env(safe-area-inset-top))]">
                 {/* Hero */}
                 <section className="container mx-auto px-4 pt-16 pb-24 text-center space-y-6">
                     {cms.subtitle && (

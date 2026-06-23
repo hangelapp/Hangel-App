@@ -120,6 +120,7 @@ export default function AboutPage() {
 
             {/* Hero */}
             <AppleSection
+                className="pt-[calc(6rem+env(safe-area-inset-top))]"
                 title={get('about.title', t('marketing.about.heroTitle'))}
                 subtitle={get('about.subtitle', t('marketing.about.heroSubtitle'))}
                 description={get('about.description', t('marketing.about.heroDescription'))}

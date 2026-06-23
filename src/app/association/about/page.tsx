@@ -90,6 +90,7 @@ export default function AssociationAboutPage() {
 
             {/* Hero */}
             <AppleSection
+                className="pt-[calc(6rem+env(safe-area-inset-top))]"
                 title={t('associationAbout.heroTitle')}
                 subtitle={t('associationAbout.heroSubtitle')}
                 description={t('associationAbout.heroDesc')}

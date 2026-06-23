@@ -37,7 +37,7 @@ export default function AssociationContactPage() {
                 </div>
             </header>
 
-            <main className="pt-32 pb-24">
+            <main className="pt-[calc(8rem+env(safe-area-inset-top))] pb-24">
                 <div className="container mx-auto px-6 max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-20">
                     <div className="space-y-12">
                         <div className="space-y-4">

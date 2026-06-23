@@ -76,7 +76,7 @@ export default function CommitteeSlugPage() {
                 </div>
             </header>
 
-            <main className="pt-32 pb-24">
+            <main className="pt-[calc(8rem+env(safe-area-inset-top))] pb-24">
                 <section className="container mx-auto px-6 max-w-4xl space-y-16">
                     <div className="text-center space-y-8">
                         <div className={cn("w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-white shadow-2xl", content.color)}>

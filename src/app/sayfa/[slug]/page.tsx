@@ -51,7 +51,7 @@ export default function CustomWebPage() {
                 </div>
             </header>
 
-            <main className="pt-24 pb-24">
+            <main className="pt-[calc(6rem+env(safe-area-inset-top))] pb-24">
                 <section className="container mx-auto px-6 max-w-3xl space-y-8">
                     <div className="space-y-4 text-center">
                         {page.subtitle && (

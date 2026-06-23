@@ -79,6 +79,7 @@ export default function CareersPage() {
 
             {/* Hero */}
             <CareerSection
+                className="pt-[calc(6rem+env(safe-area-inset-top))]"
                 title={cms.title || t('marketing.careers.heroTitle')}
                 subtitle={cms.subtitle || t('marketing.careers.heroSubtitle')}
                 description={cms.description || t('marketing.careers.heroDescription')}

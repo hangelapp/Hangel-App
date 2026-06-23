@@ -76,7 +76,7 @@ export default function AssociationEventsPage() {
         <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="events" />
 
-            <section className="pt-32 pb-20 px-6 text-center space-y-4 bg-muted">
+            <section className="pt-[calc(8rem+env(safe-area-inset-top))] pb-20 px-6 text-center space-y-4 bg-muted">
                 <h1 className="text-3xl sm:text-5xl md:text-8xl font-bold tracking-tight text-foreground">{t('associationEvents.heroTitle')}</h1>
                 <p className="text-lg sm:text-xl md:text-3xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
                     {t('associationEvents.heroDesc')}

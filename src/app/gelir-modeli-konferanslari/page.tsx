@@ -262,7 +262,7 @@ export default function IncomeModelConferencePage() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-white pt-28 pb-16">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-white pt-[calc(7rem+env(safe-area-inset-top))] pb-16">
         <div className="mx-auto max-w-3xl px-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <Link
             href="/gelir-modeli-konferanslari/sunum"
