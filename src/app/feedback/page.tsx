@@ -244,7 +244,7 @@ export default function FeedbackPage() {
 
     return (
         <div className="min-h-dvh bg-secondary/30">
-            <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b">
+            <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b pt-[env(safe-area-inset-top)]">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-3xl">
                     <Button onClick={() => router.back()} variant="ghost" size="sm" className="h-8 px-2 -ml-2">
                         <ArrowLeft className="mr-1 h-4 w-4" /> {t('aria.back')}

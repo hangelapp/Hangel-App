@@ -110,7 +110,7 @@ export default function MessageDetailPage() {
   return (
     <div className="min-h-dvh bg-secondary/30">
       {/* Sticky header — Instagram benzeri */}
-      <div className="sticky top-0 z-10 glass-prominent backdrop-blur-xl border-b border-border/40 px-4 py-3 flex items-center gap-3">
+      <div className="sticky top-0 z-10 glass-prominent backdrop-blur-xl border-b border-border/40 px-4 py-3 flex items-center gap-3 pt-[env(safe-area-inset-top)]">
         <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Geri">
           <ArrowLeft className="h-5 w-5" />
         </Button>

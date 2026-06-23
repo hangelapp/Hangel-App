@@ -49,7 +49,7 @@ export default function ImecePage() {
   const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-background">
-      <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b">
+      <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
           <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label={t('marketing.imece.headerBack')}>
             <ArrowLeft className="h-5 w-5" />

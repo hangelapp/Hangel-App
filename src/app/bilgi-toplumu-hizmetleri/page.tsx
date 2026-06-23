@@ -39,7 +39,7 @@ export default function InformationSocietyServicesPage() {
 
   return (
     <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
-      <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border">
+      <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border pt-[env(safe-area-inset-top)]">
           <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
               <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                   <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}

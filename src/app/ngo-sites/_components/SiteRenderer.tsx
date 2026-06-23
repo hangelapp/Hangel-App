@@ -127,7 +127,7 @@ export function SiteRenderer({ ngo, opportunities }: SiteRendererProps) {
 
   return (
     <div style={themeStyle} className="bg-background text-foreground min-h-screen">
-      <header className="bg-background/80 shadow-md sticky top-0 z-50 backdrop-blur-lg border-b border-border/50">
+      <header className="bg-background/80 shadow-md sticky top-0 z-50 backdrop-blur-lg border-b border-border/50 pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
           <a href="#hero" className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
