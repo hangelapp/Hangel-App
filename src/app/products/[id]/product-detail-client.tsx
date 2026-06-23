@@ -4,46 +4,37 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  ChevronRight,
   ExternalLink,
+  Heart,
   ImageOff,
   HeartHandshake,
   PackageCheck,
+  Share2,
   ShieldCheck,
-  Store,
-  TrendingDown,
   Sparkles,
+  Store,
   Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
-import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
+import { BrandLogo } from '@/components/market/brand-logo';
+import { ProductCard } from '@/components/market/product-card';
+import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
-import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, collection, addDoc, query, where, limit, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import { openExternalUrl } from '@/lib/capacitor';
+import { goToAffiliate } from '@/lib/affiliate-go';
 import type { CanonicalProduct } from '@/lib/feed/types';
+import type { Brand } from '@/lib/types';
 
 function formatPrice(value: number, currency: string): string {
-  return `${value.toLocaleString('tr-TR')} ${currency}`;
-}
-
-// Affiliate sub-id ekle: kullanıcıyı dışa giden URL'de izlenebilir kıl. Çoğu ağ
-// `subId`/`sub_id` parametresini destekler ama TAM parametre adı ağa göre değişir
-// (örn. AWIN=clickref, Admitad=subid) — kesin eşleme ağ bazında doğrulanmalı.
-// Şimdilik iki yaygın anahtarı da ekliyoruz; var olan query string'i bozmuyoruz.
-function appendSubId(rawUrl: string, subId: string): string {
-  if (!subId) return rawUrl;
-  try {
-    const u = new URL(rawUrl);
-    if (!u.searchParams.has('subId')) u.searchParams.set('subId', subId);
-    if (!u.searchParams.has('sub_id')) u.searchParams.set('sub_id', subId);
-    return u.toString();
-  } catch {
-    return rawUrl; // geçersiz URL → olduğu gibi bırak
-  }
+  const sym = currency === 'TRY' ? 'TL' : currency;
+  return `${value.toLocaleString('tr-TR')} ${sym}`;
 }
 
 export function ProductDetailClient({ id }: { id: string }) {
@@ -51,44 +42,60 @@ export function ProductDetailClient({ id }: { id: string }) {
   const { user: authUser } = useUser();
   const { toast } = useToast();
   const [isGoing, setIsGoing] = useState(false);
+  const [fav, setFav] = useState(false);
+
   const productRef = useMemoFirebase(
     () => doc(db, COLLECTIONS.products, id),
     [db, id]
   );
   const { data: product, isLoading } = useDoc<CanonicalProduct>(productRef);
 
-  // Kullanıcının referral kodunu (varsa) oku — affiliate sub-id olarak kullanılır.
-  const userDocRef = useMemoFirebase(
-    () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
-    [db, authUser?.uid]
+  // Marka — bağış oranını çözmek + BrandLogo'yu beslemek + profil linki için.
+  // Ürün bir hangel markasına bağlıysa (brandId) çekilir; değilse atlanır.
+  const brandRef = useMemoFirebase(
+    () => (product?.brandId ? doc(db, COLLECTIONS.brands, product.brandId) : null),
+    [db, product?.brandId]
   );
-  const { data: userData } = useDoc<{ referralCode?: string }>(userDocRef);
+  const { data: brand } = useDoc<Brand>(brandRef);
 
   // "Ürüne Git" — market marka CTA'sını yansıtır: oturum zorunlu + tıklama/
-  // alışveriş izi (userId+brandId+productId) bildirim olarak yazılır + dışa giden
-  // URL'e kullanıcının sub-id'si (referralCode varsa o, yoksa uid) eklenir.
+  // alışveriş izi (userId+brandId+productId) bildirim olarak yazılır. Dışa giden
+  // link artık `/api/affiliate/go?brandId=...` üzerinden açılır: route clickId
+  // üretip affiliateClicks doc'unu yazar ve subId'i affiliate URL'ine enjekte
+  // ederek 302 ile markaya yönlendirir (conversion postback'i bağışa çevirir).
+  // Ürün markaya bağlı değilse (brandId yok) izleme yapılamaz; doğrudan açılır.
   const handleGoToProduct = async () => {
     if (!product) return;
     if (!authUser) {
       toast({ variant: 'destructive', title: 'Giriş Yapmalısınız', description: 'Bağış sürecini başlatmak için lütfen oturum açın.' });
       return;
     }
-    if (!product.productUrl) return;
+    if (!product.productUrl && !product.brandId) return;
 
     setIsGoing(true);
-    const subId = (userData?.referralCode && userData.referralCode.trim()) || authUser.uid;
-    const outboundUrl = appendSubId(product.productUrl, subId);
 
-    // Capacitor Browser ile native aç (iOS popup blocker'a takılmaz).
-    void openExternalUrl(outboundUrl);
+    if (product.brandId) {
+      // Affiliate redirect endpoint'i (subId enjeksiyonu + click kaydı route'ta).
+      await goToAffiliate({
+        brandId: product.brandId,
+        authUser,
+        fallbackUrl: product.productUrl || null,
+      });
+    } else if (product.productUrl) {
+      // Markaya bağlı değil → izlenemez; kullanıcıyı yine de mağazaya götür.
+      void openExternalUrl(product.productUrl);
+    }
 
     toast({
       title: 'Alışveriş başlatıldı',
       description: 'Alışverişini tamamladığında bağışın otomatik hesabına işlenecek. "Bağışlarım" sayfasından takip edebilirsin.',
     });
 
-    // Tıklama izi: bilgilendirme bildirimi (best-effort) — market CTA ile aynı desen.
-    // Bağış kaydı DEĞİL; gerçek bağış affiliate webhook'undan gelir.
+    // Tıklama izi (best-effort): "bağışın işleniyor" durumunu /my-donations'ta
+    // göstermek için işaretli bir bildirim yazılır. Bağış kaydı DEĞİL — gerçek
+    // bağış conversion onayı gelince affiliate postback'inden oluşur ve donations
+    // listesinde "İşleme Alındı" olarak görünür. createdBy = uid (rules gereği).
+    // data.affiliatePending: my-donations bunu "bağışın işleniyor 🧡" olarak ayıklar.
     if (db) {
       try {
         await addDoc(collection(db, COLLECTIONS.notifications), {
@@ -96,10 +103,16 @@ export function ProductDetailClient({ id }: { id: string }) {
           type: 'donation',
           title: 'Alışveriş başlatıldı',
           body: `${product.brandName} alışverişin tamamlanınca bağışın işlenecek. Bağışlarım sayfasından takip et.`,
-          data: { brandId: product.brandId ?? null, productId: product.id, link: '/my-donations' },
+          data: {
+            affiliatePending: true,
+            brandId: product.brandId ?? null,
+            brandName: product.brandName ?? null,
+            productId: product.id,
+            link: '/my-donations',
+          },
           read: false,
           createdAt: serverTimestamp(),
-          createdBy: 'product-click',
+          createdBy: authUser.uid,
         });
       } catch {
         // Bildirim yazımı başarısız olsa bile alışveriş akışı devam eder.
@@ -107,6 +120,30 @@ export function ProductDetailClient({ id }: { id: string }) {
     }
 
     setIsGoing(false);
+  };
+
+  // Native paylaşım (varsa) — Trendyol'daki paylaş ikonu. Yoksa sessiz geçer.
+  const handleShare = async () => {
+    if (!product) return;
+    const shareData = {
+      title: product.title,
+      text: `${product.brandName} · ${product.title}`,
+      url: typeof window !== 'undefined' ? window.location.href : '',
+    };
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // Kullanıcı iptal etti — sessiz.
+      }
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        toast({ title: 'Bağlantı kopyalandı', description: 'Ürün bağlantısı panoya kopyalandı.' });
+      } catch {
+        // Pano erişimi yok — sessiz.
+      }
+    }
   };
 
   const images = useMemo(() => {
@@ -117,8 +154,27 @@ export function ProductDetailClient({ id }: { id: string }) {
     return Array.from(new Set(all));
   }, [product]);
 
-  const [activeImage, setActiveImage] = useState<string | null>(null);
-  const mainImage = activeImage || images[0] || null;
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  // "Benzer Ürünler" — aynı kategoriden tek hafif sorgu (limit 10). Mevcut ürün
+  // sonradan istemcide elenir; orderBy yok (kategori where + limit yeterli, indeks
+  // gerektirmez). Yalnızca kategori varsa çalışır.
+  const similarQuery = useMemoFirebase(
+    () =>
+      product?.category
+        ? query(
+            collection(db, COLLECTIONS.products),
+            where('category', '==', product.category),
+            limit(12)
+          )
+        : null,
+    [db, product?.category]
+  );
+  const { data: similarRaw } = useCollection<CanonicalProduct>(similarQuery);
+  const similarProducts = useMemo(
+    () => (similarRaw || []).filter((p) => p.id !== id).slice(0, 10),
+    [similarRaw, id]
+  );
 
   if (isLoading) {
     return (
@@ -126,6 +182,7 @@ export function ProductDetailClient({ id }: { id: string }) {
         <Skeleton className="aspect-square w-full rounded-2xl" />
         <Skeleton className="h-6 w-2/3" />
         <Skeleton className="h-10 w-1/3" />
+        <Skeleton className="h-24 w-full rounded-2xl" />
       </div>
     );
   }
@@ -157,113 +214,232 @@ export function ProductDetailClient({ id }: { id: string }) {
   const discountPct = hasSale
     ? Math.round((1 - (product.salePrice as number) / product.price) * 100)
     : 0;
-  const donationRate =
+
+  // Bağış oranı: önce ürünün kendi oranı, yoksa bağlı markanın oranından çöz.
+  const rawRate =
     typeof product.donationRate === 'number' && product.donationRate > 0
       ? product.donationRate
-      : null;
-  // Tahmini bağış: ürün fiyatı × bağış oranı (varsa).
+      : typeof brand?.donationRate === 'number' && brand.donationRate > 0
+        ? brand.donationRate
+        : null;
+  const donationRate = rawRate;
+  // Tahmini bağış: etkin fiyat × bağış oranı (varsa).
   const estimatedDonation =
     donationRate !== null ? Math.round((effectivePrice * donationRate) / 100) : null;
-  const inStock = !product.availability || /in.?stock|stokta|mevcut|available/i.test(product.availability);
+  const inStock =
+    !product.availability ||
+    /in.?stock|stokta|mevcut|available/i.test(product.availability);
+
+  const mainImage = images[activeIdx] || images[0] || null;
 
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-secondary/30 pb-28">
-      <div className="sticky top-12 z-20 border-b bg-background p-4">
-        <Button asChild variant="ghost" size="sm" className="gap-2">
+      {/* 1. Üst bar — geri + paylaş + favori (Trendyol detay başlığı) */}
+      <div className="sticky top-12 z-20 flex items-center justify-between border-b bg-background px-2 py-2">
+        <Button asChild variant="ghost" size="icon" className="h-10 w-10 rounded-xl" aria-label="Geri">
           <Link href="/market/products">
-            <ArrowLeft className="h-4 w-4" />
-            Ürünler
+            <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 rounded-xl"
+            onClick={handleShare}
+            aria-label="Paylaş"
+          >
+            <Share2 className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 rounded-xl"
+            onClick={() => setFav((v) => !v)}
+            aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+          >
+            <Heart className={cn('h-5 w-5 transition-colors', fav ? 'fill-primary text-primary' : 'text-foreground')} />
+          </Button>
+        </div>
       </div>
 
-      <div className="mx-auto w-full max-w-3xl space-y-5 p-4">
-        <Card variant="glass" className="relative overflow-hidden rounded-2xl bg-white">
-          {hasSale && (
-            <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-black text-white shadow">
-              <TrendingDown className="h-3.5 w-3.5" /> %{discountPct} indirim
-            </span>
-          )}
-          <div className="relative aspect-square w-full">
-            {mainImage ? (
+      <div className="mx-auto w-full max-w-3xl">
+        {/* 2. Büyük ürün görseli — swipe galeri + nokta göstergesi */}
+        <div className="relative bg-white">
+          <div className="relative aspect-[1/1.2] w-full">
+            {images.length > 1 ? (
+              <div
+                className="flex h-full w-full snap-x snap-mandatory overflow-x-auto"
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  const idx = Math.round(el.scrollLeft / el.clientWidth);
+                  setActiveIdx((cur) => (cur === idx ? cur : idx));
+                }}
+              >
+                {images.map((src, i) => (
+                  <div key={src} className="relative h-full w-full shrink-0 snap-center">
+                    <img
+                      src={src}
+                      alt={product.title}
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                      referrerPolicy="no-referrer"
+                      className="h-full w-full object-contain p-6"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : mainImage ? (
               <img
                 src={mainImage}
                 alt={product.title}
-                loading="lazy"
+                loading="eager"
                 referrerPolicy="no-referrer"
-                className="h-full w-full object-contain p-4"
+                className="h-full w-full object-contain p-6"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground/50">
-                <ImageOff className="h-16 w-16" aria-hidden="true" />
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">
+                <ImageOff className="h-20 w-20" aria-hidden="true" />
               </div>
             )}
           </div>
-        </Card>
 
-        {images.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {images.map((src) => (
-              <button
-                key={src}
-                type="button"
-                onClick={() => setActiveImage(src)}
-                className={
-                  'h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 bg-white ' +
-                  (mainImage === src ? 'border-primary' : 'border-transparent')
-                }
-              >
-                <img
-                  src={src}
-                  alt={product.title}
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  className="h-full w-full object-contain p-1"
-                />
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className="space-y-3">
-          {/* Marka — kayıtlı marka ise profiline link */}
-          {product.brandId ? (
-            <Link
-              href={`/market/${product.brandId}`}
-              className="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-primary hover:underline"
-            >
-              <Store className="h-3.5 w-3.5" /> {product.brandName}
-            </Link>
-          ) : (
-            <p className="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-muted-foreground">
-              <Store className="h-3.5 w-3.5" /> {product.brandName}
-            </p>
+          {/* İndirim rozeti (sol üst) */}
+          {hasSale && (
+            <span className="absolute left-3 top-3 z-10 inline-flex items-center rounded-md bg-primary px-2 py-1 text-xs font-black text-white shadow">
+              %{discountPct} indirim
+            </span>
           )}
-          <h1 className="text-2xl font-black leading-tight">{product.title}</h1>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Favori kalbi (sağ üst, görsel üzerinde) */}
+          <button
+            type="button"
+            onClick={() => setFav((v) => !v)}
+            aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+            className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white"
+          >
+            <Heart className={cn('h-4 w-4 transition-colors', fav ? 'fill-primary text-primary' : 'text-muted-foreground')} />
+          </button>
+
+          {/* Galeri nokta göstergesi */}
+          {images.length > 1 && (
+            <div className="absolute bottom-3 left-0 right-0 z-10 flex justify-center gap-1.5">
+              {images.map((src, i) => (
+                <span
+                  key={src}
+                  className={cn(
+                    'h-1.5 rounded-full transition-all',
+                    i === activeIdx ? 'w-4 bg-primary' : 'w-1.5 bg-foreground/25'
+                  )}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Küçük resim seçici (çoklu görsel) */}
+          {images.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto bg-white px-4 pb-3 pt-1">
+              {images.map((src, i) => (
+                <button
+                  key={src}
+                  type="button"
+                  onClick={() => setActiveIdx(i)}
+                  className={cn(
+                    'h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 bg-white',
+                    i === activeIdx ? 'border-primary' : 'border-border'
+                  )}
+                >
+                  <img
+                    src={src}
+                    alt={product.title}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    className="h-full w-full object-contain p-1"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4 p-4">
+          {/* Breadcrumb — Market › kategori › ürün */}
+          <nav className="flex items-center gap-1 overflow-x-auto text-[11px] text-muted-foreground">
+            <Link href="/market" className="shrink-0 hover:text-foreground">Market</Link>
             {product.category && (
-              <Badge variant="secondary">{product.category}</Badge>
+              <>
+                <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
+                <Link
+                  href={`/market/products`}
+                  className="shrink-0 hover:text-foreground"
+                >
+                  {product.category}
+                </Link>
+              </>
             )}
-            <Badge variant="outline" className={'gap-1 ' + (inStock ? 'text-emerald-700 border-emerald-200 bg-emerald-50' : 'text-amber-700 border-amber-200 bg-amber-50')}>
-              <PackageCheck className="h-3 w-3" aria-hidden="true" />
-              {inStock ? 'Stokta' : (product.availability || 'Tükendi')}
-            </Badge>
-            {donationRate !== null && (
-              <Badge className="gap-1 bg-primary text-white">
-                <HeartHandshake className="h-3 w-3" aria-hidden="true" />
-                ~%{donationRate} bağış
-              </Badge>
+            <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
+            <span className="truncate text-foreground/70">{product.title}</span>
+          </nav>
+
+          {/* 3. Marka satırı — logo + tıklanır marka adı */}
+          <div className="flex items-center gap-2.5">
+            {brand ? (
+              <Link
+                href={`/market/${product.brandId}`}
+                className="relative block h-10 w-10 shrink-0 overflow-hidden rounded-xl border bg-white"
+                aria-label={product.brandName}
+              >
+                <BrandLogo brand={brand} />
+              </Link>
+            ) : (
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border bg-white text-primary">
+                <Store className="h-5 w-5" aria-hidden="true" />
+              </span>
+            )}
+            {product.brandId ? (
+              <Link
+                href={`/market/${product.brandId}`}
+                className="text-sm font-black uppercase tracking-wide text-primary hover:underline"
+              >
+                {product.brandName}
+              </Link>
+            ) : (
+              <span className="text-sm font-black uppercase tracking-wide text-muted-foreground">
+                {product.brandName}
+              </span>
             )}
           </div>
 
-          <div className="flex items-baseline gap-3 pt-1">
+          {/* 4. Ürün başlığı — tam, kesilmemiş */}
+          <h1 className="text-xl font-bold leading-snug text-foreground">{product.title}</h1>
+
+          {/* Durum rozetleri */}
+          <div className="flex flex-wrap items-center gap-2">
+            {product.category && <Badge variant="secondary">{product.category}</Badge>}
+            <Badge
+              variant="outline"
+              className={cn(
+                'gap-1',
+                inStock
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                  : 'border-amber-200 bg-amber-50 text-amber-700'
+              )}
+            >
+              <PackageCheck className="h-3 w-3" aria-hidden="true" />
+              {inStock ? 'Stokta' : product.availability || 'Tükendi'}
+            </Badge>
+          </div>
+
+          {/* 5. Fiyat bloğu — Trendyol tarzı */}
+          <div className="flex items-center gap-3">
             {hasSale ? (
               <>
+                <span className="rounded-md bg-primary px-2 py-0.5 text-sm font-black text-white">
+                  %{discountPct}
+                </span>
                 <span className="text-3xl font-black text-primary">
                   {formatPrice(product.salePrice as number, product.currency)}
                 </span>
-                <span className="text-lg text-muted-foreground line-through">
+                <span className="text-base text-muted-foreground line-through">
                   {formatPrice(product.price, product.currency)}
                 </span>
               </>
@@ -273,58 +449,104 @@ export function ProductDetailClient({ id }: { id: string }) {
               </span>
             )}
           </div>
-        </div>
 
-        {/* Sosyal etki kartı — affiliate → bağış hikayesi (hangel değer önerisi) */}
-        <Card className="rounded-2xl border-primary/20 bg-primary/5 p-4">
-          <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <HeartHandshake className="h-5 w-5" />
-            </span>
-            <div className="space-y-1">
-              <p className="text-sm font-black text-foreground">Bu alışveriş bağışa dönüşür</p>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                "Ürüne Git" ile markanın sitesinden alışveriş yaptığında, hangel'in kazandığı
-                komisyon <strong className="text-foreground">bağışa</strong> dönüşür. Sen ekstra ödemezsin.
-                {estimatedDonation !== null && estimatedDonation > 0 && (
-                  <> Bu üründe yaklaşık <strong className="text-primary">{formatPrice(estimatedDonation, product.currency)}</strong> bağış sağlanır.</>
+          {/* 6. BAĞIŞ VURGUSU — hangel imzası (Trendyol'un kargo/promo alanı yerine) */}
+          <div className="rounded-2xl border border-primary/25 bg-primary/5 p-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+                <HeartHandshake className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <div className="space-y-1">
+                {donationRate !== null ? (
+                  <>
+                    <p className="text-sm font-black text-foreground">
+                      Bu üründen <span className="text-primary">%{donationRate}</span> bağışa gidiyor
+                    </p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      Alışverişin iyiliğe dönüşür — sen ekstra ödemezsin.
+                      {estimatedDonation !== null && estimatedDonation > 0 && (
+                        <> Bu üründe yaklaşık{' '}
+                          <strong className="text-primary">{formatPrice(estimatedDonation, product.currency)}</strong>{' '}
+                          bağış sağlanır.
+                        </>
+                      )}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-black text-foreground">Alışverişin iyiliğe dönüşür</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      &quot;Ürüne Git&quot; ile markanın resmi sitesinden alışveriş yaptığında, hangel&apos;in
+                      kazandığı komisyon bağışa dönüşür. Sen ekstra ödemezsin.
+                    </p>
+                  </>
                 )}
-              </p>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-primary/15 pt-3 text-[11px] font-semibold text-muted-foreground">
+              <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-primary" /> Güvenli yönlendirme</span>
+              <span className="inline-flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-primary" /> Resmi marka sitesi</span>
+              <span className="inline-flex items-center gap-1"><ExternalLink className="h-3.5 w-3.5 text-primary" /> Ödeme markada</span>
             </div>
           </div>
-          <div className="mt-3 flex flex-wrap gap-3 border-t border-primary/10 pt-3 text-[11px] font-semibold text-muted-foreground">
-            <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-primary" /> Güvenli yönlendirme</span>
-            <span className="inline-flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-primary" /> Resmi marka sitesi</span>
-            <span className="inline-flex items-center gap-1"><ExternalLink className="h-3.5 w-3.5 text-primary" /> Ödeme markada</span>
-          </div>
-        </Card>
 
-        {product.description && (
-          <div className="space-y-2">
-            <h2 className="text-sm font-black uppercase tracking-wide text-muted-foreground">Ürün Açıklaması</h2>
-            <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">
-              {product.description}
-            </p>
-          </div>
-        )}
+          {/* 8. Ürün açıklaması */}
+          {product.description && (
+            <div className="space-y-2 rounded-2xl border bg-card p-4">
+              <h2 className="text-sm font-black uppercase tracking-wide text-foreground">Ürün Açıklaması</h2>
+              <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">
+                {product.description}
+              </p>
+            </div>
+          )}
 
-        {/* Ürün künyesi */}
-        {(product.gtin || product.mpn) && (
-          <div className="rounded-2xl border bg-card p-4 text-xs text-muted-foreground">
-            <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-foreground">Ürün Bilgileri</h2>
-            <div className="space-y-1">
-              {product.gtin && <div className="flex justify-between gap-3"><span>Barkod (GTIN)</span><span className="font-semibold text-foreground">{product.gtin}</span></div>}
-              {product.mpn && <div className="flex justify-between gap-3"><span>Üretici Kodu (MPN)</span><span className="font-semibold text-foreground">{product.mpn}</span></div>}
-              {product.category && <div className="flex justify-between gap-3"><span>Kategori</span><span className="font-semibold text-foreground text-right">{product.category}</span></div>}
+          {/* 8b. Ürün künyesi / özellikler */}
+          {(product.gtin || product.mpn || product.category) && (
+            <div className="rounded-2xl border bg-card p-4">
+              <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-foreground">Ürün Bilgileri</h2>
+              <div className="space-y-1 text-xs text-muted-foreground">
+                {product.category && (
+                  <div className="flex justify-between gap-3 border-b border-border/50 py-1.5">
+                    <span>Kategori</span>
+                    <span className="text-right font-semibold text-foreground">{product.category}</span>
+                  </div>
+                )}
+                {product.gtin && (
+                  <div className="flex justify-between gap-3 border-b border-border/50 py-1.5">
+                    <span>Barkod (GTIN)</span>
+                    <span className="font-semibold text-foreground">{product.gtin}</span>
+                  </div>
+                )}
+                {product.mpn && (
+                  <div className="flex justify-between gap-3 py-1.5">
+                    <span>Üretici Kodu (MPN)</span>
+                    <span className="font-semibold text-foreground">{product.mpn}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 9. Benzer Ürünler — yatay şerit (aynı kategori) */}
+        {similarProducts.length > 0 && (
+          <div className="space-y-3 px-4 pb-2">
+            <h2 className="text-base font-black text-foreground">Benzer Ürünler</h2>
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
+              {similarProducts.map((p) => (
+                <div key={p.id} className="w-36 shrink-0">
+                  <ProductCard product={p} donationRate={donationRate} />
+                </div>
+              ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* Sabit alt CTA — her zaman görünür "Ürüne Git" (affiliate deeplink) */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t bg-background/90 px-4 py-3 backdrop-blur-lg">
+      {/* 7. Sabit alt CTA — "Ürüne Git" (affiliate deeplink, login gating korunur) */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t bg-background/95 px-4 py-3 backdrop-blur-lg">
         <div className="mx-auto flex w-full max-w-3xl items-center gap-3">
-          <div className="hidden sm:block">
+          <div className="hidden shrink-0 sm:block">
             <p className="text-[11px] text-muted-foreground">Fiyat</p>
             <p className="text-lg font-black text-foreground">{formatPrice(effectivePrice, product.currency)}</p>
           </div>

@@ -115,6 +115,48 @@ export default function MyDonationsPage() {
   );
   const { data: donationTransactions, isLoading } = useCollection<DonationTransaction>(donationsQuery);
 
+  // "Bağışın işleniyor" — kullanıcı "Ürüne Git / Alışverişe Başla"ya tıkladığında
+  // affiliate-go route'u attribution click'i (affiliateClicks) yazar; o koleksiyon
+  // SADECE Admin SDK erişimlidir (client okuyamaz). Bunun yerine tıklama anında
+  // yazılan, sahibinin okuyabildiği işaretli bildirimi (data.affiliatePending)
+  // okuyup "onay bekleyen" durumu gösteriyoruz. Conversion onaylanınca gerçek
+  // bağış postback'ten donations'a düşer ("İşleme Alındı") ve aşağıdaki listede
+  // görünür; pending kart yalnız bilgilendirme amaçlıdır.
+  // Tek where('userId') — mevcut bildirim sorgularıyla aynı desen, yeni composite
+  // index gerektirmez. type/affiliatePending filtresi client-side uygulanır.
+  const pendingNotifQuery = useMemoFirebase(
+    () => authUser
+      ? query(collection(db, COLLECTIONS.notifications), where('userId', '==', authUser.uid))
+      : null,
+    [db, authUser?.uid]
+  );
+  const { data: pendingNotifs } = useCollection<{
+    id: string;
+    type?: string;
+    createdAt?: { seconds: number } | null;
+    data?: { affiliatePending?: boolean; brandName?: string | null } | null;
+  }>(pendingNotifQuery);
+
+  // "Şimdi"yi mount'ta bir kez sabitle (render-pure; Date.now()'u her render'da
+  // çağırmaktan kaçınırız). Cutoff bu sabite göre hesaplanır.
+  const [nowMs] = useState(() => Date.now());
+
+  // Son 14 günde başlatılmış, henüz onaylanmamış alışveriş tıklamaları.
+  // (14 gün: çoğu affiliate ağı dönüşümü bu süre içinde onaylar; sonrası
+  // büyük olasılıkla alışveriş tamamlanmadı demektir, kartı bayatlatmayalım.)
+  const pendingShopping = useMemo(() => {
+    const cutoff = nowMs - 14 * 24 * 60 * 60 * 1000;
+    return (pendingNotifs || [])
+      .filter((n) => n.data?.affiliatePending === true)
+      .map((n) => ({
+        id: n.id,
+        brandName: n.data?.brandName || null,
+        createdAtMs: n.createdAt?.seconds ? n.createdAt.seconds * 1000 : nowMs,
+      }))
+      .filter((p) => p.createdAtMs >= cutoff)
+      .sort((a, b) => b.createdAtMs - a.createdAtMs);
+  }, [pendingNotifs, nowMs]);
+
   const ratesDocRef = useMemoFirebase(
     () => (db ? doc(db, COLLECTIONS.siteSettings, 'donationRates') : null),
     [db]
@@ -166,6 +208,54 @@ export default function MyDonationsPage() {
           <p className="text-3xl font-bold">{totalDonations.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
         </CardContent>
       </Card>
+
+      {/* İşleniyor (onay bekliyor) — başlatılmış ama henüz onaylanmamış alışverişler.
+          Onaylanınca gerçek bağış aşağıdaki geçmişte "İşleme Alındı" olarak görünür. */}
+      {authUser && pendingShopping.length > 0 && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base text-primary">
+              <Clock className="h-4 w-4 shrink-0" />
+              Bağışın işleniyor 🧡
+            </CardTitle>
+            <CardDescription>
+              Başlattığın alışverişler onaylanınca bağışların otomatik hesabına işlenir.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 pt-0">
+            {pendingShopping.map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center gap-3 rounded-xl border border-primary/20 bg-background/60 p-3"
+              >
+                <div className="rounded-full bg-orange-100 p-2 dark:bg-orange-900/30">
+                  <ShoppingBag className="h-4 w-4 text-orange-700 dark:text-orange-300" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {p.brandName || 'Alışveriş'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(p.createdAtMs), 'dd MMMM yyyy - HH:mm', { locale: tr })}
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="shrink-0 border-orange-200 bg-orange-100 text-[10px] font-bold uppercase text-orange-700 dark:border-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+                >
+                  <Clock className="mr-1 h-3 w-3" />
+                  İşleniyor
+                </Badge>
+              </div>
+            ))}
+            <p className="pt-1 text-[11px] leading-relaxed text-muted-foreground">
+              Onaylanması markaya göre birkaç dakika–saat (bazen birkaç gün) sürebilir.
+              Tamamlanınca bağışın geçmiş listende görünür. Yalnız değilsin, birlikte
+              umudu büyütüyoruz.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

@@ -132,6 +132,13 @@ export const COLLECTIONS = {
   // Affiliate webhook audit trail (Admin SDK only; brand-signed POST → impact++).
   // Doc id = `{brandId}__{orderId}` for create-or-fail idempotency.
   affiliateConfirmations: 'affiliateConfirmations',
+  // Affiliate click attribution (subId tracking). Doc id = clickId (kısa rastgele,
+  // crypto.randomUUID().slice(0,16)). /api/affiliate/go login'li kullanıcı tıklayınca
+  // yazar; clickId affiliate URL'ine {transaction_id} subId olarak gömülür. Conversion
+  // postback (/api/affiliate/postback) bu doc'u status:'converted' + donationId ile günceller.
+  // SADECE Admin SDK yazar/okur. Alanlar: { clickId, userId, brandId, brandName?, network?,
+  // productUrl, donationRate?, createdAt, status: 'clicked'|'converted', donationId? }.
+  affiliateClicks: 'affiliateClicks',
 
   // Platform-içi reklam bannerları (super-admin/ads). Timeline ve diğer alanlarda
   // gösterilen banner kayıtları. Public read (banner kullanıcıya görünür),
