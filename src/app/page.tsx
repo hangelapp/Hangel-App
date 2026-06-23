@@ -193,7 +193,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
     const { language, changeLanguage, t } = useTranslation();
     const { user, isUserLoading } = useUser();
     return (
-        <header className="fixed top-0 inset-x-0 z-30 bg-background/80 backdrop-blur-md border-b border-border">
+        <header className="fixed top-0 inset-x-0 z-30 bg-background/80 backdrop-blur-md border-b border-border pt-[env(safe-area-inset-top)]">
             <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
                 <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="md:hidden h-11 w-11" onClick={onMenuClick} aria-label={t('a11y.openMenu')}>
