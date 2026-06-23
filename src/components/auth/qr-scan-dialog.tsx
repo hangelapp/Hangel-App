@@ -10,6 +10,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
+import { Capacitor } from '@capacitor/core';
+import { scanQrNative } from '@/lib/native-qr';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +27,13 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   const handledRef = useRef(false);
   const [status, setStatus] = useState<'scanning' | 'approving' | 'done' | 'error'>('scanning');
   const [errMsg, setErrMsg] = useState('');
+  // Yalnız ANDROID native'de VE ML Kit plugin'i bu build'de MEVCUTSA native tarayıcı
+  // kullan: eski/OEM Android WebView'ları getUserMedia'yı düzgün desteklemiyordu.
+  // isPluginAvailable kontrolü kritik → henüz yeni APK'yı kurmamış (plugin'siz) eski
+  // kurulumlarda otomatik olarak eski getUserMedia+jsQR yoluna düşer (gerileme yok).
+  // iOS WKWebView getUserMedia'sı zaten sağlam → iOS + web bu yolda kalır.
+  const useNativeScan =
+    Capacitor.getPlatform() === 'android' && Capacitor.isPluginAvailable('BarcodeScanner');
 
   const stop = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -126,11 +135,29 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     }
   }, [approve, stop]);
 
+  // Native: ML Kit tam-ekran tarayıcıyı aç, okunan QR'ı işle (WebView kamerası kullanılmaz).
+  const runNativeScan = useCallback(async () => {
+    handledRef.current = false;
+    setStatus('scanning');
+    setErrMsg('');
+    const raw = await scanQrNative();
+    if (handledRef.current) return;
+    if (raw == null) {
+      setStatus('error');
+      setErrMsg('Tarama tamamlanmadı ya da kameraya erişilemedi. Tekrar dene.');
+      return;
+    }
+    const m = raw.match(/\/qr-login\/([a-f0-9]+)/i);
+    if (m) { handledRef.current = true; void approve(m[1]); }
+    else { setStatus('error'); setErrMsg('Bu bir hangel giriş QR kodu değil.'); }
+  }, [approve]);
+
   useEffect(() => {
-    if (open) void startCam();
-    else stop();
+    if (!open) { stop(); return; }
+    if (useNativeScan) void runNativeScan();
+    else void startCam();
     return stop;
-  }, [open, startCam, stop]);
+  }, [open, useNativeScan, runNativeScan, startCam, stop]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -148,12 +175,21 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           ) : status === 'error' ? (
             <div className="flex h-[260px] flex-col items-center justify-center gap-3 text-center">
               <p className="text-sm text-muted-foreground">{errMsg}</p>
-              <Button onClick={() => void startCam()}>Tekrar Dene</Button>
+              <Button onClick={() => void (useNativeScan ? runNativeScan() : startCam())}>Tekrar Dene</Button>
             </div>
           ) : (
             <div className="relative h-[260px] w-full overflow-hidden rounded-xl bg-black">
-              <video ref={videoRef} className="h-full w-full object-cover" autoPlay playsInline muted />
-              <div className="pointer-events-none absolute inset-8 rounded-2xl border-2 border-white/80" />
+              {useNativeScan ? (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-white">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                  <p className="px-4 text-center text-sm">Kamera açılıyor… QR kodu çerçeveye getir.</p>
+                </div>
+              ) : (
+                <>
+                  <video ref={videoRef} className="h-full w-full object-cover" autoPlay playsInline muted />
+                  <div className="pointer-events-none absolute inset-8 rounded-2xl border-2 border-white/80" />
+                </>
+              )}
               {status === 'approving' && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>
               )}
