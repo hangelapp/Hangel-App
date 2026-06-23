@@ -27,9 +27,10 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, CheckCircle, XCircle, Clock, ShieldCheck, Building, Store, School, Mail, MapPin, User } from "lucide-react";
 import { useFirestore, useUser, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
-import { collection, doc, addDoc, getDoc, serverTimestamp, query, orderBy, limit, documentId } from 'firebase/firestore';
+import { collection, doc, addDoc, getDoc, getDocs, serverTimestamp, query, orderBy, limit, documentId } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
+import { findNgoDuplicate, type NgoDedupeRecord } from '@/lib/ngo-dedupe';
 
 // Map entityType values from the form to Turkish labels
 const entityTypeLabels: Record<string, string> = {
@@ -514,6 +515,29 @@ export default function ApplicationsPage() {
     const app = (applications || []).find((a) => (a as ApplicationDoc).id === id) as ApplicationDoc | undefined;
 
     if (newStatus === 'Onaylandı' && app) {
+      // Mükerrer STK guard: aynı kuruluş zaten kayıtlıysa (isim/kısa isim/kütük/
+      // telefon/e-posta'dan ≥2 ya da kütük eşleşmesi) super-admin'i uyar — onay
+      // takipçi/bağışçıyı bölen yeni bir kopya oluşturmasın.
+      if (app.entityType === 'NGO') {
+        try {
+          const ngosSnap = await getDocs(collection(db, COLLECTIONS.ngos));
+          const records = ngosSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<NgoDedupeRecord, 'id'>) }));
+          const dupe = findNgoDuplicate(
+            { name: app.name || app.org, shortName: app.shortName, kutukNo: app.registryNo, phone: app.phone, email: app.email },
+            records,
+          );
+          if (dupe) {
+            const ok = window.confirm(
+              `⚠️ Bu STK zaten kayıtlı görünüyor:\n\n"${dupe.name}"\nEşleşen alan(lar): ${dupe.matchedFields.join(', ')}\n\n` +
+              `Mükerrer kayıt takipçi ve bağışçıyı böler. Yine de YENİ kayıt oluşturulsun mu?`,
+            );
+            if (!ok) {
+              toast({ title: 'Onay durduruldu', description: 'Mükerrer kayıt oluşturulmadı. Mevcut STK kullanılabilir.' });
+              return;
+            }
+          }
+        } catch { /* dedup taraması başarısız olursa onayı engelleme */ }
+      }
       try {
         const entityId = await createEntityFromApp(app);
         updateDocumentNonBlocking(appRef, {

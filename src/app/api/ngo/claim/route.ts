@@ -15,6 +15,7 @@ import { NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, type Firestore } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { findNgoDuplicate, type NgoDedupeRecord } from '@/lib/ngo-dedupe';
 
 export const runtime = 'nodejs';
 
@@ -29,6 +30,8 @@ interface ClaimBody {
   manualName?: string;
   manualCity?: string;
   consentAccepted?: boolean;
+  /** Mükerrer uyarısına rağmen kullanıcı "farklı kuruluş" dediyse zorla oluştur. */
+  forceCreate?: boolean;
 }
 
 // Kütük/registry kaydından → taslak ngo verisi üretir.
@@ -88,9 +91,36 @@ export async function POST(req: Request) {
   const built = await buildNgoData(db, body);
   if ('error' in built) return built.error;
 
-  // Zaten sahiplenilmiş mi?
-  const dup = await db.collection(COLLECTIONS.ngos).where(built.dedupeKey.field, '==', built.dedupeKey.value).limit(1).get();
-  if (!dup.empty) return errJson('already_claimed', 'Bu kuruluş hangel’de zaten kayıtlı. Yetki için destek ile iletişime geç.', 409);
+  // 1) Kesin: aynı kütük/vakıf/isim zaten sahiplenilmiş mi? (arşiv hariç; zorlanamaz)
+  const dup = await db.collection(COLLECTIONS.ngos).where(built.dedupeKey.field, '==', built.dedupeKey.value).limit(5).get();
+  const exact = dup.docs.find((d) => d.get('status') !== 'Pasif' && !d.get('mergedInto'));
+  if (exact) return errJson('already_claimed', 'Bu kuruluş hangel’de zaten kayıtlı. Yetki için destek ile iletişime geç.', 409);
+
+  // 2) Olası mükerrer: {isim, kısa isim, kütük, telefon, e-posta}'dan ≥2 (veya tek
+  //    başına kütük) eşleşiyor mu? Kullanıcı "farklı kuruluş" derse (forceCreate)
+  //    bu adım atlanır ve kayıt oluşturulur.
+  if (body.forceCreate !== true) {
+    const d = built.data as { name?: string; shortName?: string; kutukNo?: string; phone?: string; email?: string };
+    const snap = await db.collection(COLLECTIONS.ngos)
+      .select('name', 'shortName', 'kutukNo', 'phone', 'email', 'status', 'mergedInto', 'contact')
+      .get();
+    const records: NgoDedupeRecord[] = snap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Omit<NgoDedupeRecord, 'id'>) }));
+    const match = findNgoDuplicate(
+      { name: d.name, shortName: d.shortName, kutukNo: d.kutukNo, phone: d.phone, email: d.email },
+      records,
+    );
+    if (match) {
+      return NextResponse.json(
+        {
+          errorCode: 'possible_duplicate',
+          message: 'Bu kuruluş zaten kayıtlı olabilir.',
+          existing: { id: match.id, name: match.name },
+          matchedFields: match.matchedFields,
+        },
+        { status: 409 },
+      );
+    }
+  }
 
   const ngoRef = db.collection(COLLECTIONS.ngos).doc();
   await ngoRef.set({ id: ngoRef.id, ...built.data, adminUserId: uid, consentAcceptedAt: FieldValue.serverTimestamp(), createdAt: FieldValue.serverTimestamp() });

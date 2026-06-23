@@ -16,8 +16,9 @@ import { useFirestore, useUser } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Loader2, CheckCircle2, Search, ShieldCheck, Landmark, Trophy, Users } from 'lucide-react';
+import { Building2, Loader2, CheckCircle2, Search, ShieldCheck, Landmark, Trophy, Users, AlertTriangle } from 'lucide-react';
 
 type OrgType = 'dernek' | 'vakif' | 'kulup';
 interface Match { id: string; name: string; il?: string; faaliyetAlani?: string; foundedYear?: number; adres?: string; kutukNo?: string }
@@ -35,6 +36,8 @@ export default function RegisterOrganizationPage() {
   const [match, setMatch] = useState<Match | null>(null);
   const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Olası mükerrer: sunucu "possible_duplicate" dönerse onay penceresi açılır.
+  const [dupMatch, setDupMatch] = useState<{ id: string; name: string; matchedFields: string[] } | null>(null);
 
   const search = async () => {
     if (!db) return;
@@ -65,7 +68,7 @@ export default function RegisterOrganizationPage() {
     } finally { setLoading(false); }
   };
 
-  const claim = async () => {
+  const claim = async (force = false) => {
     if (!user) { toast({ variant: 'destructive', title: 'Giriş gerekli' }); return; }
     if (!consent) return;
     setLoading(true);
@@ -74,14 +77,30 @@ export default function RegisterOrganizationPage() {
       const payload = orgType === 'dernek' ? { orgType, kutukNo: match?.kutukNo }
         : orgType === 'vakif' ? { orgType, vakifId: match?.id }
         : { orgType, manualName: input.trim(), manualCity: city.trim() };
-      const res = await fetch('/api/ngo/claim', { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ ...payload, consentAccepted: true }) });
+      const res = await fetch('/api/ngo/claim', { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ ...payload, consentAccepted: true, forceCreate: force }) });
       const data = await res.json();
+      // Olası mükerrer → onay penceresi (kayıt HENÜZ oluşturulmadı).
+      if (res.status === 409 && data.errorCode === 'possible_duplicate') {
+        setDupMatch({ id: data.existing?.id || '', name: data.existing?.name || (match?.name ?? 'Bu kuruluş'), matchedFields: data.matchedFields || [] });
+        return;
+      }
       if (!res.ok) throw new Error(data.message || 'İşlem tamamlanamadı.');
       toast({ title: 'Kuruluşun eklendi 🎉', description: 'Yönetim paneline gidiyorsun. Evrakları yükleyince herkese görünür olur.' });
       router.push('/ngo-admin');
     } catch (e) {
       toast({ variant: 'destructive', title: 'Olmadı', description: e instanceof Error ? e.message : '' });
     } finally { setLoading(false); }
+  };
+
+  // "Evet, bu kuruluş" → zaten kayıtlı; yeni kayıt açılmaz.
+  const confirmExisting = () => {
+    setDupMatch(null);
+    toast({ title: 'Bu kuruluş zaten kayıtlı 🧡', description: 'Aynı STK ikinci kez eklenmez. Yönetici yetkisi için destek ekibiyle iletişime geç.' });
+  };
+  // "Hayır, farklı kuruluş" → uyarıyı geç, zorla oluştur.
+  const forceDifferent = async () => {
+    setDupMatch(null);
+    await claim(true);
   };
 
   const TYPES: { key: OrgType; label: string; icon: typeof Building2; hint: string }[] = [
@@ -170,7 +189,7 @@ export default function RegisterOrganizationPage() {
               <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#f34723]" />
               <span><Link href="/settings/contracts" className="font-bold text-primary underline">Sözleşme ve politikaları</Link> okudum, bu kuruluşun yetkili yöneticisi olduğumu onaylıyorum.</span>
             </label>
-            <Button className="mt-5 w-full" onClick={claim} disabled={loading || !consent}>
+            <Button className="mt-5 w-full" onClick={() => claim()} disabled={loading || !consent}>
               {loading ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1.5 h-4 w-4" />} Kuruluşumu Sahiplen
             </Button>
             <Button variant="ghost" className="mt-2 w-full text-muted-foreground" onClick={() => { setMatch(null); setStep('lookup'); }}>Geri</Button>
@@ -178,6 +197,36 @@ export default function RegisterOrganizationPage() {
           </>
         )}
       </div>
+
+      {/* Olası mükerrer kayıt onayı — "Bu STK'yı mı eklemek istiyorsunuz?" */}
+      <Dialog open={!!dupMatch} onOpenChange={(o) => { if (!o) setDupMatch(null); }}>
+        <DialogContent className="rounded-2xl sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" /> Bu STK’yı mı eklemek istiyorsunuz?
+            </DialogTitle>
+            <DialogDescription>
+              Sistemde bununla eşleşen bir kayıt zaten var. Aynı kuruluşu ikinci kez eklersek takipçi ve bağışçılar bölünür.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-xl border bg-muted/40 p-4">
+            <p className="text-base font-bold leading-tight">{dupMatch?.name}</p>
+            {dupMatch && dupMatch.matchedFields.length > 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Eşleşen alan{dupMatch.matchedFields.length > 1 ? 'lar' : ''}: <span className="font-semibold text-foreground">{dupMatch.matchedFields.join(', ')}</span>
+              </p>
+            )}
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button className="w-full" onClick={confirmExisting}>
+              <CheckCircle2 className="mr-1.5 h-4 w-4" /> Evet, bu kuruluş (zaten kayıtlı)
+            </Button>
+            <Button variant="outline" className="w-full" onClick={forceDifferent} disabled={loading}>
+              {loading ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null} Hayır, farklı bir kuruluş — yine de ekle
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
