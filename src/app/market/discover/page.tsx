@@ -64,7 +64,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { cn } from '@/lib/utils';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import {
   collection,
@@ -136,6 +136,10 @@ function iconForCategory(name: string): React.ComponentType<{ className?: string
 
 export default function DiscoverPage() {
   const db = useFirestore();
+  // Sticky üst-bar offset'i shell'e göre: giriş yapmışta sabit header (top-0 h-12)
+  // var → bar top-12 ona yapışır; giriş yapılmamış (gizli mod) shell'de header
+  // akışta yer kaplar → top-0 olmalı, yoksa 48px fazla boşluk oluşur.
+  const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [sortBy, setSortBy] = useState<SortOption>('recommended');
@@ -415,7 +419,7 @@ export default function DiscoverPage() {
   return (
     <div className="flex h-full w-full max-w-full flex-col overflow-x-hidden bg-secondary/30">
       {/* ── 1. Sabit üst: slim bar — geri + arama + filtre/sırala (başlık YOK) ── */}
-      <div className="sticky top-12 z-20 w-full max-w-full shrink-0 space-y-2.5 overflow-x-hidden border-b border-border bg-background px-4 py-2.5">
+      <div className={cn('sticky z-20 w-full max-w-full shrink-0 space-y-2.5 overflow-x-hidden border-b border-border bg-background px-4 py-2.5', user ? 'top-12' : 'top-0')}>
         <div className="flex w-full items-center gap-2">
           {/* Geri */}
           <Button
