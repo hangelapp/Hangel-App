@@ -29,7 +29,7 @@ export function LibraryAssistantsFab({
 
   return (
     <>
-      <div className="fixed right-3 sm:right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col items-end gap-3">
+      <div className="fixed right-3 sm:right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex flex-col items-end gap-3">
         <Button
           type="button"
           onClick={() => setOpenLibrary(true)}
