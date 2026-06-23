@@ -142,7 +142,7 @@ function LegislationEditDialog({ item, onSave }: { item?: Legislation; onSave: (
         {isNew ? <Button className="gap-2"><Plus className="h-4 w-4" /> Yeni Mevzuat</Button>
           : <Button variant="outline" size="sm" className="gap-1.5"><Pencil className="h-4 w-4" /> Düzenle</Button>}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isNew ? 'Yeni Mevzuat Ekle' : `Düzenle: ${item?.name}`}</DialogTitle>
           <DialogDescription>Kanun bilgisi + hangel konusu + risk + hukuki yorum.</DialogDescription>
@@ -215,7 +215,7 @@ function LegislationDetailDialog({ item, contractOptions, onSaveRelated }: {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5"><BookOpen className="h-4 w-4" /> Maddeyi Oku</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><Scale className="h-5 w-5 text-primary" /> {item.name}{item.number ? ` (No: ${item.number})` : ''}</DialogTitle>
           <DialogDescription>Resmî madde metni, hukuki yorum ve ilişkili sözleşme/politikalar.</DialogDescription>
@@ -523,7 +523,7 @@ export function LegislationTab() {
     </Card>
 
     <Dialog open={scanOpen} onOpenChange={setScanOpen}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><ScanSearch className="h-5 w-5 text-primary" /> Mevzuat & Karar Tarama</DialogTitle>
           <DialogDescription>

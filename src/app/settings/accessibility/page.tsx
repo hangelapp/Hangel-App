@@ -349,7 +349,7 @@ export default function AccessibilitySettingsPage() {
                         <Sparkles className="h-4 w-4" />
                         <span className="text-[10px] font-black uppercase tracking-widest">{t('dashboard.settingsAccessibility.badge')}</span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter font-headline leading-[0.95]">{t('dashboard.settingsAccessibility.heading')}</h1>
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter font-headline leading-[0.95]">{t('dashboard.settingsAccessibility.heading')}</h1>
                     <p className="text-muted-foreground text-lg font-medium leading-relaxed">
                         {t('dashboard.settingsAccessibility.subheading')}
                     </p>

@@ -184,7 +184,7 @@ const ContractEditDialog = ({ contract, defaultKind, onSave }: {
           : <Button variant="outline" size="sm" className="gap-1.5"><Pencil className="h-4 w-4" /> Düzenle</Button>
         }
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isNew ? `Yeni ${kindLabel} Ekle` : `Düzenle: ${contract?.title}`}</DialogTitle>
           <DialogDescription>

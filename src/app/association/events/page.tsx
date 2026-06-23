@@ -77,8 +77,8 @@ export default function AssociationEventsPage() {
             <AssociationHeader currentPage="events" />
 
             <section className="pt-32 pb-20 px-6 text-center space-y-4 bg-muted">
-                <h1 className="text-5xl md:text-8xl font-bold tracking-tight text-foreground">{t('associationEvents.heroTitle')}</h1>
-                <p className="text-xl md:text-3xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
+                <h1 className="text-3xl sm:text-5xl md:text-8xl font-bold tracking-tight text-foreground">{t('associationEvents.heroTitle')}</h1>
+                <p className="text-lg sm:text-xl md:text-3xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
                     {t('associationEvents.heroDesc')}
                 </p>
             </section>
@@ -129,7 +129,7 @@ export default function AssociationEventsPage() {
             <section className="bg-black text-white py-32 text-center">
                 <div className="container mx-auto px-6 max-w-4xl space-y-8">
                     <Heart className="h-16 w-16 text-primary mx-auto" />
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{t('associationEvents.outroTitle')}</h2>
+                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight">{t('associationEvents.outroTitle')}</h2>
                     <p className="text-xl md:text-2xl text-white/70 leading-relaxed font-medium">
                         {t('associationEvents.outroDesc')}
                     </p>

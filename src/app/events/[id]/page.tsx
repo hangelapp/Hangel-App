@@ -337,11 +337,17 @@ export default function EventDetailPage() {
   }, [event, slug]);
 
   // Mesafe + hava durumu için koordinat: kayıtta coordinates yoksa adresi BİR KEZ geocode et.
-  const evLocType = event && typeof event.location !== 'string' ? event.location.type : undefined;
-  const evCoords = event && typeof event.location !== 'string' ? event.location.coordinates : undefined;
-  const evAddress = event && typeof event.location !== 'string' ? event.location.address : undefined;
-  const evCity = event && typeof event.location !== 'string' ? event.location.city : undefined;
-  const evDistrict = event && typeof event.location !== 'string' ? event.location.district : undefined;
+  // event.location string ya da undefined olabilir (online/eski kayıtlar) → GÜVENLİ obje.
+  // Render'da `evLoc.X` doğrudan okunursa TypeError → sayfa açılmıyordu; tüm
+  // erişimler bu güvenli `evLoc` üzerinden yapılır.
+  const evLoc = (event && typeof event.location === 'object' && event.location !== null
+    ? event.location
+    : {}) as { type?: string; coordinates?: { lat: number; lon: number }; address?: string; city?: string; district?: string };
+  const evLocType = evLoc.type;
+  const evCoords = evLoc.coordinates;
+  const evAddress = evLoc.address;
+  const evCity = evLoc.city;
+  const evDistrict = evLoc.district;
   useEffect(() => {
     if (evLocType !== 'Fiziksel' || evCoords) return;
     const q = [evAddress, evDistrict, evCity].filter(Boolean).join(', ').trim();
@@ -486,8 +492,8 @@ export default function EventDetailPage() {
     : 'https://placehold.co/600x800/eee/aaa?text=Etkinlik';
 
   // Mesafe rozeti hedefi: önce kayıtlı coordinates, yoksa adresten geocode edilen konum.
-  const distanceTarget = event.location.coordinates
-    ? { lat: event.location.coordinates.lat, lon: event.location.coordinates.lon }
+  const distanceTarget = evLoc.coordinates
+    ? { lat: evLoc.coordinates.lat, lon: evLoc.coordinates.lon }
     : geocoded;
 
   // Etkinlik bitti mi? completed=true VEYA bitiş zamanı geçti → yeni RSVP kapanır.
@@ -537,7 +543,7 @@ export default function EventDetailPage() {
                 title={event.name}
                 dateLabel={formatDateTime(event.startDate).split(',')[0]}
                 timeLabel={formatDateTime(event.startDate).split(',')[1]?.trim() || undefined}
-                locationLabel={event.location.type === 'Online' ? 'Online' : `${event.location.district}, ${event.location.city}`}
+                locationLabel={evLoc.type === 'Online' ? 'Online' : `${evLoc.district}, ${evLoc.city}`}
                 backSlot={
                   <Button onClick={() => router.back()} variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-11 w-11" aria-label="Geri">
                     <ArrowLeft className="h-5 w-5" />
@@ -617,19 +623,19 @@ export default function EventDetailPage() {
                                 <InfoRow icon={Clock} label="Bitiş">{formatDateTime(event.endDate)}</InfoRow>
                                 <InfoRow icon={MapPin} label="Adres">
                                     <div className="flex flex-col gap-2">
-                                        <span>{event.location.type === 'Online' ? 'Online' : `${event.location.address}`}</span>
-                                        {event.location.type !== 'Online' && (
-                                            <Button variant="outline" size="sm" className="w-fit h-10 rounded-xl text-xs font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location.address + ' ' + event.location.district + ' ' + event.location.city)}`, '_blank')}>
+                                        <span>{evLoc.type === 'Online' ? 'Online' : `${evLoc.address}`}</span>
+                                        {evLoc.type !== 'Online' && (
+                                            <Button variant="outline" size="sm" className="w-fit h-10 rounded-xl text-xs font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evLoc.address + ' ' + evLoc.district + ' ' + evLoc.city)}`, '_blank')}>
                                                 <Map className="h-3 w-3" /> Adres Tarifi Al
                                             </Button>
                                         )}
-                                        {event.location.type !== 'Online' && (
+                                        {evLoc.type !== 'Online' && (
                                             <DistanceBadge target={distanceTarget} />
                                         )}
                                     </div>
                                 </InfoRow>
                                 {/* Hava durumu — yalnız fiziksel etkinlikte; adresin hemen altında */}
-                                {event.location.type !== 'Online' && weather && weather.length > 0 && (
+                                {evLoc.type !== 'Online' && weather && weather.length > 0 && (
                                     <div className="py-4 px-4 sm:px-6">
                                         <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3">Hava durumu</p>
                                         <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6">
@@ -651,7 +657,7 @@ export default function EventDetailPage() {
                                 </InfoRow>
                                 <InfoRow icon={Users} label="Kapasite">{event.capacity?.current ?? 0} / {event.capacity?.max ?? 0}</InfoRow>
                                 <InfoRow icon={UserCheck} label="Katılım Koşulu">{event.participationCondition}</InfoRow>
-                                <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? `Veriliyor (${event.location.type}, ${event.language})` : 'Verilmiyor'}</InfoRow>
+                                <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? `Veriliyor (${evLoc.type}, ${event.language})` : 'Verilmiyor'}</InfoRow>
                                 
                                 <InfoRow icon={Tag} label="Etkinlik Türü">
                                     <Link href={`/events?tag=${encodeURIComponent(event.type)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{event.type}</Badge></Link>
@@ -666,8 +672,8 @@ export default function EventDetailPage() {
                                 </InfoRow>
                                 <InfoRow icon={MapPin} label="Konum (İlçe / İl)">
                                     <div className="flex flex-wrap gap-2">
-                                        <Link href={`/events?tag=${encodeURIComponent(event.location.district)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{event.location.district}</Badge></Link>
-                                        <Link href={`/events?tag=${encodeURIComponent(event.location.city)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{event.location.city}</Badge></Link>
+                                        {evLoc.district && <Link href={`/events?tag=${encodeURIComponent(evLoc.district)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{evLoc.district}</Badge></Link>}
+                                        {evLoc.city && <Link href={`/events?tag=${encodeURIComponent(evLoc.city)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{evLoc.city}</Badge></Link>}
                                     </div>
                                 </InfoRow>
                             </CardContent>
@@ -850,9 +856,9 @@ export default function EventDetailPage() {
                             <div className="flex items-start gap-2">
                                 <MapPin className="h-3 w-3 text-primary mt-px shrink-0" />
                                 <p className="text-[10px] font-medium leading-tight text-foreground/90 line-clamp-2">
-                                    {event.location.type === 'Online'
+                                    {evLoc.type === 'Online'
                                         ? 'Online'
-                                        : [event.location.address, [event.location.district, event.location.city].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
+                                        : [evLoc.address, [evLoc.district, evLoc.city].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
                                 </p>
                             </div>
                         </div>
@@ -905,9 +911,9 @@ export default function EventDetailPage() {
                                 <div className="min-w-0">
                                     <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Konum</p>
                                     <p className="text-[10px] font-medium leading-tight text-foreground/90 line-clamp-3">
-                                        {event.location.type === 'Online'
+                                        {evLoc.type === 'Online'
                                             ? 'Online etkinlik'
-                                            : [event.location.address, [event.location.district, event.location.city].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
+                                            : [evLoc.address, [evLoc.district, evLoc.city].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
                                     </p>
                                 </div>
                             </div>

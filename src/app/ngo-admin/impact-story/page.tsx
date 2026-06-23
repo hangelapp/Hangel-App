@@ -502,7 +502,7 @@ function StoryViewer() {
                                             </p>
                                             {slide.stat && (
                                                 <div className="mt-8 pt-8 border-t border-black/5">
-                                                    <p className="text-6xl md:text-7xl font-black tracking-tighter text-primary">{slide.stat}</p>
+                                                    <p className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter text-primary break-words">{slide.stat}</p>
                                                 </div>
                                             )}
                                         </div>

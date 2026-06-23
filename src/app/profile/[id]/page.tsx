@@ -133,13 +133,13 @@ export default function PublicProfilePage() {
             <AvatarImage src={profile.avatarUrl} alt={profile.name ?? 'Profil'} />
             <AvatarFallback>{(profile.name ?? '?').charAt(0)}</AvatarFallback>
           </Avatar>
-          <div className="space-y-1 pt-16">
-            <h1 className="text-2xl font-bold font-headline">{profile.name ?? 'İsimsiz Kullanıcı'}</h1>
-            {profile.username && <p className="text-muted-foreground text-sm">@{profile.username}</p>}
+          <div className="space-y-1 pt-16 min-w-0">
+            <h1 className="text-2xl font-bold font-headline break-words">{profile.name ?? 'İsimsiz Kullanıcı'}</h1>
+            {profile.username && <p className="text-muted-foreground text-sm truncate">@{profile.username}</p>}
             {locationLine && (
               <div className="flex items-center gap-1 text-muted-foreground text-xs">
-                <MapPin className="h-3.5 w-3.5" />
-                <span>{locationLine}</span>
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{locationLine}</span>
               </div>
             )}
           </div>

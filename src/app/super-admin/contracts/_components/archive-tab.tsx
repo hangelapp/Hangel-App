@@ -235,7 +235,7 @@ export function ArchiveTab() {
 
     {/* Önizleme popup (yeni sekme yerine) */}
     <Dialog open={!!previewDoc} onOpenChange={(o) => { if (!o) setPreviewDoc(null); }}>
-      <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-4xl h-[85vh] flex flex-col p-0 gap-0">
         <DialogHeader className="p-4 border-b shrink-0">
           <DialogTitle className="truncate pr-8">{previewDoc?.docType || 'Evrak'}{previewDoc?.entityName ? ` — ${previewDoc.entityName}` : ''}</DialogTitle>
         </DialogHeader>

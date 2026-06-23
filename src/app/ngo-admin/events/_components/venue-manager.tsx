@@ -365,7 +365,7 @@ export function VenueManager({ activeEntityName, manageable = false }: { activeE
 
       {/* Salon detay modalı */}
       <Dialog open={!!venueDetail} onOpenChange={(o) => { if (!o) setVenueDetail(null); }}>
-        <DialogContent className="sm:max-w-lg rounded-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg rounded-2xl max-h-[90vh] overflow-y-auto">
           {venueDetail && (() => {
             const v = venueDetail.venue; const hall = venueDetail.hall;
             return (
@@ -408,7 +408,7 @@ export function VenueManager({ activeEntityName, manageable = false }: { activeE
       {/* Mekan ekle/düzenle dialogu — yalnızca super-admin (canEdit) */}
       {canEdit && (
         <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) setEditTarget(null); }}>
-          <DialogContent className="sm:max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editTarget === 'new' ? 'Mekan Ekle' : 'Mekanı Düzenle'}</DialogTitle>
               <DialogDescription className="text-xs">Mekan, ulaşım ve salon bilgilerini girin.</DialogDescription>
@@ -475,7 +475,7 @@ export function VenueManager({ activeEntityName, manageable = false }: { activeE
                     </div>
                     <Textarea value={h.description} onChange={(e) => updateHall(h._key, { description: e.target.value })} placeholder="Kısa açıklama" rows={2} className="text-sm" />
                     <Input value={h.features} onChange={(e) => updateHall(h._key, { features: e.target.value })} placeholder="Donanım (virgülle): Profesyonel ses sistemi, Projeksiyon..." className="h-9" />
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {[0, 1, 2].map((i) => (
                         <Input key={i} value={h.photos[i] || ''} onChange={(e) => updateHallPhoto(h._key, i, e.target.value)} placeholder={`Foto ${i + 1} URL`} className="h-9 text-xs" />
                       ))}

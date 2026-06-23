@@ -212,7 +212,7 @@ function OrganizerRow({
           <img src={logoUrl} alt={name} className="h-full w-full object-contain" />
         </span>
       )}
-      <span className="text-sm font-semibold text-white drop-shadow-sm sm:text-base">
+      <span className="min-w-0 break-words text-sm font-semibold text-white drop-shadow-sm sm:text-base">
         {name}
       </span>
     </>
@@ -222,12 +222,12 @@ function OrganizerRow({
     return (
       <Link
         href={href}
-        className="inline-flex items-center gap-2.5 transition-opacity hover:opacity-90"
+        className="inline-flex max-w-full min-w-0 items-center gap-2.5 transition-opacity hover:opacity-90"
       >
         {inner}
       </Link>
     );
   }
 
-  return <div className="inline-flex items-center gap-2.5">{inner}</div>;
+  return <div className="inline-flex max-w-full min-w-0 items-center gap-2.5">{inner}</div>;
 }

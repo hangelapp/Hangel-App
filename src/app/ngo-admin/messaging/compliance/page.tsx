@@ -82,7 +82,7 @@ export default function CompliancePage() {
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-3">
-            <span className="text-5xl font-bold">{score}</span>
+            <span className="text-3xl sm:text-5xl font-bold">{score}</span>
             <Badge className={cn('text-sm', level.color)}>{level.label}</Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-3">

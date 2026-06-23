@@ -144,13 +144,13 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
                   <TabsContent value="active" className="mt-4 space-y-3">
                       {activeCalls.map(call => (
                           <div key={call.id} className="p-3 border rounded-lg">
-                              <div className="flex justify-between items-start">
-                                  <div>
-                                      <p className="font-semibold text-destructive">{call.type}</p>
-                                      <p className="text-sm">{call.details}</p>
-                                      <p className="text-xs text-muted-foreground">{call.location}</p>
+                              <div className="flex justify-between items-start gap-2">
+                                  <div className="min-w-0">
+                                      <p className="font-semibold text-destructive break-words">{call.type}</p>
+                                      <p className="text-sm break-words">{call.details}</p>
+                                      <p className="text-xs text-muted-foreground break-words">{call.location}</p>
                                   </div>
-                                  <p className="text-xs text-muted-foreground">{call.time}</p>
+                                  <p className="text-xs text-muted-foreground shrink-0">{call.time}</p>
                               </div>
                               <Button size="sm" className="mt-2 w-full" onClick={handleRespondClick}>Yanıt Ver</Button>
                           </div>
@@ -159,13 +159,13 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
                   </TabsContent>
                    <TabsContent value="history" className="mt-4 space-y-3">
                       {pastApplications.map(app => (
-                           <div key={app.id} className="p-3 border rounded-lg flex justify-between items-center">
-                               <div>
-                                  <p className="font-semibold">{app.type}</p>
-                                  <p className="text-sm text-muted-foreground">{app.details}</p>
-                                   <p className="text-xs text-muted-foreground">{app.location}</p>
+                           <div key={app.id} className="p-3 border rounded-lg flex justify-between items-center gap-2">
+                               <div className="min-w-0">
+                                  <p className="font-semibold break-words">{app.type}</p>
+                                  <p className="text-sm text-muted-foreground break-words">{app.details}</p>
+                                   <p className="text-xs text-muted-foreground break-words">{app.location}</p>
                                </div>
-                               <Badge variant={app.status === 'Başvuruldu' ? 'default' : 'secondary'}>{app.status}</Badge>
+                               <Badge variant={app.status === 'Başvuruldu' ? 'default' : 'secondary'} className="shrink-0">{app.status}</Badge>
                            </div>
                       ))}
                         {pastApplications.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">Geçmişte bir acil durum başvurunuz bulunmuyor.</p>}

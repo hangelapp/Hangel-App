@@ -36,7 +36,7 @@ const CareerSection = ({
         className
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
+            <h2 className="text-3xl md:text-6xl font-bold tracking-tight">{title}</h2>
             {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
             {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
         </div>
@@ -108,7 +108,7 @@ export default function CareersPage() {
             <section className="py-24 bg-muted">
               <div className="container mx-auto px-6 max-w-4xl space-y-12">
                 <div className="text-center space-y-3">
-                    <h2 className="text-4xl font-bold tracking-tight text-foreground">{t('marketing.careers.openPositionsTitle')}</h2>
+                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">{t('marketing.careers.openPositionsTitle')}</h2>
                     <p className="text-lg text-muted-foreground">{t('marketing.careers.openPositionsDescription')}</p>
                 </div>
                 <div className="space-y-4">
@@ -139,7 +139,7 @@ export default function CareersPage() {
             <section className="py-24 bg-background">
               <div className="container mx-auto px-6 max-w-4xl space-y-12">
                 <div className="text-center space-y-3">
-                    <h2 className="text-4xl font-bold tracking-tight text-foreground">{t('marketing.careers.volunteerTitle')}</h2>
+                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">{t('marketing.careers.volunteerTitle')}</h2>
                     <p className="text-lg text-muted-foreground">{t('marketing.careers.volunteerDescription')}</p>
                 </div>
                 <div className="space-y-4">

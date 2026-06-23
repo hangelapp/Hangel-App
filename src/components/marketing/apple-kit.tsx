@@ -165,7 +165,7 @@ export function AppleSection({
             ))}
           </div>
         )}
-        <h2 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">{title}</h2>
+        <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">{title}</h2>
         {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
         {description && (
           <p className="text-base md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>

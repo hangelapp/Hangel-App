@@ -60,7 +60,7 @@ const AppleSection = ({
         className
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl animate-in fade-in-0 slide-in-from-bottom-4 duration-1000">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
             {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
             {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
             {children}
@@ -109,7 +109,7 @@ export default function AssociationAboutPage() {
             {/* Metrics — gerçek rakamlar /api/public/stats'tan. 0 olan kartlar gizli. */}
             <section className="bg-muted py-32 text-center border-b border-border">
                 <div className="container mx-auto px-6 max-w-5xl">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-20 text-foreground">{t('associationAbout.metricsTitle')}</h2>
+                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight mb-20 text-foreground">{t('associationAbout.metricsTitle')}</h2>
                     <PublicStatsRow
                         items={[
                             { key: 'ngos', label: t('associationAbout.metricInitiatives'), format: STAT_FORMATTERS.count },

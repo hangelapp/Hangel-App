@@ -28,7 +28,7 @@ interface BrandEditDialogProps {
 
 export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, logoUploading, onLogoFile, onSave, onCancel }: BrandEditDialogProps) => {
     return (
-        <DialogContent className="sm:max-w-[600px] rounded-[2.5rem]">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-[600px] rounded-[2.5rem]">
             <DialogHeader>
                 <DialogTitle>{brand.name} - Detaylar</DialogTitle>
                 <DialogDescription>Marka bilgilerini düzenleyin.</DialogDescription>
@@ -38,7 +38,7 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                 {/* --- Genel Bilgiler --- */}
                 <div className="space-y-4">
                     <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Genel Bilgiler</p>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2 col-span-2">
                             <Label htmlFor="edit-name" className="text-sm font-semibold">Marka Adı</Label>
                             <Input
@@ -259,7 +259,7 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                 {/* --- İletişim --- */}
                 <div className="space-y-4">
                     <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">İletişim</p>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="edit-email" className="text-sm font-semibold">E-posta</Label>
                             <Input
@@ -297,7 +297,7 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                 {/* --- Sosyal Medya --- */}
                 <div className="space-y-4">
                     <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Sosyal Medya</p>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="edit-instagram" className="text-sm font-semibold">Instagram</Label>
                             <Input

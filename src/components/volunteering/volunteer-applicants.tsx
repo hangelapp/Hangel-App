@@ -140,7 +140,7 @@ export function VolunteerApplicants({ title, applicants }: { title: string; appl
             <DialogDescription className="text-xs">Yazdır, indir ve paylaş aynı belgeyi üretir</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <Button size="sm" variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-1.5" /> Yazdır</Button>
               <Button size="sm" variant="outline" disabled={busy !== null} onClick={handleDownload}>
                 {busy === 'pdf' ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Download className="h-4 w-4 mr-1.5" />} İndir
@@ -155,6 +155,7 @@ export function VolunteerApplicants({ title, applicants }: { title: string; appl
                 <p className="text-xs text-gray-500">Gönüllü Başvuru Listesi</p>
               </div>
               <div className="text-xs"><span className="font-bold">Toplam:</span> {applicants.length} başvuru</div>
+              <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="bg-gray-100">
@@ -179,6 +180,7 @@ export function VolunteerApplicants({ title, applicants }: { title: string; appl
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </DialogContent>

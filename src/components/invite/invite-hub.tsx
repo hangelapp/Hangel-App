@@ -742,7 +742,7 @@ export function InviteHub({
                             </button>
                         </div>
                         <p className="text-[13px] leading-relaxed text-muted-foreground">{inviteMessage || 'Davet metni hazırlanıyor...'}</p>
-                        <div className="grid grid-cols-6 gap-1 pt-1">
+                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 pt-1">
                             {shareOptions.map(option => (
                                 <a key={option.name} href={option.href} target="_blank" rel="noopener noreferrer"
                                     className="flex flex-col items-center gap-1.5 group">
@@ -882,8 +882,8 @@ export function InviteHub({
                                     {emailList.length > 0 && (
                                         <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-muted/50 border border-border/50">
                                             {emailList.map(email => (
-                                                <span key={email} className="inline-flex items-center gap-1 rounded-full bg-card border border-border/60 pl-3 pr-1.5 py-1 text-[13px] text-foreground shadow-sm">
-                                                    {email}
+                                                <span key={email} className="inline-flex max-w-full items-center gap-1 rounded-full bg-card border border-border/60 pl-3 pr-1.5 py-1 text-[13px] text-foreground shadow-sm">
+                                                    <span className="min-w-0 break-all">{email}</span>
                                                     <button type="button" onClick={() => handleEmailRemove(email)} className="ml-0.5 rounded-full hover:bg-muted p-0.5" aria-label={`${email} adresini kaldır`}>
                                                         <X className="h-3.5 w-3.5 text-muted-foreground" />
                                                     </button>

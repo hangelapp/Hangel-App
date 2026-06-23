@@ -668,9 +668,9 @@ export default function NgoProfilePage() {
             <Card>
                 <CardHeader><CardTitle className="text-lg">İletişim</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
-                    {ngo.contact?.email && <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.email}</span></div>}
-                    {ngo.contact?.phone && <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.phone}</span></div>}
-                    {ngo.contact?.website && <div className="flex items-center gap-3 text-sm"><Globe className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.website}</span></div>}
+                    {ngo.contact?.email && <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4 text-muted-foreground shrink-0" /><span className="min-w-0 break-all">{ngo.contact.email}</span></div>}
+                    {ngo.contact?.phone && <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4 text-muted-foreground shrink-0" /><span className="min-w-0 break-words">{ngo.contact.phone}</span></div>}
+                    {ngo.contact?.website && <div className="flex items-center gap-3 text-sm"><Globe className="h-4 w-4 text-muted-foreground shrink-0" /><span className="min-w-0 break-all">{ngo.contact.website}</span></div>}
                     {ngo.contact?.address && (
                         <div className="flex items-start gap-3 text-sm pt-3 border-t">
                             <MapPin className="h-4 w-4 text-muted-foreground mt-1" />

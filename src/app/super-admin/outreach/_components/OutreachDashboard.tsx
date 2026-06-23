@@ -341,7 +341,7 @@ function CategoryDetailPanel({ cat }: { cat: CategoryDetail }) {
       <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30">
         <CardContent className="p-4">
           <p className="text-[10px] uppercase tracking-widest font-bold text-primary/70">{cat.label} — Toplam Kayıt</p>
-          <p className="text-4xl font-black tabular-nums leading-none mt-1">{formatN(cat.total)}</p>
+          <p className="text-2xl sm:text-4xl font-black tabular-nums leading-none mt-1">{formatN(cat.total)}</p>
           {isSampled && (
             <p className="text-[11px] text-muted-foreground mt-1">
               Kapsama oranları {formatN(cat.sample!)} kayıtlık örneklemden hesaplanır.
@@ -399,7 +399,7 @@ function CategoryDetailPanel({ cat }: { cat: CategoryDetail }) {
       {cat.byCategory && Object.values(cat.byCategory).some((v) => v > 0) && (
         <div>
           <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">Alt Kategoriler</p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {Object.entries(cat.byCategory).filter(([, c]) => c > 0).map(([k, c]) => (
               <Card key={k} className="bg-emerald-50/50 border-emerald-200">
                 <CardContent className="p-3">

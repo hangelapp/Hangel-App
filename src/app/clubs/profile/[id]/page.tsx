@@ -396,13 +396,13 @@ export default function ClubProfilePage() {
                 <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Mail className="h-5 w-5 text-primary"/> İletişim</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
                     {club.contact?.email && (
-                        <a href={`mailto:${club.contact.email}`} className="flex items-center gap-3 text-sm hover:text-primary"><Mail className="h-4 w-4 text-muted-foreground" /><span>{club.contact.email}</span></a>
+                        <a href={`mailto:${club.contact.email}`} className="flex items-center gap-3 text-sm hover:text-primary"><Mail className="h-4 w-4 text-muted-foreground shrink-0" /><span className="min-w-0 break-all">{club.contact.email}</span></a>
                     )}
                     {club.contact?.phone && (
-                        <a href={`tel:${club.contact.phone}`} className="flex items-center gap-3 text-sm hover:text-primary"><Phone className="h-4 w-4 text-muted-foreground" /><span>{club.contact.phone}</span></a>
+                        <a href={`tel:${club.contact.phone}`} className="flex items-center gap-3 text-sm hover:text-primary"><Phone className="h-4 w-4 text-muted-foreground shrink-0" /><span className="min-w-0 break-all">{club.contact.phone}</span></a>
                     )}
                     {club.contact?.website && (
-                        <a href={club.contact.website.startsWith('http') ? club.contact.website : `https://${club.contact.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary"><Globe className="h-4 w-4 text-muted-foreground" /><span className="truncate">{club.contact.website}</span></a>
+                        <a href={club.contact.website.startsWith('http') ? club.contact.website : `https://${club.contact.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary"><Globe className="h-4 w-4 text-muted-foreground shrink-0" /><span className="min-w-0 truncate">{club.contact.website}</span></a>
                     )}
                 </CardContent>
             </Card>

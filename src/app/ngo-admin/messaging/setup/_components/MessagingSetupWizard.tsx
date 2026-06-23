@@ -410,12 +410,12 @@ export function MessagingSetupWizard({ ngoId, initialSetup }: Props) {
                 <span className="font-semibold">{mailFromName.trim() || '—'}</span>
               </div>
               <div className="flex justify-between gap-3 p-3">
-                <span className="text-muted-foreground">Mail gönderen e-posta</span>
-                <span className="font-semibold">{mailFromEmail.trim() || '—'}</span>
+                <span className="text-muted-foreground shrink-0">Mail gönderen e-posta</span>
+                <span className="font-semibold break-all text-right">{mailFromEmail.trim() || '—'}</span>
               </div>
               <div className="flex justify-between gap-3 p-3">
-                <span className="text-muted-foreground">Alan adı</span>
-                <span className="font-semibold">{mailDomain.trim() || '—'}</span>
+                <span className="text-muted-foreground shrink-0">Alan adı</span>
+                <span className="font-semibold break-all text-right">{mailDomain.trim() || '—'}</span>
               </div>
               <div className="flex justify-between gap-3 p-3">
                 <span className="text-muted-foreground">Belgeler</span>

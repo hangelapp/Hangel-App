@@ -143,7 +143,7 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
       {isLive ? (
         <div>
           <div className="flex items-end justify-between gap-3">
-            <span className="font-mono text-4xl font-black tabular-nums leading-none text-red-600">{fmtClock(endMs - now)}</span>
+            <span className="font-mono text-3xl sm:text-4xl font-black tabular-nums leading-none text-red-600">{fmtClock(endMs - now)}</span>
             <span className="inline-flex items-center gap-2 pb-0.5">
               <span className="relative flex h-3 w-3">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
@@ -159,7 +159,7 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
       ) : (
         <div>
           <div className="flex items-end justify-between gap-3">
-            <span className="font-mono text-4xl font-black tabular-nums leading-none text-foreground">{fmtClock(startMs - now)}</span>
+            <span className="font-mono text-3xl sm:text-4xl font-black tabular-nums leading-none text-foreground">{fmtClock(startMs - now)}</span>
             <span className="flex flex-col items-end pb-0.5 text-right">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Başlamasına</span>
               {startClock && <span className="text-xs font-semibold tabular-nums text-muted-foreground/80">başlangıç {startClock}</span>}

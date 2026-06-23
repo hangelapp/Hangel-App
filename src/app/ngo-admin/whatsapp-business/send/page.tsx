@@ -653,7 +653,7 @@ export default function WhatsAppBulkSendPage() {
                 Konuşmalar Gelen Kutusu'na düştü.
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-3 text-sm">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 text-sm">
               <div className="rounded-lg border bg-emerald-50 p-3">
                 <div className="text-2xl font-bold text-emerald-700">
                   {formatCount(sent)}
@@ -1165,7 +1165,7 @@ export default function WhatsAppBulkSendPage() {
                                 {csv.columns.map((c) => (
                                   <td
                                     key={c}
-                                    className="whitespace-nowrap px-3 py-2 text-muted-foreground"
+                                    className="px-3 py-2 text-muted-foreground"
                                   >
                                     {row[c] ?? ''}
                                   </td>

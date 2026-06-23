@@ -730,16 +730,18 @@ export default function ActiveCallPage() {
                 <div className="text-xs font-semibold uppercase text-muted-foreground mb-2">
                   Özel Alanlar
                 </div>
-                <table className="w-full text-sm">
-                  <tbody>
-                    {customFieldEntries.map(([k, v]) => (
-                      <tr key={k} className="border-b last:border-0">
-                        <td className="py-1 text-muted-foreground pr-2">{k}</td>
-                        <td className="py-1 font-medium break-all">{String(v)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      {customFieldEntries.map(([k, v]) => (
+                        <tr key={k} className="border-b last:border-0">
+                          <td className="py-1 text-muted-foreground pr-2">{k}</td>
+                          <td className="py-1 font-medium break-all">{String(v)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

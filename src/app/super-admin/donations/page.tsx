@@ -444,7 +444,7 @@ export default function DonationsAdminPage() {
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="donations">
-                        <TabsList className="grid w-full grid-cols-4">
+                        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
                             <TabsTrigger value="donations">
                                 <FileText className="h-4 w-4 mr-2" /> BAĞIŞLAR ({stats.count})
                             </TabsTrigger>

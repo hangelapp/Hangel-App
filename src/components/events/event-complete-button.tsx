@@ -140,7 +140,7 @@ export function EventCompleteButton({ eventId }: { eventId: string }) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm"><CheckCircle2 className="mr-1.5 h-4 w-4 text-emerald-600" /> Tamamla</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg rounded-2xl">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg rounded-2xl">
         <DialogHeader>
           <DialogTitle>Etkinliği tamamla & değerlendir</DialogTitle>
           <DialogDescription>

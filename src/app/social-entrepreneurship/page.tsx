@@ -35,7 +35,7 @@ const InfoSection = ({
         className
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
+            <h2 className="text-3xl md:text-6xl font-bold tracking-tight">{title}</h2>
             {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
             {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
         </div>

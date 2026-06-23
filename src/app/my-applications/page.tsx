@@ -106,9 +106,9 @@ export default function MyApplicationsPage() {
     return (
       <Card className="transition-colors hover:bg-accent/50">
         <CardHeader className="flex flex-row items-start justify-between gap-4 p-4">
-          <div>
-            <CardTitle className="text-base">{app.title}</CardTitle>
-            <CardDescription>{app.org} - {app.location}</CardDescription>
+          <div className="min-w-0">
+            <CardTitle className="text-base break-words">{app.title}</CardTitle>
+            <CardDescription className="break-words">{app.org} - {app.location}</CardDescription>
           </div>
           <div className='text-right flex-shrink-0 ml-4 space-y-1'>
             <div className="flex items-center justify-end gap-2">

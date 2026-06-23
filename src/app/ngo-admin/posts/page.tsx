@@ -361,7 +361,7 @@ export default function PostsPage() {
       </Card>
 
       <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t('ngo_admin_posts.imageDialogTitle')}</DialogTitle>
             <DialogDescription>

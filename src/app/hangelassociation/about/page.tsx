@@ -50,8 +50,8 @@ const SectionHeading = ({ badge, title, desc, centered = true }: SectionHeadingP
             <Sparkles className="h-4 w-4" />
             <span className="text-[10px] font-black uppercase tracking-widest">{badge}</span>
         </div>
-        <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.95]">{title}</h2>
-        <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed">{desc}</p>
+        <h2 className="text-3xl sm:text-4xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.95]">{title}</h2>
+        <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed">{desc}</p>
     </div>
 );
 

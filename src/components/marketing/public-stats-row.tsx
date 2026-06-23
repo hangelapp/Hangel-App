@@ -34,7 +34,7 @@ interface PublicStatsRowProps {
  */
 export function PublicStatsRow({
   items,
-  numberClassName = 'text-6xl font-black tracking-tighter text-primary',
+  numberClassName = 'text-4xl sm:text-6xl font-black tracking-tighter text-primary',
   labelClassName = 'text-[10px] font-black uppercase tracking-widest text-muted-foreground',
   containerClassName = 'grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-16',
 }: PublicStatsRowProps) {

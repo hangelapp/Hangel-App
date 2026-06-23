@@ -48,9 +48,9 @@ const ShowcaseSection = ({ title, subtitle, stat, description, image, hint, them
         theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground"
     )}>
         <div className="relative z-10 space-y-6 px-6 max-w-4xl">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
             {stat && <p className="text-6xl md:text-9xl font-black tracking-tighter text-primary drop-shadow-2xl">{stat}</p>}
-            <p className="text-xl md:text-3xl font-medium opacity-90 leading-tight">{subtitle}</p>
+            <p className="text-lg sm:text-xl md:text-3xl font-medium opacity-90 leading-tight">{subtitle}</p>
             <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed font-medium">{description}</p>
         </div>
         <div className="relative w-full flex-1 flex items-end justify-center mt-12 px-4 max-w-6xl mx-auto">
@@ -106,7 +106,7 @@ export default function AssociationWorkshopPage() {
 
             <section className="py-32 bg-background text-center">
                 <div className="container mx-auto px-6 max-w-4xl space-y-16">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">{t('associationWorkshop.curriculumTitle')}</h2>
+                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-foreground">{t('associationWorkshop.curriculumTitle')}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-left">
                         <div className="p-10 bg-muted rounded-[2.5rem] space-y-4 group hover:bg-primary transition-colors">
                             <BookOpen className="h-8 w-8 text-primary group-hover:text-white" />

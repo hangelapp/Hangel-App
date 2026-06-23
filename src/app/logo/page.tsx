@@ -97,7 +97,7 @@ const Section = ({ children, className, ...props }: React.HTMLAttributes<HTMLEle
 );
 
 const SectionTitle = ({ children, className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h2 className={cn("text-4xl md:text-5xl font-bold tracking-tight text-center", className)} {...props}>
+    <h2 className={cn("text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-center", className)} {...props}>
         {children}
     </h2>
 );
@@ -324,7 +324,7 @@ export default function LogoPage() {
 
             <main className="pt-24">
                 <Section className="text-center pt-24 pb-20 md:pt-32 md:pb-28">
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-none">
+                    <h1 className="text-3xl sm:text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-none">
                        {t('marketing.logo.heroTitle')}
                     </h1>
                     <p className="text-base text-muted-foreground max-w-2xl mx-auto mt-4">

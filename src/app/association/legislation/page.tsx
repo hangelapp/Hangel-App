@@ -47,8 +47,8 @@ const DetailSection = ({ title, subtitle, description, image, hint, theme = 'lig
         theme === 'dark' ? "bg-black text-white" : "bg-card text-foreground"
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">
-            <h2 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.1]">{title}</h2>
-            <p className="text-xl md:text-3xl font-medium opacity-90">{subtitle}</p>
+            <h2 className="text-3xl sm:text-4xl md:text-7xl font-bold tracking-tight leading-[1.1]">{title}</h2>
+            <p className="text-lg sm:text-xl md:text-3xl font-medium opacity-90">{subtitle}</p>
             <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed font-medium">{description}</p>
         </div>
         <div className="relative w-full flex-1 flex items-end justify-center mt-12 px-4 max-w-6xl mx-auto">
@@ -84,7 +84,7 @@ export default function AssociationLegislationPage() {
 
             <section className="py-32 bg-black text-white text-center">
                 <div className="container mx-auto px-6 max-w-5xl space-y-16">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{t('associationLegislation.employmentTitle')}</h2>
+                    <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight">{t('associationLegislation.employmentTitle')}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
                         <div className="space-y-6 p-8 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                             <ShieldCheck className="h-12 w-12 text-primary" />
@@ -110,11 +110,11 @@ export default function AssociationLegislationPage() {
                     <div className="grid grid-cols-1 gap-4">
                         {draftItems.map((item, i) => (
                             <div key={i} className="flex items-center justify-between p-8 bg-card rounded-[2rem] shadow-sm border border-border hover:border-primary transition-all group text-left">
-                                <div className="space-y-1">
+                                <div className="space-y-1 min-w-0">
                                     <span className="font-bold text-xl text-foreground">{item.title}</span>
                                     <p className="text-sm text-muted-foreground font-medium">{item.desc}</p>
                                 </div>
-                                <ChevronRight className="h-6 w-6 text-primary group-hover:translate-x-1 transition-transform" />
+                                <ChevronRight className="h-6 w-6 shrink-0 text-primary group-hover:translate-x-1 transition-transform" />
                             </div>
                         ))}
                     </div>

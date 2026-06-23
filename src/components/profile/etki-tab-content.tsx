@@ -69,12 +69,12 @@ const InfoRow = ({ icon: Icon, label, value, href }: { icon: React.ElementType; 
     );
 
     return (
-        <div className="flex justify-between items-start py-2 text-sm">
-            <div className="flex items-start">
-                <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
+        <div className="flex justify-between items-start gap-3 py-2 text-sm">
+            <div className="flex items-start min-w-0">
+                <Icon className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                 <p className="font-medium ml-4">{label}</p>
             </div>
-            <div className="flex items-center gap-2 text-right">
+            <div className="flex items-center gap-2 text-right min-w-0 break-words">
                 {ValueComponent}
             </div>
         </div>

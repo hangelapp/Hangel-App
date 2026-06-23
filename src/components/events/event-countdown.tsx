@@ -97,7 +97,7 @@ export function DualCountdown({ start, startTime, end, endTime, className }: { s
     <div className={cn('rounded-2xl border p-4', live ? 'border-red-500/25 bg-red-500/5' : 'border-primary/20 bg-primary/5', className)}>
       {/* SAYI öne çıkar — büyük, üstte; etiket altta. (Konum yer değiştirdi.) */}
       <div className="flex items-end justify-between gap-3">
-        <span className={cn('font-mono text-4xl font-black tabular-nums leading-none', live ? 'text-red-600' : 'text-foreground')}>
+        <span className={cn('font-mono text-3xl sm:text-4xl font-black tabular-nums leading-none', live ? 'text-red-600' : 'text-foreground')}>
           {clock(remaining)}
         </span>
         <span className="inline-flex items-center gap-2 pb-0.5">

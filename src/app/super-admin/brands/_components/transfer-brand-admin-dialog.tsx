@@ -157,7 +157,7 @@ export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign, onNeedUser
                     <UserCog className="mr-2 h-4 w-4" /> Yetkili
                 </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-2xl sm:max-w-[560px] max-h-[85vh] overflow-y-auto">
+            <DialogContent className="rounded-2xl max-w-[calc(100vw-2rem)] sm:max-w-[560px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="font-bold">Yetkili Kişi Yönetimi</DialogTitle>
                     <DialogDescription>

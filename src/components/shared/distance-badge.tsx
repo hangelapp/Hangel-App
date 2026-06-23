@@ -126,12 +126,12 @@ export function DistanceBadge({
     <button
       type="button"
       onClick={request}
-      className={cn('inline-flex items-center gap-1 text-xs font-medium text-primary/90 hover:text-primary underline-offset-2 hover:underline text-left', className)}
+      className={cn('inline-flex items-start gap-1 text-xs font-medium text-primary/90 hover:text-primary underline-offset-2 hover:underline text-left', className)}
     >
-      <MapPin className="h-3.5 w-3.5 shrink-0" />
-      {status === 'denied'
+      <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+      <span className="min-w-0 break-words">{status === 'denied'
         ? 'Konum kapalı — açıp dokun, ne kadar uzakta olduğunu göstereyim'
-        : 'Konum izni verirsen ne kadar uzakta olduğunu (km · süre) gösteririm'}
+        : 'Konum izni verirsen ne kadar uzakta olduğunu (km · süre) gösteririm'}</span>
     </button>
   );
 }

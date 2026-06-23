@@ -662,7 +662,7 @@ export default function EventManagementPage() {
 
             {/* Create-event dialog (clubs only) */}
             <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) resetForm(); }}>
-                <DialogContent className="sm:max-w-lg rounded-2xl">
+                <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg rounded-2xl">
                     <DialogHeader>
                         <DialogTitle className="font-bold">{editingId ? 'Etkinliği Düzenle' : t('ngo_admin_events.dialogTitle')}</DialogTitle>
                         <DialogDescription className="text-xs">

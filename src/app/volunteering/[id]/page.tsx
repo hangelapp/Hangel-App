@@ -157,6 +157,11 @@ export default function VolunteeringDetailPage() {
   const coords = opportunity?.location?.coordinates;
   const oppCity = opportunity?.location?.city;
   const oppDistrict = opportunity?.location?.district;
+  // Güvenli location objesi — render'da doğrudan oppLoc.X okunursa
+  // (location undefined/string ise) TypeError → sayfa açılmıyordu.
+  const oppLoc = (opportunity && typeof opportunity.location === 'object' && opportunity.location !== null
+    ? opportunity.location
+    : {}) as { type?: string; coordinates?: { lat: number; lon: number }; address?: string; city?: string; district?: string };
   useEffect(() => {
     if (!opportunity) return;
     if (locType !== 'Saha' && locType !== 'Hibrit') {
@@ -299,7 +304,7 @@ export default function VolunteeringDetailPage() {
     if (coords?.lat != null && coords?.lon != null) {
       return `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lon}`;
     }
-    const addr = [opportunity.location.address, opportunity.location.district, opportunity.location.city].filter(Boolean).join(' ');
+    const addr = [oppLoc.address, oppLoc.district, oppLoc.city].filter(Boolean).join(' ');
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addr)}`;
   })();
 
@@ -314,7 +319,7 @@ export default function VolunteeringDetailPage() {
   const heroTimeLabel = heroDateTime !== '—' ? (heroDateTime.split(',')[1]?.trim() || undefined) : undefined;
   const heroLocationLabel = locType === 'Online'
     ? 'Online'
-    : [opportunity.location.district, opportunity.location.city].filter(Boolean).join(', ') || undefined;
+    : [oppLoc.district, oppLoc.city].filter(Boolean).join(', ') || undefined;
 
   // Sosyal Etki Mali Değeri
   const impactValueTRY = formatTRY(socialImpactValueTRY(opportunity.hours?.total ?? 0));
@@ -480,7 +485,7 @@ export default function VolunteeringDetailPage() {
         entityId: opportunity.id,
         date: today,
         status: 'Beklemede',
-        location: opportunity.location.city
+        location: oppLoc.city
     });
 
     // İlanın başvuran sayacını atomik olarak artır (best-effort; hata başvuru akışını bozmaz).
@@ -681,7 +686,7 @@ export default function VolunteeringDetailPage() {
                             <div className="flex items-center gap-4 py-4">
                                 <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
                                 <dt className="sr-only">Konum</dt>
-                                <dd className="text-base text-foreground">{opportunity.location.city}, {opportunity.location.district} ({opportunity.location.type})</dd>
+                                <dd className="text-base text-foreground">{oppLoc.city}, {oppLoc.district} ({oppLoc.type})</dd>
                             </div>
                             <div className="flex items-center gap-4 py-4">
                                 <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -879,7 +884,7 @@ export default function VolunteeringDetailPage() {
                                                 <p className="text-[10px] font-medium leading-tight text-foreground/90 line-clamp-2">
                                                     {locType === 'Online'
                                                         ? 'Uzaktan / Online'
-                                                        : [opportunity.location.address, [opportunity.location.district, opportunity.location.city].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
+                                                        : [oppLoc.address, [oppLoc.district, oppLoc.city].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
                                                 </p>
                                             </div>
                                         </div>
@@ -934,7 +939,7 @@ export default function VolunteeringDetailPage() {
                                                     <p className="text-[10px] font-medium leading-tight text-foreground/90 line-clamp-3">
                                                         {locType === 'Online'
                                                             ? 'Uzaktan / Online gönüllülük'
-                                                            : [opportunity.location.address, [opportunity.location.district, opportunity.location.city].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
+                                                            : [oppLoc.address, [oppLoc.district, oppLoc.city].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
                                                     </p>
                                                 </div>
                                             </div>
@@ -1005,11 +1010,11 @@ export default function VolunteeringDetailPage() {
                         <section className="space-y-4 rounded-3xl border border-border bg-card p-5">
                             <h2 className="text-xl font-bold tracking-tight text-foreground">Konum</h2>
                             <div className="space-y-2.5 text-base">
-                                {opportunity.location.address && (
-                                    <div className="flex items-start gap-3"><MapPin className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" /> <span className="text-foreground leading-snug">{opportunity.location.address}</span></div>
+                                {oppLoc.address && (
+                                    <div className="flex items-start gap-3"><MapPin className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" /> <span className="text-foreground leading-snug">{oppLoc.address}</span></div>
                                 )}
                                 <div className="flex items-center gap-3 text-muted-foreground">
-                                    <MapPin className="h-5 w-5 shrink-0" /> <span>{opportunity.location.district}, {opportunity.location.city}</span>
+                                    <MapPin className="h-5 w-5 shrink-0" /> <span>{oppLoc.district}, {oppLoc.city}</span>
                                 </div>
                             </div>
                             {/* Adres altı mesafe: izin verene km · dk; vermeyene "Konumumu kullan" metin butonu (DistanceBadge içinde) */}

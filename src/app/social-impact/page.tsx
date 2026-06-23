@@ -72,8 +72,8 @@ const ImpactSection = ({
         className
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{title}</h2>
-            {stat && <p className="text-6xl md:text-8xl font-black tracking-tighter text-primary mt-2">{stat}</p>}
+            <h2 className="text-3xl md:text-6xl font-bold tracking-tight">{title}</h2>
+            {stat && <p className="text-5xl md:text-8xl font-black tracking-tighter text-primary mt-2">{stat}</p>}
             {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
             {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
         </div>
@@ -249,7 +249,7 @@ export default function SocialImpactPage() {
             <section className="py-24 bg-[#f5f5f7]">
                 <div className="container mx-auto px-6 max-w-4xl space-y-12">
                     <div className="text-center space-y-3">
-                        <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">{t('marketing.socialImpact.reportsTitle')}</h2>
+                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1d1d1f]">{t('marketing.socialImpact.reportsTitle')}</h2>
                         <p className="text-lg text-muted-foreground">{t('marketing.socialImpact.reportsDescription')}</p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

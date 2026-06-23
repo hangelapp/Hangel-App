@@ -544,7 +544,7 @@ export default function RecordingsPage() {
           if (!open) setActiveRecording(null);
         }}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Mic className="h-5 w-5 text-emerald-600" />

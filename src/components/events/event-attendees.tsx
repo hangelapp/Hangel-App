@@ -194,7 +194,7 @@ export function EventAttendees({ eventId, label = 'Katılımcılar' }: { eventId
             <div className="py-12 flex justify-center items-center text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mr-2" /> Yükleniyor…</div>
           ) : (
             <div className="space-y-4">
-              <div className="flex items-center justify-end gap-2">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 <Button size="sm" variant="outline" disabled={!data} onClick={handlePrint}><Printer className="h-4 w-4 mr-1.5" /> Yazdır</Button>
                 <Button size="sm" variant="outline" disabled={!data || busy !== null} onClick={handleDownload}>
                   {busy === 'pdf' ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Download className="h-4 w-4 mr-1.5" />} İndir
@@ -215,6 +215,7 @@ export function EventAttendees({ eventId, label = 'Katılımcılar' }: { eventId
                   <div><span className="font-bold">Toplam:</span> {count} katılımcı</div>
                   <div className="sm:col-span-2"><span className="font-bold">Konum:</span> {data?.event.location || '—'}</div>
                 </div>
+                <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="bg-gray-100">
@@ -237,6 +238,7 @@ export function EventAttendees({ eventId, label = 'Katılımcılar' }: { eventId
                     )}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
           )}

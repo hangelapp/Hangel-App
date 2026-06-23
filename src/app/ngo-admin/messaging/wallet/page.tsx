@@ -90,7 +90,7 @@ export default function NgoWalletPage() {
           </Link>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold">{me.wallet.balance.toLocaleString('tr-TR')} {me.wallet.currency}</div>
+          <div className="text-3xl sm:text-4xl font-bold break-words">{me.wallet.balance.toLocaleString('tr-TR')} {me.wallet.currency}</div>
           {me.wallet.reserved > 0 && (
             <p className="text-xs text-muted-foreground mt-1">
               {me.wallet.reserved.toLocaleString('tr-TR')} {me.wallet.currency} bekleyen kampanyalarda rezerve

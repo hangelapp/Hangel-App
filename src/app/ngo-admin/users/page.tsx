@@ -175,8 +175,8 @@ export default function UsersPage() {
       </div>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="min-w-0">
             <CardTitle>{t('ngo_admin_users.cardTitle')}</CardTitle>
             <CardDescription className="flex items-center gap-1.5">
               {isGeneralAdmin ? (

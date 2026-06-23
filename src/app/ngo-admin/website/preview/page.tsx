@@ -204,7 +204,7 @@ function PreviewContent() {
                     <Image src={ngo.coverPhotoUrl} alt="Hero" fill className="object-cover" />
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
                     <div className="relative z-10 p-6">
-                        <h2 className="text-4xl md:text-7xl font-black tracking-tight drop-shadow-xl mb-4">
+                        <h2 className="text-3xl sm:text-4xl md:text-7xl font-black tracking-tight drop-shadow-xl mb-4">
                             Dayanışma Güç Verir.
                         </h2>
                         <p className="text-lg md:text-2xl font-medium max-w-3xl mx-auto drop-shadow-lg opacity-90">
@@ -235,22 +235,22 @@ function PreviewContent() {
                             <CardTitle className="text-2xl font-bold tracking-tight">Etkimiz Rakamlarla</CardTitle>
                             <CardDescription>Şeffaf ve ölçülebilir sosyal fayda verilerimiz.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-10">
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
+                        <CardContent className="p-6 sm:p-10">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-12">
                                 <div className="text-center space-y-1">
-                                    <p className="text-5xl font-black text-primary tracking-tighter">{ngo.foundationYear}</p>
+                                    <p className="text-3xl sm:text-5xl font-black text-primary tracking-tighter break-words">{ngo.foundationYear}</p>
                                     <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Kuruluş Yılı</p>
                                 </div>
                                 <div className="text-center space-y-1">
-                                    <p className="text-5xl font-black text-primary tracking-tighter">+{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
+                                    <p className="text-3xl sm:text-5xl font-black text-primary tracking-tighter break-words">+{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
                                     <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Gönüllü</p>
                                 </div>
                                 <div className="text-center space-y-1">
-                                    <p className="text-5xl font-black text-primary tracking-tighter">{ngo.stats.projects}</p>
+                                    <p className="text-3xl sm:text-5xl font-black text-primary tracking-tighter break-words">{ngo.stats.projects}</p>
                                     <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Tamamlanan Proje</p>
                                 </div>
                                 <div className="text-center space-y-1">
-                                    <p className="text-5xl font-black text-primary tracking-tighter">1M+</p>
+                                    <p className="text-3xl sm:text-5xl font-black text-primary tracking-tighter break-words">1M+</p>
                                     <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Ulaşılan İnsan</p>
                                 </div>
                             </div>
@@ -300,7 +300,7 @@ function PreviewContent() {
                                 <CardContent className="px-8 pb-8 flex flex-col md:flex-row gap-8 items-center">
                                     <div className="flex-1 space-y-4">
                                         <p className="text-muted-foreground leading-relaxed">Doğrudan banka hesabımıza transfer yaparak çalışmalarımızı destekleyebilirsiniz.</p>
-                                        <div className="flex items-center justify-between text-base font-mono tracking-widest p-4 bg-muted rounded-2xl border-2 border-dashed">
+                                        <div className="flex items-center justify-between gap-2 text-xs sm:text-base font-mono tracking-tight sm:tracking-widest p-4 bg-muted rounded-2xl border-2 border-dashed">
                                             <span className="truncate">TR00 0000 0000 0000 0000 0000 00</span>
                                             <Button size="icon" variant="ghost" className="h-10 w-10 text-primary hover:bg-primary/10" onClick={() => { navigator.clipboard.writeText("TR00 0000 0000 0000 0000 0000 00"); toast({ title: 'IBAN Kopyalandı!' }); }} aria-label="IBAN'ı kopyala">
                                                 <Copy className="h-5 w-5"/>
@@ -354,7 +354,7 @@ function PreviewContent() {
                            <div className="p-10 md:p-16 flex flex-col justify-center space-y-8">
                                 <div>
                                     <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-[0.2em] mb-4">Vizyonumuz</Badge>
-                                    <h3 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">İyiliği Herkes İçin Erişilebilir Kılıyoruz.</h3>
+                                    <h3 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter leading-tight">İyiliği Herkes İçin Erişilebilir Kılıyoruz.</h3>
                                 </div>
                                 <p className={cn("text-lg text-muted-foreground leading-relaxed font-medium", !isAboutExpanded && "line-clamp-6")}>{ngo.about}</p>
                                 <Button variant="ghost" className="p-0 h-auto self-start text-primary font-bold hover:bg-transparent" onClick={() => setIsAboutExpanded(!isAboutExpanded)}>
@@ -497,11 +497,11 @@ function PreviewContent() {
                 {/* 10. Pencere: SKA'lar */}
                 <section id="sdg" className="scroll-mt-24 space-y-8">
                     <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center">Küresel Amaçlar İçin Çalışıyoruz</h2>
-                    <Card className="rounded-[2.5rem] border-none shadow-lg bg-card p-10 overflow-hidden">
-                        <div className="flex flex-wrap justify-center gap-6">
+                    <Card className="rounded-[2.5rem] border-none shadow-lg bg-card p-6 sm:p-10 overflow-hidden">
+                        <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
                             {ngo.supportedSDGs.map((sdg) => (
                             <a href="https://www.kureselamaclar.org" target="_blank" rel="noopener noreferrer" key={sdg} className="group">
-                                <div className="p-6 border-2 border-dashed rounded-[2rem] text-center bg-card flex flex-col items-center justify-center w-40 h-40 group-hover:border-primary/50 group-hover:bg-primary/5 transition-all">
+                                <div className="p-6 border-2 border-dashed rounded-[2rem] text-center bg-card flex flex-col items-center justify-center w-36 h-36 sm:w-40 sm:h-40 group-hover:border-primary/50 group-hover:bg-primary/5 transition-all">
                                     <div className="w-10 h-10 rounded-xl bg-muted group-hover:bg-primary/10 flex items-center justify-center mb-3">
                                         <Target className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
                                     </div>

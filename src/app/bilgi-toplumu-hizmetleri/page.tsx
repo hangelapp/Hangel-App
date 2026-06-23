@@ -54,7 +54,7 @@ export default function InformationSocietyServicesPage() {
           {cms.subtitle && (
             <p className="text-sm font-bold uppercase tracking-widest text-primary">{cms.subtitle}</p>
           )}
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground">{cms.title || t('marketing.info.heroTitleFallback')}</h1>
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight text-foreground">{cms.title || t('marketing.info.heroTitleFallback')}</h1>
           <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl">
             {cms.description || t('marketing.info.heroDescriptionFallback')}
           </p>

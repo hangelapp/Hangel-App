@@ -17,7 +17,7 @@ const ImpactSection = ({ title, subtitle, description, theme = 'light', classNam
   )}>
     <div className="relative z-10 space-y-4 px-6 max-w-4xl">
       {subtitle && <p className={cn('text-xl md:text-2xl font-semibold opacity-90 tracking-tight', theme === 'dark' ? 'text-[#00A8E8]' : 'text-primary')}>{subtitle}</p>}
-      <h2 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">{title}</h2>
+      <h2 className="text-3xl md:text-6xl font-bold tracking-tight leading-tight">{title}</h2>
       {description && <p className="text-lg md:text-xl opacity-80 max-w-3xl mx-auto leading-relaxed font-medium">{description}</p>}
     </div>
     {children && <div className="w-full mt-10">{children}</div>}

@@ -68,7 +68,7 @@ const ShowcaseSection = ({
     )}>
         <div className="relative z-10 space-y-4 px-6 max-w-4xl">
             {subtitle && <p className="text-xl md:text-2xl font-semibold opacity-90 tracking-tight" style={{color: theme === 'dark' ? '#00A8E8' : 'var(--primary)'}}>{subtitle}</p>}
-            <h2 className="text-5xl md:text-8xl font-black tracking-tighter leading-tight">{title}</h2>
+            <h2 className="text-3xl sm:text-5xl md:text-8xl font-black tracking-tighter leading-tight">{title}</h2>
             {description && <p className="text-lg md:text-xl opacity-80 max-w-3xl mx-auto leading-relaxed font-medium">{description}</p>}
             
             <div className="flex items-center justify-center gap-6 pt-4">
@@ -185,8 +185,8 @@ export default function AssociationHomePage() {
 
             <main>
                 <section className="h-[90vh] flex flex-col justify-center items-center text-center p-6 bg-muted border-b border-border">
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-foreground">{t('marketing.association.heroTitle')}</h1>
-                    <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">{t('marketing.association.heroSubtitle')}</h2>
+                    <h1 className="text-3xl sm:text-5xl md:text-8xl font-black tracking-tighter leading-none text-foreground">{t('marketing.association.heroTitle')}</h1>
+                    <h2 className="text-xl sm:text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">{t('marketing.association.heroSubtitle')}</h2>
                     <div className="mt-12">
                         <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
                             <Link href="/login/selection?action=register">{t('marketing.association.joinCta')}</Link>

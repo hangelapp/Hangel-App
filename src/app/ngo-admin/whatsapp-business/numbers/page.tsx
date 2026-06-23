@@ -313,11 +313,11 @@ export default function WhatsAppBusinessNumbersPage() {
                     )}
                   </div>
                   <div className="text-xs text-muted-foreground space-y-0.5">
-                    <p>
+                    <p className="break-all">
                       <span className="font-medium">Phone Number ID:</span>{' '}
                       <span className="font-mono">{n.wabaPhoneNumberId}</span>
                     </p>
-                    <p>
+                    <p className="break-all">
                       <span className="font-medium">WABA ID:</span>{' '}
                       <span className="font-mono">{n.wabaAccountId}</span>
                     </p>

@@ -116,7 +116,7 @@ export default function NgoMessagingHub() {
               <AlertTriangle className="h-3 w-3" /> {t('ngoAdminMessagingHub.lowBalance')}
             </p>
           )}
-          <div className="grid grid-cols-3 gap-2 mt-3 text-xs text-muted-foreground">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-xs text-muted-foreground">
             <div>{t('ngoAdminMessagingHub.smsLabel')}: {me.freeQuota.sms} {t('ngoAdminMessagingHub.freeMonth')}</div>
             <div>{t('ngoAdminMessagingHub.emailLabel')}: {me.freeQuota.email} {t('ngoAdminMessagingHub.freeMonth')}</div>
             <div>{t('ngoAdminMessagingHub.waLabel')}: {me.freeQuota.whatsapp} {t('ngoAdminMessagingHub.freeMonth')}</div>
