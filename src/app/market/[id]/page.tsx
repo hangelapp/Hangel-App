@@ -17,7 +17,7 @@ import type { Post, Brand } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp } from 'firebase/firestore';
-import { openExternalUrl } from '@/lib/capacitor';
+import { goToAffiliate } from '@/lib/affiliate-go';
 import { COLLECTIONS } from '@/firebase/collections';
 import { BrandLogo } from '@/components/market/brand-logo';
 
@@ -166,23 +166,25 @@ export default function BrandProfilePage() {
     if (!brand.link) return;
 
     setIsDonating(true);
-    // GERÇEK bağış kaydı, marka affiliate webhook'u alışverişi onayladıktan sonra
-    // `POST /api/affiliate/webhook/[brandId]` tarafından oluşturulur. Burada
-    // donations koleksiyonuna YAZMIYORUZ — aksi takdirde kullanıcı alışveriş
-    // yapmadan "bağış işlendi" sanır. Bunun yerine sadece "alışveriş başlatıldı"
-    // bilgilendirme izini bildirim olarak bırakıyoruz; böylece webhook gelmese
-    // bile kullanıcı süreci "Bağışlarım" sayfasından takip edebilir.
-    // Capacitor Browser ile native aç (iOS popup blocker'a takılmaz)
-    openExternalUrl(brand.link);
+    // GERÇEK bağış kaydı, alışveriş onaylandıktan sonra affiliate postback'i
+    // tarafından oluşturulur. Burada donations koleksiyonuna YAZMIYORUZ — aksi
+    // takdirde kullanıcı alışveriş yapmadan "bağış işlendi" sanır.
+    // Dışa giden link `/api/affiliate/go?brandId=...` üzerinden açılır: route
+    // clickId üretip affiliateClicks doc'unu yazar, subId'i affiliate URL'ine
+    // enjekte eder ve 302 ile markaya yönlendirir. Böylece satış kullanıcıya
+    // bağlanır. Route hata verirse fallback olarak brand.link doğrudan açılır.
+    await goToAffiliate({ brandId: brand.id, authUser, fallbackUrl: brand.link });
 
     toast({
         title: 'Alışveriş başlatıldı',
         description: `Alışverişini tamamladığında bağışın otomatik hesabına işlenecek. İşlenmesi markaya göre birkaç dakika–saat sürebilir; "Bağışlarım" sayfasından takip edebilirsin.`,
     });
 
-    // Tıklama izi: bilgilendirme bildirimi yaz (best-effort). Bu bir bağış kaydı
-    // DEĞİL; yalnızca kullanıcının "başlattım ama henüz işlenmedi" durumunu
-    // görmesini sağlar. Hata olursa link akışını bozmayız.
+    // Tıklama izi (best-effort): "bağışın işleniyor" durumunu /my-donations'ta
+    // göstermek için işaretli bir bildirim yazılır. Bağış kaydı DEĞİL — gerçek
+    // bağış conversion onayı gelince affiliate postback'inden oluşur ve donations
+    // listesinde "İşleme Alındı" olarak görünür. createdBy = uid (rules gereği).
+    // data.affiliatePending: my-donations bunu "bağışın işleniyor 🧡" olarak ayıklar.
     if (db) {
         try {
             await addDoc(collection(db, COLLECTIONS.notifications), {
@@ -190,10 +192,15 @@ export default function BrandProfilePage() {
                 type: 'donation',
                 title: 'Alışveriş başlatıldı',
                 body: `${brand.name} alışverişin tamamlanınca bağışın işlenecek. Bağışlarım sayfasından takip et.`,
-                data: { brandId: brand.id, link: '/my-donations' },
+                data: {
+                    affiliatePending: true,
+                    brandId: brand.id,
+                    brandName: brand.name,
+                    link: '/my-donations',
+                },
                 read: false,
                 createdAt: serverTimestamp(),
-                createdBy: 'market-click',
+                createdBy: authUser.uid,
             });
         } catch {
             // Bildirim yazımı başarısız olsa bile alışveriş akışı devam eder.
