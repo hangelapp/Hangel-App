@@ -353,7 +353,25 @@ export default function DiscoverPage() {
     onClick: () => void;
     showBrandLogos?: boolean;
   };
+  // En yüksek bağışlı markayı "büyük indirim + bağış kampanyası" banner'ı olarak öne
+  // çıkar — marka logosu + adı + bağış oranıyla, koyu premium kimlikte.
+  const spotlight = topBrands[0];
   const banners: Banner[] = [
+    ...(spotlight
+      ? [
+          {
+            key: 'brand-spotlight',
+            eyebrow: spotlight.name,
+            title: 'Büyük indirim + bağış kampanyası',
+            subtitle: `${spotlight.name} · alışverişin hem indirimli hem %${Math.round(Number(spotlight.donationRate))} bağış.`,
+            cta: 'Markaya git',
+            icon: Tag,
+            gradient: 'from-zinc-900 via-zinc-800 to-zinc-700',
+            onClick: () => setSortBy('donationDesc'),
+            showBrandLogos: true,
+          } satisfies Banner,
+        ]
+      : []),
     {
       key: 'donation',
       eyebrow: '#wearehangel',
@@ -392,7 +410,7 @@ export default function DiscoverPage() {
   return (
     <div className="flex h-full w-full max-w-full flex-col overflow-x-hidden bg-secondary/30">
       {/* ── 1. Sabit üst: slim bar — geri + arama + filtre/sırala (başlık YOK) ── */}
-      <div className="sticky top-12 z-20 w-full max-w-full shrink-0 space-y-3 overflow-x-hidden border-b border-border bg-background p-4">
+      <div className="sticky top-12 z-20 w-full max-w-full shrink-0 space-y-2.5 overflow-x-hidden border-b border-border bg-background px-4 py-2.5">
         <div className="flex w-full items-center gap-2">
           {/* Geri */}
           <Button
@@ -429,7 +447,7 @@ export default function DiscoverPage() {
                 <SlidersHorizontal className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+            <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto rounded-2xl">
               <DropdownMenuLabel>Kategori</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {categories.map((cat) => (
@@ -548,10 +566,10 @@ export default function DiscoverPage() {
                 {/* ── 3. Kampanya / banner carousel — sayfanın EN ÜST görseli.
                     Premium Apple-kimlikli hero'lar: katmanlı derinlik (gradient +
                     blur orb'lar), büyük tipografi, CTA chip, marka logo kolajı. ── */}
-                <section className="w-full max-w-full pt-3">
+                <section className="w-full max-w-full pt-2">
                   <div
                     className={cn(
-                      'flex w-full min-w-0 gap-3 overflow-x-auto px-4 pb-1 snap-x snap-mandatory',
+                      'flex w-full min-w-0 gap-3 overflow-x-auto px-4 py-2 snap-x snap-mandatory',
                       NO_SCROLLBAR,
                     )}
                   >
@@ -563,7 +581,7 @@ export default function DiscoverPage() {
                           type="button"
                           onClick={b.onClick}
                           className={cn(
-                            'group relative flex h-[168px] w-[86%] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br p-5 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px]',
+                            'group relative flex h-[188px] w-[86%] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br p-4 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px]',
                             b.gradient,
                           )}
                         >
@@ -584,7 +602,7 @@ export default function DiscoverPage() {
 
                           {/* Başlık + alt metin */}
                           <div className="relative">
-                            <p className="text-xl font-black leading-tight drop-shadow-sm">
+                            <p className="text-lg font-black leading-tight drop-shadow-sm">
                               {b.title}
                             </p>
                             <p className="mt-1 line-clamp-2 max-w-[88%] text-xs font-medium text-white/90">
