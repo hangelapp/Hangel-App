@@ -108,8 +108,13 @@ function discountPct(p: CanonicalProduct): number {
 }
 
 // Bir ürünün hangi gruba ait olduğu: kategori → yoksa marka adı.
+// Ham feed kategorisi uzun bir YOL olabilir ("Aksesuar>Kablolar, Dönüştürücüler
+// ve Prizler" / "Telefon › Telefon Aksesuarları") → en geniş (ilk) segmenti alıp
+// temizliyoruz; böylece çipler/kutucuklar kısa, okunur, Trendyol-vari olur.
 function groupOf(p: CanonicalProduct): string {
-  return p.category?.trim() || p.brandName?.trim() || '';
+  const raw = p.category?.trim() || p.brandName?.trim() || '';
+  const broad = raw.split(/[>›/]/)[0].trim();
+  return broad || raw;
 }
 
 // Yatay kaydırma şeritleri için yinelenen "scrollbar gizli" sınıf.

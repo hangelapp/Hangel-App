@@ -134,6 +134,17 @@ export function AutoBreadcrumb() {
     return null;
   }
 
+  // Trendyol-vari tam-ekran pazar vitrinlerinde breadcrumb gürültü yapar ve üstte
+  // gereksiz boşluk bırakır → bu immersive sayfalarda gizle.
+  if (
+    pathname === '/market/discover' ||
+    pathname.startsWith('/market/discover/') ||
+    pathname === '/market/products' ||
+    pathname.startsWith('/market/products/')
+  ) {
+    return null;
+  }
+
   const segments = pathname.split('/').filter(Boolean);
   if (segments.length === 0) {
     return null;
