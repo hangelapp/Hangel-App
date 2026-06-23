@@ -591,7 +591,7 @@ export default function LoginPage() {
             </Sheet>
             <Header onMenuClick={() => setIsMenuOpen(true)} />
             <main>
-                <section className="min-h-screen flex flex-col px-6 pt-24 pb-[calc(4rem+env(safe-area-inset-bottom))] bg-background border-b border-border">
+                <section className="min-h-screen flex flex-col px-6 pt-[calc(6rem+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))] bg-background border-b border-border">
                     <div className="flex-1 flex flex-col justify-center items-center text-center">
                         <h2 className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-medium text-muted-foreground max-w-2xl md:max-w-4xl text-balance leading-tight">{get('home.heroSubtitle', 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.')}</h2>
                         <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight text-foreground max-w-xl md:max-w-4xl text-balance mt-3">{get('home.heroTitle', 'yok öyle yalnız başına mücadele etmek.')}</h1>
