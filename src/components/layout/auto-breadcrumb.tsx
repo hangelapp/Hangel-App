@@ -137,6 +137,7 @@ export function AutoBreadcrumb() {
   // Trendyol-vari tam-ekran pazar vitrinlerinde breadcrumb gürültü yapar ve üstte
   // gereksiz boşluk bırakır → bu immersive sayfalarda gizle.
   if (
+    pathname === '/market' ||
     pathname === '/market/discover' ||
     pathname.startsWith('/market/discover/') ||
     pathname === '/market/products' ||

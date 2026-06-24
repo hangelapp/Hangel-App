@@ -1,372 +1,994 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp, HeartHandshake, ShoppingBag } from 'lucide-react';
-import { EmptyState } from '@/components/shared/empty-state';
-import { cn } from '@/lib/utils';
-import { searchMatch } from '@/lib/search-match';
+/**
+ * Ürünleri Keşfet — Trendyol uygulamasının ANA SAYFASI tarzı pazar-yeri vitrini (PIM).
+ *
+ * hangel farkı: her ürün yüzeyinde 🧡 BAĞIŞ ORANI rozeti. Klasik pazar yerinde
+ * olmayan tek şey bu — kullanıcı alışveriş yaparken hangi ürünün ne kadarının
+ * bağışa gittiğini görür ve buna göre seçebilir (SIRALA → "Bağış oranı").
+ *
+ * Düzen (yukarıdan aşağı):
+ *   1. Sabit slim üst bar: geri + arama + filtre/sırala + kategori çip şeridi
+ *      (başlık YOK — premium, sade)
+ *   2. Kampanya/banner carousel — sayfanın EN ÜST görseli (premium coral hero'lar)
+ *   3. Hızlı kategori kutucukları (ikon + ad)
+ *   4. Yatay ürün şeritleri ("fırsat" rows): En Çok Bağış, İndirimdekiler,
+ *      Öne Çıkanlar + en büyük kategoriler
+ *   5. "Tüm Ürünler" ana grid (mevcut 2-kolon Trendyol grid)
+ *
+ * BAĞIŞ ORANI: resolveProductRate ASLA null dönmez — markaya özgü oran
+ * bilinmiyorsa platform ortalaması gösterilir, böylece HER kartta rozet çıkar.
+ *
+ * PERFORMANS: bütün bölümler ZATEN ÇEKİLEN 120 ürün üzerinden client-side
+ * türetilir (sort/filter/slice). Ek Firestore okuması yok.
+ *
+ * Veri kaynağı: COLLECTIONS.products (kanonik ürün kütüphanesi). Ürünler
+ * `random` alanına göre rastgele başlangıçla çekilir (her ziyarette farklı vitrin).
+ * Arama, kategori ve sıralama çekilen küme üzerinde uygulanır.
+ */
+
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import type { Brand } from '@/lib/types';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, limit, query, orderBy, startAt } from 'firebase/firestore';
+import {
+  Search,
+  ShoppingBag,
+  ArrowDownUp,
+  SlidersHorizontal,
+  Check,
+  HeartHandshake,
+  Tag,
+  Sparkles,
+  ChevronRight,
+  Shirt,
+  Home,
+  Smartphone,
+  Baby,
+  Dumbbell,
+  Gem,
+  Gift,
+  Package,
+  Store,
+} from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
-import type { CanonicalProduct } from '@/lib/feed/types';
-import { COLLECTIONS } from '@/firebase/collections';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useTranslation } from '@/components/providers/language-provider';
 import { BrandLogo } from '@/components/market/brand-logo';
+import { cn } from '@/lib/utils';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { COLLECTIONS } from '@/firebase/collections';
+import {
+  collection,
+  limit,
+  query,
+  orderBy,
+  startAt,
+  getCountFromServer,
+} from 'firebase/firestore';
+import type { CanonicalProduct } from '@/lib/feed/types';
+import { searchProducts, tokenize } from '@/lib/feed/search';
+import type { Brand } from '@/lib/types';
 
-export default function MarketPage() {
+type SortOption =
+  | 'recommended' // varsayılan — feed rastgele sırası (popüler vitrin)
+  | 'donationDesc' // bağış oranı yüksek → düşük (hangel imzası)
+  | 'priceAsc' // fiyat artan
+  | 'priceDesc' // fiyat azalan
+  | 'popular'; // popülerlik (en yeni ingest — taze ürün proxy'si)
+
+const SORT_LABELS: Record<SortOption, string> = {
+  recommended: 'Önerilen',
+  donationDesc: 'Bağış oranı (yüksek)',
+  priceAsc: 'Fiyat (artan)',
+  priceDesc: 'Fiyat (azalan)',
+  popular: 'Popülerlik',
+};
+
+// Bir ürünün etkin fiyatı: indirimli fiyat varsa o, yoksa ana fiyat.
+function effectivePrice(p: CanonicalProduct): number {
+  return typeof p.salePrice === 'number' && p.salePrice > 0
+    ? p.salePrice
+    : p.price;
+}
+
+// İndirim yüzdesi (salePrice < price ise) — yoksa 0.
+function discountPct(p: CanonicalProduct): number {
+  if (typeof p.salePrice === 'number' && p.salePrice > 0 && p.salePrice < p.price) {
+    return Math.round((1 - p.salePrice / p.price) * 100);
+  }
+  return 0;
+}
+
+// Bir ürünün hangi gruba ait olduğu: kategori → yoksa marka adı.
+// Ham feed kategorisi uzun bir YOL olabilir ("Aksesuar>Kablolar, Dönüştürücüler
+// ve Prizler" / "Telefon › Telefon Aksesuarları") → en geniş (ilk) segmenti alıp
+// temizliyoruz; böylece çipler/kutucuklar kısa, okunur, Trendyol-vari olur.
+function groupOf(p: CanonicalProduct): string {
+  const raw = p.category?.trim() || p.brandName?.trim() || '';
+  const broad = raw.split(/[>›/]/)[0].trim();
+  return broad || raw;
+}
+
+// Yalnız GERÇEK kategori (marka adına DÜŞMEZ). Kategori kutucukları/filtre
+// listesi için: kategorisi olmayan ürünün marka adı "kategori" gibi
+// görünmesin (ör. DAGİ/Intersport/Network kategori değildir).
+function realCategoryOf(p: CanonicalProduct): string {
+  const raw = p.category?.trim() || '';
+  return raw.split(/[>›/]/)[0].trim();
+}
+
+// Yatay kaydırma şeritleri için yinelenen "scrollbar gizli" sınıf.
+const NO_SCROLLBAR =
+  '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+
+// Reklam banner'ı yapılacak SABİT markalar (sırayla). Katalogda + çalışan
+// affiliate linki olanlar banner olur; onaysız/linksiz olan (ör. Samsung onay
+// bekliyorsa) otomatik atlanır, offer onaylanınca kendiliğinden banner'a girer.
+const PINNED_BANNER_BRANDS = ['ebebek', 'samsung'];
+
+// Logo kolajında öne çıkarılacak TANINMIŞ markalar (öncelik sırası).
+const FAMOUS_PRIORITY = [
+  'arçelik', 'beko', 'media markt', 'mediamarkt', 'puma', 'mango', 'boyner',
+  'marks & spencer', 'h&m', 'teknosa', 'columbia', 'skechers', 'xiaomi',
+  'huawei', 'network', 'gant', 'koton',
+];
+// Banner/kolaja KOYULMAYACAK dropship/lead/junk markalar.
+const JUNK_BANNER = /advert store|vidyodan|\bcod\b|landers?|e-?book|e-?kitap|coupon|attribution|promo/i;
+
+// Kategori adı → temsili ikon (Trendyol hızlı kutucukları gibi). Türkçe/İngilizce
+// anahtar kelime eşlemesi; eşleşmezse genel "paket" ikonu.
+function iconForCategory(name: string): React.ComponentType<{ className?: string }> {
+  const n = name.toLocaleLowerCase('tr');
+  if (/giyim|moda|tekstil|elbise|ayakkab|çanta|aksesuar|erkek|kadın|kadin|unisex/.test(n)) return Shirt;
+  if (/ev|mobilya|dekor|mutfak|bahçe|yaşam/.test(n)) return Home;
+  if (/elektronik|telefon|bilgisayar|teknoloji|tablet/.test(n)) return Smartphone;
+  if (/bebek|çocuk|anne|oyuncak/.test(n)) return Baby;
+  if (/spor|fitness|outdoor|kamp/.test(n)) return Dumbbell;
+  if (/kozmetik|güzellik|bakım|takı|mücevher|saat/.test(n)) return Gem;
+  return Package;
+}
+
+export default function DiscoverPage() {
   const db = useFirestore();
-  const { t } = useTranslation();
-  const [activeCategory, setActiveCategory] = useState('Tümü');
-  const [brandType, setBrandType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  type SortOption = 'default' | 'donationDesc' | 'donationAsc' | 'nameAsc' | 'nameDesc';
-  const [sortBy, setSortBy] = useState<SortOption>('default');
+  const [activeCategory, setActiveCategory] = useState('Tümü');
+  const [sortBy, setSortBy] = useState<SortOption>('recommended');
+  const [onlyDiscounted, setOnlyDiscounted] = useState(false); // "İndirimli" hızlı süzgü
 
-  // Firestore brands (manually added/approved)
-  const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
-  const { data: firestoreBrands, isLoading: firestoreLoading } = useCollection<Brand>(brandsQuery);
+  // "Tüm Ürünler" grid'ine kaydırmak için (banner tıklaması).
+  const allProductsRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
+  const scrollToAll = () => {
+    allProductsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
-  // "Ürünler" kategorisi: tüm markaların ürünleri (feed ile çekilmiş).
-  // Her yüklemede `random` alanına rastgele başlangıç → ürünler her seferinde farklı gelir.
-  const [productsRandSeed, setProductsRandSeed] = useState(0);
-  useEffect(() => { setProductsRandSeed(Math.random() * 0.8); }, []);
-  const productsQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.products), orderBy('random'), startAt(productsRandSeed), limit(120)), [db, productsRandSeed]);
-  const { data: allProducts, isLoading: productsLoading } = useCollection<CanonicalProduct>(productsQuery);
-  const productsToShow = useMemo(() => {
-    const term = searchTerm.trim();
-    const list = allProducts || [];
-    return term ? list.filter((p) => searchMatch(p.title, term) || searchMatch(p.brandName, term)) : list;
-  }, [allProducts, searchTerm]);
-
-  // API brands from affiliate networks (Tune/ReklamAction + others).
-  // İlk boyamayı bloklamaz: hazır oldukça merge listesine akarak eklenir.
-  const [apiBrands, setApiBrands] = useState<Brand[]>([]);
-
+  // Her yüklemede farklı `random` başlangıç noktası → vitrin rastgele gelir.
+  // 0.8 tavanı: imleçten sonra her zaman bolca ürün kalır (limit dolar).
+  const [randSeed, setRandSeed] = useState(0);
   useEffect(() => {
-    fetch('/api/offers')
-      .then(res => res.ok ? res.json() : [])
-      .then((data: Brand[]) => {
-        setApiBrands(Array.isArray(data) ? data : []);
-      })
-      .catch(() => setApiBrands([]));
+    setRandSeed(Math.random() * 0.8);
   }, []);
 
-  // Ürünün, linkine sahip olduğu markanın bağış oranı — markalardan eşlenir.
-  // Öncelik: ürünün kendi donationRate'i → brandId eşleşmesi → brandName eşleşmesi.
+  // Koleksiyonun GERÇEK toplamı (yalnız çekilen 120 değil) — arama
+  // placeholder'ında "X ürün arasında" doğru görünsün diye sayılır.
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!db) return;
+    getCountFromServer(collection(db, COLLECTIONS.products))
+      .then((snap) => setTotalCount(snap.data().count))
+      .catch(() => {
+        /* sessiz — placeholder yine çalışır */
+      });
+  }, [db]);
+
+  const productsQuery = useMemoFirebase(
+    () =>
+      query(
+        collection(db, COLLECTIONS.products),
+        orderBy('random'),
+        startAt(randSeed),
+        limit(120),
+      ),
+    [db, randSeed],
+  );
+  const { data: products, isLoading } =
+    useCollection<CanonicalProduct>(productsQuery);
+
+  // Markaların bağış oranı — ürünün, linkine sahip olduğu markanın oranını kartta göster.
+  // firestore brands + affiliate (api) brands birleşiminden brandId/brandName ile eşlenir.
+  const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
+  const { data: firestoreBrands } = useCollection<Brand>(brandsQuery);
+  const [apiBrands, setApiBrands] = useState<Brand[]>([]);
+  useEffect(() => {
+    fetch('/api/offers')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: Brand[]) => setApiBrands(Array.isArray(data) ? data : []))
+      .catch(() => setApiBrands([]));
+  }, []);
+  // Platform varsayılan bağış oranı: yüklenen markaların oranlarının yuvarlanmış
+  // ORTALAMASI (firestore + api birleşik). Hiç oran yoksa sabit %5'e düşer.
+  const PLATFORM_DEFAULT_RATE = 5;
   const brandRate = useMemo(() => {
     const byId = new Map<string, number>();
     const byName = new Map<string, number>();
+    let sum = 0;
+    let count = 0;
     for (const b of [...(firestoreBrands || []), ...apiBrands]) {
       const r = Number(b?.donationRate);
       if (!b || !Number.isFinite(r) || r <= 0) continue;
       if (b.id) byId.set(b.id, r);
       if (b.name) byName.set(b.name.trim().toLowerCase(), r);
+      sum += r;
+      count += 1;
     }
-    return { byId, byName };
+    const average = count > 0 ? Math.round(sum / count) : PLATFORM_DEFAULT_RATE;
+    return { byId, byName, average };
   }, [firestoreBrands, apiBrands]);
-
-  const resolveProductRate = (p: CanonicalProduct): number | null => {
+  // hangel modelinde her alışveriş bağış üretir; markaya özgü oran bilinmiyorsa
+  // platform ortalaması gösterilir. Bu yüzden zincir asla null DÖNMEZ — her ürün
+  // kartı bir bağış oranı gösterir.
+  const resolveProductRate = (p: CanonicalProduct): number => {
     if (typeof p.donationRate === 'number' && p.donationRate > 0) return p.donationRate;
-    if (p.brandId && brandRate.byId.has(p.brandId)) return brandRate.byId.get(p.brandId) ?? null;
+    if (p.brandId && brandRate.byId.has(p.brandId)) {
+      return brandRate.byId.get(p.brandId) ?? brandRate.average;
+    }
     const n = p.brandName?.trim().toLowerCase();
-    if (n && brandRate.byName.has(n)) return brandRate.byName.get(n) ?? null;
-    return null;
+    if (n && brandRate.byName.has(n)) {
+      return brandRate.byName.get(n) ?? brandRate.average;
+    }
+    return brandRate.average;
   };
 
-  // Onboarding'i "Formu daha sonra dolduracağım" ile atlayan kullanıcılar için
-  // hoşgeldin popup'ı: settings/volunteer flag'i kontrol eder, bir kez gösterip
-  // localStorage'dan siler.
-  const [showWelcome, setShowWelcome] = useState(false);
-  useEffect(() => {
-    try {
-      if (typeof window === 'undefined') return;
-      if (localStorage.getItem('showWelcomeBenefitsPopup') === '1') {
-        setShowWelcome(true);
-        localStorage.removeItem('showWelcomeBenefitsPopup');
-      }
-    } catch { /* localStorage erişilemedi — popup atlanır */ }
-  }, []);
-
-  // İlk boyamayı affiliate (/api/offers) yavaş cevabına BAĞLAMA: skeleton yalnız
-  // Firestore markaları yüklenirken gösterilir; API markaları hazır oldukça
-  // (apiBrands set edilince) merge listesine eklenip akarak görünür.
-  const isLoading = firestoreLoading;
-
-  // Per-session random seed: Math.random() lives in an effect (pure-in-render
-  // compliant); the shuffle below is deterministic given this seed.
-  const [shuffleSeed, setShuffleSeed] = useState(0);
-  useEffect(() => { setShuffleSeed(Math.floor(Math.random() * 2_147_483_646) + 1); }, []);
-
-  // Lint-clean simple-expression key over the unique brand-id set.
-  const brandIdKey = useMemo(
-    () => Array.from(new Set([...(firestoreBrands || []), ...apiBrands].map(b => b?.id).filter(Boolean))).sort().join(','),
-    [firestoreBrands, apiBrands],
-  );
-
-  // Stable randomized rank for the 'default' (Önerilen) sort. Reshuffles only
-  // when the brand-id set or the session seed changes — never on search/filter
-  // or ordinary re-renders. Seeded PRNG (mulberry32) keeps this useMemo pure.
-  const randomRank = useMemo(() => {
-    const uniqueIds = brandIdKey ? brandIdKey.split(',') : [];
-    let s = shuffleSeed || 1;
-    const rand = () => {
-      s = (s + 0x6d2b79f5) | 0;
-      let t = Math.imul(s ^ (s >>> 15), 1 | s);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-    const shuffled = [...uniqueIds];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  // Banner + logo kolajında gösterilecek markalar. "En yüksek bağış oranı"
+  // sıralaması dropship/junk markaları (Advert Store, Vidyodan, COD ürünleri)
+  // öne çıkarıyordu; bunun yerine TANINMIŞ markaları önceliklendirip kalanını
+  // bağış oranına göre dolduruyoruz. İlk 2 marka reklam banner'ı olur.
+  const topBrands = useMemo(() => {
+    const all = [...(firestoreBrands || []), ...apiBrands].filter(
+      (b) => b && b.name && Number.isFinite(Number(b.donationRate)) && Number(b.donationRate) > 0 && !JUNK_BANNER.test(b.name),
+    );
+    // İsme göre tekille (aynı marka birden fazla kayıtta olabilir).
+    const seen = new Set<string>();
+    const uniq: Brand[] = [];
+    for (const b of all) {
+      const nm = (b.name || '').trim().toLowerCase();
+      if (!nm || seen.has(nm)) continue;
+      seen.add(nm);
+      uniq.push(b);
     }
-    const rank = new Map<string, number>();
-    shuffled.forEach((id, index) => rank.set(id, index));
-    return rank;
-  }, [brandIdKey, shuffleSeed]);
-
-  const brandsToShow = useMemo(() => {
-    // Merge: Firestore brands take priority over API brands
-    const combined = [...(firestoreBrands || []), ...apiBrands];
-
-    const uniqueMap = new Map<string, Brand>();
-    combined.forEach(b => {
-      if (!b?.name) return;
-      const key = b.id;
-      if (!uniqueMap.has(key)) uniqueMap.set(key, b);
-    });
-
-    let list = Array.from(uniqueMap.values());
-
-    // Hide brands whose donation rate is outside a meaningful range
-    // (PDF audit #3: bazı markalar %0 / %100 gösteriyor). Anything <1 or >100
-    // is treated as missing/bogus and excluded from the public list.
-    // 2026-05-23: ayrıca super-admin tarafından Pasif/Silindi işaretlenen
-    // markalar public listede görünmez (API kataloğundan gelse bile Firestore
-    // doc'u öncelikli olduğundan status alanı buraya yansır).
-    list = list.filter(b => {
-      const status = (b as Brand & { status?: string }).status;
-      if (status === 'Silindi' || status === 'Pasif' || status === 'Reddedildi') return false;
-      const rate = Number(b.donationRate);
-      return Number.isFinite(rate) && rate >= 1 && rate <= 100;
-    });
-
-    if (searchTerm.trim()) {
-      // Esnek: kısa isim + Türkçe↔ASCII (ü/u) + 1 harf tolerans.
-      list = list.filter(b => searchMatch(b.name, searchTerm) || searchMatch(b.shortName, searchTerm));
-    }
-
-    if (activeCategory !== 'Tümü') {
-      // BUG-26: Marka birincil kategorisi VEYA çoklu kategori listesi (categories[])
-      // ile aktif kategoride görünür. Bir markanın birden fazla kategoride ürünü
-      // varsa categories[] alanına eklenir → her ilgili kategori sekmesinde çıkar.
-      list = list.filter(b => {
-        const cats = (b as Brand & { categories?: string[] }).categories;
-        if (Array.isArray(cats) && cats.includes(activeCategory)) return true;
-        return b.category === activeCategory;
+    // Önce tanınmış markalar (öncelik sırasıyla), sonra kalanlar bağış oranına göre.
+    const famous: Brand[] = [];
+    for (const key of FAMOUS_PRIORITY) {
+      const hit = uniq.find((b) => {
+        const nm = (b.name || '').trim().toLowerCase();
+        return nm === key || nm.includes(key);
       });
+      if (hit && !famous.includes(hit)) famous.push(hit);
+    }
+    const rest = uniq.filter((b) => !famous.includes(b)).sort((a, b) => Number(b.donationRate) - Number(a.donationRate));
+    return [...famous, ...rest].slice(0, 6);
+  }, [firestoreBrands, apiBrands]);
+
+  // Kategori filtresi: yalnız ürünün GERÇEK `category` alanından türetilir.
+  // Marka adına düşmez — marka adları kategori olarak gösterilmez (markalara
+  // "Tüm Markalar" / /market/brands üzerinden erişilir).
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products || []) {
+      const cat = realCategoryOf(p);
+      if (cat) set.add(cat);
+    }
+    return ['Tümü', ...Array.from(set).sort((a, b) => a.localeCompare(b, 'tr'))];
+  }, [products]);
+
+  // En büyük GERÇEK kategoriler (ürün sayısına göre) — hızlı kutucuklar + şeritler.
+  const topCategories = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of products || []) {
+      const cat = realCategoryOf(p);
+      if (cat) counts.set(cat, (counts.get(cat) ?? 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name]) => name);
+  }, [products]);
+
+  // Sunucu-taraflı TAM KATALOG araması: kullanıcı arama yaptığında yüklenen 120
+  // vitrin ürünü değil, 85k ürünün tamamı `searchTokens` üzerinden taranır — ürün
+  // veya marka hangi mağazada olursa olsun bulunur (ör. "adidas superstar ih8659").
+  const [serverResults, setServerResults] = useState<CanonicalProduct[] | null>(null);
+  const [searchBusy, setSearchBusy] = useState(false);
+  useEffect(() => {
+    const term = searchTerm.trim();
+    if (!term || !db) {
+      setServerResults(null);
+      setSearchBusy(false);
+      return;
+    }
+    setSearchBusy(true);
+    let cancelled = false;
+    const t = setTimeout(() => {
+      searchProducts(db, { text: term, max: 200 })
+        .then((r) => { if (!cancelled) setServerResults(r); })
+        .catch(() => { if (!cancelled) setServerResults([]); })
+        .finally(() => { if (!cancelled) setSearchBusy(false); });
+    }, 300); // debounce
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [searchTerm, db]);
+
+  const filtered = useMemo(() => {
+    const term = searchTerm.trim();
+
+    // Arama varsa: tüm katalogdan gelen sonuçlar (markadan/kategoriden bağımsız).
+    if (term) {
+      const tokens = tokenize(term);
+      const tokenSet = new Set(tokens);
+      const matchCount = (p: CanonicalProduct) =>
+        (p.searchTokens || []).reduce((n, t) => (tokenSet.has(t) ? n + 1 : n), 0);
+      const cands = serverResults || [];
+      const maxScore = cands.reduce((m, p) => Math.max(m, matchCount(p)), 0);
+
+      // Yalnız EN İYİ ALAKA katmanını göster. Çok kelimeli sorguda tek bir ortak
+      // kelimeye düşen gürültüyü gizle (ör. "nike ayakkabı" → nike yoksa, sadece
+      // "ayakkabı"ya eşleşen alakasız ürünler GÖSTERİLMEZ). Tek kelimelik sorgu
+      // ya da 2+ token eşleşmesi geçerli sayılır.
+      const relevant = maxScore === tokens.length || maxScore >= 2;
+      let best = relevant ? cands.filter((p) => matchCount(p) === maxScore) : [];
+
+      // Aynı ürün tekrarını (başlık+marka) sadeleştir; FARKLI mağaza korunur ki
+      // "hangi mağazada olursa olsun" hepsi görünsün.
+      const seen = new Set<string>();
+      best = best.filter((p) => {
+        const k = `${(p.title || '').toLowerCase().trim()}|${(p.brandName || '').toLowerCase().trim()}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+
+      // "İndirimli" hızlı süzgü — yalnız indirimli ürünler.
+      if (onlyDiscounted) best = best.filter((p) => discountPct(p) > 0);
+      // EN ÇOK BAĞIŞ YAPAN markanın ürünü başta (aynı ürün farklı mağazalardaysa).
+      best.sort((a, b) => resolveProductRate(b) - resolveProductRate(a));
+      return best;
     }
 
-    if (brandType !== 'all') {
-      list = list.filter(b => b.type === brandType);
+    // Arama yokken: yüklenen vitrin + kategori filtresi + seçili sıralama.
+    let list = [...(products || [])];
+    if (activeCategory !== 'Tümü') {
+      list = list.filter((p) => groupOf(p) === activeCategory);
     }
-
+    if (onlyDiscounted) list = list.filter((p) => discountPct(p) > 0);
     switch (sortBy) {
-      case 'donationDesc': list.sort((a, b) => b.donationRate - a.donationRate); break;
-      case 'donationAsc':  list.sort((a, b) => a.donationRate - b.donationRate); break;
-      case 'nameAsc':      list.sort((a, b) => a.name.localeCompare(b.name, 'tr')); break;
-      case 'nameDesc':     list.sort((a, b) => b.name.localeCompare(a.name, 'tr')); break;
-      default:             list.sort((a, b) => (randomRank.get(a.id) ?? 0) - (randomRank.get(b.id) ?? 0)); break;
+      case 'donationDesc':
+        list.sort((a, b) => resolveProductRate(b) - resolveProductRate(a));
+        break;
+      case 'priceAsc':
+        list.sort((a, b) => effectivePrice(a) - effectivePrice(b));
+        break;
+      case 'priceDesc':
+        list.sort((a, b) => effectivePrice(b) - effectivePrice(a));
+        break;
+      case 'popular':
+        // Popülerlik proxy'si: en yeni ingest edilen ürün (updatedAt) en üstte.
+        list.sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
+        break;
+      default:
+        // 'recommended' → feed'in rastgele `random` sırası korunur (vitrin).
+        break;
     }
     return list;
-  }, [firestoreBrands, apiBrands, activeCategory, searchTerm, brandType, sortBy, randomRank]);
+    // resolveProductRate, brandRate'e bağlı; brandRate değişince yeniden hesap.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, serverResults, activeCategory, searchTerm, sortBy, onlyDiscounted, brandRate]);
 
-  // Derive categories dynamically from all loaded brands.
-  // Marka çoklu kategori desteği: primary `category` + `categories[]` array'i birleşir.
-  const allCategories = useMemo(() => {
-    const cats = new Set<string>();
-    for (const b of brandsToShow) {
-      if (b.category) cats.add(b.category);
-      const multi = (b as Brand & { categories?: string[] }).categories;
-      if (Array.isArray(multi)) {
-        for (const c of multi) if (c) cats.add(c);
-      }
+  const hasFilters =
+    searchTerm.trim() !== '' ||
+    activeCategory !== 'Tümü' ||
+    sortBy !== 'recommended' ||
+    onlyDiscounted;
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setActiveCategory('Tümü');
+    setSortBy('recommended');
+    setOnlyDiscounted(false);
+  };
+
+  // Hızlı süzgü pill'leri — arama barı altında (Trendyol "Flaş Ürünler" tarzı).
+  // Her biri toggle: aktifse kapatır. İndirimli ayrı bir filtre; diğerleri sıralama.
+  const quickFilters: { key: string; label: string; active: boolean; onClick: () => void }[] = [
+    {
+      key: 'discount',
+      label: 'İndirimli ürünler',
+      active: onlyDiscounted,
+      onClick: () => setOnlyDiscounted((v) => !v),
+    },
+    {
+      key: 'donation',
+      label: 'En çok bağış yapanlar',
+      active: sortBy === 'donationDesc',
+      onClick: () => setSortBy((s) => (s === 'donationDesc' ? 'recommended' : 'donationDesc')),
+    },
+    {
+      key: 'price',
+      label: 'Uygun fiyat',
+      active: sortBy === 'priceAsc',
+      onClick: () => setSortBy((s) => (s === 'priceAsc' ? 'recommended' : 'priceAsc')),
+    },
+    {
+      key: 'new',
+      label: 'Yeni gelenler',
+      active: sortBy === 'popular',
+      onClick: () => setSortBy((s) => (s === 'popular' ? 'recommended' : 'popular')),
+    },
+  ];
+
+  // ── Vitrin şeritleri — hepsi ÇEKİLEN ürünlerden client-side türetilir ──
+
+  // En Çok Bağış Yapanlar: çözülen bağış oranı yüksek → düşük.
+  const topDonationStrip = useMemo(() => {
+    return (products || [])
+      .map((p) => ({ p, r: resolveProductRate(p) }))
+      .sort((a, b) => b.r - a.r)
+      .slice(0, 12)
+      .map((x) => x.p);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, brandRate]);
+
+  // İndirimdekiler: salePrice < price, indirim yüzdesi yüksek → düşük.
+  const dealsStrip = useMemo(() => {
+    return (products || [])
+      .filter((p) => discountPct(p) > 0)
+      .sort((a, b) => discountPct(b) - discountPct(a))
+      .slice(0, 12);
+  }, [products]);
+
+  // Öne Çıkanlar / Sana Özel: rastgele başlangıç sırasından bir dilim.
+  // `random` sırası zaten karışık geldiği için ortadan bir dilim alıyoruz.
+  const featuredStrip = useMemo(() => {
+    const list = products || [];
+    const start = Math.min(20, Math.max(0, list.length - 12));
+    return list.slice(start, start + 12);
+  }, [products]);
+
+  // Kategori ürün şeritleri (filtre yokken gösterilir) — En Çok Bağış/İndirim/
+  // Öne Çıkanlar'dan sonra her kategori ayrı satır olur. Render ≥3 ürünlü olanları
+  // gösterir; az ürünlü kategoriler atlanır.
+  const categoryStrips = useMemo(() => {
+    return topCategories.slice(0, 12).map((cat) => ({
+      name: cat,
+      items: (products || []).filter((p) => groupOf(p) === cat).slice(0, 12),
+    }));
+  }, [topCategories, products]);
+
+  // Hızlı kategori kutucukları — en büyük 8 kategori (Trendyol home tiles).
+  const quickTiles = useMemo(() => topCategories.slice(0, 8), [topCategories]);
+
+  // Kampanya banner'ları — premium, Apple-kimlikli pazarlama hero'ları.
+  // Tıklayınca ilgili şeride/filtreye yönlendirir (onClick korunur).
+  type Banner = {
+    key: string;
+    eyebrow: string; // küçük üst etiket (kicker) — marka banner'ında marka adı
+    title: string;
+    subtitle: string;
+    cta: string; // CTA chip metni
+    icon: React.ComponentType<{ className?: string }>;
+    gradient: string;
+    onClick?: () => void;
+    href?: string; // verilirse banner <Link> olur (marka sayfasına gider)
+    showBrandLogos?: boolean;
+    coverImage?: string; // markanın kurumsal kapak görseli → arka plan
+    brand?: Brand; // marka (logo + kurumsal kimlik için)
+  };
+  // Sabitlenen markaların (PINNED_BANNER_BRANDS) reklam banner'ı — yalnız
+  // katalogda bulunan + çalışan affiliate linki olanlar. Her biri kendi kurumsal
+  // kimliğinde: kapak görseli (varsa) arka plan + logosu + kampanya; markaya gider.
+  const pinnedBannerBrands = useMemo(() => {
+    const pool = [...apiBrands, ...(firestoreBrands || [])];
+    const out: Brand[] = [];
+    for (const key of PINNED_BANNER_BRANDS) {
+      const hit = pool.find((b) => {
+        const nm = (b?.name || '').trim().toLowerCase();
+        return !!b?.link && (nm === key || nm.includes(key));
+      });
+      if (hit && !out.some((o) => o.id === hit.id)) out.push(hit);
     }
-    return ['Ürünler', 'Tümü', ...Array.from(cats).sort((a, b) => a.localeCompare(b, 'tr'))];
-  }, [brandsToShow]);
+    return out;
+  }, [apiBrands, firestoreBrands]);
+
+  const brandBanners: Banner[] = pinnedBannerBrands.map((b) => ({
+    key: `brand-${b.id}`,
+    eyebrow: b.name,
+    title: 'Büyük indirim + bağış kampanyası',
+    subtitle: `Hem indirimli hem her alışveriş %${Math.round(Number(b.donationRate))} bağış.`,
+    cta: 'Markaya git',
+    icon: Tag,
+    gradient: 'from-zinc-900 via-zinc-800 to-zinc-700',
+    href: `/market/${b.id}`,
+    coverImage: b.coverPhotoUrl || undefined,
+    brand: b,
+  }));
+  const banners: Banner[] = [
+    ...brandBanners,
+    {
+      key: 'donation',
+      eyebrow: '#wearehangel',
+      title: 'Her alışveriş bir bağış',
+      subtitle: 'En yüksek bağış oranlı markaları keşfet, umudu birlikte büyütelim.',
+      cta: 'Markaları keşfet',
+      icon: HeartHandshake,
+      gradient: 'from-[#f34723] via-orange-500 to-amber-500',
+      onClick: () => setSortBy('donationDesc'),
+      showBrandLogos: true,
+    },
+    {
+      key: 'deals',
+      eyebrow: 'Fırsatlar',
+      title: 'İndirimdeki ürünler',
+      subtitle: 'Hem kazan hem bağış yap — sınırlı süre.',
+      cta: 'Fırsatları gör',
+      icon: Tag,
+      gradient: 'from-orange-500 via-[#f34723] to-rose-500',
+      onClick: scrollToAll,
+    },
+    {
+      key: 'featured',
+      eyebrow: 'Sana özel',
+      title: 'Öne çıkan ürünler',
+      subtitle: 'Senin için seçtiğimiz, iyiliğe dokunan ürünler.',
+      cta: 'Hemen keşfet',
+      icon: Sparkles,
+      gradient: 'from-rose-500 via-[#f34723] to-orange-500',
+      onClick: scrollToAll,
+    },
+  ];
+
+  const showSections = !hasFilters && !isLoading && (products?.length ?? 0) > 0;
 
   return (
-    <div className="flex flex-col h-full bg-secondary/30 backdrop-blur-sm relative">
-      <div className="p-4 space-y-4 border-b border-border bg-background sticky top-12 z-10 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+    <div className="flex min-h-full w-full max-w-full flex-col overflow-x-hidden bg-secondary/30">
+      {/* ── 1. Üst slim bar — geri + arama + Markalar + filtre/sırala (başlık YOK).
+          top-0: scroll-container'ın tepesi zaten header'ın (48px) ALTINDA başlıyor,
+          dolayısıyla top-0 bar'ı header'ın hemen altına yapıştırır — boşluk bırakmaz
+          + scroll'da görünür kalır. (top-12 burada 48px FAZLA boşluk yaratıyordu.) ── */}
+      <div className="sticky top-0 z-20 w-full max-w-full shrink-0 space-y-2.5 overflow-x-hidden border-b border-border bg-background px-4 py-2.5">
+        <div className="flex w-full items-center gap-2">
+          {/* Market kök sekme — geri butonu yok (bottom-nav ile gezilir). */}
+          {/* Arama */}
+          <div className="relative min-w-0 flex-grow">
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder={t('marketPage.searchPlaceholder')}
-              className="pl-10 h-12 rounded-2xl border-none bg-muted/50 focus-visible:ring-1 text-lg"
+              placeholder={`${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün içinde ara`}
+              className="h-11 rounded-2xl border-none bg-muted/50 pl-10 text-base focus-visible:ring-1"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
+          {/* Kategori filtre */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm" aria-label={t('marketPage.filterAria')}>
-                <Filter className="h-5 w-5" />
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-11 w-11 shrink-0 rounded-2xl border-none bg-background shadow-sm"
+                aria-label="Kategori filtrele"
+              >
+                <SlidersHorizontal className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {allCategories.map(cat => (
-                <DropdownMenuItem key={cat} onClick={() => setActiveCategory(cat)}>
-                  {cat}
+            <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto rounded-2xl">
+              <DropdownMenuLabel>Kategori</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {categories.map((cat) => (
+                <DropdownMenuItem
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={cn(
+                    'flex items-center justify-between gap-2',
+                    activeCategory === cat && 'font-bold text-primary',
+                  )}
+                >
+                  <span className="truncate">{cat}</span>
+                  {activeCategory === cat && (
+                    <Check className="h-4 w-4 shrink-0" />
+                  )}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Sırala */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm" aria-label={t('marketPage.sortAria')}>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-11 w-11 shrink-0 rounded-2xl border-none bg-background shadow-sm"
+                aria-label="Sırala"
+              >
                 <ArrowDownUp className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setSortBy('default')} className={sortBy === 'default' ? 'font-bold text-primary' : ''}>{t('marketPage.sortRecommended')}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('donationDesc')} className={sortBy === 'donationDesc' ? 'font-bold text-primary' : ''}>{t('marketPage.sortDonationDesc')}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('donationAsc')} className={sortBy === 'donationAsc' ? 'font-bold text-primary' : ''}>{t('marketPage.sortDonationAsc')}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('nameAsc')} className={sortBy === 'nameAsc' ? 'font-bold text-primary' : ''}>{t('marketPage.sortNameAsc')}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('nameDesc')} className={sortBy === 'nameDesc' ? 'font-bold text-primary' : ''}>{t('marketPage.sortNameDesc')}</DropdownMenuItem>
+              <DropdownMenuLabel>Sırala</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {(Object.keys(SORT_LABELS) as SortOption[]).map((opt) => (
+                <DropdownMenuItem
+                  key={opt}
+                  onClick={() => setSortBy(opt)}
+                  className={cn(
+                    'flex items-center justify-between gap-2',
+                    sortBy === opt && 'font-bold text-primary',
+                  )}
+                >
+                  <span>{SORT_LABELS[opt]}</span>
+                  {sortBy === opt && <Check className="h-4 w-4 shrink-0" />}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
-        <Button asChild variant="outline" className="w-full rounded-2xl gap-2 border-none bg-primary/10 text-primary font-bold shadow-sm hover:bg-primary/15">
-          <Link href="/market/discover">
-            <ShoppingBag className="h-5 w-5" />
-            Ürünleri Keşfet
-          </Link>
-        </Button>
+        {/* Sonuç sayısı — arama/filtre yapıldığında kaç ürün listelendiğini gösterir. */}
+        {hasFilters && (
+          <p className="px-1 text-xs font-semibold text-muted-foreground">
+            {searchBusy
+              ? 'Aranıyor…'
+              : `${filtered.length.toLocaleString('tr-TR')} ürün listeleniyor`}
+          </p>
+        )}
 
-        <Tabs defaultValue="all" onValueChange={setBrandType} className="w-full">
-          <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <TabsTrigger value="all" className="shrink-0 sm:shrink whitespace-nowrap text-xs px-3">{t('marketPage.tabAll')}</TabsTrigger>
-            <TabsTrigger value="brand" className="shrink-0 sm:shrink whitespace-nowrap text-xs px-3">{t('marketPage.tabCommercial')}</TabsTrigger>
-            <TabsTrigger value="cooperative" className="shrink-0 sm:shrink whitespace-nowrap text-xs px-3">{t('marketPage.tabCooperative')}</TabsTrigger>
-            <TabsTrigger value="social" className="shrink-0 sm:shrink whitespace-nowrap text-xs px-3">{t('marketPage.tabSocial')}</TabsTrigger>
-            <TabsTrigger value="economic" className="shrink-0 sm:shrink whitespace-nowrap text-xs px-3">{t('marketPage.tabEconomic')}</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+        {/* Hızlı süzgüler — İndirimli, En çok bağış, Uygun fiyat, Yeni (Trendyol pill'leri). */}
+        {(products?.length ?? 0) > 0 && (
+          <div className={cn('flex w-full min-w-0 items-center gap-2 overflow-x-auto py-0.5', NO_SCROLLBAR)}>
+            {quickFilters.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={f.onClick}
+                className={cn(
+                  'shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors',
+                  f.active
+                    ? 'border-primary bg-primary text-white shadow-sm'
+                    : 'border-border bg-background text-foreground hover:bg-muted/60',
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
 
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="hidden sm:block sm:w-1/4 lg:w-1/5 border-r border-border overflow-y-auto bg-background/50">
-          <nav className="flex flex-col py-2">
-            {allCategories.map((cat) => (
+        {/* ── 2. Kategori çip şeridi (yatay kaydırma) — w-full min-w-0 ile
+            kapsayıcıya sınırlı; negatif margin YOK ki viewport'u taşırıp
+            sayfayı yatay kaydırmasın. ── */}
+        {(products?.length ?? 0) > 0 && (
+          <div className={cn('flex w-full min-w-0 items-center gap-2 overflow-x-auto py-0.5', NO_SCROLLBAR)}>
+            {categories.map((cat) => (
               <button
                 key={cat}
+                type="button"
                 onClick={() => setActiveCategory(cat)}
                 className={cn(
-                  "text-left text-sm px-3 min-h-[44px] w-full min-w-0 flex items-center break-words transition-all",
+                  'shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors',
                   activeCategory === cat
-                    ? "bg-primary/10 text-primary border-l-4 border-primary font-black"
-                    : "text-muted-foreground hover:bg-accent/50"
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/70',
                 )}
               >
                 {cat}
               </button>
             ))}
-          </nav>
-        </aside>
+          </div>
+        )}
 
-        <main className="flex-1 overflow-y-auto p-4 pb-32">
-          {activeCategory === 'Ürünler' ? (
-            productsLoading && (allProducts?.length ?? 0) === 0 ? (
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
-                {[...Array(8)].map((_, i) => <Card key={i} variant="glass" className="h-64 animate-pulse" />)}
-              </div>
-            ) : productsToShow.length === 0 ? (
-              <EmptyState
-                icon={ShoppingBag}
-                title="Ürün bulunamadı"
-                description={searchTerm ? 'Aramanıza uygun ürün yok.' : 'Henüz listelenecek ürün yok.'}
-              />
-            ) : (
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
-                {productsToShow.map((p) => <ProductCard key={p.id} product={p} donationRate={resolveProductRate(p)} />)}
-              </div>
-            )
-          ) : isLoading && brandsToShow.length === 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[...Array(12)].map((_, i) => <Card key={i} variant="glass" className="h-32 animate-pulse" />)}
-            </div>
-          ) : brandsToShow.length === 0 ? (
-            <EmptyState
-              icon={ShoppingBag}
-              title={t('emptyStates.marketTitle')}
-              description={searchTerm || activeCategory !== 'Tümü' || brandType !== 'all' ? t('marketPage.noMatch') : t('emptyStates.marketDesc')}
-              action={searchTerm || activeCategory !== 'Tümü' || brandType !== 'all' ? {
-                label: t('emptyStates.marketAction'),
-                onClick: () => {
-                  setSearchTerm('');
-                  setActiveCategory('Tümü');
-                  setBrandType('all');
-                },
-              } : undefined}
-            />
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {brandsToShow.map((brand) => {
-                const safeDonationRate = Math.max(0, Math.min(100, brand.donationRate || 0));
-                return (
-                  <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
-                    <div className="flex flex-col items-center text-center space-y-2">
-                      <div className="relative w-full aspect-square">
-                        <div className="w-full h-full rounded-2xl bg-card border border-border overflow-hidden shadow-sm group-hover:shadow-md transition-all relative">
-                          <BrandLogo brand={brand} />
-                        </div>
-                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[11px] font-black text-white border-2 border-background">
-                          %{safeDonationRate}
-                        </div>
-                      </div>
-                      <p className="text-xs font-bold leading-tight text-foreground group-hover:text-primary break-words">{brand.name}</p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </main>
+        {/* Aktif filtre özeti + temizle */}
+        {hasFilters && (
+          <div className={cn('flex w-full min-w-0 items-center gap-2 overflow-x-auto', NO_SCROLLBAR)}>
+            {sortBy !== 'recommended' && (
+              <span className="shrink-0 rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
+                {SORT_LABELS[sortBy]}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="shrink-0 rounded-full px-3 py-1 text-xs font-bold text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Temizle
+            </button>
+          </div>
+        )}
       </div>
 
-      <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="rounded-3xl max-w-md">
-          <DialogHeader>
-            <div className="flex items-center justify-center mb-2">
-              <div className="h-14 w-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E34234' }}>
-                <HeartHandshake className="h-7 w-7 text-white" />
+      {/* ── Kaydırılabilir gövde — w-full max-w-full + overflow-x-hidden:
+          içerideki yatay şeritler kendi kayar, sayfa bloğu yatay kaymaz. ── */}
+      <main ref={mainRef} className="w-full max-w-full overflow-x-hidden pb-32">
+        {isLoading && (!products || products.length === 0) ? (
+          <div className="grid grid-cols-2 gap-2.5 p-4 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
+            {[...Array(8)].map((_, i) => (
+              <Card key={i} variant="glass" className="h-72 animate-pulse" />
+            ))}
+          </div>
+        ) : (products?.length ?? 0) === 0 ? (
+          <div className="p-4">
+            <EmptyState
+              icon={ShoppingBag}
+              title="Ürün bulunamadı"
+              description="Henüz listelenecek ürün yok. Yakında burada olacaklar."
+            />
+          </div>
+        ) : (
+          <>
+            {showSections && (
+              <>
+                {/* ── 3. Kampanya / banner carousel — sayfanın EN ÜST görseli.
+                    Premium Apple-kimlikli hero'lar: katmanlı derinlik (gradient +
+                    blur orb'lar), büyük tipografi, CTA chip, marka logo kolajı. ── */}
+                <section className="w-full max-w-full pt-2">
+                  <div
+                    className={cn(
+                      'flex w-full min-w-0 gap-2 overflow-x-auto px-4 py-2 snap-x snap-mandatory',
+                      NO_SCROLLBAR,
+                    )}
+                  >
+                    {banners.map((b) => {
+                      const Icon = b.icon;
+                      const cls = cn(
+                        'group relative flex h-[96px] w-[90vw] max-w-[calc(100vw-2rem)] shrink-0 snap-start overflow-hidden rounded-3xl p-3 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px] sm:max-w-none',
+                        b.coverImage ? 'bg-zinc-900' : cn('bg-gradient-to-br', b.gradient),
+                      );
+                      const content = (
+                        <>
+                          {b.coverImage ? (
+                            <>
+                              {/* Markanın kurumsal kapak görseli + okunabilirlik için koyu overlay */}
+                              <img
+                                src={b.coverImage}
+                                alt={b.eyebrow}
+                                referrerPolicy="no-referrer"
+                                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                              />
+                              <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/25" />
+                            </>
+                          ) : (
+                            <>
+                              <span className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/20 blur-2xl" />
+                              <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent" />
+                            </>
+                          )}
+
+                          {/* Kompakt yatay düzen (yarı yükseklik): logo + metin + CTA */}
+                          <div className="relative flex h-full w-full items-center gap-3">
+                            {b.brand ? (
+                              <span className="relative inline-flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
+                                <BrandLogo brand={b.brand} />
+                              </span>
+                            ) : b.showBrandLogos && topBrands.length > 0 ? (
+                              <div className="flex shrink-0 items-center -space-x-2.5">
+                                {topBrands.slice(0, 3).map((brand) => (
+                                  <span
+                                    key={brand.id}
+                                    className="relative inline-flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white"
+                                  >
+                                    <BrandLogo brand={brand} />
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="inline-flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                                <Icon className="h-9 w-9" aria-hidden="true" />
+                              </span>
+                            )}
+
+                            <div className="min-w-0 flex-1">
+                              <span className="mb-0.5 inline-flex max-w-full items-center truncate rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide backdrop-blur-sm">
+                                {b.eyebrow}
+                              </span>
+                              <p className="truncate text-sm font-black leading-tight drop-shadow-sm">
+                                {b.title}
+                              </p>
+                              <p className="truncate text-[11px] font-medium text-white/85">
+                                {b.subtitle}
+                              </p>
+                            </div>
+
+                            <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-white px-3 py-1.5 text-[11px] font-extrabold text-primary shadow-sm">
+                              {b.cta}
+                              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            </span>
+                          </div>
+                        </>
+                      );
+                      return b.href ? (
+                        <Link key={b.key} href={b.href} className={cls}>
+                          {content}
+                        </Link>
+                      ) : (
+                        <button key={b.key} type="button" onClick={b.onClick} className={cls}>
+                          {content}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Tüm markalar — yatay buton (arama yanındaki icon yerine geçti).
+                      Markaların liste sayfasını (/market/brands) açar. */}
+                  <div className="px-4 pt-1">
+                    <Button
+                      asChild
+                      className="h-12 w-full rounded-2xl bg-primary text-white shadow-sm hover:bg-primary/90"
+                    >
+                      <Link
+                        href="/market/brands"
+                        className="flex items-center justify-center gap-2 text-sm font-bold text-white"
+                      >
+                        <Store className="h-5 w-5" />
+                        Tüm Markalar
+                      </Link>
+                    </Button>
+                  </div>
+                </section>
+
+                {/* ── 4. Hızlı kategori kutucukları ── */}
+                {quickTiles.length > 0 && (
+                  <section className="px-4 pt-5">
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-8">
+                      {quickTiles.map((cat) => {
+                        const Icon = iconForCategory(cat);
+                        return (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => setActiveCategory(cat)}
+                            className="flex flex-col items-center gap-1.5"
+                          >
+                            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors hover:bg-primary/20">
+                              <Icon className="h-6 w-6" />
+                            </span>
+                            <span className="line-clamp-2 max-w-[64px] text-center text-[11px] font-semibold leading-tight text-foreground">
+                              {cat}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+
+                {/* ── 5. Yatay ürün şeritleri ── */}
+                <ProductStrip
+                  title="En Çok Bağış Yapanlar"
+                  emoji="🧡"
+                  items={topDonationStrip}
+                  resolveRate={resolveProductRate}
+                  onSeeAll={() => setSortBy('donationDesc')}
+                />
+                <ProductStrip
+                  title="İndirimdekiler"
+                  icon={Tag}
+                  items={dealsStrip}
+                  resolveRate={resolveProductRate}
+                  onSeeAll={scrollToAll}
+                />
+                <ProductStrip
+                  title="Öne Çıkanlar"
+                  icon={Sparkles}
+                  items={featuredStrip}
+                  resolveRate={resolveProductRate}
+                  onSeeAll={scrollToAll}
+                />
+                {categoryStrips.map((strip) =>
+                  strip.items.length >= 3 ? (
+                    <ProductStrip
+                      key={strip.name}
+                      title={strip.name}
+                      icon={Gift}
+                      items={strip.items}
+                      resolveRate={resolveProductRate}
+                      onSeeAll={() => setActiveCategory(strip.name)}
+                    />
+                  ) : null,
+                )}
+              </>
+            )}
+
+            {/* ── 6. "Tüm Ürünler" ana grid ── */}
+            <section ref={allProductsRef} className="px-4 pt-6 scroll-mt-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h2 className="text-base font-black text-foreground">
+                  {hasFilters ? 'Sonuçlar' : 'Tüm Ürünler'}
+                </h2>
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {filtered.length.toLocaleString('tr-TR')} ürün
+                </span>
               </div>
-            </div>
-            <DialogTitle className="text-center text-xl font-black">{t('marketPage.welcomeTitle')}</DialogTitle>
-            <DialogDescription asChild>
-              <div className="space-y-3 text-sm text-left pt-2 text-foreground leading-relaxed">
-                <p>{t('marketPage.welcomeP1')}</p>
-                <p>{t('marketPage.welcomeP2')}</p>
-                <p>{t('marketPage.welcomeP3')}</p>
-                <p className="font-bold">{t('marketPage.welcomeP4')}</p>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setShowWelcome(false)} className="w-full rounded-xl">{t('marketPage.welcomeCta')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+              {searchBusy && filtered.length === 0 ? (
+                <div className="py-16 text-center text-sm font-semibold text-muted-foreground">
+                  Tüm mağazalarda aranıyor…
+                </div>
+              ) : filtered.length === 0 ? (
+                <EmptyState
+                  icon={ShoppingBag}
+                  title="Ürün bulunamadı"
+                  description="Aramana uygun ürün yok. Filtreleri temizleyip tekrar dene."
+                  action={{ label: 'Filtreleri temizle', onClick: resetFilters }}
+                />
+              ) : (
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
+                  {filtered.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      donationRate={resolveProductRate(product)}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
+        )}
+      </main>
     </div>
+  );
+}
+
+/**
+ * Trendyol "fırsat" satırı — başlık + yatay kaydırmalı kompakt ürün kartları.
+ * Her kart bağış oranı rozetiyle (resolveRate) gelir.
+ */
+function ProductStrip({
+  title,
+  emoji,
+  icon: Icon,
+  items,
+  resolveRate,
+  onSeeAll,
+}: {
+  title: string;
+  emoji?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  items: CanonicalProduct[];
+  resolveRate: (p: CanonicalProduct) => number;
+  onSeeAll?: () => void;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <section className="w-full max-w-full pt-6">
+      <div className="mb-2.5 flex items-center justify-between gap-2 px-4">
+        <h2 className="flex min-w-0 items-center gap-1.5 text-base font-black text-foreground">
+          {emoji ? <span aria-hidden="true">{emoji}</span> : null}
+          {Icon ? <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" /> : null}
+          <span className="truncate">{title}</span>
+        </h2>
+        {onSeeAll && (
+          <button
+            type="button"
+            onClick={onSeeAll}
+            className="inline-flex shrink-0 items-center gap-0.5 text-xs font-bold text-primary"
+          >
+            Tümü <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+      <div className={cn('flex w-full min-w-0 gap-2.5 overflow-x-auto px-4 pb-1', NO_SCROLLBAR)}>
+        {items.map((p) => (
+          <div key={p.id} className="w-36 shrink-0 sm:w-40">
+            <ProductCard product={p} donationRate={resolveRate(p)} />
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

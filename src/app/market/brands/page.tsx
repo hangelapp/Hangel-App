@@ -64,7 +64,7 @@ export default function BrandsListPage() {
             className="h-11 w-11 shrink-0 rounded-2xl"
             aria-label="Geri"
           >
-            <Link href="/market/discover">
+            <Link href="/market">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>

@@ -64,7 +64,7 @@ const INDIVIDUAL: Feature[] = [
     title: 'Ürünleri Keşfet',
     description:
       'Ödeme yok. Bağış hep marka aracılı: tıkla-alışveriş ya da indir-kullan ile bağış oranlı ürünlerden destek ol.',
-    href: '/market/discover',
+    href: '/market',
   },
   {
     icon: Library,
