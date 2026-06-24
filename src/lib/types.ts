@@ -58,6 +58,7 @@ export type Brand = {
   id: string;
   slug: string;
   name: string;
+  shortName?: string;           // Kısa isim/kısaltma — arama bunu da tanır
   category: string;             // Birincil kategori (geriye uyumluluk için tutuldu)
   categories?: string[];        // Çoklu kategori: marka birden fazla kategoride satıyorsa hepsinde görünür
   type: 'brand' | 'cooperative' | 'social' | 'economic';
@@ -419,6 +420,7 @@ export type Campaign = {
 export type StudentClub = {
     id: string;
     name: string;
+    shortName?: string;
     university: string;
     type: 'university' | 'high-school';
     category?: string;

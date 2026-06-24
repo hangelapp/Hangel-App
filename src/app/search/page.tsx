@@ -16,6 +16,7 @@ import { useTranslation } from '@/components/providers/language-provider';
 interface SearchableEntity {
     id: string;
     name?: string;
+    shortName?: string;
     avatarUrl?: string;
     logoUrl?: string;
     files?: { logo?: string };
@@ -77,8 +78,9 @@ function GlobalSearchPageInner() {
         if (!items || !term) return [];
         return items.filter(i => {
             const name = (i.name || i.title || '').toLowerCase();
+            const shortName = (i.shortName || '').toLowerCase();
             const desc = (i.description || '').toLowerCase();
-            return name.includes(term) || desc.includes(term);
+            return name.includes(term) || shortName.includes(term) || desc.includes(term);
         }).slice(0, 8);
     };
 

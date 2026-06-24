@@ -263,6 +263,7 @@ export default function ClubsPage() {
       const q = searchTerm.toLowerCase();
       result = result.filter(c =>
         (c?.name || '').toLowerCase().includes(q) ||
+        (c?.shortName || '').toLowerCase().includes(q) ||
         (c?.university || '').toLowerCase().includes(q),
       );
     }

@@ -160,7 +160,7 @@ export default function MarketPage() {
 
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
-      list = list.filter(b => b.name.toLowerCase().includes(lower));
+      list = list.filter(b => b.name.toLowerCase().includes(lower) || (b.shortName?.toLowerCase().includes(lower) ?? false));
     }
 
     if (activeCategory !== 'Tümü') {

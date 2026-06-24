@@ -118,6 +118,7 @@ export default function NgosPage() {
             const lowercased = searchTerm.toLowerCase();
             filtered = filtered.filter(ngo =>
                 ngo.name.toLowerCase().includes(lowercased) ||
+                (ngo.shortName?.toLowerCase().includes(lowercased) ?? false) ||
                 ngo.category.toLowerCase().includes(lowercased)
             );
         }
