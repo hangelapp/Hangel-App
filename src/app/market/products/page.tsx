@@ -133,6 +133,12 @@ export default function ProductsPage() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        {/* Her zaman görünür ürün/sonuç sayacı (placeholder yazınca kaybolduğu için). */}
+        <p className="px-1 text-xs font-semibold text-muted-foreground">
+          {searchTokens.length > 0
+            ? `${filtered.length.toLocaleString('tr-TR')}${filtered.length >= 120 ? '+' : ''} sonuç`
+            : `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün listeleniyor`}
+        </p>
       </div>
 
       <main className="flex-1 overflow-y-auto p-4 pb-32">
