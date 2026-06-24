@@ -10,7 +10,7 @@ import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, RecaptchaVerifier, signInWithPhoneNumber, getAuth, onAuthStateChanged, signInWithCustomToken, type ConfirmationResult } from 'firebase/auth';
-import { QrLoginDialog } from '@/components/auth/qr-login-dialog';
+import Link from 'next/link';
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
 import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -33,7 +33,6 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
 
     type IndividualStep = 'email' | 'login' | 'register' | 'verify-sent' | 'forgot' | 'forgot-sent' | 'phone-enter' | 'phone-otp' | 'whatsapp-enter' | 'whatsapp-otp' | 'whatsapp-code-input';
     const [step, setStep] = useState<IndividualStep>('whatsapp-enter');
-    const [showQrLogin, setShowQrLogin] = useState(false);
     // authMode mail+SMS tab'ları kaldırıldıktan sonra sadece commented JSX'te kullanılır.
     // ESLint için _ prefix; setAuthMode hala line 227'de aktif (mail check fallback).
     const [_authMode, setAuthMode] = useState<'mail' | 'phone' | 'whatsapp'>('whatsapp');
@@ -822,17 +821,15 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     </Button>
                 </form>
 
-                {/* Zaten üyeyim → telefondaki hangel uygulamasıyla hızlı giriş (telefon onaylar). */}
+                {/* Zaten üyeyim → telefonla bu cihazda giriş SAYFASI (popup değil, /login/qr) */}
                 <div className="pt-1 text-center">
-                    <button
-                        type="button"
-                        onClick={() => setShowQrLogin(true)}
+                    <Link
+                        href={`/login/qr${searchParams.get('next') ? `?next=${encodeURIComponent(searchParams.get('next') as string)}` : ''}`}
                         className="text-sm font-semibold text-primary underline underline-offset-4"
                     >
                         Zaten üyeyim — hangel uygulamasıyla giriş yap
-                    </button>
+                    </Link>
                 </div>
-                <QrLoginDialog open={showQrLogin} onOpenChange={setShowQrLogin} onSuccess={() => { setShowQrLogin(false); onComplete(false); }} />
             </div>
         );
     }
