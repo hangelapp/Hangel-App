@@ -329,17 +329,34 @@ export default function DiscoverPage() {
     const term = searchTerm.trim();
 
     // Arama varsa: tüm katalogdan gelen sonuçlar (markadan/kategoriden bağımsız).
-    // Sıralama: önce ALAKA (eşleşen token sayısı), eşitlikte EN ÇOK BAĞIŞ YAPAN
-    // markanın ürünü başta — aynı ürün farklı mağazalardaysa yüksek bağışlı önde.
     if (term) {
-      const tokenSet = new Set(tokenize(term));
+      const tokens = tokenize(term);
+      const tokenSet = new Set(tokens);
       const matchCount = (p: CanonicalProduct) =>
         (p.searchTokens || []).reduce((n, t) => (tokenSet.has(t) ? n + 1 : n), 0);
-      return [...(serverResults || [])].sort((a, b) => {
-        const d = matchCount(b) - matchCount(a);
-        if (d !== 0) return d;
-        return resolveProductRate(b) - resolveProductRate(a);
+      const cands = serverResults || [];
+      const maxScore = cands.reduce((m, p) => Math.max(m, matchCount(p)), 0);
+
+      // Yalnız EN İYİ ALAKA katmanını göster. Çok kelimeli sorguda tek bir ortak
+      // kelimeye düşen gürültüyü gizle (ör. "nike ayakkabı" → nike yoksa, sadece
+      // "ayakkabı"ya eşleşen alakasız ürünler GÖSTERİLMEZ). Tek kelimelik sorgu
+      // ya da 2+ token eşleşmesi geçerli sayılır.
+      const relevant = maxScore === tokens.length || maxScore >= 2;
+      let best = relevant ? cands.filter((p) => matchCount(p) === maxScore) : [];
+
+      // Aynı ürün tekrarını (başlık+marka) sadeleştir; FARKLI mağaza korunur ki
+      // "hangi mağazada olursa olsun" hepsi görünsün.
+      const seen = new Set<string>();
+      best = best.filter((p) => {
+        const k = `${(p.title || '').toLowerCase().trim()}|${(p.brandName || '').toLowerCase().trim()}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
       });
+
+      // EN ÇOK BAĞIŞ YAPAN markanın ürünü başta (aynı ürün farklı mağazalardaysa).
+      best.sort((a, b) => resolveProductRate(b) - resolveProductRate(a));
+      return best;
     }
 
     // Arama yokken: yüklenen vitrin + kategori filtresi + seçili sıralama.
