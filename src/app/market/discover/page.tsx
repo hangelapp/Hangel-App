@@ -712,25 +712,9 @@ export default function DiscoverPage() {
                     })}
                   </div>
 
-                  {/* Sayfa noktaları (statik gösterge — premium dokunuş) */}
-                  {banners.length > 1 && (
-                    <div className="mt-2.5 flex items-center justify-center gap-1.5">
-                      {banners.map((b, i) => (
-                        <span
-                          key={b.key}
-                          aria-hidden="true"
-                          className={cn(
-                            'h-1.5 rounded-full transition-all',
-                            i === 0 ? 'w-5 bg-primary' : 'w-1.5 bg-muted-foreground/30',
-                          )}
-                        />
-                      ))}
-                    </div>
-                  )}
-
                   {/* Tüm markalar — yatay buton (arama yanındaki icon yerine geçti).
                       Markaların liste sayfasını (/market/brands) açar. */}
-                  <div className="px-4 pt-3">
+                  <div className="px-4 pt-1">
                     <Button
                       asChild
                       variant="outline"
