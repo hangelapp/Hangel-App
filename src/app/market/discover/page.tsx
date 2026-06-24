@@ -76,6 +76,7 @@ import {
   getCountFromServer,
 } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
+import { searchProducts, tokenize } from '@/lib/feed/search';
 import type { Brand } from '@/lib/types';
 
 type SortOption =
@@ -301,22 +302,51 @@ export default function DiscoverPage() {
       .map(([name]) => name);
   }, [products]);
 
-  const filtered = useMemo(() => {
-    let list = [...(products || [])];
+  // Sunucu-taraflı TAM KATALOG araması: kullanıcı arama yaptığında yüklenen 120
+  // vitrin ürünü değil, 85k ürünün tamamı `searchTokens` üzerinden taranır — ürün
+  // veya marka hangi mağazada olursa olsun bulunur (ör. "adidas superstar ih8659").
+  const [serverResults, setServerResults] = useState<CanonicalProduct[] | null>(null);
+  const [searchBusy, setSearchBusy] = useState(false);
+  useEffect(() => {
+    const term = searchTerm.trim();
+    if (!term || !db) {
+      setServerResults(null);
+      setSearchBusy(false);
+      return;
+    }
+    setSearchBusy(true);
+    let cancelled = false;
+    const t = setTimeout(() => {
+      searchProducts(db, { text: term, max: 200 })
+        .then((r) => { if (!cancelled) setServerResults(r); })
+        .catch(() => { if (!cancelled) setServerResults([]); })
+        .finally(() => { if (!cancelled) setSearchBusy(false); });
+    }, 300); // debounce
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [searchTerm, db]);
 
+  const filtered = useMemo(() => {
+    const term = searchTerm.trim();
+
+    // Arama varsa: tüm katalogdan gelen sonuçlar (markadan/kategoriden bağımsız).
+    // Sıralama: önce ALAKA (eşleşen token sayısı), eşitlikte EN ÇOK BAĞIŞ YAPAN
+    // markanın ürünü başta — aynı ürün farklı mağazalardaysa yüksek bağışlı önde.
+    if (term) {
+      const tokenSet = new Set(tokenize(term));
+      const matchCount = (p: CanonicalProduct) =>
+        (p.searchTokens || []).reduce((n, t) => (tokenSet.has(t) ? n + 1 : n), 0);
+      return [...(serverResults || [])].sort((a, b) => {
+        const d = matchCount(b) - matchCount(a);
+        if (d !== 0) return d;
+        return resolveProductRate(b) - resolveProductRate(a);
+      });
+    }
+
+    // Arama yokken: yüklenen vitrin + kategori filtresi + seçili sıralama.
+    let list = [...(products || [])];
     if (activeCategory !== 'Tümü') {
       list = list.filter((p) => groupOf(p) === activeCategory);
     }
-
-    const lower = searchTerm.trim().toLowerCase();
-    if (lower) {
-      list = list.filter(
-        (p) =>
-          p.title?.toLowerCase().includes(lower) ||
-          p.brandName?.toLowerCase().includes(lower),
-      );
-    }
-
     switch (sortBy) {
       case 'donationDesc':
         list.sort((a, b) => resolveProductRate(b) - resolveProductRate(a));
@@ -335,11 +365,10 @@ export default function DiscoverPage() {
         // 'recommended' → feed'in rastgele `random` sırası korunur (vitrin).
         break;
     }
-
     return list;
     // resolveProductRate, brandRate'e bağlı; brandRate değişince yeniden hesap.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, activeCategory, searchTerm, sortBy, brandRate]);
+  }, [products, serverResults, activeCategory, searchTerm, sortBy, brandRate]);
 
   const hasFilters =
     searchTerm.trim() !== '' ||
@@ -814,7 +843,11 @@ export default function DiscoverPage() {
                 </span>
               </div>
 
-              {filtered.length === 0 ? (
+              {searchBusy && filtered.length === 0 ? (
+                <div className="py-16 text-center text-sm font-semibold text-muted-foreground">
+                  Tüm mağazalarda aranıyor…
+                </div>
+              ) : filtered.length === 0 ? (
                 <EmptyState
                   icon={ShoppingBag}
                   title="Ürün bulunamadı"

@@ -18,6 +18,7 @@ import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { listGelirOrtaklariFeeds } from '@/lib/feed/gelirortaklari';
 import { ingestProducts, type FeedSourceKind } from '@/lib/feed/registry';
+import { searchTokensFor } from '@/lib/feed/search';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -121,7 +122,9 @@ export async function POST(req: NextRequest) {
       const slice = products.slice(i, i + 450);
       const batch = fs.batch();
       for (const p of slice) {
-        batch.set(fs.collection(PRODUCTS).doc(p.id), stripUndefined(p), { merge: true });
+        // Arama için token'la (başlık+marka+kategori) — array-contains-any sorgusu.
+        const withTokens = { ...p, searchTokens: searchTokensFor(p) };
+        batch.set(fs.collection(PRODUCTS).doc(p.id), stripUndefined(withTokens), { merge: true });
       }
       await batch.commit();
       written += slice.length;

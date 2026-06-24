@@ -51,5 +51,6 @@ export interface CanonicalProduct {
   mpn?: string;
   donationRate?: number;  // bağışa giden %
   random?: number;        // 0..1 — market'te rastgele sıralama (orderBy random + startAt)
+  searchTokens?: string[];// arama token'ları (başlık+marka+kategori) — array-contains-any
   updatedAt: number;      // epoch ms (ingest zamanı)
 }
