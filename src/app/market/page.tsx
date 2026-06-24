@@ -49,6 +49,7 @@ import {
   Package,
   Store,
   X,
+  Apple,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -133,7 +134,7 @@ const NO_SCROLLBAR =
 // Reklam banner'ı yapılacak SABİT markalar (sırayla). Katalogda + çalışan
 // affiliate linki olanlar banner olur; onaysız/linksiz olan (ör. Samsung onay
 // bekliyorsa) otomatik atlanır, offer onaylanınca kendiliğinden banner'a girer.
-const PINNED_BANNER_BRANDS = ['ebebek', 'samsung'];
+const PINNED_BANNER_BRANDS = ['ebebek', 'samsung', 'teknosa', 'ikea'];
 
 // Logo kolajında öne çıkarılacak TANINMIŞ markalar (öncelik sırası).
 const FAMOUS_PRIORITY = [
@@ -568,6 +569,18 @@ export default function DiscoverPage() {
     };
   });
   const banners: Banner[] = [
+    // İlk banner: Apple — anlaşmalı katalogdaki Apple ürünleri (karışık) → /market/apple.
+    // Apple kurumsal kimliği (siyah hero) + hem indirim hem bağış.
+    {
+      key: 'apple',
+      eyebrow: 'Apple',
+      title: 'İndirim + bağış',
+      subtitle: 'Apple ürünleri — hem indirimli hem her alışveriş %5 bağış.',
+      cta: "Apple'ı keşfet",
+      icon: Apple,
+      gradient: 'from-zinc-900 via-neutral-800 to-black',
+      href: '/market/apple',
+    },
     ...brandBanners,
     {
       key: 'donation',
@@ -831,11 +844,11 @@ export default function DiscoverPage() {
                             </>
                           )}
 
-                          {/* Kompakt yatay düzen (yarı yükseklik): logo + metin + CTA */}
-                          <div className="relative flex h-full w-full items-center gap-3">
+                          {/* Yatay düzen: büyük logo + metin (CTA yok; sağ-alt köşede ikon). */}
+                          <div className="relative flex h-full w-full items-center gap-3 pr-9">
                             {b.brand ? (
                               <span className="relative inline-flex h-[120px] w-[120px] shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
-                                <BrandLogo brand={b.brand} />
+                                <BrandLogo brand={b.brand} padding="p-1.5" />
                               </span>
                             ) : b.showBrandLogos && topBrands.length > 0 ? (
                               <div className="flex shrink-0 items-center -space-x-2.5">
@@ -866,11 +879,11 @@ export default function DiscoverPage() {
                               </p>
                             </div>
 
-                            <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-white px-3 py-1.5 text-[11px] font-extrabold text-primary shadow-sm">
-                              {b.cta}
-                              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                            </span>
                           </div>
+                          {/* Sağ-alt köşe ikonu — eski "Markaya git" CTA'sının yerine (tüm banner'larda). */}
+                          <span className="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm">
+                            <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                          </span>
                         </>
                       );
                       return b.href ? (
