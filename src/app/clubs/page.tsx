@@ -11,6 +11,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { StudentClub } from '@/lib/types';
+import { searchMatch } from '@/lib/search-match';
 import { useFirestore, useMemoFirebase, useCollection, useUser, useDoc } from '@/firebase';
 import { collection, doc, query, orderBy, limit } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -260,11 +261,11 @@ export default function ClubsPage() {
 
     // Arama
     if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
+      // Esnek: kısa isim + Türkçe↔ASCII (ü/u) + 1 harf tolerans.
       result = result.filter(c =>
-        (c?.name || '').toLowerCase().includes(q) ||
-        (c?.shortName || '').toLowerCase().includes(q) ||
-        (c?.university || '').toLowerCase().includes(q),
+        searchMatch(c?.name, searchTerm) ||
+        searchMatch(c?.shortName, searchTerm) ||
+        searchMatch(c?.university, searchTerm),
       );
     }
     return result;

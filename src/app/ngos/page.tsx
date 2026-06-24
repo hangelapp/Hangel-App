@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Filter, ArrowDownUp, Building2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { NGO } from '@/lib/types';
+import { searchMatch } from '@/lib/search-match';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
@@ -115,11 +116,12 @@ export default function NgosPage() {
         }
 
         if (searchTerm) {
-            const lowercased = searchTerm.toLowerCase();
+            // Esnek: kısa isim + kütük no + Türkçe↔ASCII (ü/u) + 1 harf tolerans.
             filtered = filtered.filter(ngo =>
-                ngo.name.toLowerCase().includes(lowercased) ||
-                (ngo.shortName?.toLowerCase().includes(lowercased) ?? false) ||
-                ngo.category.toLowerCase().includes(lowercased)
+                searchMatch(ngo.name, searchTerm) ||
+                searchMatch(ngo.shortName, searchTerm) ||
+                searchMatch(ngo.category, searchTerm) ||
+                searchMatch(ngo.kutukNo, searchTerm)
             );
         }
 

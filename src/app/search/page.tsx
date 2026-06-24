@@ -11,6 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { collection, query } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
+import { searchMatch } from '@/lib/search-match';
 import { useTranslation } from '@/components/providers/language-provider';
 
 interface SearchableEntity {
@@ -76,12 +77,12 @@ function GlobalSearchPageInner() {
     const term = q.trim().toLowerCase();
     const filter = (items: SearchableEntity[] | null | undefined): SearchableEntity[] => {
         if (!items || !term) return [];
-        return items.filter(i => {
-            const name = (i.name || i.title || '').toLowerCase();
-            const shortName = (i.shortName || '').toLowerCase();
-            const desc = (i.description || '').toLowerCase();
-            return name.includes(term) || shortName.includes(term) || desc.includes(term);
-        }).slice(0, 8);
+        return items.filter(i =>
+            // Esnek: kısa isim + Türkçe↔ASCII (ü/u) + 1 harf tolerans.
+            searchMatch(i.name || i.title, term) ||
+            searchMatch(i.shortName, term) ||
+            searchMatch(i.description, term),
+        ).slice(0, 8);
     };
 
     const ngoResults = useMemo(() => filter(ngos), [ngos, term]);

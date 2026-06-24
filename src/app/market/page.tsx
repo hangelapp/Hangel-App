@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Filter, ArrowDownUp, HeartHandshake, ShoppingBag } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { cn } from '@/lib/utils';
+import { searchMatch } from '@/lib/search-match';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Brand } from '@/lib/types';
@@ -40,9 +41,9 @@ export default function MarketPage() {
   const productsQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.products), orderBy('random'), startAt(productsRandSeed), limit(120)), [db, productsRandSeed]);
   const { data: allProducts, isLoading: productsLoading } = useCollection<CanonicalProduct>(productsQuery);
   const productsToShow = useMemo(() => {
-    const lower = searchTerm.trim().toLowerCase();
+    const term = searchTerm.trim();
     const list = allProducts || [];
-    return lower ? list.filter((p) => p.title?.toLowerCase().includes(lower) || p.brandName?.toLowerCase().includes(lower)) : list;
+    return term ? list.filter((p) => searchMatch(p.title, term) || searchMatch(p.brandName, term)) : list;
   }, [allProducts, searchTerm]);
 
   // API brands from affiliate networks (Tune/ReklamAction + others).
@@ -159,8 +160,8 @@ export default function MarketPage() {
     });
 
     if (searchTerm.trim()) {
-      const lower = searchTerm.toLowerCase();
-      list = list.filter(b => b.name.toLowerCase().includes(lower) || (b.shortName?.toLowerCase().includes(lower) ?? false));
+      // Esnek: kısa isim + Türkçe↔ASCII (ü/u) + 1 harf tolerans.
+      list = list.filter(b => searchMatch(b.name, searchTerm) || searchMatch(b.shortName, searchTerm));
     }
 
     if (activeCategory !== 'Tümü') {
