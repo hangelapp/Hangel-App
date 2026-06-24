@@ -74,6 +74,7 @@ import {
   query,
   orderBy,
   startAt,
+  getCountFromServer,
 } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import { searchProducts, tokenize } from '@/lib/feed/search';
@@ -179,6 +180,16 @@ export default function DiscoverPage() {
     setRandSeed(Math.random() * 0.8);
   }, []);
 
+  // Katalogun GERÇEK toplam ürün sayısı (arama barı altında gösterilir).
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!db) return;
+    getCountFromServer(collection(db, COLLECTIONS.products))
+      .then((snap) => setTotalCount(snap.data().count))
+      .catch(() => {
+        /* sessiz */
+      });
+  }, [db]);
 
   const productsQuery = useMemoFirebase(
     () =>
@@ -725,14 +736,15 @@ export default function DiscoverPage() {
           </DropdownMenu>
         </div>
 
-        {/* Sonuç sayısı — arama/filtre yapıldığında kaç ürün listelendiğini gösterir. */}
-        {hasFilters && (
-          <p className="px-1 text-xs font-semibold text-muted-foreground">
-            {searchBusy
-              ? 'Aranıyor…'
-              : `${filtered.length.toLocaleString('tr-TR')} ürün listeleniyor`}
-          </p>
-        )}
+        {/* Ürün sayısı — HER ZAMAN arama barının altında: aramada eşleşme sayısı,
+            normal vitrinde katalogdaki toplam ürün sayısı. */}
+        <p className="px-1 text-xs font-semibold text-muted-foreground">
+          {searchBusy
+            ? 'Aranıyor…'
+            : hasFilters
+              ? `${filtered.length.toLocaleString('tr-TR')} ürün listeleniyor`
+              : `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün`}
+        </p>
 
         {/* Hızlı süzgüler — YALNIZ arama yapıldığında, sonuçların üzerinde görünür
             (normal vitrinde gösterilmez; orada zaten "En Çok Bağış/İndirim" şeritleri var). */}
