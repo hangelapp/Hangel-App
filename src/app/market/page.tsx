@@ -356,8 +356,22 @@ export default function DiscoverPage() {
 
       // "İndirimli" hızlı süzgü — yalnız indirimli ürünler.
       if (onlyDiscounted) best = best.filter((p) => discountPct(p) > 0);
-      // EN ÇOK BAĞIŞ YAPAN markanın ürünü başta (aynı ürün farklı mağazalardaysa).
-      best.sort((a, b) => resolveProductRate(b) - resolveProductRate(a));
+      // Hızlı süzgü pill'leri arama sonuçlarında da çalışsın (sortBy'a uy);
+      // varsayılan (recommended/donationDesc) → EN ÇOK BAĞIŞ YAPAN başta.
+      switch (sortBy) {
+        case 'priceAsc':
+          best.sort((a, b) => effectivePrice(a) - effectivePrice(b));
+          break;
+        case 'priceDesc':
+          best.sort((a, b) => effectivePrice(b) - effectivePrice(a));
+          break;
+        case 'popular':
+          best.sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
+          break;
+        default:
+          best.sort((a, b) => resolveProductRate(b) - resolveProductRate(a));
+          break;
+      }
       return best;
     }
 
@@ -648,8 +662,9 @@ export default function DiscoverPage() {
           </p>
         )}
 
-        {/* Hızlı süzgüler — İndirimli, En çok bağış, Uygun fiyat, Yeni (Trendyol pill'leri). */}
-        {(products?.length ?? 0) > 0 && (
+        {/* Hızlı süzgüler — YALNIZ arama yapıldığında, sonuçların üzerinde görünür
+            (normal vitrinde gösterilmez; orada zaten "En Çok Bağış/İndirim" şeritleri var). */}
+        {searchTerm.trim() !== '' && (
           <div className={cn('flex w-full min-w-0 items-center gap-2 overflow-x-auto py-0.5', NO_SCROLLBAR)}>
             {quickFilters.map((f) => (
               <button
