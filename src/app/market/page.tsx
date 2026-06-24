@@ -654,7 +654,11 @@ export default function DiscoverPage() {
             <Input
               inputMode="search"
               enterKeyHint="search"
-              placeholder="Ürün veya marka ara"
+              placeholder={
+                rankedBrands.length > 0
+                  ? `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün veya ${rankedBrands.length.toLocaleString('tr-TR')} markada ara`
+                  : 'Ürün veya marka ara'
+              }
               className="h-12 rounded-full border border-border bg-background pl-12 pr-10 text-base shadow-sm focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
