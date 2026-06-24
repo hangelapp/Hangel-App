@@ -48,6 +48,7 @@ import {
   Gift,
   Package,
   Store,
+  X,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -72,7 +73,6 @@ import {
   query,
   orderBy,
   startAt,
-  getCountFromServer,
 } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import { searchProducts, tokenize } from '@/lib/feed/search';
@@ -178,17 +178,6 @@ export default function DiscoverPage() {
     setRandSeed(Math.random() * 0.8);
   }, []);
 
-  // Koleksiyonun GERÇEK toplamı (yalnız çekilen 120 değil) — arama
-  // placeholder'ında "X ürün arasında" doğru görünsün diye sayılır.
-  const [totalCount, setTotalCount] = useState<number | null>(null);
-  useEffect(() => {
-    if (!db) return;
-    getCountFromServer(collection(db, COLLECTIONS.products))
-      .then((snap) => setTotalCount(snap.data().count))
-      .catch(() => {
-        /* sessiz — placeholder yine çalışır */
-      });
-  }, [db]);
 
   const productsQuery = useMemoFirebase(
     () =>
@@ -624,15 +613,27 @@ export default function DiscoverPage() {
       <div className="sticky top-0 z-20 w-full max-w-full shrink-0 space-y-2.5 overflow-x-hidden border-b border-border bg-background px-4 py-2.5">
         <div className="flex w-full items-center gap-2">
           {/* Market kök sekme — geri butonu yok (bottom-nav ile gezilir). */}
-          {/* Arama */}
+          {/* Arama — pazaryeri tarzı belirgin pill (büyüteç + temizle). */}
           <div className="relative min-w-0 flex-grow">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-primary" />
             <Input
-              placeholder={`${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün içinde ara`}
-              className="h-11 rounded-2xl border-none bg-muted/50 pl-10 text-base focus-visible:ring-1"
+              inputMode="search"
+              enterKeyHint="search"
+              placeholder="Ürün veya marka ara"
+              className="h-12 rounded-full border border-border bg-background pl-12 pr-10 text-base shadow-sm focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                aria-label="Aramayı temizle"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           {/* Kategori filtre */}
@@ -641,7 +642,7 @@ export default function DiscoverPage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="h-11 w-11 shrink-0 rounded-2xl border-none bg-background shadow-sm"
+                className="h-12 w-12 shrink-0 rounded-full border border-border bg-background shadow-sm"
                 aria-label="Kategori filtrele"
               >
                 <SlidersHorizontal className="h-5 w-5" />
@@ -674,7 +675,7 @@ export default function DiscoverPage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="h-11 w-11 shrink-0 rounded-2xl border-none bg-background shadow-sm"
+                className="h-12 w-12 shrink-0 rounded-full border border-border bg-background shadow-sm"
                 aria-label="Sırala"
               >
                 <ArrowDownUp className="h-5 w-5" />
