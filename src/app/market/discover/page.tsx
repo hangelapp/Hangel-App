@@ -661,7 +661,7 @@ export default function DiscoverPage() {
                           {/* Kompakt yatay düzen (yarı yükseklik): logo + metin + CTA */}
                           <div className="relative flex h-full w-full items-center gap-3">
                             {b.brand ? (
-                              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
+                              <span className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
                                 <BrandLogo brand={b.brand} />
                               </span>
                             ) : b.showBrandLogos && topBrands.length > 0 ? (
