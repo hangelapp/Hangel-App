@@ -163,6 +163,7 @@ export default function DiscoverPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [sortBy, setSortBy] = useState<SortOption>('recommended');
+  const [onlyDiscounted, setOnlyDiscounted] = useState(false); // "İndirimli" hızlı süzgü
 
   // "Tüm Ürünler" grid'ine kaydırmak için (banner tıklaması).
   const allProductsRef = useRef<HTMLDivElement>(null);
@@ -354,6 +355,8 @@ export default function DiscoverPage() {
         return true;
       });
 
+      // "İndirimli" hızlı süzgü — yalnız indirimli ürünler.
+      if (onlyDiscounted) best = best.filter((p) => discountPct(p) > 0);
       // EN ÇOK BAĞIŞ YAPAN markanın ürünü başta (aynı ürün farklı mağazalardaysa).
       best.sort((a, b) => resolveProductRate(b) - resolveProductRate(a));
       return best;
@@ -364,6 +367,7 @@ export default function DiscoverPage() {
     if (activeCategory !== 'Tümü') {
       list = list.filter((p) => groupOf(p) === activeCategory);
     }
+    if (onlyDiscounted) list = list.filter((p) => discountPct(p) > 0);
     switch (sortBy) {
       case 'donationDesc':
         list.sort((a, b) => resolveProductRate(b) - resolveProductRate(a));
@@ -385,18 +389,49 @@ export default function DiscoverPage() {
     return list;
     // resolveProductRate, brandRate'e bağlı; brandRate değişince yeniden hesap.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, serverResults, activeCategory, searchTerm, sortBy, brandRate]);
+  }, [products, serverResults, activeCategory, searchTerm, sortBy, onlyDiscounted, brandRate]);
 
   const hasFilters =
     searchTerm.trim() !== '' ||
     activeCategory !== 'Tümü' ||
-    sortBy !== 'recommended';
+    sortBy !== 'recommended' ||
+    onlyDiscounted;
 
   const resetFilters = () => {
     setSearchTerm('');
     setActiveCategory('Tümü');
     setSortBy('recommended');
+    setOnlyDiscounted(false);
   };
+
+  // Hızlı süzgü pill'leri — arama barı altında (Trendyol "Flaş Ürünler" tarzı).
+  // Her biri toggle: aktifse kapatır. İndirimli ayrı bir filtre; diğerleri sıralama.
+  const quickFilters: { key: string; label: string; active: boolean; onClick: () => void }[] = [
+    {
+      key: 'discount',
+      label: 'İndirimli ürünler',
+      active: onlyDiscounted,
+      onClick: () => setOnlyDiscounted((v) => !v),
+    },
+    {
+      key: 'donation',
+      label: 'En çok bağış yapanlar',
+      active: sortBy === 'donationDesc',
+      onClick: () => setSortBy((s) => (s === 'donationDesc' ? 'recommended' : 'donationDesc')),
+    },
+    {
+      key: 'price',
+      label: 'Uygun fiyat',
+      active: sortBy === 'priceAsc',
+      onClick: () => setSortBy((s) => (s === 'priceAsc' ? 'recommended' : 'priceAsc')),
+    },
+    {
+      key: 'new',
+      label: 'Yeni gelenler',
+      active: sortBy === 'popular',
+      onClick: () => setSortBy((s) => (s === 'popular' ? 'recommended' : 'popular')),
+    },
+  ];
 
   // ── Vitrin şeritleri — hepsi ÇEKİLEN ürünlerden client-side türetilir ──
 
@@ -615,6 +650,36 @@ export default function DiscoverPage() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {/* Sonuç sayısı — arama/filtre yapıldığında kaç ürün listelendiğini gösterir. */}
+        {hasFilters && (
+          <p className="px-1 text-xs font-semibold text-muted-foreground">
+            {searchBusy
+              ? 'Aranıyor…'
+              : `${filtered.length.toLocaleString('tr-TR')} ürün listeleniyor`}
+          </p>
+        )}
+
+        {/* Hızlı süzgüler — İndirimli, En çok bağış, Uygun fiyat, Yeni (Trendyol pill'leri). */}
+        {(products?.length ?? 0) > 0 && (
+          <div className={cn('flex w-full min-w-0 items-center gap-2 overflow-x-auto py-0.5', NO_SCROLLBAR)}>
+            {quickFilters.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={f.onClick}
+                className={cn(
+                  'shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors',
+                  f.active
+                    ? 'border-primary bg-primary text-white shadow-sm'
+                    : 'border-border bg-background text-foreground hover:bg-muted/60',
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* ── 2. Kategori çip şeridi (yatay kaydırma) — w-full min-w-0 ile
             kapsayıcıya sınırlı; negatif margin YOK ki viewport'u taşırıp
