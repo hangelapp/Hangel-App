@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search, ChevronRight, HeartHandshake, Store } from 'lucide-react';
+import { ArrowLeft, Search, Store } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -89,13 +89,9 @@ export default function BrandsListPage() {
 
       <main className="w-full max-w-full overflow-x-hidden pb-32">
         {isLoading && brands.length === 0 ? (
-          <div className="divide-y divide-border bg-background">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 py-3">
-                <div className="h-12 w-12 shrink-0 animate-pulse rounded-xl bg-muted" />
-                <div className="h-4 flex-1 animate-pulse rounded bg-muted" />
-                <div className="h-6 w-14 shrink-0 animate-pulse rounded-full bg-muted" />
-              </div>
+          <div className="grid grid-cols-3 gap-3 p-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="aspect-square w-full animate-pulse rounded-2xl bg-muted" />
             ))}
           </div>
         ) : brands.length === 0 ? (
@@ -107,27 +103,24 @@ export default function BrandsListPage() {
             />
           </div>
         ) : (
-          <div className="divide-y divide-border bg-background">
+          <div className="grid grid-cols-3 gap-3 p-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
             {brands.map((brand) => {
               const rate = Math.max(0, Math.min(100, Number(brand.donationRate) || 0));
               return (
-                <Link
-                  key={brand.id}
-                  href={`/market/${brand.slug || brand.id}`}
-                  className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/50 active:bg-secondary"
-                >
-                  <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-border bg-white">
-                    <BrandLogo brand={brand} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block break-words text-sm font-bold text-foreground">
+                <Link key={brand.id} href={`/market/${brand.slug || brand.id}`} className="group">
+                  <div className="flex flex-col items-center space-y-2 text-center">
+                    <div className="relative aspect-square w-full">
+                      <div className="relative h-full w-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all group-hover:shadow-md">
+                        <BrandLogo brand={brand} />
+                      </div>
+                      <div className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-primary text-[11px] font-black text-white">
+                        %{rate}
+                      </div>
+                    </div>
+                    <p className="break-words text-xs font-bold leading-tight text-foreground group-hover:text-primary">
                       {brand.name}
-                    </span>
-                  </span>
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
-                    <HeartHandshake className="h-3 w-3" aria-hidden="true" />%{rate} bağış
-                  </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    </p>
+                  </div>
                 </Link>
               );
             })}
