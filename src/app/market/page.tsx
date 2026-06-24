@@ -197,7 +197,7 @@ export default function DiscoverPage() {
         collection(db, COLLECTIONS.products),
         orderBy('random'),
         startAt(randSeed),
-        limit(120),
+        limit(300),
       ),
     [db, randSeed],
   );
@@ -471,7 +471,7 @@ export default function DiscoverPage() {
     return (products || [])
       .map((p) => ({ p, r: resolveProductRate(p) }))
       .sort((a, b) => b.r - a.r)
-      .slice(0, 12)
+      .slice(0, 21)
       .map((x) => x.p);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products, brandRate]);
@@ -481,24 +481,24 @@ export default function DiscoverPage() {
     return (products || [])
       .filter((p) => discountPct(p) > 0)
       .sort((a, b) => discountPct(b) - discountPct(a))
-      .slice(0, 12);
+      .slice(0, 21);
   }, [products]);
 
   // Öne Çıkanlar / Sana Özel: rastgele başlangıç sırasından bir dilim.
   // `random` sırası zaten karışık geldiği için ortadan bir dilim alıyoruz.
   const featuredStrip = useMemo(() => {
     const list = products || [];
-    const start = Math.min(20, Math.max(0, list.length - 12));
-    return list.slice(start, start + 12);
+    const start = Math.min(20, Math.max(0, list.length - 21));
+    return list.slice(start, start + 21);
   }, [products]);
 
   // Kategori ürün şeritleri (filtre yokken gösterilir) — En Çok Bağış/İndirim/
   // Öne Çıkanlar'dan sonra her kategori ayrı satır olur. Render ≥3 ürünlü olanları
   // gösterir; az ürünlü kategoriler atlanır.
   const categoryStrips = useMemo(() => {
-    return topCategories.slice(0, 12).map((cat) => ({
+    return topCategories.slice(0, 20).map((cat) => ({
       name: cat,
-      items: (products || []).filter((p) => groupOf(p) === cat).slice(0, 12),
+      items: (products || []).filter((p) => groupOf(p) === cat).slice(0, 21),
     }));
   }, [topCategories, products]);
 
