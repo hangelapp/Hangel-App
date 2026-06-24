@@ -13,7 +13,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAuth, signInWithCustomToken } from 'firebase/auth';
-import { Loader2, RefreshCw, Smartphone, Bell, ArrowLeft } from 'lucide-react';
+import { Loader2, RefreshCw, Smartphone, Bell, ArrowLeft, Apple, Laptop, Monitor, Tablet, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
@@ -25,6 +25,47 @@ function resolveNext(raw: string | null): string {
   if (!raw) return '/market';
   if (!raw.startsWith('/') || raw.startsWith('//')) return '/market';
   return raw;
+}
+
+// İndirme linkleri (/app hub'ı ile aynı kaynak).
+const APP_STORE = 'https://apps.apple.com/tr/app/hangel/id6664058822';
+const PLAY_STORE = 'https://play.google.com/store/apps/details?id=com.hangel.app';
+
+type DownloadInfo = {
+  title: string;
+  subtitle: string;
+  href: string;
+  external: boolean; // true → mağaza (yeni sekme); false → /app (tüm uygulamalar)
+  icon: React.ElementType;
+};
+
+// SSR + bilinmeyen cihaz: tüm uygulamalar sayfasına yönlendir ("indirmek için tıkla").
+const DOWNLOAD_FALLBACK: DownloadInfo = {
+  title: "Cihazına hangel'i indir",
+  subtitle: 'Cihazına uygun sürümü seç',
+  href: '/app',
+  external: false,
+  icon: Download,
+};
+
+// Tarayıcı/cihaz tanıma → uygun indirme. Mac/iPhone/iPad → App Store (iOS app Mac'te
+// de çalışır), Android → Google Play, Windows/Linux/bilinmeyen → /app ("tıkla").
+function detectDownload(): DownloadInfo {
+  if (typeof navigator === 'undefined') return DOWNLOAD_FALLBACK;
+  const ua = navigator.userAgent || '';
+  const maxTouch = navigator.maxTouchPoints || 0;
+  const isIPad = /iPad/.test(ua) || (/Macintosh/.test(ua) && maxTouch > 1);
+  const isIPhone = /iPhone/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  const isMac = /Macintosh|Mac OS X/.test(ua) && !isIPad;
+  const isWindows = /Windows/.test(ua);
+
+  if (isIPad) return { title: "iPad için hangel'i indir", subtitle: 'App Store · iPadOS 15+', href: APP_STORE, external: true, icon: Tablet };
+  if (isIPhone) return { title: "iPhone için hangel'i indir", subtitle: 'App Store · iOS 15+', href: APP_STORE, external: true, icon: Apple };
+  if (isAndroid) return { title: "Android için hangel'i indir", subtitle: 'Google Play · Android 8+', href: PLAY_STORE, external: true, icon: Smartphone };
+  if (isMac) return { title: "Mac için hangel'i indir", subtitle: "App Store · macOS 11+ (iOS app Mac'te çalışır)", href: APP_STORE, external: true, icon: Laptop };
+  if (isWindows) return { title: "Windows'a hangel'i kur", subtitle: 'İndirmek için tıkla — Microsoft/PWA seçenekleri', href: '/app', external: false, icon: Monitor };
+  return DOWNLOAD_FALLBACK;
 }
 
 const STEPS: React.ReactNode[] = [
@@ -45,6 +86,10 @@ function QrLoginPageInner() {
   const [expired, setExpired] = useState(false);
   const [view, setView] = useState<'qr' | 'notifications'>('qr');
   const [notifBusy, setNotifBusy] = useState(false);
+  // Cihaza göre indirme — SSR'de fallback, mount'ta gerçek cihaza göre güncellenir
+  // (hydration uyumsuzluğu olmasın diye effect içinde).
+  const [download, setDownload] = useState<DownloadInfo>(DOWNLOAD_FALLBACK);
+  useEffect(() => { setDownload(detectDownload()); }, []);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const expiryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -112,6 +157,8 @@ function QrLoginPageInner() {
     finish();
   };
 
+  const DlIcon = download.icon;
+
   return (
     <div className="flex min-h-dvh flex-col items-center justify-start bg-secondary p-4 pt-8">
       <div className="mb-4 flex w-full max-w-2xl items-center gap-2">
@@ -120,6 +167,36 @@ function QrLoginPageInner() {
         </Button>
         <HangelLogo className="text-2xl" />
       </div>
+
+      {/* Cihaza göre indirme kartı (WhatsApp Web'deki "indir" kartı gibi) — yalnız QR adımında */}
+      {view === 'qr' && (
+        <div className="mb-4 w-full max-w-2xl">
+          <Card className="rounded-[2rem] border-none shadow-lg">
+            <div className="flex items-center gap-4 p-4 sm:p-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
+                <DlIcon className="h-6 w-6 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="break-words font-bold text-foreground">{download.title}</p>
+                <p className="break-words text-xs text-muted-foreground">{download.subtitle}</p>
+              </div>
+              {download.external ? (
+                <Button asChild className="shrink-0">
+                  <a href={download.href} target="_blank" rel="noopener noreferrer">
+                    <Download className="mr-2 h-4 w-4" /> İndir
+                  </a>
+                </Button>
+              ) : (
+                <Button asChild className="shrink-0">
+                  <Link href={download.href}>
+                    <Download className="mr-2 h-4 w-4" /> İndir
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
 
       <div className="w-full max-w-2xl">
         <Card className="rounded-[2rem] border-none shadow-2xl">
