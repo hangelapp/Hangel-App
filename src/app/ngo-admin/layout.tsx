@@ -78,7 +78,6 @@ import {
   ActiveEntityProvider,
   useActiveEntity,
   entityTypeLabel,
-  entityPossessive,
   type EntityKind,
   type ManagedOrg,
 } from './active-entity-context';
@@ -573,72 +572,6 @@ function SideMenu() {
 }
 
 // Aktif yönetilen entity'nin kimliği — her alt panelin başında görünür.
-// Avatar + isim + tür rozeti + kamu profili linki. Henüz çözülmediyse
-// skeleton placeholder, hiç entity yoksa hiç gösterilmez.
-function EntityIdentityBanner() {
-  const { id, kind, managedList, isLoading, withEntityParams } = useActiveEntity();
-
-  if (isLoading) {
-    return (
-      <div className="mb-4 sm:mb-6 rounded-2xl border border-border bg-card p-3 sm:p-4 flex items-center gap-3">
-        <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-muted animate-pulse" />
-        <div className="flex-1 space-y-2">
-          <div className="h-4 w-32 bg-muted rounded animate-pulse" />
-          <div className="h-3 w-20 bg-muted rounded animate-pulse" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!id || !kind) return null;
-
-  const current = managedList.find(o => o.id === id && o.kind === kind) || managedList[0];
-  if (!current) return null;
-
-  const Icon = KIND_ICON[current.kind];
-  const publicHref =
-    current.kind === 'ngo' ? `/ngos/${current.id}` :
-    current.kind === 'brand' ? `/market/${current.id}` :
-    `/clubs/profile/${current.id}`;
-
-  // Logosu olmayan kurumlardan logo yüklemesini iste — banner'daki logo dolana
-  // kadar görünür kalır. manage-profile'daki gerçek Storage yüklemesine yönlendirir.
-  const hasLogo = Boolean(current.logoUrl);
-
-  return (
-    <>
-      <div className="mb-4 sm:mb-6 rounded-2xl border border-border bg-card p-3 sm:p-4 flex items-center gap-3 shadow-sm">
-        <div className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
-          {hasLogo ? (
-
-            <img src={current.logoUrl} alt={current.name} className="h-full w-full object-cover" />
-          ) : (
-            <Icon className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-base sm:text-lg font-black break-words">{current.name}</h2>
-            <Badge variant="outline" className="text-xs uppercase tracking-widest font-bold">
-              {entityTypeLabel(current.kind, current.subType)}
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground truncate">{entityPossessive(current.kind, current.subType)} Yönetim Paneli</p>
-        </div>
-        <Button asChild size="sm" variant="ghost" className="shrink-0 text-xs">
-          <Link href={publicHref} target="_blank" rel="noopener noreferrer" aria-label="Kamu Profili">
-            <Globe className="h-4 w-4 sm:hidden" />
-            <span className="hidden sm:inline">Kamu Profili</span>
-          </Link>
-        </Button>
-      </div>
-
-      {/* Logo yükle banner'ı kullanıcı talebiyle kaldırıldı (2026-06-12) —
-          her sayfada görünmesi rahatsız edici. Logo manage-profile sayfasında. */}
-    </>
-  );
-}
-
 function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -693,7 +626,6 @@ function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
         <div className="flex gap-6">
           {!hideSideMenu && <SideMenu />}
           <main className="flex-1 min-w-0">
-            <EntityIdentityBanner />
             <EntityRouteGuard>{children}</EntityRouteGuard>
           </main>
         </div>
