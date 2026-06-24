@@ -426,9 +426,11 @@ export default function DiscoverPage() {
     return list.slice(start, start + 12);
   }, [products]);
 
-  // En büyük 2 kategori için ürün şeritleri (filtre yokken gösterilir).
+  // Kategori ürün şeritleri (filtre yokken gösterilir) — En Çok Bağış/İndirim/
+  // Öne Çıkanlar'dan sonra her kategori ayrı satır olur. Render ≥3 ürünlü olanları
+  // gösterir; az ürünlü kategoriler atlanır.
   const categoryStrips = useMemo(() => {
-    return topCategories.slice(0, 2).map((cat) => ({
+    return topCategories.slice(0, 12).map((cat) => ({
       name: cat,
       items: (products || []).filter((p) => groupOf(p) === cat).slice(0, 12),
     }));
@@ -683,14 +685,14 @@ export default function DiscoverPage() {
                 <section className="w-full max-w-full pt-2">
                   <div
                     className={cn(
-                      'flex w-full min-w-0 gap-3 overflow-x-auto px-4 py-2 snap-x snap-mandatory',
+                      'flex w-full min-w-0 gap-2 overflow-x-auto px-4 py-2 snap-x snap-mandatory',
                       NO_SCROLLBAR,
                     )}
                   >
                     {banners.map((b) => {
                       const Icon = b.icon;
                       const cls = cn(
-                        'group relative flex h-[96px] w-[92%] shrink-0 snap-start overflow-hidden rounded-3xl p-3 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px]',
+                        'group relative flex h-[96px] w-[90vw] max-w-[calc(100vw-2rem)] shrink-0 snap-start overflow-hidden rounded-3xl p-3 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px] sm:max-w-none',
                         b.coverImage ? 'bg-zinc-900' : cn('bg-gradient-to-br', b.gradient),
                       );
                       const content = (
@@ -716,7 +718,7 @@ export default function DiscoverPage() {
                           {/* Kompakt yatay düzen (yarı yükseklik): logo + metin + CTA */}
                           <div className="relative flex h-full w-full items-center gap-3">
                             {b.brand ? (
-                              <span className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
+                              <span className="relative inline-flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
                                 <BrandLogo brand={b.brand} />
                               </span>
                             ) : b.showBrandLogos && topBrands.length > 0 ? (
@@ -724,15 +726,15 @@ export default function DiscoverPage() {
                                 {topBrands.slice(0, 3).map((brand) => (
                                   <span
                                     key={brand.id}
-                                    className="relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white"
+                                    className="relative inline-flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white"
                                   >
                                     <BrandLogo brand={brand} />
                                   </span>
                                 ))}
                               </div>
                             ) : (
-                              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                                <Icon className="h-6 w-6" aria-hidden="true" />
+                              <span className="inline-flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                                <Icon className="h-9 w-9" aria-hidden="true" />
                               </span>
                             )}
 
@@ -772,15 +774,14 @@ export default function DiscoverPage() {
                   <div className="px-4 pt-1">
                     <Button
                       asChild
-                      variant="outline"
-                      className="h-12 w-full justify-between rounded-2xl border-none bg-background shadow-sm"
+                      className="h-12 w-full rounded-2xl bg-primary text-white shadow-sm hover:bg-primary/90"
                     >
-                      <Link href="/market/brands">
-                        <span className="flex items-center gap-2 text-sm font-bold">
-                          <Store className="h-5 w-5 text-primary" />
-                          Tüm Markalar
-                        </span>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      <Link
+                        href="/market/brands"
+                        className="flex items-center justify-center gap-2 text-sm font-bold text-white"
+                      >
+                        <Store className="h-5 w-5" />
+                        Tüm Markalar
                       </Link>
                     </Button>
                   </div>

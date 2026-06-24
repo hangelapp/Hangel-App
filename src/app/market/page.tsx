@@ -272,7 +272,7 @@ export default function MarketPage() {
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={cn(
-                  "text-left text-sm px-3 min-h-[44px] flex items-center whitespace-nowrap truncate transition-all",
+                  "text-left text-sm px-3 min-h-[44px] w-full min-w-0 flex items-center break-words transition-all",
                   activeCategory === cat
                     ? "bg-primary/10 text-primary border-l-4 border-primary font-black"
                     : "text-muted-foreground hover:bg-accent/50"

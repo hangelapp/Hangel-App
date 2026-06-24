@@ -638,7 +638,7 @@ export default function EventDetailPage() {
                                 {evLoc.type !== 'Online' && weather && weather.length > 0 && (
                                     <div className="py-4 px-4 sm:px-6">
                                         <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3">Hava durumu</p>
-                                        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6">
+                                        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
                                             {weather.map((d) => (
                                                 <div key={d.date} className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl border border-border bg-card min-w-[88px] shrink-0 text-center">
                                                     <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{formatDateTime(d.date).split(',')[0]}</span>
@@ -812,11 +812,11 @@ export default function EventDetailPage() {
 
             {/* İkincil eylem ızgarası — tüm butonlar AYNI boy/padding/rounded; tutarlı ızgara */}
             {isGoing && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 min-w-0">
                 {/* Yaka Kartı */}
                 <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button size="lg" variant="secondary" className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2">🪪 Yaka Kartı</Button>
+                    <Button size="lg" variant="secondary" className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words">🪪 Yaka Kartı</Button>
                 </AlertDialogTrigger>
             <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-3xl">
                 <AlertDialogHeader>
@@ -959,7 +959,7 @@ export default function EventDetailPage() {
                       toast({ variant: 'destructive', title: 'Apple Wallet açılamadı', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
                     }
                   }}
-                  className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2"
+                  className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words"
                   aria-label="Apple Wallet'a Ekle"
                   title="Apple Wallet'a Ekle"
                 >
@@ -975,7 +975,7 @@ export default function EventDetailPage() {
                     const url = new URL(`/api/events/${resolvedEventId}/ics`, window.location.origin).toString();
                     void openExternalUrl(url);
                   }}
-                  className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2"
+                  className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words"
                   aria-label="Takvime ekle"
                   title="Takvime ekle"
                 >
@@ -1013,7 +1013,7 @@ export default function EventDetailPage() {
                       toast({ variant: 'destructive', title: 'NFC hatası', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
                     }
                   }}
-                  className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2"
+                  className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words"
                   aria-label="NFC ile Check-in"
                   title="NFC ile Check-in"
                 >
@@ -1024,10 +1024,10 @@ export default function EventDetailPage() {
                 {/* Etkinlik bittiyse: sertifika + değerlendir */}
                 {isEventFinished && (
                   <>
-                    <Button size="lg" variant="outline" className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2" asChild>
+                    <Button size="lg" variant="outline" className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words" asChild>
                       <Link href={eventCertCode ? `/c/${eventCertCode}` : '/my-badges'}>🎓 Sertifika</Link>
                     </Button>
-                    <EventEvaluateButton eventId={resolvedEventId || ''} eventName={event.name} authUser={authUser ?? null} className="h-14 w-full rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 px-2" />
+                    <EventEvaluateButton eventId={resolvedEventId || ''} eventName={event.name} authUser={authUser ?? null} className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words" />
                   </>
                 )}
               </div>

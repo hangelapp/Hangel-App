@@ -666,7 +666,7 @@ export default function VolunteeringDetailPage() {
                     {isPhysical && weather && weather.length > 0 && (
                         <section className="space-y-4">
                             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Hava durumu</h2>
-                            <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-1 px-1">
+                            <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-1 pl-[max(0.25rem,env(safe-area-inset-left))] pr-[max(0.25rem,env(safe-area-inset-right))]">
                                 {weather.map((d) => (
                                     <div key={d.date} className="flex flex-col items-center gap-1.5 px-4 py-4 rounded-2xl border border-border bg-card min-w-[96px] shrink-0 text-center">
                                         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{safeFormatDateTime(d.date).split(',')[0]}</span>
@@ -789,59 +789,59 @@ export default function VolunteeringDetailPage() {
                     {isApproved && (
                         <section className="space-y-4">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Onaylı gönüllü araçların</h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
                         <Button
                             size="lg"
                             variant="secondary"
                             onClick={handleAddToWallet}
-                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-3"
+                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0"
                             aria-label="Apple Wallet'a Ekle"
                             title="Apple Wallet'a Ekle"
                         >
-                            <Wallet className="h-5 w-5" />
-                            <span className="text-sm">Wallet</span>
+                            <Wallet className="h-5 w-5 shrink-0" />
+                            <span className="text-[11px] text-center leading-tight break-words">Wallet</span>
                         </Button>
                         <Button
                             size="lg"
                             variant="secondary"
                             onClick={handleNfcRead}
-                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-3"
+                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0"
                             aria-label="NFC Oku"
                             title="NFC Oku"
                         >
-                            <Nfc className="h-5 w-5" />
-                            <span className="text-sm">NFC oku</span>
+                            <Nfc className="h-5 w-5 shrink-0" />
+                            <span className="text-[11px] text-center leading-tight break-words">NFC oku</span>
                         </Button>
                         {/* Takvime ekle — NFC yanında, onaylı kullanıcıya kalıcı buton */}
                         <Button
                             size="lg"
                             variant="secondary"
                             onClick={handleAddToCalendar}
-                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-3"
+                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0"
                             aria-label="Takvime ekle"
                             title="Takvime ekle"
                         >
-                            <CalendarPlus className="h-5 w-5" />
-                            <span className="text-sm">Takvime ekle</span>
+                            <CalendarPlus className="h-5 w-5 shrink-0" />
+                            <span className="text-[11px] text-center leading-tight break-words">Takvime ekle</span>
                         </Button>
                         {approvedCompletion && (
                             <Button
                                 size="lg"
                                 variant="secondary"
                                 onClick={() => setIsEvalOpen(true)}
-                                className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-3"
+                                className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0"
                                 aria-label="STK'yı değerlendir"
                                 title="STK'yı değerlendir"
                             >
-                                <Star className="h-5 w-5" />
-                                <span className="text-sm">Değerlendir</span>
+                                <Star className="h-5 w-5 shrink-0" />
+                                <span className="text-[11px] text-center leading-tight break-words">Değerlendir</span>
                             </Button>
                         )}
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button size="lg" className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-3 col-span-2 sm:col-span-1">
-                                    <IdCard className="h-5 w-5" />
-                                    <span className="text-sm">Yaka kartı</span>
+                                <Button size="lg" className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0 col-span-1">
+                                    <IdCard className="h-5 w-5 shrink-0" />
+                                    <span className="text-[11px] text-center leading-tight break-words">Yaka kartı</span>
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-3xl">

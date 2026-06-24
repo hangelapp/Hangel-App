@@ -611,9 +611,9 @@ export default function EventManagementPage() {
                                             key={event.id}
                                             className="p-4 border rounded-2xl flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between group hover:bg-accent/50 transition-colors"
                                         >
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <h4 className="font-bold">{event.name || t('ngo_admin_events.unnamedEvent')}</h4>
+                                            <div className="space-y-1 min-w-0">
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <h4 className="font-bold break-words min-w-0">{event.name || t('ngo_admin_events.unnamedEvent')}</h4>
                                                     <StatusBadge status={event.status} />
                                                 </div>
                                                 <p className="text-xs text-muted-foreground">
@@ -621,7 +621,7 @@ export default function EventManagementPage() {
                                                     {event.location?.city ? ` • ${event.location.city}` : ''}
                                                 </p>
                                             </div>
-                                            <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+                                            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto sm:flex-wrap sm:overflow-x-visible sm:flex-shrink-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                                                 <SocialShareButton
                                                     kind="event"
                                                     item={{
@@ -756,7 +756,7 @@ export default function EventManagementPage() {
                         {/* Etkinlik Türü — çoktan seçmeli */}
                         <div className="space-y-2">
                             <Label>Etkinlik Türü (birden fazla seçebilirsiniz)</Label>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 border border-border rounded-xl bg-card max-h-44 overflow-y-auto overflow-x-hidden">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 border border-border rounded-xl bg-card max-h-44 overflow-y-auto overflow-x-hidden min-w-0">
                                 {EVENT_TYPE_OPTIONS.map((opt) => (
                                     <label key={opt} className="flex items-center gap-2 text-sm cursor-pointer min-w-0">
                                         <Checkbox
@@ -764,7 +764,7 @@ export default function EventManagementPage() {
                                             checked={evTypes.includes(opt)}
                                             onCheckedChange={(c) => setEvTypes((prev) => (c === true ? [...prev, opt] : prev.filter((x) => x !== opt)))}
                                         />
-                                        <span className="truncate">{opt}</span>
+                                        <span className="break-words min-w-0">{opt}</span>
                                     </label>
                                 ))}
                             </div>

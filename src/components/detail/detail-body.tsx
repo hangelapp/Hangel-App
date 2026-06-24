@@ -144,6 +144,13 @@ export function DetailColumns({
 /**
  * Sticky alt CTA barı — translucent materyal, güvenli alan, ≥44px buton.
  * Etkinlik + gönüllülük detayında tutarlı birincil eylem yeri.
+ *
+ * LAYOUT SÖZLEŞMESİ: Bu bar `sticky bottom-0` olduğundan, içerik bar'ın
+ * altına kaymasın diye SAYFA içerik kapsayıcısı yeterli alt padding
+ * vermelidir. Bar yüksekliği ~60px (py-4) + `env(safe-area-inset-bottom)`
+ * olduğundan, çağıran sayfa en az `pb-32` (~128px) bırakmalıdır
+ * (örn. volunteering/[id]/page.tsx). Bu pay kısaltılırsa uzun sekme
+ * içeriklerinde son satır bar'ın arkasında kalır.
  */
 export function DetailStickyBar({
   children,
