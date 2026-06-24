@@ -244,34 +244,6 @@ export default function DiscoverPage() {
     return out;
   }, [firestoreBrands, apiBrands]);
 
-  // "Markalar" ikon butonu için tam liste — id ile deduplı, pasif/silinmiş elenmiş,
-  // RASTGELE sıralı (alfabetik değil). Sıra `randSeed` ile deterministik karıştırılır:
-  // oturum başına sabit (her render aynı), her ziyarette farklı; render içinde
-  // Math.random YOK (pure useMemo). Her biri marka sayfasına (/market/{id}) gider.
-  const brandList = useMemo(() => {
-    const seen = new Set<string>();
-    const out: Brand[] = [];
-    for (const b of [...(firestoreBrands || []), ...apiBrands]) {
-      if (!b?.id || !b?.name || seen.has(b.id)) continue;
-      const status = (b as Brand & { status?: string }).status;
-      if (status === 'Silindi' || status === 'Pasif' || status === 'Reddedildi') continue;
-      seen.add(b.id);
-      out.push(b);
-    }
-    let s = Math.floor(randSeed * 2_147_483_646) + 1;
-    const rand = () => {
-      s = (s + 0x6d2b79f5) | 0;
-      let t = Math.imul(s ^ (s >>> 15), 1 | s);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-    for (let i = out.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1));
-      [out[i], out[j]] = [out[j], out[i]];
-    }
-    return out;
-  }, [firestoreBrands, apiBrands, randSeed]);
-
   // Kategori filtresi: ürün `category` alanından türetilir; yoksa marka adı
   // ikincil grup olarak kullanılır (her ürünün en az markası vardır).
   const categories = useMemo(() => {
@@ -484,43 +456,18 @@ export default function DiscoverPage() {
             />
           </div>
 
-          {/* Markalar — listele (arama ile filtre/sırala arasında) */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-11 w-11 shrink-0 rounded-2xl border-none bg-background shadow-sm"
-                aria-label="Markalar"
-              >
-                <Store className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto rounded-2xl">
-              <DropdownMenuLabel>Markalar</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {brandList.length === 0 ? (
-                <DropdownMenuItem disabled>Markalar yükleniyor…</DropdownMenuItem>
-              ) : (
-                brandList.map((b) => {
-                  const rate = Number(b.donationRate);
-                  return (
-                    <DropdownMenuItem key={b.id} asChild className="gap-2">
-                      <Link href={`/market/${b.id}`} className="flex w-full items-center gap-2">
-                        <span className="relative h-6 w-6 shrink-0 overflow-hidden rounded-md bg-white ring-1 ring-black/5">
-                          <BrandLogo brand={b} />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate">{b.name}</span>
-                        {Number.isFinite(rate) && rate > 0 && (
-                          <span className="shrink-0 text-[10px] font-bold text-primary">%{Math.round(rate)}</span>
-                        )}
-                      </Link>
-                    </DropdownMenuItem>
-                  );
-                })
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Markalar — markaların liste sayfasını açar (/market/brands) */}
+          <Button
+            asChild
+            variant="outline"
+            size="icon"
+            className="h-11 w-11 shrink-0 rounded-2xl border-none bg-background shadow-sm"
+            aria-label="Markalar"
+          >
+            <Link href="/market/brands">
+              <Store className="h-5 w-5" />
+            </Link>
+          </Button>
 
           {/* Kategori filtre */}
           <DropdownMenu>
