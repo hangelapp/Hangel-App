@@ -920,7 +920,7 @@ export default function OutreachHubPage() {
                             <Checkbox checked={selectedIds.has(r.id)} onCheckedChange={() => toggleSelect(r.id)} />
                           </td>
                           <td className="px-3 py-2 max-w-[300px]">
-                            <p className="font-medium truncate">{r.name}</p>
+                            <p className="font-medium break-words">{r.name}</p>
                             {r.type && <p className="text-[10px] text-muted-foreground">{r.type}</p>}
                           </td>
                           <td className="px-3 py-2 hidden md:table-cell text-xs">

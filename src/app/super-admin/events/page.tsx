@@ -222,7 +222,7 @@ function EventRow({
               <AvatarImage src={orgLogo} alt={organizer} />
               <AvatarFallback className="text-[8px] font-bold bg-muted">{(organizer || '?').charAt(0)}</AvatarFallback>
             </Avatar>
-            <span className="font-semibold truncate">{organizer}</span>
+            <span className="font-semibold break-words">{organizer}</span>
           </p>
           <p className="text-[11px] text-muted-foreground flex items-center gap-3 flex-wrap">
             <span className="inline-flex items-center gap-1">

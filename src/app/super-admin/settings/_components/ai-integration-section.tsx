@@ -327,7 +327,7 @@ export function AiIntegrationSection() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-bold">{p.title || p.institution || 'Proje'}</p>
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className="break-words text-xs text-muted-foreground">
                         {p.userName}{p.ngoName ? ` · ${p.ngoName}` : ''} → {p.institution || '—'}
                       </p>
                     </div>

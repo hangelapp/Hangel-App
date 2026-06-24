@@ -498,7 +498,7 @@ export default function DonationsAdminPage() {
                                         <div key={d.id} className={`p-4 flex flex-col md:flex-row md:items-center gap-3 hover:bg-muted/30 ${isPaid ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-orange-400'}`}>
                                             <div className="flex-1 min-w-0 space-y-1">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <p className="font-bold text-sm truncate">{d.brandName || d.brand || 'Marka'}</p>
+                                                    <p className="font-bold text-sm break-words">{d.brandName || d.brand || 'Marka'}</p>
                                                     <Badge variant="outline" className={`text-[10px] font-bold uppercase ${tone.class}`}>
                                                         <StatusIcon className="h-3 w-3 mr-1" />
                                                         {tone.label}
@@ -508,7 +508,7 @@ export default function DonationsAdminPage() {
                                                     {d.userName || d.userEmail || d.userId} · {fmtDate(d.createdAt) || fmtDate(d.date)}
                                                 </p>
                                                 {d.ngo && d.ngo.length > 0 && (
-                                                    <p className="text-xs text-muted-foreground truncate">STK: {d.ngo.join(', ')}</p>
+                                                    <p className="text-xs text-muted-foreground break-words">STK: {d.ngo.join(', ')}</p>
                                                 )}
                                             </div>
                                             <div className="text-right shrink-0 space-y-0.5">

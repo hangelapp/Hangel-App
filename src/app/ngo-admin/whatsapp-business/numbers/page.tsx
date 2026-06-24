@@ -295,7 +295,7 @@ export default function WhatsAppBusinessNumbersPage() {
                         <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
                         {n.phoneNumber || '—'}
                       </CardTitle>
-                      <p className="text-sm text-muted-foreground truncate">
+                      <p className="text-sm text-muted-foreground break-words">
                         {n.displayName || 'İsim atanmamış'}
                       </p>
                     </div>

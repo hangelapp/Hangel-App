@@ -333,7 +333,7 @@ export default function WhatsAppBusinessHubPage() {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-medium truncate">
+                        <span className="text-sm font-medium break-words">
                           {c.contactName || c.contactPhone}
                         </span>
                         {c.contactName && (

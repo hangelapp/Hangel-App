@@ -265,7 +265,7 @@ export default function PostsAdminPage() {
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <p className="font-bold text-sm truncate">{post.author?.name || 'Bilinmeyen'}</p>
+                                        <p className="font-bold text-sm break-words">{post.author?.name || 'Bilinmeyen'}</p>
                                         {status === 'Aktif' && <Badge className="bg-green-600 text-[10px]">AKTİF</Badge>}
                                         {isPending && <Badge className="bg-amber-500 text-[10px]">ONAY BEKLİYOR</Badge>}
                                         {isPassive && <Badge variant="secondary" className="text-[10px]">PASİF</Badge>}

@@ -651,7 +651,7 @@ export default function NgoAdsAdminPage() {
                                                     <div className="flex items-center gap-3">
                                                         <span className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0"><BarChart3 className="h-4 w-4" /></span>
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="text-[14px] font-medium text-foreground truncate">{ngoNameById.get(m.ngoId) || m.ngoId}</p>
+                                                            <p className="text-[14px] font-medium text-foreground break-words">{ngoNameById.get(m.ngoId) || m.ngoId}</p>
                                                             {m.customerId && <p className="text-[12px] text-muted-foreground truncate">Müşteri No: {m.customerId}</p>}
                                                         </div>
                                                     </div>
@@ -703,7 +703,7 @@ export default function NgoAdsAdminPage() {
                                                     <div className="flex items-center gap-3">
                                                         <span className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0"><BarChart3 className="h-4 w-4" /></span>
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="text-[14px] font-medium text-foreground truncate">{ngoNameById.get(m.ngoId) || m.ngoId}</p>
+                                                            <p className="text-[14px] font-medium text-foreground break-words">{ngoNameById.get(m.ngoId) || m.ngoId}</p>
                                                             {m.adAccountId && <p className="text-[12px] text-muted-foreground truncate">Reklam Hesabı: {m.adAccountId}</p>}
                                                         </div>
                                                     </div>
@@ -755,7 +755,7 @@ export default function NgoAdsAdminPage() {
                                                     <div className="flex items-center gap-3">
                                                         <span className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0"><BarChart3 className="h-4 w-4" /></span>
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="text-[14px] font-medium text-foreground truncate">{ngoNameById.get(m.ngoId) || m.ngoId}</p>
+                                                            <p className="text-[14px] font-medium text-foreground break-words">{ngoNameById.get(m.ngoId) || m.ngoId}</p>
                                                             {m.advertiserId && <p className="text-[12px] text-muted-foreground truncate">Reklamveren No: {m.advertiserId}</p>}
                                                         </div>
                                                     </div>
@@ -856,7 +856,7 @@ function AgencyPanel({ agency, loading, connecting, pendingCampaignId, onConnect
                                 <div key={acc.customerId} className="rounded-2xl bg-card border border-border/60 shadow-sm p-3.5 space-y-3">
                                     <div className="flex items-center gap-2">
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-[14px] font-semibold text-foreground truncate">{acc.name}</p>
+                                            <p className="text-[14px] font-semibold text-foreground break-words">{acc.name}</p>
                                             <p className="text-[11px] text-muted-foreground tabular-nums truncate">{acc.customerId}</p>
                                         </div>
                                         {acc.ngoId && (
@@ -994,7 +994,7 @@ function PlanRow({ plan, expanded, onToggle, onChangeStatus, pending, disabled, 
                 <span className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><Megaphone className="h-4 w-4" /></span>
                 <div className="min-w-0 flex-1">
                     <p className="text-[14px] font-medium text-foreground truncate">{plan.title}</p>
-                    <p className="text-[12px] text-muted-foreground truncate">{plan.ngoName || plan.ngoId} · {KIND_LABEL[plan.kind] || plan.kind}</p>
+                    <p className="text-[12px] text-muted-foreground break-words">{plan.ngoName || plan.ngoId} · {KIND_LABEL[plan.kind] || plan.kind}</p>
                 </div>
                 <span className={cn('text-[11px] rounded-full px-2.5 py-1 font-semibold shrink-0', tint)}>{STATUS_LABEL[plan.status] || plan.status}</span>
                 <ChevronDown className={cn('h-4 w-4 text-muted-foreground shrink-0 transition-transform', expanded && 'rotate-180')} />

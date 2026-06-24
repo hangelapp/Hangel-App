@@ -256,7 +256,7 @@ export default function NgoAdminInboxPage() {
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-center mb-1 gap-2">
-                                        <span className={cn('text-sm truncate', isUnread(msg) ? 'font-bold' : 'font-semibold')}>
+                                        <span className={cn('text-sm break-words', isUnread(msg) ? 'font-bold' : 'font-semibold')}>
                                             {msg.sender?.name || t('ngoAdminInbox.userFallback')}
                                         </span>
                                         <span className="text-[10px] text-muted-foreground shrink-0">{formatTimestamp((msg as { timestamp?: unknown }).timestamp)}</span>

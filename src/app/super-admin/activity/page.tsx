@@ -227,10 +227,10 @@ export default function SuperAdminActivityPage() {
                               <Badge variant="outline" className={`${meta.color} text-[9px] font-black uppercase border-0`}>
                                 {meta.label}
                               </Badge>
-                              <p className="font-bold text-sm truncate">{e.title}</p>
+                              <p className="font-bold text-sm break-words">{e.title}</p>
                             </div>
                             <p className="text-xs text-muted-foreground truncate">{e.subtitle}</p>
-                            {e.actor && <p className="text-[10px] text-muted-foreground/80 truncate mt-0.5">👤 {e.actor} tarafından</p>}
+                            {e.actor && <p className="text-[10px] text-muted-foreground/80 break-words mt-0.5">👤 {e.actor} tarafından</p>}
                           </div>
                           <span className="text-[10px] text-muted-foreground/70 whitespace-nowrap">{formatTs(e.timestamp)}</span>
                         </div>
@@ -338,7 +338,7 @@ function SessionsPanel() {
           <div key={s.sessionId} className="flex items-center gap-3 py-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-bold text-sm truncate">{s.userName}</p>
+                <p className="font-bold text-sm break-words">{s.userName}</p>
                 <Badge variant="outline" className={cn('text-[9px] font-black uppercase border-0', roleBadge(s.role))}>{s.roleLabel}</Badge>
               </div>
               <p className="text-[11px] text-muted-foreground truncate">{[s.deviceName, s.browserName].filter(Boolean).join(' · ') || 'Cihaz bilinmiyor'}</p>

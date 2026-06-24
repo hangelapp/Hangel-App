@@ -339,7 +339,7 @@ export function AdminList() {
                     </Avatar>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium truncate">{row.name}</p>
+                        <p className="font-medium break-words">{row.name}</p>
                         {isOwnerRow && (
                           <Badge variant="outline" className="text-[10px] font-bold px-2 py-0 bg-amber-100 text-amber-800 border-amber-300/50 dark:bg-amber-900/40 dark:text-amber-300">
                             Kuruluş Sahibi

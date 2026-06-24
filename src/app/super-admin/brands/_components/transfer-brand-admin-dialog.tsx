@@ -188,7 +188,7 @@ export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign, onNeedUser
                                             </Avatar>
                                             <div className="flex-1 min-w-[140px]">
                                                 <div className="flex items-center gap-1.5">
-                                                    <p className="font-bold text-sm truncate">{row.name}</p>
+                                                    <p className="font-bold text-sm break-words">{row.name}</p>
                                                     {row.isOwner && (
                                                         <Badge variant="outline" className="text-[9px] font-bold px-1.5 py-0 bg-amber-100 text-amber-800 border-amber-300/50">Sahip</Badge>
                                                     )}

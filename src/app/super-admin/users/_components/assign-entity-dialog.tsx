@@ -422,7 +422,7 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
                     <li key={key} className="flex items-center gap-2 bg-card rounded-xl p-2 border border-amber-100">
                       <Icon className="h-4 w-4 text-amber-700 shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold truncate">{a.entityName}</p>
+                        <p className="text-xs font-bold break-words">{a.entityName}</p>
                         <p className="text-[10px] text-muted-foreground">
                           {entityKindLabels[a.kind]} · {a.roleTitle}
                         </p>
@@ -516,7 +516,7 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate">{entity.name || 'İsimsiz'}</p>
+                      <p className="text-sm font-bold break-words">{entity.name || 'İsimsiz'}</p>
                       {entity.category && (
                         <p className="text-[11px] text-muted-foreground truncate">{entity.category}</p>
                       )}

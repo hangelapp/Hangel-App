@@ -359,7 +359,7 @@ export default function AdminPage() {
                             </div>
                         </div>
                         <div className="flex-1 min-w-0 space-y-0.5">
-                            <p className="font-bold text-base sm:text-lg text-foreground truncate group-hover:text-primary transition-colors">{item.name}</p>
+                            <p className="font-bold text-base sm:text-lg text-foreground break-words group-hover:text-primary transition-colors">{item.name}</p>
                             <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="outline" className="text-xs font-black uppercase tracking-widest bg-muted border-none text-muted-foreground">{item.type}</Badge>
                                 <Badge variant="outline" className={cn("text-xs font-black uppercase tracking-widest px-2 py-0.5", statusVariantMap[item.status as keyof typeof statusVariantMap])}>

@@ -411,7 +411,7 @@ export default function DataEnrichmentPage() {
                         {isExp ? <ChevronDown className="h-4 w-4 mt-1 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 mt-1 shrink-0 text-muted-foreground" />}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-medium truncate">{l.name}</p>
+                            <p className="text-sm font-medium break-words">{l.name}</p>
                             {changedKeys.length > 0 ? (
                               <span className="text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Güncellendi</span>
                             ) : (

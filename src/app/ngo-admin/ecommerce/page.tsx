@@ -136,7 +136,7 @@ export default function EcommerceManagementPage() {
                                     </div>
                                 </div>
                                 <CardContent className="p-4">
-                                    <h4 className="font-bold text-sm truncate">{product.name}</h4>
+                                    <h4 className="font-bold text-sm break-words">{product.name}</h4>
                                     <p className="text-lg font-black text-primary">{product.price}</p>
                                     <p className="text-[10px] text-muted-foreground">{t('ngo_admin_ecommerce.productStockLabel')}: {product.stock}</p>
                                 </CardContent>

@@ -138,7 +138,7 @@ export function ApprovalsTab() {
               <div key={g.key} className="border-b">
                 <div className="flex items-center gap-2 p-3 bg-muted/40 flex-wrap">
                   <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="font-bold text-sm min-w-0 truncate">{g.userName}</span>
+                  <span className="font-bold text-sm min-w-0 break-words">{g.userName}</span>
                   <Badge variant="outline" className="text-[9px]">{USER_TYPE_LABEL[g.userType] || g.userType}</Badge>
                   <Badge variant="secondary" className="text-[9px] ml-auto">{g.records.length} onay</Badge>
                 </div>

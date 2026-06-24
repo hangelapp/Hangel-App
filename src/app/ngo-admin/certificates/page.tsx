@@ -309,7 +309,7 @@ export default function OrgCertificatesPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="text-[11px] font-bold tracking-[0.2em] text-[#f34723] uppercase">Kurum Etki Sertifikası</p>
-                    <h2 className="text-2xl font-black tracking-tight text-foreground truncate mt-0.5">{orgName || 'Kurumunuz'}</h2>
+                    <h2 className="text-2xl font-black tracking-tight text-foreground break-words mt-0.5">{orgName || 'Kurumunuz'}</h2>
                     <span className="inline-flex items-center gap-1.5 mt-2 rounded-full bg-[#f34723]/10 px-3 py-1 text-xs font-bold text-[#c5391b]">
                       <Sparkles className="h-3.5 w-3.5" /> Toplam Etki
                     </span>
@@ -430,7 +430,7 @@ export default function OrgCertificatesPage() {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-sm leading-tight">{c.title || c.eventName || 'Sertifika'}</h3>
                         {c.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-3">{c.description}</p>}
-                        {c.ngoName && <p className="text-[11px] text-muted-foreground mt-1 truncate">{c.ngoName}</p>}
+                        {c.ngoName && <p className="text-[11px] text-muted-foreground mt-1 break-words">{c.ngoName}</p>}
                       </div>
                     </div>
                     {c.date && (

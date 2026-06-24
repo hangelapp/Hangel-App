@@ -54,7 +54,7 @@ export function ApplicationReviewCard({ application, onDecision, pending }: Prop
           <AvatarFallback>{initial}</AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-          <p className="font-semibold text-sm truncate">
+          <p className="font-semibold text-sm break-words">
             {application.userName || t('ngo_admin_volunteering.review.volunteerFallback')}
           </p>
           <div className="flex flex-wrap items-center gap-1 mt-0.5">

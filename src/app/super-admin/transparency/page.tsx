@@ -429,7 +429,7 @@ export default function TransparencyPage() {
                       <AvatarFallback>{(ngo.name || '?').charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold truncate">{ngo.name}</p>
+                      <p className="font-bold break-words">{ngo.name}</p>
                       <p className="text-xs text-muted-foreground">{ngo.category} · {ngo.type}</p>
                     </div>
                     {(() => {

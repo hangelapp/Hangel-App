@@ -1216,7 +1216,7 @@ export default function EmergencyManagementPage() {
                                     </div>
                                   )}
                                   <div className="min-w-0">
-                                    <p className="font-bold text-sm truncate">{lookedUpName}</p>
+                                    <p className="font-bold text-sm break-words">{lookedUpName}</p>
                                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
                                       {lookedUpEmail && (
                                         <a href={`mailto:${lookedUpEmail}`} className="flex items-center gap-1 hover:text-primary">

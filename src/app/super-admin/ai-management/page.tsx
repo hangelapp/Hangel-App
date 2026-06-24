@@ -612,7 +612,7 @@ function ProjectCriteriaManager() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="font-medium text-sm truncate">{item.institution || id}</span>
+                      <span className="font-medium text-sm break-words">{item.institution || id}</span>
                     </div>
                     {item.requirements && (
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">

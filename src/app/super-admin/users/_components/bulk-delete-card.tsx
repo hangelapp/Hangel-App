@@ -89,7 +89,7 @@ export const BulkDeleteCard = ({
                 <div className="max-h-48 overflow-y-auto border rounded-lg p-3 space-y-1 text-xs bg-muted/30">
                   {matchingByEmail.map(u => (
                     <div key={u.id} className="flex justify-between gap-2">
-                      <span className="truncate">{u.name || 'İsimsiz'}</span>
+                      <span className="break-words">{u.name || 'İsimsiz'}</span>
                       <code className="text-[10px] text-muted-foreground">{u.id.slice(0, 12)}…</code>
                     </div>
                   ))}

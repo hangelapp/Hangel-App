@@ -297,7 +297,7 @@ function BroadcastAccordionItem({
                                                 <div className="flex items-center gap-2 min-w-0">
                                                     <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                                                     <div className="min-w-0">
-                                                        <p className="text-xs font-bold truncate">{g.orgName}</p>
+                                                        <p className="text-xs font-bold break-words">{g.orgName}</p>
                                                         <p className="text-[10px] text-muted-foreground">{g.orgKind}</p>
                                                     </div>
                                                 </div>
@@ -339,8 +339,8 @@ function BroadcastAccordionItem({
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div className="min-w-0">
-                                                    <span className="text-sm truncate block">{displayName}</span>
-                                                    <span className="text-[10px] text-muted-foreground truncate block">
+                                                    <span className="text-sm break-words block">{displayName}</span>
+                                                    <span className="text-[10px] text-muted-foreground break-words block">
                                                         {resolved?.orgName || 'Bireysel'}
                                                     </span>
                                                 </div>
@@ -995,7 +995,7 @@ export default function CommunicationsPage() {
                                                             <AvatarFallback>{(entity.name || '?')[0]}</AvatarFallback>
                                                         </Avatar>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-medium truncate">{entity.name}</p>
+                                                            <p className="text-sm font-medium break-words">{entity.name}</p>
                                                             <p className="text-[10px] text-muted-foreground flex items-center gap-1 truncate">
                                                                 <Icon className="h-2.5 w-2.5" />
                                                                 {entity.sub} {entity.phone && `• ${entity.phone}`}

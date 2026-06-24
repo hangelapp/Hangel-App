@@ -235,7 +235,7 @@ export default function SetSuperAdminPage() {
                       <AvatarFallback>{(u.name || u.displayName || 'U').charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate">{u.name || u.displayName || 'İsimsiz'}</p>
+                      <p className="text-sm font-semibold break-words">{u.name || u.displayName || 'İsimsiz'}</p>
                       <p className="text-xs text-muted-foreground truncate">
                         {u.personalInfo?.phone || u.phoneNumber || u.personalInfo?.email || u.email || u.id}
                       </p>
@@ -341,7 +341,7 @@ export default function SetSuperAdminPage() {
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-bold truncate">{u.name || u.displayName || 'İsimsiz'}</p>
+                          <p className="text-sm font-bold break-words">{u.name || u.displayName || 'İsimsiz'}</p>
                           <Badge variant="outline" className="text-[9px]">{permCount}/{SUPER_ADMIN_PAGES.length} yetki</Badge>
                           {isSelf && <Badge className="text-[9px] bg-primary/10 text-primary">Sen</Badge>}
                         </div>

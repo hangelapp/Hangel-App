@@ -225,7 +225,7 @@ export default function FeedAdminPage() {
               {feeds.map((f) => (
                 <div key={f.feedId} className="py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-bold truncate">{f.name}</p>
+                    <p className="font-bold break-words">{f.name}</p>
                     <p className="text-xs text-muted-foreground">feedId {f.feedId} · offerId {f.offerId} · <Badge variant="outline" className="text-[9px] uppercase">{f.type}</Badge></p>
                   </div>
                   <Button size="sm" variant="outline" className="rounded-xl font-bold shrink-0" onClick={() => ingest(f)} disabled={ingesting === f.feedId}>
@@ -313,7 +313,7 @@ export default function FeedAdminPage() {
             <div className="divide-y border-t border-border max-h-[60vh] overflow-y-auto">
               {filteredBrands.map((b) => (
                 <div key={b.id} className="px-5 py-3 flex items-center justify-between gap-3">
-                  <p className="font-medium truncate min-w-0">{b.name}</p>
+                  <p className="font-medium break-words min-w-0">{b.name}</p>
                   <div className="flex items-center gap-2 shrink-0">
                     {savingMode === b.id && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
                     <Select value={b.listingMode || DEFAULT_LISTING_MODE} onValueChange={(v) => setBrandMode(b.id, v as ListingMode)}>

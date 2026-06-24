@@ -60,7 +60,7 @@ export const UserRowItem = ({
         </Avatar>
         <div className="space-y-0.5 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-bold text-foreground truncate">{user.name || 'İsimsiz'}</p>
+            <p className="font-bold text-foreground break-words">{user.name || 'İsimsiz'}</p>
             <Badge variant={user.role === 'super-admin' ? 'default' : user.role === 'ngo-admin' ? 'secondary' : 'outline'} className="text-[9px] font-black uppercase tracking-widest">
               {roleLabel[user.role || 'user']}
             </Badge>

@@ -301,7 +301,7 @@ function OrgSwitcher() {
           <span className="flex min-w-0 items-center gap-2">
             <CurrentIcon className="h-4 w-4 shrink-0 text-primary" />
             <span className="flex min-w-0 flex-col">
-              <span className="truncate text-sm font-bold">{current?.name ?? 'Varlık Seç'}</span>
+              <span className="break-words text-sm font-bold">{current?.name ?? 'Varlık Seç'}</span>
               {current && (
                 <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                   {KIND_LABEL[current.kind]}
@@ -326,7 +326,7 @@ function OrgSwitcher() {
             >
               <Icon className="h-4 w-4 shrink-0 text-primary" />
               <span className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-bold">{org.name}</span>
+                <span className="break-words text-sm font-bold">{org.name}</span>
                 <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                   {KIND_LABEL[org.kind]}
                 </span>
@@ -618,7 +618,7 @@ function EntityIdentityBanner() {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-base sm:text-lg font-black truncate">{current.name}</h2>
+            <h2 className="text-base sm:text-lg font-black break-words">{current.name}</h2>
             <Badge variant="outline" className="text-xs uppercase tracking-widest font-bold">
               {entityTypeLabel(current.kind, current.subType)}
             </Badge>

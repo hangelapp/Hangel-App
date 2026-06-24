@@ -636,7 +636,7 @@ export default function QrPage() {
                       <AvatarFallback className={m ? 'bg-green-500/15 text-green-700' : ''}>{c.name[0]}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate flex items-center gap-1">
+                      <p className="text-sm font-medium break-words flex items-center gap-1">
                         {c.name}
                         {m && <CheckCircle2 className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />}
                       </p>

@@ -288,7 +288,7 @@ export function VenueManager({ activeEntityName, manageable = false }: { activeE
                     <AvatarFallback><Building className="h-6 w-6" /></AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <CardTitle className="text-base sm:text-lg truncate">{v.name}</CardTitle>
+                    <CardTitle className="text-base sm:text-lg break-words">{v.name}</CardTitle>
                     <CardDescription className="text-xs font-bold text-primary uppercase tracking-widest truncate">{v.type || 'Mekan'}{v.city ? ` · ${v.city}` : ''}</CardDescription>
                   </div>
                 </div>

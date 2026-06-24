@@ -182,7 +182,7 @@ export function PublishTab() {
                   <div className="min-w-0 flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">{testUser.name || testUser.displayName || 'Kullanıcı'}</p>
+                      <p className="text-sm font-semibold break-words">{testUser.name || testUser.displayName || 'Kullanıcı'}</p>
                       <p className="text-[11px] text-muted-foreground truncate">{testUser.personalInfo?.phone || testUser.phoneNumber || testUser.id}</p>
                     </div>
                   </div>
@@ -200,7 +200,7 @@ export function PublishTab() {
                         <p className="text-xs text-muted-foreground italic p-3">Eşleşen kullanıcı bulunamadı.</p>
                       ) : matchedTestUsers.map(u => (
                         <button key={u.id} type="button" onClick={() => setTestUser(u)} className="w-full text-left p-2.5 hover:bg-accent flex items-center justify-between gap-2">
-                          <span className="text-sm font-medium truncate">{u.name || u.displayName || 'Kullanıcı'}</span>
+                          <span className="text-sm font-medium break-words">{u.name || u.displayName || 'Kullanıcı'}</span>
                           <span className="text-[11px] text-muted-foreground shrink-0">{u.personalInfo?.phone || u.phoneNumber}</span>
                         </button>
                       ))}

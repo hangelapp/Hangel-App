@@ -79,7 +79,7 @@ export function EntityMultiSelect({
                 {avatarOf(id) ? <AvatarImage src={avatarOf(id)} /> : null}
                 <AvatarFallback className="text-[8px]">{(nameOf(id) || '?').charAt(0)}</AvatarFallback>
               </Avatar>
-              <span className="max-w-[160px] truncate">{nameOf(id)}</span>
+              <span className="max-w-[160px] break-words">{nameOf(id)}</span>
               {!readOnly && (
                 <button type="button" onClick={() => remove(id)} className="ml-0.5 text-muted-foreground hover:text-destructive" aria-label="Kaldır">
                   <X className="h-3 w-3" />
@@ -113,7 +113,7 @@ export function EntityMultiSelect({
                     {(e.avatarUrl || e.logoUrl) ? <AvatarImage src={e.avatarUrl || e.logoUrl} /> : null}
                     <AvatarFallback className="text-[9px]">{(e.name || '?').charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <span className="truncate">{e.name || e.id}</span>
+                  <span className="break-words">{e.name || e.id}</span>
                 </button>
               ))}
             </div>

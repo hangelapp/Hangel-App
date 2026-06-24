@@ -657,7 +657,7 @@ function AnalyticsPageInner() {
                                                 ) : (
                                                     topNgosByDonation.map(n => (
                                                         <TableRow key={n.name}>
-                                                            <TableCell className="truncate max-w-[200px]">{n.name}</TableCell>
+                                                            <TableCell className="break-words max-w-[200px]">{n.name}</TableCell>
                                                             <TableCell className="text-right">{formatTL(n.Bagis)}</TableCell>
                                                             <TableCell className="text-right">{n.Gonulluluk.toLocaleString('tr-TR')}</TableCell>
                                                         </TableRow>

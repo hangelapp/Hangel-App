@@ -307,7 +307,7 @@ export default function MessagingQuotaPage() {
                             return (
                                 <button key={n.id} type="button" onClick={() => setSelectedNgo(n.id)}
                                     className={`w-full text-left p-3 flex items-center justify-between gap-2 hover:bg-muted/30 ${selected ? 'bg-primary/5' : ''}`}>
-                                    <span className="font-semibold text-sm truncate">{n.name || n.id}</span>
+                                    <span className="font-semibold text-sm break-words">{n.name || n.id}</span>
                                     <span className="text-[11px] text-muted-foreground shrink-0">
                                         Kota: {fmtInt(Math.max(0, (w?.smsQuota || 0) - (w?.smsUsed || 0)))} SMS / {fmtInt(Math.max(0, (w?.mailQuota || 0) - (w?.mailUsed || 0)))} mail
                                     </span>
@@ -401,7 +401,7 @@ export default function MessagingQuotaPage() {
                                 <div key={o.id} className="p-4 flex flex-col md:flex-row md:items-center gap-3 hover:bg-muted/30">
                                     <div className="flex-1 min-w-0">
                                         <p className="font-bold text-sm truncate">{o.packageName || 'Kontör Paketi'}</p>
-                                        <p className="text-xs text-muted-foreground truncate">
+                                        <p className="text-xs text-muted-foreground break-words">
                                             {o.ngoName || o.ngoId || 'STK'} · {fmtInt(o.smsUnits || 0)} SMS / {fmtInt(o.mailUnits || 0)} mail
                                             {typeof o.priceTRY === 'number' ? ` · ${fmtInt(o.priceTRY)} ₺` : ''}
                                         </p>

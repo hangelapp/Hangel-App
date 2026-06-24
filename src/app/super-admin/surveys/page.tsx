@@ -58,7 +58,7 @@ const UserCell = ({ userId, userMap }: { userId: string; userMap: Map<string, Su
                 <AvatarImage src={avatar} alt={name} />
                 <AvatarFallback className="text-xs font-bold">{initial}</AvatarFallback>
             </Avatar>
-            <span className="text-sm font-medium truncate">{name}</span>
+            <span className="text-sm font-medium break-words">{name}</span>
         </div>
     );
 };

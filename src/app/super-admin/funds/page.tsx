@@ -521,7 +521,7 @@ export default function FundsAdminPage() {
                                     onCheckedChange={(c) => setDraftSources(prev => prev.map((x, i) => i === idx ? { ...x, enabled: c } : x))}
                                 />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-medium truncate">{s.name}</p>
+                                    <p className="text-sm font-medium break-words">{s.name}</p>
                                     <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-primary hover:underline truncate block">{s.url}</a>
                                 </div>
                                 <Badge variant="outline" className="text-[9px] shrink-0">{s.category}</Badge>
