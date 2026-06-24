@@ -1,16 +1,14 @@
 'use client';
 
 /**
- * QrLoginDialog — "zaten üyeyim → telefonla bu cihazda giriş" (WhatsApp Web deseni).
+ * QrLoginDialog — "zaten üyeyim → telefonla bu cihazda (masaüstü/tablet) giriş".
  *
  * create → QR göster (origin/qr-login/{token}) → status poll → onaylanınca
- * custom token ile signInWithCustomToken → giriş sonrası BİLDİRİM TEŞVİKİ (WhatsApp
- * gibi) → onSuccess. 5 dk TTL, tek kullanımlık.
+ * custom token ile signInWithCustomToken → giriş sonrası bildirim açma teşviki →
+ * onSuccess. 5 dk TTL, tek kullanımlık.
  *
- * UX notları:
- *  - "QR ile giriş" WhatsApp QR'ıyla karıştırılıyordu → başlık "hangel'i bu cihazda aç",
- *    QR'ın yanında numaralı adımlar + "Bu WhatsApp QR'ı değildir" uyarısı.
- *  - Giriş başarılı olunca (tarayıcı izni daha sorulmadıysa) bildirim açmaya teşvik eder.
+ * UX: başlık "hangel'i bu cihazda aç" + QR'ın yanında numaralı adımlar (net, sade);
+ * giriş başarılı olunca (tarayıcı izni daha sorulmadıysa) bildirim açmaya teşvik eder.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -44,8 +42,8 @@ export function QrLoginDialog({
     if (expiryRef.current) { clearTimeout(expiryRef.current); expiryRef.current = null; }
   }, []);
 
-  // Giriş başarılı → WhatsApp gibi bildirim açmaya teşvik et (yalnız izin daha
-  // hiç sorulmadıysa; verildi/reddedildiyse doğrudan tamamla).
+  // Giriş başarılı → bildirim açmaya teşvik et (yalnız izin daha hiç
+  // sorulmadıysa; verildi/reddedildiyse doğrudan tamamla).
   const afterLogin = useCallback(() => {
     const canPrompt = typeof Notification !== 'undefined' && Notification.permission === 'default';
     if (canPrompt) setView('notifications');
@@ -116,7 +114,7 @@ export function QrLoginDialog({
             </DialogHeader>
 
             <div className="flex flex-col gap-5 py-2 sm:flex-row sm:items-center">
-              {/* Adımlar — WhatsApp Web gibi numaralı */}
+              {/* Adımlar — QR'ın yanında numaralı, net */}
               <ol className="flex-1 space-y-3.5">
                 {[
                   <>Telefonunda <strong>hangel</strong> uygulamasını aç.</>,
@@ -149,13 +147,13 @@ export function QrLoginDialog({
               </div>
             </div>
 
-            <div className="flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
+            <div className="flex items-start gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-[11px] font-medium text-muted-foreground">
               <Smartphone className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              <span>Bu, <strong>WhatsApp QR&apos;ı değildir</strong> — kendi <strong>hangel</strong> uygulamandaki QR tarayıcıyı kullan.</span>
+              <span>Kodu telefonundaki <strong>hangel</strong> uygulamasının QR tarayıcısıyla okut.</span>
             </div>
           </>
         ) : (
-          // Giriş sonrası bildirim teşviki (WhatsApp gibi)
+          // Giriş sonrası bildirim teşviki
           <div className="flex flex-col items-center gap-4 py-4 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
               <Bell className="h-8 w-8 text-primary" />

@@ -822,8 +822,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     </Button>
                 </form>
 
-                {/* Zaten üyeyim → telefondaki hangel uygulamasıyla hızlı giriş (app onaylar).
-                    Metin "hangel uygulaması" der: bare "QR ile giriş" WhatsApp QR'ıyla karıştırılıyordu. */}
+                {/* Zaten üyeyim → telefondaki hangel uygulamasıyla hızlı giriş (telefon onaylar). */}
                 <div className="pt-1 text-center">
                     <button
                         type="button"
