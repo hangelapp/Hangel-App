@@ -456,11 +456,10 @@ export default function DiscoverPage() {
   return (
     <div className="flex min-h-full w-full max-w-full flex-col overflow-x-hidden bg-secondary/30">
       {/* ── 1. Üst slim bar — geri + arama + Markalar + filtre/sırala (başlık YOK).
-          Sayfa-kayışına göre header'ın (h-12=48px) hemen altına yapışır (top-12).
-          Her iki kabukta da (giriş yapılmış fixed header / misafir sticky header)
-          header 48px olduğu için top-12 doğru — boşluk bırakmaz, scroll'da header
-          arkasına kaymaz. ── */}
-      <div className="sticky top-12 z-20 w-full max-w-full shrink-0 space-y-2.5 overflow-x-hidden border-b border-border bg-background px-4 py-2.5">
+          top-0: scroll-container'ın tepesi zaten header'ın (48px) ALTINDA başlıyor,
+          dolayısıyla top-0 bar'ı header'ın hemen altına yapıştırır — boşluk bırakmaz
+          + scroll'da görünür kalır. (top-12 burada 48px FAZLA boşluk yaratıyordu.) ── */}
+      <div className="sticky top-0 z-20 w-full max-w-full shrink-0 space-y-2.5 overflow-x-hidden border-b border-border bg-background px-4 py-2.5">
         <div className="flex w-full items-center gap-2">
           {/* Geri */}
           <Button
