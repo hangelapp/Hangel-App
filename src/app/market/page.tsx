@@ -580,6 +580,8 @@ export default function DiscoverPage() {
       icon: Apple,
       gradient: 'from-zinc-900 via-neutral-800 to-black',
       href: '/market/apple',
+      // GERÇEK Apple logosu — BrandLogo targetDomain'den (apple.com) çeker.
+      brand: { id: 'apple', name: 'Apple', slug: 'apple', targetDomain: 'apple.com', donationRate: 5 } as Brand,
     },
     ...brandBanners,
     {
