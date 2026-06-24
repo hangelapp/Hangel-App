@@ -250,7 +250,7 @@ export default function BrandProfilePage() {
               </Button>
             </div>
             <div className="absolute top-20 right-4 z-10">
-              <ShareButtons url={profileUrl} title={`hangel'deki ${brand.name} mağazasını incele!`} qrTitle={`Mağaza QR Kodu — ${brand.name}`} buttonClassName="bg-background/80 shadow-sm" />
+              <ShareButtons url={profileUrl} title={`hangel'deki ${brand.name} mağazasını incele!`} qrTitle={`Mağaza QR Kodu — ${brand.name}`} buttonClassName="bg-background/80 shadow-sm" agency={brand.agency || 'hangel'} />
             </div>
 
             <div className="flex gap-4 items-center pr-12 sm:pr-0">
