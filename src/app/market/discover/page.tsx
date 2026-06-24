@@ -118,6 +118,14 @@ function groupOf(p: CanonicalProduct): string {
   return broad || raw;
 }
 
+// Yalnız GERÇEK kategori (marka adına DÜŞMEZ). Kategori kutucukları/filtre
+// listesi için: kategorisi olmayan ürünün marka adı "kategori" gibi
+// görünmesin (ör. DAGİ/Intersport/Network kategori değildir).
+function realCategoryOf(p: CanonicalProduct): string {
+  const raw = p.category?.trim() || '';
+  return raw.split(/[>›/]/)[0].trim();
+}
+
 // Yatay kaydırma şeritleri için yinelenen "scrollbar gizli" sınıf.
 const NO_SCROLLBAR =
   '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
@@ -140,7 +148,7 @@ const JUNK_BANNER = /advert store|vidyodan|\bcod\b|landers?|e-?book|e-?kitap|cou
 // anahtar kelime eşlemesi; eşleşmezse genel "paket" ikonu.
 function iconForCategory(name: string): React.ComponentType<{ className?: string }> {
   const n = name.toLocaleLowerCase('tr');
-  if (/giyim|moda|tekstil|elbise|ayakkab|çanta|aksesuar/.test(n)) return Shirt;
+  if (/giyim|moda|tekstil|elbise|ayakkab|çanta|aksesuar|erkek|kadın|kadin|unisex/.test(n)) return Shirt;
   if (/ev|mobilya|dekor|mutfak|bahçe|yaşam/.test(n)) return Home;
   if (/elektronik|telefon|bilgisayar|teknoloji|tablet/.test(n)) return Smartphone;
   if (/bebek|çocuk|anne|oyuncak/.test(n)) return Baby;
@@ -269,22 +277,23 @@ export default function DiscoverPage() {
     return [...famous, ...rest].slice(0, 6);
   }, [firestoreBrands, apiBrands]);
 
-  // Kategori filtresi: ürün `category` alanından türetilir; yoksa marka adı
-  // ikincil grup olarak kullanılır (her ürünün en az markası vardır).
+  // Kategori filtresi: yalnız ürünün GERÇEK `category` alanından türetilir.
+  // Marka adına düşmez — marka adları kategori olarak gösterilmez (markalara
+  // "Tüm Markalar" / /market/brands üzerinden erişilir).
   const categories = useMemo(() => {
     const set = new Set<string>();
     for (const p of products || []) {
-      const cat = groupOf(p);
+      const cat = realCategoryOf(p);
       if (cat) set.add(cat);
     }
     return ['Tümü', ...Array.from(set).sort((a, b) => a.localeCompare(b, 'tr'))];
   }, [products]);
 
-  // En büyük kategoriler (ürün sayısına göre) — hızlı kutucuklar + per-kategori şeritler.
+  // En büyük GERÇEK kategoriler (ürün sayısına göre) — hızlı kutucuklar + şeritler.
   const topCategories = useMemo(() => {
     const counts = new Map<string, number>();
     for (const p of products || []) {
-      const cat = groupOf(p);
+      const cat = realCategoryOf(p);
       if (cat) counts.set(cat, (counts.get(cat) ?? 0) + 1);
     }
     return Array.from(counts.entries())
