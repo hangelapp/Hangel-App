@@ -10,7 +10,7 @@ import type { Brand } from '@/lib/types';
  * Bu bileşen `absolute inset-0` ile render eder; bu yüzden `relative` konumlu
  * ve sabit boyutlu bir kapsayıcı içinde kullanılmalıdır.
  */
-export const BrandLogo = ({ brand }: { brand: Brand }) => {
+export const BrandLogo = ({ brand, padding = 'p-3' }: { brand: Brand; padding?: string }) => {
   // En doğru domain: targetDomain → link → contact.website → marka adından türet.
   const domain = (() => {
     const clean = (h: string) => h.replace(/^www\./, '');
@@ -60,7 +60,7 @@ export const BrandLogo = ({ brand }: { brand: Brand }) => {
     <img
       src={sources[srcIndex]}
       alt={brand.name}
-      className="absolute inset-0 w-full h-full object-contain p-3"
+      className={`absolute inset-0 w-full h-full object-contain ${padding}`}
       onLoad={(e) => {
         const img = e.currentTarget;
         if (img.naturalWidth < 16 || img.naturalHeight < 16) tryNext();
