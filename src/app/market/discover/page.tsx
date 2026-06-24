@@ -48,6 +48,7 @@ import {
   Gem,
   Gift,
   Package,
+  Store,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -236,6 +237,21 @@ export default function DiscoverPage() {
       .slice(0, 3);
   }, [firestoreBrands, apiBrands]);
 
+  // "Markalar" ikon butonu için tam liste — id ile deduplı, pasif/silinmiş elenmiş,
+  // alfabetik. Her biri marka sayfasına (/market/{id}) gider.
+  const brandList = useMemo(() => {
+    const seen = new Set<string>();
+    const out: Brand[] = [];
+    for (const b of [...(firestoreBrands || []), ...apiBrands]) {
+      if (!b?.id || !b?.name || seen.has(b.id)) continue;
+      const status = (b as Brand & { status?: string }).status;
+      if (status === 'Silindi' || status === 'Pasif' || status === 'Reddedildi') continue;
+      seen.add(b.id);
+      out.push(b);
+    }
+    return out.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'tr'));
+  }, [firestoreBrands, apiBrands]);
+
   // Kategori filtresi: ürün `category` alanından türetilir; yoksa marka adı
   // ikincil grup olarak kullanılır (her ürünün en az markası vardır).
   const categories = useMemo(() => {
@@ -353,34 +369,35 @@ export default function DiscoverPage() {
   // Tıklayınca ilgili şeride/filtreye yönlendirir (onClick korunur).
   type Banner = {
     key: string;
-    eyebrow: string; // küçük üst etiket (kicker)
+    eyebrow: string; // küçük üst etiket (kicker) — marka banner'ında marka adı
     title: string;
     subtitle: string;
     cta: string; // CTA chip metni
     icon: React.ComponentType<{ className?: string }>;
     gradient: string;
-    onClick: () => void;
+    onClick?: () => void;
+    href?: string; // verilirse banner <Link> olur (marka sayfasına gider)
     showBrandLogos?: boolean;
+    coverImage?: string; // markanın kurumsal kapak görseli → arka plan
+    brand?: Brand; // marka (logo + kurumsal kimlik için)
   };
-  // En yüksek bağışlı markayı "büyük indirim + bağış kampanyası" banner'ı olarak öne
-  // çıkar — marka logosu + adı + bağış oranıyla, koyu premium kimlikte.
-  const spotlight = topBrands[0];
+  // EN BÜYÜK 2 markanın reklam banner'ı — her biri kendi KURUMSAL KİMLİĞİNDE:
+  // markanın kapak görseli (varsa) arka plan + logosu + "büyük indirim + bağış"
+  // kampanyası; tıklayınca markanın sayfasına gider.
+  const brandBanners: Banner[] = topBrands.slice(0, 2).map((b) => ({
+    key: `brand-${b.id}`,
+    eyebrow: b.name,
+    title: 'Büyük indirim + bağış kampanyası',
+    subtitle: `Hem indirimli hem her alışveriş %${Math.round(Number(b.donationRate))} bağış.`,
+    cta: 'Markaya git',
+    icon: Tag,
+    gradient: 'from-zinc-900 via-zinc-800 to-zinc-700',
+    href: `/market/${b.id}`,
+    coverImage: b.coverPhotoUrl || undefined,
+    brand: b,
+  }));
   const banners: Banner[] = [
-    ...(spotlight
-      ? [
-          {
-            key: 'brand-spotlight',
-            eyebrow: spotlight.name,
-            title: 'Büyük indirim + bağış kampanyası',
-            subtitle: `${spotlight.name} · alışverişin hem indirimli hem %${Math.round(Number(spotlight.donationRate))} bağış.`,
-            cta: 'Markaya git',
-            icon: Tag,
-            gradient: 'from-zinc-900 via-zinc-800 to-zinc-700',
-            onClick: () => setSortBy('donationDesc'),
-            showBrandLogos: true,
-          } satisfies Banner,
-        ]
-      : []),
+    ...brandBanners,
     {
       key: 'donation',
       eyebrow: '#wearehangel',
@@ -443,6 +460,44 @@ export default function DiscoverPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
+          {/* Markalar — listele (arama ile filtre/sırala arasında) */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-11 w-11 shrink-0 rounded-2xl border-none bg-background shadow-sm"
+                aria-label="Markalar"
+              >
+                <Store className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto rounded-2xl">
+              <DropdownMenuLabel>Markalar</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {brandList.length === 0 ? (
+                <DropdownMenuItem disabled>Markalar yükleniyor…</DropdownMenuItem>
+              ) : (
+                brandList.map((b) => {
+                  const rate = Number(b.donationRate);
+                  return (
+                    <DropdownMenuItem key={b.id} asChild className="gap-2">
+                      <Link href={`/market/${b.id}`} className="flex w-full items-center gap-2">
+                        <span className="relative h-6 w-6 shrink-0 overflow-hidden rounded-md bg-white ring-1 ring-black/5">
+                          <BrandLogo brand={b} />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">{b.name}</span>
+                        {Number.isFinite(rate) && rate > 0 && (
+                          <span className="shrink-0 text-[10px] font-bold text-primary">%{Math.round(rate)}</span>
+                        )}
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Kategori filtre */}
           <DropdownMenu>
@@ -584,29 +639,45 @@ export default function DiscoverPage() {
                   >
                     {banners.map((b) => {
                       const Icon = b.icon;
-                      return (
-                        <button
-                          key={b.key}
-                          type="button"
-                          onClick={b.onClick}
-                          className={cn(
-                            'group relative flex h-[188px] w-[86%] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br p-4 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px]',
-                            b.gradient,
+                      const cls = cn(
+                        'group relative flex h-[188px] w-[86%] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-3xl p-4 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px]',
+                        b.coverImage ? 'bg-zinc-900' : cn('bg-gradient-to-br', b.gradient),
+                      );
+                      const content = (
+                        <>
+                          {b.coverImage ? (
+                            <>
+                              {/* Markanın kurumsal kapak görseli + okunabilirlik için koyu overlay */}
+                              <img
+                                src={b.coverImage}
+                                alt={b.eyebrow}
+                                referrerPolicy="no-referrer"
+                                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                              />
+                              <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
+                            </>
+                          ) : (
+                            <>
+                              <span className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full bg-white/20 blur-2xl" />
+                              <span className="pointer-events-none absolute -bottom-16 -left-8 h-40 w-40 rounded-full bg-black/10 blur-2xl" />
+                              <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent" />
+                            </>
                           )}
-                        >
-                          {/* Katmanlı derinlik: yumuşak blur orb'lar + ışık vurgusu */}
-                          <span className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full bg-white/20 blur-2xl" />
-                          <span className="pointer-events-none absolute -bottom-16 -left-8 h-40 w-40 rounded-full bg-black/10 blur-2xl" />
-                          <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent" />
 
-                          {/* Üst satır: kicker + ikon rozeti */}
+                          {/* Üst satır: kicker + (marka logosu | ikon rozeti) */}
                           <div className="relative flex items-center justify-between gap-2">
                             <span className="inline-flex min-w-0 items-center truncate rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide backdrop-blur-sm">
                               {b.eyebrow}
                             </span>
-                            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                              <Icon className="h-5 w-5" aria-hidden="true" />
-                            </span>
+                            {b.brand ? (
+                              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
+                                <BrandLogo brand={b.brand} />
+                              </span>
+                            ) : (
+                              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                                <Icon className="h-5 w-5" aria-hidden="true" />
+                              </span>
+                            )}
                           </div>
 
                           {/* Başlık + alt metin */}
@@ -619,13 +690,13 @@ export default function DiscoverPage() {
                             </p>
                           </div>
 
-                          {/* Alt satır: CTA chip + marka logo kolajı */}
+                          {/* Alt satır: CTA chip + (marka değilse logo kolajı) */}
                           <div className="relative flex items-center justify-between gap-2">
                             <span className="inline-flex items-center gap-1 rounded-full bg-white px-3.5 py-1.5 text-xs font-extrabold text-primary shadow-sm">
                               {b.cta}
                               <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                             </span>
-                            {b.showBrandLogos && topBrands.length > 0 && (
+                            {b.showBrandLogos && !b.brand && topBrands.length > 0 && (
                               <div className="flex items-center -space-x-2.5">
                                 {topBrands.map((brand) => (
                                   <span
@@ -638,6 +709,15 @@ export default function DiscoverPage() {
                               </div>
                             )}
                           </div>
+                        </>
+                      );
+                      return b.href ? (
+                        <Link key={b.key} href={b.href} className={cls}>
+                          {content}
+                        </Link>
+                      ) : (
+                        <button key={b.key} type="button" onClick={b.onClick} className={cls}>
+                          {content}
                         </button>
                       );
                     })}
