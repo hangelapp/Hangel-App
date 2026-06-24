@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect } from '@/components/shared/searchable-select';
+import { TURKISH_UNIVERSITIES, FACULTIES, DEPARTMENTS } from '@/lib/turkish-universities';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
@@ -19,6 +21,7 @@ const STATUS_OPTIONS = ['Devam Ediyor', 'Mezun', 'Terk'];
 interface EducationEntry {
   level: string;
   school: string;
+  faculty?: string;
   department?: string;
   status?: string;
   grade?: string;
@@ -154,9 +157,36 @@ export default function EducationSettingsPage() {
                 <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder={t('educationPage.levelPlaceholder')} /></SelectTrigger>
                 <SelectContent>{EDUCATION_LEVELS.map((l) => (<SelectItem key={l} value={l}>{t(`educationPage.levels.${l}`)}</SelectItem>))}</SelectContent>
               </Select>
-              <Input placeholder={t('educationPage.schoolPlaceholder')} value={entry.school} onChange={(e) => updateEducation(idx, { school: e.target.value })} className="h-10 rounded-lg" />
-              {(entry.level === 'Önlisans' || entry.level === 'Lisans' || entry.level === 'Yüksek Lisans' || entry.level === 'Doktora') && (
-                <Input placeholder={t('educationPage.departmentPlaceholder')} value={entry.department ?? ''} onChange={(e) => updateEducation(idx, { department: e.target.value })} className="h-10 rounded-lg" />
+              {entry.level === 'Lise' ? (
+                <Input placeholder={t('educationPage.schoolPlaceholder')} value={entry.school} onChange={(e) => updateEducation(idx, { school: e.target.value })} className="h-10 rounded-lg" />
+              ) : (
+                <>
+                  {/* Üniversite + fakülte + bölüm — tamamı çoktan seçmeli (aramalı dropdown). */}
+                  <SearchableSelect
+                    options={TURKISH_UNIVERSITIES}
+                    value={entry.school}
+                    onValueChange={(v) => updateEducation(idx, { school: v })}
+                    placeholder="Üniversite seç"
+                    searchPlaceholder="Üniversite ara..."
+                    triggerClassName="h-10 rounded-lg border border-input bg-background px-3 font-normal"
+                  />
+                  <SearchableSelect
+                    options={FACULTIES}
+                    value={entry.faculty ?? ''}
+                    onValueChange={(v) => updateEducation(idx, { faculty: v })}
+                    placeholder="Fakülte seç"
+                    searchPlaceholder="Fakülte ara..."
+                    triggerClassName="h-10 rounded-lg border border-input bg-background px-3 font-normal"
+                  />
+                  <SearchableSelect
+                    options={DEPARTMENTS}
+                    value={entry.department ?? ''}
+                    onValueChange={(v) => updateEducation(idx, { department: v })}
+                    placeholder="Bölüm seç"
+                    searchPlaceholder="Bölüm ara..."
+                    triggerClassName="h-10 rounded-lg border border-input bg-background px-3 font-normal"
+                  />
+                </>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Select value={entry.status ?? ''} onValueChange={(v) => updateEducation(idx, { status: v })}>
