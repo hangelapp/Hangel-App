@@ -238,7 +238,9 @@ export default function DiscoverPage() {
   }, [firestoreBrands, apiBrands]);
 
   // "Markalar" ikon butonu için tam liste — id ile deduplı, pasif/silinmiş elenmiş,
-  // alfabetik. Her biri marka sayfasına (/market/{id}) gider.
+  // RASTGELE sıralı (alfabetik değil). Sıra `randSeed` ile deterministik karıştırılır:
+  // oturum başına sabit (her render aynı), her ziyarette farklı; render içinde
+  // Math.random YOK (pure useMemo). Her biri marka sayfasına (/market/{id}) gider.
   const brandList = useMemo(() => {
     const seen = new Set<string>();
     const out: Brand[] = [];
@@ -249,8 +251,19 @@ export default function DiscoverPage() {
       seen.add(b.id);
       out.push(b);
     }
-    return out.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'tr'));
-  }, [firestoreBrands, apiBrands]);
+    let s = Math.floor(randSeed * 2_147_483_646) + 1;
+    const rand = () => {
+      s = (s + 0x6d2b79f5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  }, [firestoreBrands, apiBrands, randSeed]);
 
   // Kategori filtresi: ürün `category` alanından türetilir; yoksa marka adı
   // ikincil grup olarak kullanılır (her ürünün en az markası vardır).
