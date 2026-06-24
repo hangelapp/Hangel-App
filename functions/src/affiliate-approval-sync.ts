@@ -55,9 +55,9 @@ interface ScannedOffer {
   agency: string;
   rawName: string;
   name: string; // temizlenmiş görünen ad
-  approvalStatus: string; // '' = null/açık
+  approvalStatus: string; // '' = null
   status: string;
-  payoutType: string;
+  requireApproval: string; // '0' = herkese açık (onay gerekmez)
 }
 
 // api-clients.ts cleanBrandName ile aynı mantık (ad eşleştirmesi tutarlı olsun).
@@ -77,21 +77,14 @@ function normName(name: string): string {
   return cleanBrandName(name).toLowerCase().trim();
 }
 
-// Alışverişe dönüştürülemeyen (lead/install/HR/crypto/bölge-dışı) offer'lar —
-// api-clients.ts MANUAL_FORCE_HIDE ile birebir aynı tutulur.
-const MANUAL_FORCE_HIDE: Record<string, Set<string>> = {
-  reklamaction: new Set(['580', '62180', '62356', '62369', '62372', '62374', '62412']),
-  affocean: new Set(['2720', '2723']),
-};
-
-// isListableOffer (api-clients.ts) ile birebir aynı kural: status active +
-// approval_status approved/boş (rejected/pending hariç) + manuel force-hide dışında.
-function isListable(o: { id: string; network: string; approvalStatus: string; status: string }): boolean {
+// isListableOffer (api-clients.ts) ile birebir aynı kural: status active VE
+// (approval_status='approved' VEYA require_approval=0/yok). require_approval=1 olup
+// onaysız (null=pending) ya da rejected offer'lar komisyon üretmez → listelenmez.
+function isListable(o: { approvalStatus: string; status: string; requireApproval: string }): boolean {
   if (o.status.toLowerCase() !== 'active') return false;
-  const a = o.approvalStatus.toLowerCase();
-  if (a === 'rejected' || a === 'pending') return false;
-  if (MANUAL_FORCE_HIDE[o.network]?.has(o.id)) return false;
-  return true;
+  const approved = o.approvalStatus.toLowerCase() === 'approved';
+  const open = (o.requireApproval || '1') === '0';
+  return approved || open;
 }
 
 async function scanNetwork(cfg: NetworkCfg): Promise<ScannedOffer[]> {
@@ -108,7 +101,7 @@ async function scanNetwork(cfg: NetworkCfg): Promise<ScannedOffer[]> {
       'fields[1]': 'name',
       'fields[2]': 'approval_status',
       'fields[3]': 'status',
-      'fields[4]': 'payout_type',
+      'fields[4]': 'require_approval',
       limit: '500',
       page: String(page),
     });
@@ -131,7 +124,7 @@ async function scanNetwork(cfg: NetworkCfg): Promise<ScannedOffer[]> {
     }
     const data = resp.data?.data;
     if (!data || typeof data !== 'object') break;
-    const entries = Object.values(data) as Array<{ Offer?: { id?: string; name?: string; approval_status?: string | null; status?: string | null; payout_type?: string | null } }>;
+    const entries = Object.values(data) as Array<{ Offer?: { id?: string; name?: string; approval_status?: string | null; status?: string | null; require_approval?: string | number | null } }>;
     if (entries.length === 0) break;
     for (const e of entries) {
       const o = e?.Offer;
@@ -144,7 +137,7 @@ async function scanNetwork(cfg: NetworkCfg): Promise<ScannedOffer[]> {
         name: cleanBrandName(o.name),
         approvalStatus: o.approval_status == null ? '' : String(o.approval_status),
         status: o.status == null ? '' : String(o.status),
-        payoutType: o.payout_type == null ? '' : String(o.payout_type),
+        requireApproval: o.require_approval == null ? '' : String(o.require_approval),
       });
     }
     const pageCount = resp.data?.pageCount ?? 1;

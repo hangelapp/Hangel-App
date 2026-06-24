@@ -49,49 +49,34 @@ const getDomainFromUrl = (urlString: string, fallback: string): string => {
 };
 
 // ── Listeleme kuralı (affiliate onay-senkron robotu ile aynı) ────────────────
-// Bir offer Market'te kullanıcıya GÖSTERİLİR ancak:
+// Bir offer Market'te kullanıcıya GÖSTERİLİR (= bağış/komisyon işlenebilir) ancak:
 //   • status === 'active' VE
-//   • approval_status 'approved' VEYA boş/null (onay gerektirmeyen açık offer).
-//     'rejected'/'pending' offer'ların tracking link'i çalışmaz → DIŞARIDA.
+//   • approval_status === 'approved'  (affiliate hesabımız bu offer'a onaylanmış)
+//     VEYA require_approval === 0/yok  (herkese açık offer, onay gerektirmez).
 //
-// Eskiden bu, elle bakımı yapılan statik bir id blocklist'iydi
-// (DENIED_OFFER_IDS_BY_NETWORK). Stale kaldığında onaylanan markaları yanlışlıkla
-// gizliyor, reddedilenleri kaçırıyordu. Artık ağ API'sinin canlı approval_status
-// alanıyla her fetch'te kendiliğinden güncellenir; günlük `affiliateApprovalSync`
-// Cloud Function'ı da aynı kuralı tüm ağlarda tarar, yeni onayları/çıkarmaları
-// raporlar ve elle eklenmiş Firestore `brands` kayıtlarını bu kurala göre eşitler.
+// require_approval=1 olup approval_status 'approved' OLMAYAN offer'lar (null=pending
+// veya rejected) hesabımıza AÇILMAMIŞTIR → tracking link komisyon/bağış üretmez →
+// kullanıcıya GÖSTERİLMEZ. (HasOffers'da null approval = "onay bekliyor"; ekip
+// 2026-06 taramasında doğrulamıştı — require_approval bunu kesinleştirir.)
 //
-// NOT: payout_type'a göre süzmüyoruz — ağlar tutarsız (GelirOrtaklari retail
-// markaları 'cpc', bazı onaylı retail offer'lar 'cpa_flat'). Gerçek-olmayan
-// (lead/install/HR/crypto) birkaç offer approval_status ile ayırt edilemediği
-// için aşağıdaki MANUAL_FORCE_HIDE ile elle dışarıda tutulur.
-type OfferApproval = { approval_status?: string | null; status?: string | null };
+// Eskiden elle bakımı yapılan statik id blocklist'i (DENIED_OFFER_IDS_BY_NETWORK)
+// vardı; stale kalıyordu. Artık ağ API'sinin canlı approval_status + require_approval
+// alanlarıyla her fetch'te kendiliğinden güncellenir; günlük `affiliateApprovalSync`
+// Cloud Function'ı aynı kuralı tarar, yeni onay/çıkarmaları raporlar ve elle eklenmiş
+// Firestore `brands` kayıtlarını bu kurala göre eşitler. Bu kural lead/install/CPC
+// offer'larını da (hepsi require_approval=1 + onaysız) otomatik eler.
+type OfferApproval = { approval_status?: string | null; status?: string | null; require_approval?: string | number | null };
 export function isListableOffer(o: OfferApproval): boolean {
   if ((o.status ?? '').toLowerCase() !== 'active') return false;
-  const a = (o.approval_status ?? '').toLowerCase();
-  if (a === 'rejected' || a === 'pending') return false;
-  return true;
+  const approved = (o.approval_status ?? '').toLowerCase() === 'approved';
+  // Alan eksikse onay GEREKİYOR varsay (güvenli taraf): yalnız approved listelenir.
+  const open = String(o.require_approval ?? '1') === '0';
+  return approved || open;
 }
 
-// Alışverişe dönüştürülemeyen (lead/install/HR/crypto/bölge-dışı) offer'lar.
-// approval_status bunları "açık" gösterse de Market'e uygun değil — elle gizlenir.
-// Yeni gelen non-retail offer'lar affiliateApprovalSync raporunda "yeni offer"
-// olarak super-admin'e bildirilir; gerekirse buraya eklenir.
-const MANUAL_FORCE_HIDE: Record<string, Set<string>> = {
-  reklamaction: new Set([
-    '580',   // Modanisa Kuponlu Takip (kupon-takip kampanyası, doğrudan satış değil)
-    '62180', // I Find Location CPL (lead)
-    '62356', // Idefix Android-Ios (uygulama install)
-    '62369', // Portfun TR (lead/oyun)
-    '62372', // Chat Fun TR (lead)
-    '62374', // Flo Influencer Install+Satis (install)
-    '62412', // Modanisa JO+GCC+UAE-SA (TR dışı bölge)
-  ]),
-  affocean: new Set([
-    '2720', // Bilişim - HR [CPC] (İK/lead, retail değil)
-    '2723', // Bitcointr [CPC] (kripto, retail değil)
-  ]),
-};
+// Nadir acil durumda bir markayı (kural onaylasa bile) elle gizlemek için id override.
+// Varsayılan boş; lead/install/CPC offer'ları kural zaten elediği için gerekmez.
+const MANUAL_FORCE_HIDE: Record<string, Set<string>> = {};
 
 // ── Generic HasOffers/Tune API ───────────────────────────────────────────────
 interface HasOffersConfig {
@@ -172,7 +157,7 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
     if (!pageData || typeof pageData !== 'object') break;
 
     type OfferEntry = {
-      Offer?: { id?: string; name?: string; description?: string; preview_url?: string; offer_url?: string; payout_type?: string; percent_payout?: string; default_payout?: string; approval_status?: string | null; status?: string | null };
+      Offer?: { id?: string; name?: string; description?: string; preview_url?: string; offer_url?: string; payout_type?: string; percent_payout?: string; default_payout?: string; approval_status?: string | null; status?: string | null; require_approval?: string | number | null };
       Thumbnail?: { thumbnail?: string; display?: string };
       OfferCategory?: Record<string, { name?: string }>;
     };
@@ -354,7 +339,7 @@ async function fetchHasOffersTemplates(config: HasOffersConfig): Promise<Resolve
     if (!pageData || typeof pageData !== 'object') break;
 
     type OfferEntry = {
-      Offer?: { id?: string; name?: string; preview_url?: string; offer_url?: string; percent_payout?: string; approval_status?: string | null; status?: string | null; payout_type?: string | null };
+      Offer?: { id?: string; name?: string; preview_url?: string; offer_url?: string; percent_payout?: string; approval_status?: string | null; status?: string | null; require_approval?: string | number | null };
     };
     const offerEntries = Object.values(pageData) as OfferEntry[];
     if (offerEntries.length === 0) break;
