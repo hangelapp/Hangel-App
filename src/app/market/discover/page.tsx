@@ -122,6 +122,16 @@ function groupOf(p: CanonicalProduct): string {
 const NO_SCROLLBAR =
   '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
+// Banner'da öne çıkarılacak TANINMIŞ markalar (öncelik sırası). Yüklü markalar
+// arasında bulunan ilk 2'si reklam banner'ı olur.
+const FAMOUS_PRIORITY = [
+  'arçelik', 'beko', 'media markt', 'mediamarkt', 'puma', 'mango', 'boyner',
+  'marks & spencer', 'h&m', 'teknosa', 'columbia', 'skechers', 'xiaomi',
+  'huawei', 'network', 'gant', 'koton',
+];
+// Banner/kolaja KOYULMAYACAK dropship/lead/junk markalar.
+const JUNK_BANNER = /advert store|vidyodan|\bcod\b|landers?|e-?book|e-?kitap|coupon|attribution|promo/i;
+
 // Kategori adı → temsili ikon (Trendyol hızlı kutucukları gibi). Türkçe/İngilizce
 // anahtar kelime eşlemesi; eşleşmezse genel "paket" ikonu.
 function iconForCategory(name: string): React.ComponentType<{ className?: string }> {
@@ -225,23 +235,34 @@ export default function DiscoverPage() {
     return brandRate.average;
   };
 
-  // En yüksek bağış oranlı 3 marka — kampanya banner'ında logolarını göstermek için.
+  // Banner + logo kolajında gösterilecek markalar. "En yüksek bağış oranı"
+  // sıralaması dropship/junk markaları (Advert Store, Vidyodan, COD ürünleri)
+  // öne çıkarıyordu; bunun yerine TANINMIŞ markaları önceliklendirip kalanını
+  // bağış oranına göre dolduruyoruz. İlk 2 marka reklam banner'ı olur.
   const topBrands = useMemo(() => {
-    const sorted = [...(firestoreBrands || []), ...apiBrands]
-      .filter((b) => b && Number.isFinite(Number(b.donationRate)) && Number(b.donationRate) > 0)
-      .sort((a, b) => Number(b.donationRate) - Number(a.donationRate));
-    // İsme göre tekille — aynı marka birden fazla kayıtta olabilir; banner'lar/kolaj
-    // FARKLI markalar göstersin (2x "Advert Store" olmasın).
+    const all = [...(firestoreBrands || []), ...apiBrands].filter(
+      (b) => b && b.name && Number.isFinite(Number(b.donationRate)) && Number(b.donationRate) > 0 && !JUNK_BANNER.test(b.name),
+    );
+    // İsme göre tekille (aynı marka birden fazla kayıtta olabilir).
     const seen = new Set<string>();
-    const out: Brand[] = [];
-    for (const b of sorted) {
+    const uniq: Brand[] = [];
+    for (const b of all) {
       const nm = (b.name || '').trim().toLowerCase();
       if (!nm || seen.has(nm)) continue;
       seen.add(nm);
-      out.push(b);
-      if (out.length === 6) break;
+      uniq.push(b);
     }
-    return out;
+    // Önce tanınmış markalar (öncelik sırasıyla), sonra kalanlar bağış oranına göre.
+    const famous: Brand[] = [];
+    for (const key of FAMOUS_PRIORITY) {
+      const hit = uniq.find((b) => {
+        const nm = (b.name || '').trim().toLowerCase();
+        return nm === key || nm.includes(key);
+      });
+      if (hit && !famous.includes(hit)) famous.push(hit);
+    }
+    const rest = uniq.filter((b) => !famous.includes(b)).sort((a, b) => Number(b.donationRate) - Number(a.donationRate));
+    return [...famous, ...rest].slice(0, 6);
   }, [firestoreBrands, apiBrands]);
 
   // Kategori filtresi: ürün `category` alanından türetilir; yoksa marka adı
@@ -456,19 +477,6 @@ export default function DiscoverPage() {
             />
           </div>
 
-          {/* Markalar — markaların liste sayfasını açar (/market/brands) */}
-          <Button
-            asChild
-            variant="outline"
-            size="icon"
-            className="h-11 w-11 shrink-0 rounded-2xl border-none bg-background shadow-sm"
-            aria-label="Markalar"
-          >
-            <Link href="/market/brands">
-              <Store className="h-5 w-5" />
-            </Link>
-          </Button>
-
           {/* Kategori filtre */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -610,7 +618,7 @@ export default function DiscoverPage() {
                     {banners.map((b) => {
                       const Icon = b.icon;
                       const cls = cn(
-                        'group relative flex h-[188px] w-[86%] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-3xl p-4 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px]',
+                        'group relative flex h-[96px] w-[92%] shrink-0 snap-start overflow-hidden rounded-3xl p-3 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px]',
                         b.coverImage ? 'bg-zinc-900' : cn('bg-gradient-to-br', b.gradient),
                       );
                       const content = (
@@ -624,60 +632,54 @@ export default function DiscoverPage() {
                                 referrerPolicy="no-referrer"
                                 className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                               />
-                              <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
+                              <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/25" />
                             </>
                           ) : (
                             <>
-                              <span className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full bg-white/20 blur-2xl" />
-                              <span className="pointer-events-none absolute -bottom-16 -left-8 h-40 w-40 rounded-full bg-black/10 blur-2xl" />
+                              <span className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/20 blur-2xl" />
                               <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent" />
                             </>
                           )}
 
-                          {/* Üst satır: kicker + (marka logosu | ikon rozeti) */}
-                          <div className="relative flex items-center justify-between gap-2">
-                            <span className="inline-flex min-w-0 items-center truncate rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide backdrop-blur-sm">
-                              {b.eyebrow}
-                            </span>
+                          {/* Kompakt yatay düzen (yarı yükseklik): logo + metin + CTA */}
+                          <div className="relative flex h-full w-full items-center gap-3">
                             {b.brand ? (
-                              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
+                              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
                                 <BrandLogo brand={b.brand} />
                               </span>
-                            ) : (
-                              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                                <Icon className="h-5 w-5" aria-hidden="true" />
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Başlık + alt metin */}
-                          <div className="relative">
-                            <p className="text-lg font-black leading-tight drop-shadow-sm">
-                              {b.title}
-                            </p>
-                            <p className="mt-1 line-clamp-2 max-w-[88%] text-xs font-medium text-white/90">
-                              {b.subtitle}
-                            </p>
-                          </div>
-
-                          {/* Alt satır: CTA chip + (marka değilse logo kolajı) */}
-                          <div className="relative flex items-center justify-between gap-2">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-white px-3.5 py-1.5 text-xs font-extrabold text-primary shadow-sm">
-                              {b.cta}
-                              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                            </span>
-                            {b.showBrandLogos && !b.brand && topBrands.length > 0 && (
-                              <div className="flex items-center -space-x-2.5">
-                                {topBrands.map((brand) => (
+                            ) : b.showBrandLogos && topBrands.length > 0 ? (
+                              <div className="flex shrink-0 items-center -space-x-2.5">
+                                {topBrands.slice(0, 3).map((brand) => (
                                   <span
                                     key={brand.id}
-                                    className="relative inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white"
+                                    className="relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white"
                                   >
                                     <BrandLogo brand={brand} />
                                   </span>
                                 ))}
                               </div>
+                            ) : (
+                              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                                <Icon className="h-6 w-6" aria-hidden="true" />
+                              </span>
                             )}
+
+                            <div className="min-w-0 flex-1">
+                              <span className="mb-0.5 inline-flex max-w-full items-center truncate rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide backdrop-blur-sm">
+                                {b.eyebrow}
+                              </span>
+                              <p className="truncate text-sm font-black leading-tight drop-shadow-sm">
+                                {b.title}
+                              </p>
+                              <p className="truncate text-[11px] font-medium text-white/85">
+                                {b.subtitle}
+                              </p>
+                            </div>
+
+                            <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-white px-3 py-1.5 text-[11px] font-extrabold text-primary shadow-sm">
+                              {b.cta}
+                              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            </span>
                           </div>
                         </>
                       );
@@ -708,6 +710,24 @@ export default function DiscoverPage() {
                       ))}
                     </div>
                   )}
+
+                  {/* Tüm markalar — yatay buton (arama yanındaki icon yerine geçti).
+                      Markaların liste sayfasını (/market/brands) açar. */}
+                  <div className="px-4 pt-3">
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="h-12 w-full justify-between rounded-2xl border-none bg-background shadow-sm"
+                    >
+                      <Link href="/market/brands">
+                        <span className="flex items-center gap-2 text-sm font-bold">
+                          <Store className="h-5 w-5 text-primary" />
+                          Tüm Markalar
+                        </span>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </Link>
+                    </Button>
+                  </div>
                 </section>
 
                 {/* ── 4. Hızlı kategori kutucukları ── */}
