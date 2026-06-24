@@ -122,8 +122,12 @@ function groupOf(p: CanonicalProduct): string {
 const NO_SCROLLBAR =
   '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
-// Banner'da öne çıkarılacak TANINMIŞ markalar (öncelik sırası). Yüklü markalar
-// arasında bulunan ilk 2'si reklam banner'ı olur.
+// Reklam banner'ı yapılacak SABİT markalar (sırayla). Katalogda + çalışan
+// affiliate linki olanlar banner olur; onaysız/linksiz olan (ör. Samsung onay
+// bekliyorsa) otomatik atlanır, offer onaylanınca kendiliğinden banner'a girer.
+const PINNED_BANNER_BRANDS = ['ebebek', 'samsung'];
+
+// Logo kolajında öne çıkarılacak TANINMIŞ markalar (öncelik sırası).
 const FAMOUS_PRIORITY = [
   'arçelik', 'beko', 'media markt', 'mediamarkt', 'puma', 'mango', 'boyner',
   'marks & spencer', 'h&m', 'teknosa', 'columbia', 'skechers', 'xiaomi',
@@ -394,10 +398,23 @@ export default function DiscoverPage() {
     coverImage?: string; // markanın kurumsal kapak görseli → arka plan
     brand?: Brand; // marka (logo + kurumsal kimlik için)
   };
-  // EN BÜYÜK 2 markanın reklam banner'ı — her biri kendi KURUMSAL KİMLİĞİNDE:
-  // markanın kapak görseli (varsa) arka plan + logosu + "büyük indirim + bağış"
-  // kampanyası; tıklayınca markanın sayfasına gider.
-  const brandBanners: Banner[] = topBrands.slice(0, 2).map((b) => ({
+  // Sabitlenen markaların (PINNED_BANNER_BRANDS) reklam banner'ı — yalnız
+  // katalogda bulunan + çalışan affiliate linki olanlar. Her biri kendi kurumsal
+  // kimliğinde: kapak görseli (varsa) arka plan + logosu + kampanya; markaya gider.
+  const pinnedBannerBrands = useMemo(() => {
+    const pool = [...apiBrands, ...(firestoreBrands || [])];
+    const out: Brand[] = [];
+    for (const key of PINNED_BANNER_BRANDS) {
+      const hit = pool.find((b) => {
+        const nm = (b?.name || '').trim().toLowerCase();
+        return !!b?.link && (nm === key || nm.includes(key));
+      });
+      if (hit && !out.some((o) => o.id === hit.id)) out.push(hit);
+    }
+    return out;
+  }, [apiBrands, firestoreBrands]);
+
+  const brandBanners: Banner[] = pinnedBannerBrands.map((b) => ({
     key: `brand-${b.id}`,
     eyebrow: b.name,
     title: 'Büyük indirim + bağış kampanyası',
