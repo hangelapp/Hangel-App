@@ -252,11 +252,13 @@ export default function DiscoverPage() {
   // sıralaması dropship/junk markaları (Advert Store, Vidyodan, COD ürünleri)
   // öne çıkarıyordu; bunun yerine TANINMIŞ markaları önceliklendirip kalanını
   // bağış oranına göre dolduruyoruz. İlk 2 marka reklam banner'ı olur.
-  const topBrands = useMemo(() => {
+  // Tüm gösterilebilir markalar (tekil, junk hariç): önce tanınmışlar, sonra
+  // bağış oranına göre. topBrands (kolaj), brandStripItems (marka şeridi) ve
+  // matchedBrands (marka araması) bundan türetilir.
+  const rankedBrands = useMemo(() => {
     const all = [...(firestoreBrands || []), ...apiBrands].filter(
       (b) => b && b.name && Number.isFinite(Number(b.donationRate)) && Number(b.donationRate) > 0 && !JUNK_BANNER.test(b.name),
     );
-    // İsme göre tekille (aynı marka birden fazla kayıtta olabilir).
     const seen = new Set<string>();
     const uniq: Brand[] = [];
     for (const b of all) {
@@ -265,7 +267,6 @@ export default function DiscoverPage() {
       seen.add(nm);
       uniq.push(b);
     }
-    // Önce tanınmış markalar (öncelik sırasıyla), sonra kalanlar bağış oranına göre.
     const famous: Brand[] = [];
     for (const key of FAMOUS_PRIORITY) {
       const hit = uniq.find((b) => {
@@ -275,8 +276,24 @@ export default function DiscoverPage() {
       if (hit && !famous.includes(hit)) famous.push(hit);
     }
     const rest = uniq.filter((b) => !famous.includes(b)).sort((a, b) => Number(b.donationRate) - Number(a.donationRate));
-    return [...famous, ...rest].slice(0, 6);
+    return [...famous, ...rest];
   }, [firestoreBrands, apiBrands]);
+
+  const topBrands = useMemo(() => rankedBrands.slice(0, 6), [rankedBrands]);
+  const brandStripItems = useMemo(() => rankedBrands.slice(0, 20), [rankedBrands]);
+
+  // Marka araması — arama metni bir marka adıyla eşleşirse o markayı öne çıkar
+  // (önce markanın kartı/sayfası, sonra ürünler). Token bazlı esnek eşleşme.
+  const matchedBrands = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return [];
+    return rankedBrands
+      .filter((b) => {
+        const nm = (b.name || '').toLowerCase();
+        return nm.includes(term) || term.includes(nm);
+      })
+      .slice(0, 8);
+  }, [rankedBrands, searchTerm]);
 
   // Kategori filtresi: yalnız ürünün GERÇEK `category` alanından türetilir.
   // Marka adına düşmez — marka adları kategori olarak gösterilmez (markalara
@@ -519,18 +536,48 @@ export default function DiscoverPage() {
     return out;
   }, [apiBrands, firestoreBrands]);
 
-  const brandBanners: Banner[] = pinnedBannerBrands.map((b) => ({
+  // Banner markasının ürünlerindeki EN BÜYÜK indirim oranını çek (alt satırda
+  // "%X'e varan indirim" göstermek için). Marka feed'de yoksa 0 → indirim satırı atlanır.
+  const [brandMaxDiscount, setBrandMaxDiscount] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (!db || pinnedBannerBrands.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      pinnedBannerBrands.map(async (b) => {
+        try {
+          const prods = await searchProducts(db, { brandName: b.name, max: 200 });
+          const mx = prods.reduce((m, p) => Math.max(m, discountPct(p)), 0);
+          return [b.id, mx] as const;
+        } catch {
+          return [b.id, 0] as const;
+        }
+      }),
+    ).then((entries) => {
+      if (!cancelled) setBrandMaxDiscount(Object.fromEntries(entries));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [db, pinnedBannerBrands]);
+
+  const brandBanners: Banner[] = pinnedBannerBrands.map((b) => {
+    const rate = Math.round(Number(b.donationRate));
+    const disc = brandMaxDiscount[b.id] ?? 0;
+    return {
     key: `brand-${b.id}`,
     eyebrow: b.name,
-    title: 'Büyük indirim + bağış kampanyası',
-    subtitle: `Hem indirimli hem her alışveriş %${Math.round(Number(b.donationRate))} bağış.`,
+    title: 'Hem indirim hem bağış',
+    subtitle: disc > 0
+      ? `%${disc}'e varan indirim · her alışveriş %${rate} bağış`
+      : `Her alışveriş %${rate} bağış`,
     cta: 'Markaya git',
     icon: Tag,
     gradient: 'from-zinc-900 via-zinc-800 to-zinc-700',
     href: `/market/${b.id}`,
     coverImage: b.coverPhotoUrl || undefined,
     brand: b,
-  }));
+    };
+  });
   const banners: Banner[] = [
     ...brandBanners,
     {
@@ -760,7 +807,7 @@ export default function DiscoverPage() {
                     {banners.map((b) => {
                       const Icon = b.icon;
                       const cls = cn(
-                        'group relative flex h-[96px] w-[90vw] max-w-[calc(100vw-2rem)] shrink-0 snap-start overflow-hidden rounded-3xl p-3 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px] sm:max-w-none',
+                        'group relative flex h-[144px] w-[90vw] max-w-[calc(100vw-2rem)] shrink-0 snap-start overflow-hidden rounded-3xl p-3 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px] sm:max-w-none',
                         b.coverImage ? 'bg-zinc-900' : cn('bg-gradient-to-br', b.gradient),
                       );
                       const content = (
@@ -786,7 +833,7 @@ export default function DiscoverPage() {
                           {/* Kompakt yatay düzen (yarı yükseklik): logo + metin + CTA */}
                           <div className="relative flex h-full w-full items-center gap-3">
                             {b.brand ? (
-                              <span className="relative inline-flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
+                              <span className="relative inline-flex h-[120px] w-[120px] shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
                                 <BrandLogo brand={b.brand} />
                               </span>
                             ) : b.showBrandLogos && topBrands.length > 0 ? (
@@ -794,15 +841,15 @@ export default function DiscoverPage() {
                                 {topBrands.slice(0, 3).map((brand) => (
                                   <span
                                     key={brand.id}
-                                    className="relative inline-flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white"
+                                    className="relative inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white"
                                   >
                                     <BrandLogo brand={brand} />
                                   </span>
                                 ))}
                               </div>
                             ) : (
-                              <span className="inline-flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                                <Icon className="h-9 w-9" aria-hidden="true" />
+                              <span className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                                <Icon className="h-8 w-8" aria-hidden="true" />
                               </span>
                             )}
 
@@ -896,6 +943,8 @@ export default function DiscoverPage() {
                   resolveRate={resolveProductRate}
                   onSeeAll={scrollToAll}
                 />
+                {/* Marka kartları şeridi — Öne Çıkanlar ürünlerinin ÜZERİNDE. */}
+                <BrandStrip title="Markalar" items={brandStripItems} />
                 <ProductStrip
                   title="Öne Çıkanlar"
                   icon={Sparkles}
@@ -916,6 +965,12 @@ export default function DiscoverPage() {
                   ) : null,
                 )}
               </>
+            )}
+
+            {/* Marka araması — arama bir markayla eşleşirse o markanın kartı
+                ÜRÜNLERİN ÜSTÜNDE çıkar (önce marka sayfası, sonra ürünler). */}
+            {matchedBrands.length > 0 && (
+              <BrandStrip title="Marka" items={matchedBrands} showSeeAll={false} />
             )}
 
             {/* ── 6. "Tüm Ürünler" ana grid ── */}
@@ -1002,6 +1057,47 @@ function ProductStrip({
           <div key={p.id} className="w-36 shrink-0 sm:w-40">
             <ProductCard product={p} donationRate={resolveRate(p)} />
           </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// Marka kartı — logo + ad + bağış oranı; markanın sayfasına gider.
+function BrandCard({ brand }: { brand: Brand }) {
+  const rate = Math.round(Number(brand.donationRate)) || 0;
+  return (
+    <Link href={`/market/${brand.slug || brand.id}`} className="block w-36 shrink-0 sm:w-40">
+      <div className="flex flex-col items-center rounded-2xl border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md">
+        <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white ring-1 ring-border">
+          <BrandLogo brand={brand} />
+        </div>
+        <p className="mt-2 w-full truncate text-center text-sm font-bold text-foreground">{brand.name}</p>
+        {rate > 0 && <p className="text-center text-xs font-bold text-primary">%{rate} bağış</p>}
+      </div>
+    </Link>
+  );
+}
+
+// Marka şeridi — ürün şeritleriyle AYNI yatay format, marka kartlarıyla.
+function BrandStrip({ title, items, showSeeAll = true }: { title: string; items: Brand[]; showSeeAll?: boolean }) {
+  if (items.length === 0) return null;
+  return (
+    <section className="w-full max-w-full pt-6">
+      <div className="mb-2.5 flex items-center justify-between gap-2 px-4">
+        <h2 className="flex min-w-0 items-center gap-1.5 text-base font-black text-foreground">
+          <Store className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+          <span className="truncate">{title}</span>
+        </h2>
+        {showSeeAll && (
+          <Link href="/market/brands" className="inline-flex shrink-0 items-center gap-0.5 text-xs font-bold text-primary">
+            Tümü <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
+      </div>
+      <div className={cn('flex w-full min-w-0 gap-2.5 overflow-x-auto px-4 pb-1', NO_SCROLLBAR)}>
+        {items.map((b) => (
+          <BrandCard key={b.id} brand={b} />
         ))}
       </div>
     </section>
