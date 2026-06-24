@@ -114,18 +114,29 @@ function discountPct(p: CanonicalProduct): number {
 // Ham feed kategorisi uzun bir YOL olabilir ("Aksesuar>Kablolar, Dönüştürücüler
 // ve Prizler" / "Telefon › Telefon Aksesuarları") → en geniş (ilk) segmenti alıp
 // temizliyoruz; böylece çipler/kutucuklar kısa, okunur, Trendyol-vari olur.
+// Anlamlı OLMAYAN genel kova kategorileri — gerçek ürün kategorisi değil, pazarlama
+// etiketi (feed'de %40+ ürün "Kampanyalar" altında). Kategori şeritlerinde atlanır.
+const CATEGORY_JUNK =
+  /^(kampanya|kampanyalar|koleksiyon|koleksiyonlar|yeni|yeniler|fırsat|fırsatlar|set ürünler|outlet|tüm ürünler|indirim|öne çıkan|popüler|çok satan)/i;
+
 function groupOf(p: CanonicalProduct): string {
-  const raw = p.category?.trim() || p.brandName?.trim() || '';
-  const broad = raw.split(/[>›/]/)[0].trim();
-  return broad || raw;
+  return realCategoryOf(p) || p.brandName?.trim() || '';
 }
 
 // Yalnız GERÇEK kategori (marka adına DÜŞMEZ). Kategori kutucukları/filtre
 // listesi için: kategorisi olmayan ürünün marka adı "kategori" gibi
 // görünmesin (ör. DAGİ/Intersport/Network kategori değildir).
+// Ürünün GERÇEK (anlamlı) kategorisi: kategori yolunu `> › / ,` ayraçlarına böler,
+// genel kova segmentlerini (Kampanyalar/Koleksiyonlar...) atlar, ilk anlamlı segmenti
+// döndürür. Hepsi çöpse '' → o ürün kategori şeridine girmez.
 function realCategoryOf(p: CanonicalProduct): string {
   const raw = p.category?.trim() || '';
-  return raw.split(/[>›/]/)[0].trim();
+  if (!raw) return '';
+  const segs = raw.split(/[>›/,]/).map((s) => s.trim()).filter(Boolean);
+  for (const s of segs) {
+    if (!CATEGORY_JUNK.test(s)) return s;
+  }
+  return '';
 }
 
 // Yatay kaydırma şeritleri için yinelenen "scrollbar gizli" sınıf.
