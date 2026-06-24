@@ -48,72 +48,48 @@ const getDomainFromUrl = (urlString: string, fallback: string): string => {
   return fallback;
 };
 
-// ── Denied/pending offer blocklist ──────────────────────────────────────────
-// HasOffers API'leri "status=active" filter'ı uygulansa da affiliate hesabımız
-// için reddedilmiş (denied/pending) offer'ları da listeliyor — bu offer'lara
-// tıklayan kullanıcı kırık tracking link görüyor. Panel'deki "Canlı Teklifler"
-// (approved) listesi ile karşılaştırılarak elde edildi (2026-06-05).
-// Kaynak: scripts/affiliate-panel-deep-scrape.ts + scripts/affiliate-panel-reklamaction-only.ts
-// 2026-06-10 — Rüya hanım yanıtı sonrası canlı API approval_status taraması ile
-// güncellendi (Affiliate_Offer.findAll + fields[]=approval_status). Yalnızca
-// approval_status != 'approved' (rejected/pending) olan offer'lar bloklanır;
-// approved olanlar Market'te kullanıcıya gösterilir.
-const DENIED_OFFER_IDS_BY_NETWORK: Record<string, Set<string>> = {
+// ── Listeleme kuralı (affiliate onay-senkron robotu ile aynı) ────────────────
+// Bir offer Market'te kullanıcıya GÖSTERİLİR ancak:
+//   • status === 'active' VE
+//   • approval_status 'approved' VEYA boş/null (onay gerektirmeyen açık offer).
+//     'rejected'/'pending' offer'ların tracking link'i çalışmaz → DIŞARIDA.
+//
+// Eskiden bu, elle bakımı yapılan statik bir id blocklist'iydi
+// (DENIED_OFFER_IDS_BY_NETWORK). Stale kaldığında onaylanan markaları yanlışlıkla
+// gizliyor, reddedilenleri kaçırıyordu. Artık ağ API'sinin canlı approval_status
+// alanıyla her fetch'te kendiliğinden güncellenir; günlük `affiliateApprovalSync`
+// Cloud Function'ı da aynı kuralı tüm ağlarda tarar, yeni onayları/çıkarmaları
+// raporlar ve elle eklenmiş Firestore `brands` kayıtlarını bu kurala göre eşitler.
+//
+// NOT: payout_type'a göre süzmüyoruz — ağlar tutarsız (GelirOrtaklari retail
+// markaları 'cpc', bazı onaylı retail offer'lar 'cpa_flat'). Gerçek-olmayan
+// (lead/install/HR/crypto) birkaç offer approval_status ile ayırt edilemediği
+// için aşağıdaki MANUAL_FORCE_HIDE ile elle dışarıda tutulur.
+type OfferApproval = { approval_status?: string | null; status?: string | null };
+export function isListableOffer(o: OfferApproval): boolean {
+  if ((o.status ?? '').toLowerCase() !== 'active') return false;
+  const a = (o.approval_status ?? '').toLowerCase();
+  if (a === 'rejected' || a === 'pending') return false;
+  return true;
+}
+
+// Alışverişe dönüştürülemeyen (lead/install/HR/crypto/bölge-dışı) offer'lar.
+// approval_status bunları "açık" gösterse de Market'e uygun değil — elle gizlenir.
+// Yeni gelen non-retail offer'lar affiliateApprovalSync raporunda "yeni offer"
+// olarak super-admin'e bildirilir; gerekirse buraya eklenir.
+const MANUAL_FORCE_HIDE: Record<string, Set<string>> = {
   reklamaction: new Set([
-    // 2026-06-10: 9 marka onaylandı (Banggood, S Sport Plus, havhav, Supplementler,
-    // Vitaminler, Fitmoda, miyav, Kuponkod, LG Coupon) → açıldı, artık Market'te görünür.
-    // Aşağıdakiler hâlâ pending (approval_status=null) → kalır:
-    '580',   // Modanisa Kuponlu Takip
-    '12437', // Beymen
-    '61440', // Tatildekirala.com
-    '62180', // I Find Location CPL
-    '62356', // Idefix Android-Ios
-    '62369', // Portfun TR
-    '62372', // Chat Fun TR
-    '62374', // Flo Influencer Install+Satis
-    '62412', // Modanisa JO+GCC+UAE-SA
+    '580',   // Modanisa Kuponlu Takip (kupon-takip kampanyası, doğrudan satış değil)
+    '62180', // I Find Location CPL (lead)
+    '62356', // Idefix Android-Ios (uygulama install)
+    '62369', // Portfun TR (lead/oyun)
+    '62372', // Chat Fun TR (lead)
+    '62374', // Flo Influencer Install+Satis (install)
+    '62412', // Modanisa JO+GCC+UAE-SA (TR dışı bölge)
   ]),
   affocean: new Set([
-    // 2026-06-10: 14 marka onaylandı (Network, Divarese, Media Markt, Arçelik,
-    // Nautica, Gant, Occasion, Yargıcı, Benetton, Bloom and Fresh, SPX, SuperStep,
-    // Beko, Suwen) → açıldı. Kalan 2 pending (CPC, retail değil):
-    '2720', // Bilişim - HR [CPC]
-    '2723', // Bitcointr [CPC] - PN
-  ]),
-  gelirortaklari: new Set([
-    // 2026-06-10: deniedSet eskiden boştu → 13 rejected + 16 pending marka
-    // kullanıcıya KIRIK tracking link gösteriyordu. API taramasıyla bloklandı.
-    // rejected (link çalışmaz):
-    '6131', // Altınbaş
-    '6718', // Amazon TR
-    '6833', // Bilet.com
-    '6871', // Boyner Now
-    '6658', // Cacharel
-    '6840', // CamperTR
-    '6786', // Decathlon
-    '4908', // Etstur
-    '5396', // IKEA
-    '6196', // Penti
-    '6659', // Pierre Cardin
-    '6647', // Samsung [CPC]
-    '6655', // US Polo Assn
-    // pending (onay bekliyor — onaylanınca çıkarılır):
-    '6782', // Carter's
-    '6899', // Getir Büyük
-    '6895', // Getir
-    '6779', // Gratis
-    '5754', // idefix
-    '6908', // Karaca Core Affiliate
-    '6918', // Karaca Influencer Affiliate
-    '2020', // Mavi
-    '6673', // Mavi Influencer
-    '6776', // MinyCenter
-    '6920', // Pazarama
-    '6646', // Samsung [CPS]
-    '6894', // Tatilbudur
-    '6605', // Tchibo
-    '6743', // Vitaminler
-    '6909', // Yalıspor
+    '2720', // Bilişim - HR [CPC] (İK/lead, retail değil)
+    '2723', // Bitcointr [CPC] (kripto, retail değil)
   ]),
 };
 
@@ -196,22 +172,23 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
     if (!pageData || typeof pageData !== 'object') break;
 
     type OfferEntry = {
-      Offer?: { id?: string; name?: string; description?: string; preview_url?: string; offer_url?: string; payout_type?: string; percent_payout?: string; default_payout?: string };
+      Offer?: { id?: string; name?: string; description?: string; preview_url?: string; offer_url?: string; payout_type?: string; percent_payout?: string; default_payout?: string; approval_status?: string | null; status?: string | null };
       Thumbnail?: { thumbnail?: string; display?: string };
       OfferCategory?: Record<string, { name?: string }>;
     };
     const offerEntries = Object.values(pageData) as OfferEntry[];
     if (offerEntries.length === 0) break;
 
-    const deniedSet = DENIED_OFFER_IDS_BY_NETWORK[config.network];
+    const forceHide = MANUAL_FORCE_HIDE[config.network];
 
     for (const entry of offerEntries) {
       const offer = entry?.Offer;
       if (!offer || !offer.name) continue;
 
-      // Affiliate panel'inde denied/pending olan offer'lar — tracking link
-      // kırık çalışır, kullanıcıya hata gösterir. Listeye eklenmez.
-      if (offer.id && deniedSet?.has(String(offer.id))) continue;
+      // Yalnızca onaylı/açık + satış-tipi (cpa_percentage) offer'lar listelenir.
+      // rejected/pending/lead(cpa_flat) offer'ların link'i kullanıcıya kırık görünür.
+      if (!isListableOffer(offer)) continue;
+      if (offer.id && forceHide?.has(String(offer.id))) continue;
 
       const name = cleanBrandName(offer.name);
       if (!name) continue;
@@ -377,17 +354,19 @@ async function fetchHasOffersTemplates(config: HasOffersConfig): Promise<Resolve
     if (!pageData || typeof pageData !== 'object') break;
 
     type OfferEntry = {
-      Offer?: { id?: string; name?: string; preview_url?: string; offer_url?: string; percent_payout?: string };
+      Offer?: { id?: string; name?: string; preview_url?: string; offer_url?: string; percent_payout?: string; approval_status?: string | null; status?: string | null; payout_type?: string | null };
     };
     const offerEntries = Object.values(pageData) as OfferEntry[];
     if (offerEntries.length === 0) break;
 
-    const deniedSet = DENIED_OFFER_IDS_BY_NETWORK[config.network];
+    const forceHide = MANUAL_FORCE_HIDE[config.network];
 
     for (const entry of offerEntries) {
       const offer = entry?.Offer;
       if (!offer || !offer.name || !offer.id) continue;
-      if (deniedSet?.has(String(offer.id))) continue;
+      // Listeleme kuralıyla bire bir aynı (offers ile go-route şablonları tutarlı kalsın).
+      if (!isListableOffer(offer)) continue;
+      if (forceHide?.has(String(offer.id))) continue;
 
       const name = cleanBrandName(offer.name);
       if (!name) continue;

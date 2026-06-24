@@ -177,3 +177,10 @@ export { santralCallbackRunner } from './santral-callback-runner';
 // worker endpoint'lerini x-messaging-key ile tetikler). Bu olmadan kuyruktaki
 // toplu mailler GÖNDERİLMEZ. See ./messaging-worker.ts
 export { messagingWorkerTick } from './messaging-worker';
+
+// Affiliate onay senkron robotu — her gün 06:00 Europe/Istanbul. 3 affiliate
+// ağını tarar, onaylı (cpa_percentage + approved/açık) markaları listeler,
+// reddedilen/bekleyen/lead-tipi offer'ları çıkarır, yeni markaları yakalar,
+// elle eklenmiş Firestore brand kayıtlarını eşitler ve super-admin'lere rapor
+// bildirimi düşer. See ./affiliate-approval-sync.ts
+export { affiliateApprovalSync } from './affiliate-approval-sync';
