@@ -4,7 +4,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, MapPin, Calendar, ChevronDown, ArrowDownUp, Map as MapIcon } from 'lucide-react';
+import { Filter, Search, MapPin, Calendar, ChevronDown, ArrowDownUp, Map as MapIcon, X } from 'lucide-react';
 import { VolunteeringMapDialog } from '@/components/volunteering/volunteering-map-dialog';
 import { useTranslation } from '@/components/providers/language-provider';
 import { ngos } from '@/lib/data';
@@ -24,19 +24,20 @@ import type { Volunteering } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
 import { scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
 
-const FilterButton = ({ title, options, selected, onSelectedChange }: {
+const FilterButton = ({ title, options, selected, onSelectedChange, className }: {
     icon?: React.ElementType;
     title: string;
     options: string[];
     selected: string[];
     onSelectedChange: (selected: string[]) => void;
+    className?: string;
 }) => {
     const { t } = useTranslation();
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 px-3 gap-x-1.5 rounded-full shrink-0">
-                    <span className="text-xs font-medium whitespace-nowrap">{title}</span>
+                <Button variant="outline" size="sm" className={`h-9 px-2 gap-x-1 rounded-full min-w-0 justify-center ${className ?? ''}`}>
+                    <span className="text-xs font-medium truncate">{title}</span>
                     {selected.length > 0 && (
                         <span className="inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
                             {selected.length}
@@ -568,29 +569,34 @@ export default function VolunteeringPage() {
                   </DropdownMenuContent>
               </DropdownMenu>
           </div>
-          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden items-center">
-              <FilterButton title={t('volunteering_root.filterSensitivity')} options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />
-              <FilterButton title={t('volunteering_root.filterSkills')} options={skillOptions} selected={skillFilter} onSelectedChange={setSkillFilter} />
-              <FilterButton title={t('volunteering_root.filterLocation')} options={cityOptions} selected={cityFilter} onSelectedChange={setCityFilter} />
+          {/* Filtre satırı — Hassasiyet · Yetkinlikler · Konum · Harita TEK SATIRA
+              tam sığar: flex-1 ile eşit bölünür (yatay kaydırma YOK); etiketler
+              gerekirse truncate olur. Temizle (aktifse) kompakt X ikonu. */}
+          <div className="flex w-full items-center gap-1.5">
+              <FilterButton className="flex-1" title={t('volunteering_root.filterSensitivity')} options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />
+              <FilterButton className="flex-1" title={t('volunteering_root.filterSkills')} options={skillOptions} selected={skillFilter} onSelectedChange={setSkillFilter} />
+              <FilterButton className="flex-1" title={t('volunteering_root.filterLocation')} options={cityOptions} selected={cityFilter} onSelectedChange={setCityFilter} />
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 px-3 gap-x-1.5 rounded-full shrink-0"
+                className="h-9 flex-1 min-w-0 justify-center px-2 gap-x-1 rounded-full"
                 onClick={() => setMapOpen(true)}
                 aria-label={t('volunteering_root.mapAria')}
                 title={t('volunteering_root.mapAria')}
               >
                 <MapIcon className="h-4 w-4 shrink-0" />
-                <span className="text-xs font-medium whitespace-nowrap">{t('volunteering_root.mapLabel')}</span>
+                <span className="text-xs font-medium truncate">{t('volunteering_root.mapLabel')}</span>
               </Button>
               {(interestFilter.length + skillFilter.length + cityFilter.length) > 0 && (
                   <Button
                       variant="ghost"
-                      size="sm"
-                      className="h-9 px-3 text-xs whitespace-nowrap shrink-0"
+                      size="icon"
+                      className="h-9 w-9 shrink-0 rounded-full"
+                      aria-label={t('volunteering_root.clearFilters')}
+                      title={t('volunteering_root.clearFilters')}
                       onClick={() => { setInterestFilter([]); setSkillFilter([]); setCityFilter([]); }}
                   >
-                      {t('volunteering_root.clearFilters')}
+                      <X className="h-4 w-4" />
                   </Button>
               )}
           </div>
