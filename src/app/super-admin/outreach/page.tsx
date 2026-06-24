@@ -465,7 +465,13 @@ export default function OutreachHubPage() {
   }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter, fetchPage]);
 
   // Cascading süzgeç seçenekleri (tüm Türkiye — neighborhoodsData)
-  const ilOptions = useMemo(() => Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr')), []);
+  const ilOptions = useMemo(() => {
+    const base = Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr'));
+    // Vakıf/dernek kütüğü İstanbul'u "İstanbul (Avrupa)" / "İstanbul (Anadolu)" olarak
+    // tutuyor (il alanı böyle). İl filtresi tam-eşleşme olduğu için, bu varyantlar
+    // seçenek olarak sunulmazsa "İstanbul" seçimi neredeyse hiç kayıt getirmiyor.
+    return base.flatMap((il) => (il === 'İstanbul' ? ['İstanbul (Avrupa)', 'İstanbul (Anadolu)', 'İstanbul'] : [il]));
+  }, []);
   const ilceOptions = useMemo(
     () => (ilFilter && neighborhoodsData[ilFilter] ? Object.keys(neighborhoodsData[ilFilter]).sort((a, b) => a.localeCompare(b, 'tr')) : []),
     [ilFilter],
