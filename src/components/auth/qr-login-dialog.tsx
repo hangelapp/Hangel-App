@@ -80,8 +80,10 @@ export function QrLoginDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>QR ile Giriş</DialogTitle>
-          <DialogDescription>Telefonundaki hangel uygulamasıyla bu kodu okut, girişi onayla.</DialogDescription>
+          <DialogTitle>hangel uygulamasıyla giriş</DialogTitle>
+          <DialogDescription>
+            Telefonundaki <strong>hangel uygulamasını</strong> aç, QR tarayıcıyla aşağıdaki kodu okut ve girişi onayla.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-2">
           {loading ? (
@@ -95,8 +97,13 @@ export function QrLoginDialog({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={qrDataUrl} alt="QR giriş kodu" width={240} height={240} className="rounded-xl border" />
           ) : null}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Smartphone className="h-4 w-4" /> Telefon kameranla okut → &quot;Onayla&quot;ya bas
+          <div className="flex flex-col items-center gap-1.5 text-center">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Smartphone className="h-4 w-4 shrink-0" /> hangel uygulaman → QR tarayıcıyla okut → &quot;Onayla&quot;
+            </div>
+            <p className="text-[11px] font-medium text-amber-600">
+              Bu, WhatsApp QR&apos;ı değildir — kendi <strong>hangel</strong> uygulamandaki QR tarayıcıyı kullan.
+            </p>
           </div>
         </div>
       </DialogContent>

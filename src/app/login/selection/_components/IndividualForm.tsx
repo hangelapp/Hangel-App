@@ -822,14 +822,15 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     </Button>
                 </form>
 
-                {/* Zaten üyeyim → QR ile hızlı giriş (telefondaki app onaylar) */}
+                {/* Zaten üyeyim → telefondaki hangel uygulamasıyla hızlı giriş (app onaylar).
+                    Metin "hangel uygulaması" der: bare "QR ile giriş" WhatsApp QR'ıyla karıştırılıyordu. */}
                 <div className="pt-1 text-center">
                     <button
                         type="button"
                         onClick={() => setShowQrLogin(true)}
                         className="text-sm font-semibold text-primary underline underline-offset-4"
                     >
-                        Zaten üyeyim — QR ile giriş yap
+                        Zaten üyeyim — hangel uygulamasıyla giriş yap
                     </button>
                 </div>
                 <QrLoginDialog open={showQrLogin} onOpenChange={setShowQrLogin} onSuccess={() => { setShowQrLogin(false); onComplete(false); }} />
