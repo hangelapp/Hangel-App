@@ -23,6 +23,8 @@ export default function ProductsPage() {
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeBrand, setActiveBrand] = useState('Tümü');
+  // Arama sonuçları üstündeki sıralama/filtre çipi (sadece arama yapılınca görünür).
+  const [sortMode, setSortMode] = useState<'discount' | 'donation' | 'price' | 'new' | null>(null);
 
   // Her yüklemede farklı `random` başlangıç noktası → ürünler rastgele gelir.
   // 0.8 tavanı: imleçten sonra her zaman bolca ürün kalır (limit dolar).
@@ -79,8 +81,24 @@ export default function ProductsPage() {
         return searchTokens.every((t) => hay.includes(t));
       });
     }
+    // Arama çipi: sıralama/filtre (yalnızca arama sonuçlarına uygulanır).
+    const eff = (p: CanonicalProduct) => (p.salePrice != null && p.salePrice > 0 ? p.salePrice : p.price);
+    const ts = (p: CanonicalProduct) => {
+      const u = (p as CanonicalProduct & { updatedAt?: number; importedAt?: { seconds?: number } });
+      return typeof u.updatedAt === 'number' ? u.updatedAt : (u.importedAt?.seconds ?? 0);
+    };
+    if (sortMode === 'discount') {
+      list = list.filter((p) => p.salePrice != null && p.salePrice > 0 && p.salePrice < p.price);
+      list = [...list].sort((a, b) => (1 - (a.salePrice! / a.price)) < (1 - (b.salePrice! / b.price)) ? 1 : -1);
+    } else if (sortMode === 'donation') {
+      list = [...list].sort((a, b) => (b.donationRate ?? 0) - (a.donationRate ?? 0));
+    } else if (sortMode === 'price') {
+      list = [...list].sort((a, b) => eff(a) - eff(b));
+    } else if (sortMode === 'new') {
+      list = [...list].sort((a, b) => ts(b) - ts(a));
+    }
     return list;
-  }, [products, activeBrand, searchTokens]);
+  }, [products, activeBrand, searchTokens, sortMode]);
 
   const hasFilters = searchTerm.trim() !== '' || activeBrand !== 'Tümü';
 
@@ -139,6 +157,20 @@ export default function ProductsPage() {
             ? `${filtered.length.toLocaleString('tr-TR')}${filtered.length >= 120 ? '+' : ''} sonuç`
             : `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün listeleniyor`}
         </p>
+        {/* Arama yapılınca sonuçların üstünde sıralama/filtre çipleri (normal sayfada gizli). */}
+        {searchTokens.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-0.5">
+            {([['discount', 'İndirimli'], ['donation', 'En çok bağış'], ['price', 'Uygun fiyat'], ['new', 'Yeni gelenler']] as const).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setSortMode((m) => (m === key ? null : key))}
+                className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold transition ${sortMode === key ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground'}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <main className="flex-1 overflow-y-auto p-4 pb-32">
