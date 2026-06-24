@@ -16,7 +16,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
-import { collection, limit, query, orderBy, startAt, getCountFromServer } from 'firebase/firestore';
+import { collection, limit, query, orderBy, startAt, where, getCountFromServer } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
 
 export default function ProductsPage() {
@@ -29,6 +29,15 @@ export default function ProductsPage() {
   const [randSeed, setRandSeed] = useState(0);
   useEffect(() => { setRandSeed(Math.random() * 0.8); }, []);
 
+  // Arama: yazma durunca (350ms) tetiklenir; kelimelere bölünür (Türkçe İ/ı normalize).
+  // Boşsa rastgele "gözat" modu; doluysa TÜM katalogda searchTokens araması.
+  const [debounced, setDebounced] = useState('');
+  useEffect(() => { const t = setTimeout(() => setDebounced(searchTerm), 350); return () => clearTimeout(t); }, [searchTerm]);
+  const searchTokens = useMemo(
+    () => Array.from(new Set(debounced.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length >= 2))),
+    [debounced]
+  );
+
   // Toplam ürün sayısı (koleksiyonun tamamı) — placeholder yalnız çekilen 120'yi
   // değil GERÇEK toplamı göstersin diye getCountFromServer ile ayrıca sayılır.
   const [totalCount, setTotalCount] = useState<number | null>(null);
@@ -40,8 +49,12 @@ export default function ProductsPage() {
   }, [db]);
 
   const productsQuery = useMemoFirebase(
-    () => query(collection(db, COLLECTIONS.products), orderBy('random'), startAt(randSeed), limit(120)),
-    [db, randSeed]
+    () =>
+      searchTokens.length > 0
+        // Tüm katalogda kelime araması (ilk token sunucuda; çoklu kelime aşağıda daraltılır).
+        ? query(collection(db, COLLECTIONS.products), where('searchTokens', 'array-contains', searchTokens[0]), limit(120))
+        : query(collection(db, COLLECTIONS.products), orderBy('random'), startAt(randSeed), limit(120)),
+    [db, randSeed, searchTokens]
   );
   const { data: products, isLoading } =
     useCollection<CanonicalProduct>(productsQuery);
@@ -59,16 +72,15 @@ export default function ProductsPage() {
     if (activeBrand !== 'Tümü') {
       list = list.filter((p) => p.brandName === activeBrand);
     }
-    const lower = searchTerm.trim().toLowerCase();
-    if (lower) {
-      list = list.filter(
-        (p) =>
-          p.title.toLowerCase().includes(lower) ||
-          p.brandName.toLowerCase().includes(lower)
-      );
+    // Çoklu kelime: sunucu ilk token'ı getirdi; kalan kelimeleri istemcide daralt.
+    if (searchTokens.length > 1) {
+      list = list.filter((p) => {
+        const hay = `${p.title} ${p.brandName}`.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').toLowerCase();
+        return searchTokens.every((t) => hay.includes(t));
+      });
     }
     return list;
-  }, [products, activeBrand, searchTerm]);
+  }, [products, activeBrand, searchTokens]);
 
   const hasFilters = searchTerm.trim() !== '' || activeBrand !== 'Tümü';
 
