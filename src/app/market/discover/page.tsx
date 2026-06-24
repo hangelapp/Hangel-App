@@ -65,7 +65,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { cn } from '@/lib/utils';
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import {
   collection,
@@ -137,10 +137,6 @@ function iconForCategory(name: string): React.ComponentType<{ className?: string
 
 export default function DiscoverPage() {
   const db = useFirestore();
-  // Sticky üst-bar offset'i shell'e göre: giriş yapmışta sabit header (top-0 h-12)
-  // var → bar top-12 ona yapışır; giriş yapılmamış (gizli mod) shell'de header
-  // akışta yer kaplar → top-0 olmalı, yoksa 48px fazla boşluk oluşur.
-  const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [sortBy, setSortBy] = useState<SortOption>('recommended');
@@ -231,10 +227,21 @@ export default function DiscoverPage() {
 
   // En yüksek bağış oranlı 3 marka — kampanya banner'ında logolarını göstermek için.
   const topBrands = useMemo(() => {
-    return [...(firestoreBrands || []), ...apiBrands]
+    const sorted = [...(firestoreBrands || []), ...apiBrands]
       .filter((b) => b && Number.isFinite(Number(b.donationRate)) && Number(b.donationRate) > 0)
-      .sort((a, b) => Number(b.donationRate) - Number(a.donationRate))
-      .slice(0, 3);
+      .sort((a, b) => Number(b.donationRate) - Number(a.donationRate));
+    // İsme göre tekille — aynı marka birden fazla kayıtta olabilir; banner'lar/kolaj
+    // FARKLI markalar göstersin (2x "Advert Store" olmasın).
+    const seen = new Set<string>();
+    const out: Brand[] = [];
+    for (const b of sorted) {
+      const nm = (b.name || '').trim().toLowerCase();
+      if (!nm || seen.has(nm)) continue;
+      seen.add(nm);
+      out.push(b);
+      if (out.length === 6) break;
+    }
+    return out;
   }, [firestoreBrands, apiBrands]);
 
   // "Markalar" ikon butonu için tam liste — id ile deduplı, pasif/silinmiş elenmiş,
@@ -447,9 +454,13 @@ export default function DiscoverPage() {
   const showSections = !hasFilters && !isLoading && (products?.length ?? 0) > 0;
 
   return (
-    <div className="flex h-full w-full max-w-full flex-col overflow-x-hidden bg-secondary/30">
-      {/* ── 1. Sabit üst: slim bar — geri + arama + filtre/sırala (başlık YOK) ── */}
-      <div className={cn('sticky z-20 w-full max-w-full shrink-0 space-y-2.5 overflow-x-hidden border-b border-border bg-background px-4 py-2.5', user ? 'top-12' : 'top-0')}>
+    <div className="flex min-h-full w-full max-w-full flex-col overflow-x-hidden bg-secondary/30">
+      {/* ── 1. Üst slim bar — geri + arama + Markalar + filtre/sırala (başlık YOK).
+          Sayfa-kayışına göre header'ın (h-12=48px) hemen altına yapışır (top-12).
+          Her iki kabukta da (giriş yapılmış fixed header / misafir sticky header)
+          header 48px olduğu için top-12 doğru — boşluk bırakmaz, scroll'da header
+          arkasına kaymaz. ── */}
+      <div className="sticky top-12 z-20 w-full max-w-full shrink-0 space-y-2.5 overflow-x-hidden border-b border-border bg-background px-4 py-2.5">
         <div className="flex w-full items-center gap-2">
           {/* Geri */}
           <Button
@@ -621,7 +632,7 @@ export default function DiscoverPage() {
 
       {/* ── Kaydırılabilir gövde — w-full max-w-full + overflow-x-hidden:
           içerideki yatay şeritler kendi kayar, sayfa bloğu yatay kaymaz. ── */}
-      <main ref={mainRef} className="w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto pb-32">
+      <main ref={mainRef} className="w-full max-w-full overflow-x-hidden pb-32">
         {isLoading && (!products || products.length === 0) ? (
           <div className="grid grid-cols-2 gap-2.5 p-4 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
             {[...Array(8)].map((_, i) => (
