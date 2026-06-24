@@ -550,16 +550,25 @@ export default function DiscoverPage() {
     };
   }, [db, pinnedBannerBrands]);
 
+  // Apple banner indirimi: katalogdaki Apple ürünlerinin EN YÜKSEK indirim oranı.
+  const [appleMaxDiscount, setAppleMaxDiscount] = useState(0);
+  useEffect(() => {
+    if (!db) return;
+    let cancelled = false;
+    searchProducts(db, { brandName: 'Apple', max: 200 })
+      .then((prods) => { if (!cancelled) setAppleMaxDiscount(prods.reduce((m, p) => Math.max(m, discountPct(p)), 0)); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [db]);
+
   const brandBanners: Banner[] = pinnedBannerBrands.map((b) => {
     const rate = Math.round(Number(b.donationRate));
     const disc = brandMaxDiscount[b.id] ?? 0;
     return {
     key: `brand-${b.id}`,
     eyebrow: b.name,
-    title: 'Hem indirim hem bağış',
-    subtitle: disc > 0
-      ? `%${disc}'e varan indirim · her alışveriş %${rate} bağış`
-      : `Her alışveriş %${rate} bağış`,
+    title: disc > 0 ? `%${disc} indirim · %${rate} bağış` : `%${rate} bağış`,
+    subtitle: '',
     cta: 'Markaya git',
     icon: Tag,
     gradient: 'from-zinc-900 via-zinc-800 to-zinc-700',
@@ -574,8 +583,8 @@ export default function DiscoverPage() {
     {
       key: 'apple',
       eyebrow: 'Apple',
-      title: 'İndirim + bağış',
-      subtitle: 'Apple ürünleri — hem indirimli hem her alışveriş %5 bağış.',
+      title: appleMaxDiscount > 0 ? `%${appleMaxDiscount} indirim · %5 bağış` : '%5 bağış',
+      subtitle: '',
       cta: "Apple'ı keşfet",
       icon: Apple,
       gradient: 'from-zinc-900 via-neutral-800 to-black',
@@ -823,7 +832,7 @@ export default function DiscoverPage() {
                     {banners.map((b) => {
                       const Icon = b.icon;
                       const cls = cn(
-                        'group relative flex h-[144px] w-[90vw] max-w-[calc(100vw-2rem)] shrink-0 snap-start overflow-hidden rounded-3xl p-3 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px] sm:max-w-none',
+                        'group relative flex h-[72px] w-[90vw] max-w-[calc(100vw-2rem)] shrink-0 snap-start overflow-hidden rounded-2xl p-2.5 text-left text-white shadow-lg shadow-primary/20 ring-1 ring-white/10 transition-transform active:scale-[0.985] sm:w-[440px] sm:max-w-none',
                         b.coverImage ? 'bg-zinc-900' : cn('bg-gradient-to-br', b.gradient),
                       );
                       const content = (
@@ -846,45 +855,41 @@ export default function DiscoverPage() {
                             </>
                           )}
 
-                          {/* Yatay düzen: büyük logo + metin (CTA yok; sağ-alt köşede ikon). */}
-                          <div className="relative flex h-full w-full items-center gap-3 pr-9">
+                          {/* Yatay düzen: logo + TEK SATIR kazanım (eyebrow + "%X indirim · %Y bağış"); sağda köşe ikonu. */}
+                          <div className="relative flex h-full w-full items-center gap-2.5 pr-8">
                             {b.brand ? (
-                              <span className="relative inline-flex h-[120px] w-[120px] shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white/70">
-                                <BrandLogo brand={b.brand} padding="p-1.5" />
+                              <span className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm ring-2 ring-white/70">
+                                <BrandLogo brand={b.brand} padding="p-1" />
                               </span>
                             ) : b.showBrandLogos && topBrands.length > 0 ? (
-                              <div className="flex shrink-0 items-center -space-x-2.5">
+                              <div className="flex shrink-0 items-center -space-x-2">
                                 {topBrands.slice(0, 3).map((brand) => (
                                   <span
                                     key={brand.id}
-                                    className="relative inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-2 ring-white"
+                                    className="relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm ring-2 ring-white"
                                   >
                                     <BrandLogo brand={brand} />
                                   </span>
                                 ))}
                               </div>
                             ) : (
-                              <span className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                                <Icon className="h-8 w-8" aria-hidden="true" />
+                              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                                <Icon className="h-5 w-5" aria-hidden="true" />
                               </span>
                             )}
 
                             <div className="min-w-0 flex-1">
-                              <span className="mb-0.5 inline-flex max-w-full items-center truncate rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide backdrop-blur-sm">
+                              <p className="truncate text-[10px] font-bold uppercase tracking-wide text-white/70">
                                 {b.eyebrow}
-                              </span>
-                              <p className="truncate text-sm font-black leading-tight drop-shadow-sm">
+                              </p>
+                              <p className="truncate text-base font-black leading-tight drop-shadow-sm">
                                 {b.title}
                               </p>
-                              <p className="truncate text-[11px] font-medium text-white/85">
-                                {b.subtitle}
-                              </p>
                             </div>
-
                           </div>
-                          {/* Sağ-alt köşe ikonu — eski "Markaya git" CTA'sının yerine (tüm banner'larda). */}
-                          <span className="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-sm">
-                            <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                          {/* Sağ-alt köşe ikonu */}
+                          <span className="absolute bottom-2 right-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-primary shadow-sm">
+                            <ChevronRight className="h-4 w-4" aria-hidden="true" />
                           </span>
                         </>
                       );
