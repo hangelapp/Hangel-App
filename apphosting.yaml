@@ -135,6 +135,10 @@ env:
     value: "hangel"
     availability:
       - RUNTIME
+  - variable: RESEND_WEBHOOK_SECRET
+    value: "whsec_IMYExE5FI9vhLK992qZIT/RrUyWO4YwY"
+    availability:
+      - RUNTIME
 
   # Meta (Facebook/Instagram) Ads — STK reklam entegrasyonu (Faz 1).
   # NOT: plaintext (Google Ads/Resend/PassKit ile aynı pragmatik desen).
