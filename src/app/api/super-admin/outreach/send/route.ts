@@ -261,7 +261,12 @@ export async function POST(req: NextRequest) {
       ngoId: PLATFORM_MAIL_ID,
       templateId: null,
       subject: subjectTpl,
-      body: htmlBody,
+      // Görünmez benzersiz işaret (gönderim id'si) — Gmail aynı gelen kutusunda
+      // birebir tekrar eden trailing içeriği "•••" ile gizliyor (özellikle test
+      // sırasında aynı mail 2x atılınca). Sona benzersiz bir blok ekleyince iki
+      // mailin ortak son-eki kalmaz → Gmail boilerplate'i (RSVP/destek notu) artık
+      // gizlemez, içerik tam görünür.
+      body: htmlBody + `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:0;line-height:0;color:transparent;">ref-${campRef.id}</div>`,
       senderId: from,
       fromEmail: from,
       fromName: fromName || null,
