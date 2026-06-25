@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -135,7 +135,7 @@ export default function CampaignDetailPage() {
     };
   }, [db, recipients]);
 
-  const handleSendDraft = async () => {
+  const handleSendDraft = async (count?: number) => {
     if (!user || sending) return;
     setSending(true);
     try {
@@ -143,6 +143,7 @@ export default function CampaignDetailPage() {
       const res = await fetch(`/api/super-admin/messaging/campaigns/${params.id}/send-draft`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(count ? { count } : {}),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -155,13 +156,39 @@ export default function CampaignDetailPage() {
       }
       const sent = json?.sent ?? 0;
       const remaining = json?.remaining ?? 0;
-      toast({ title: 'Gönderildi', description: `${sent} gönderildi, ${remaining} kaldı` });
+      // Otomatik drip (count=1) sırasında her dakika toast atma — canlı sayaç zaten güncelleniyor.
+      if (count !== 1) {
+        toast({ title: 'Gönderildi', description: `${sent} gönderildi, ${remaining} kaldı` });
+      }
     } catch {
       toast({ variant: 'destructive', title: 'Gönderim başarısız', description: 'Bir hata oluştu, tekrar deneyin.' });
     } finally {
       setSending(false);
     }
   };
+
+  // Otomatik (drip) gönderim: tek tık başlat → seçilen aralıkta her seferinde 1 gönderir.
+  // Sunucusuz timeout/engelleme riski yok (her çağrı 1 mail). Sekme açık kaldıkça çalışır.
+  const [autoOn, setAutoOn] = useState(false);
+  const [intervalSec, setIntervalSec] = useState(60);
+  const queuedNow = data?.stats?.queued ?? 0;
+  // Interval daima en güncel handleSendDraft'ı çağırsın diye ref (yoksa stale closure).
+  const sendRef = useRef(handleSendDraft);
+  sendRef.current = handleSendDraft;
+
+  useEffect(() => {
+    if (!autoOn) return;
+    void sendRef.current(1); // başlar başlamaz ilk gönderim
+    const t = setInterval(() => {
+      void sendRef.current(1);
+    }, Math.max(5, intervalSec) * 1000);
+    return () => clearInterval(t);
+  }, [autoOn, intervalSec]);
+
+  // Kuyruk bitince otomatiği durdur.
+  useEffect(() => {
+    if (autoOn && queuedNow === 0) setAutoOn(false);
+  }, [autoOn, queuedNow]);
 
   if (isLoading) {
     return (
@@ -237,18 +264,62 @@ export default function CampaignDetailPage() {
                   <CheckCircle2 className="h-4 w-4" /> Tamamlandı ✓
                 </p>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-4">
+                  {/* Otomatik (drip) — önerilen: tek tık başlat, seçilen aralıkta her seferinde 1, engellemeye takılmaz */}
+                  <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+                    <div className="flex flex-wrap items-center gap-3">
+                      {autoOn ? (
+                        <Button variant="destructive" onClick={() => setAutoOn(false)} className="gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" /> Durdur
+                        </Button>
+                      ) : (
+                        <Button onClick={() => setAutoOn(true)} disabled={!user} className="gap-2">
+                          <Send className="h-4 w-4" /> Otomatik gönder
+                        </Button>
+                      )}
+                      <span className="text-sm text-muted-foreground">
+                        {autoOn
+                          ? `gönderiliyor — her ${intervalSec} sn'de 1 · kalan ${queued.toLocaleString('tr-TR')}`
+                          : `kalan ${queued.toLocaleString('tr-TR')} · tahmini ~${Math.ceil((queued * intervalSec) / 60)} dk`}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="text-muted-foreground mr-1">hız:</span>
+                      {[60, 30, 15].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          disabled={autoOn}
+                          onClick={() => setIntervalSec(s)}
+                          className={cn(
+                            'px-2 py-1 rounded border transition-colors disabled:opacity-50',
+                            intervalSec === s
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'text-muted-foreground hover:bg-muted',
+                          )}
+                        >
+                          {s} sn&apos;de 1
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Tek tık başlat — seçtiğin hızda <b>otomatik</b> gönderir, engellemelere takılmaz.{' '}
+                      <b>Bu sekme açık kalmalı.</b>
+                    </p>
+                  </div>
+
+                  {/* Manuel hızlı parti — anında {batch} tane */}
                   <div className="flex flex-wrap items-center gap-3">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button disabled={sending || !user} className="gap-2">
+                        <Button variant="outline" disabled={sending || !user || autoOn} className="gap-2">
                           {sending ? (
                             <>
                               <Loader2 className="h-4 w-4 animate-spin" /> gönderiliyor...
                             </>
                           ) : (
                             <>
-                              <Send className="h-4 w-4" /> {batch} kuruluşa gönder
+                              <Send className="h-4 w-4" /> {batch} tanesini şimdi gönder
                             </>
                           )}
                         </Button>
@@ -262,15 +333,12 @@ export default function CampaignDetailPage() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>İptal</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleSendDraft}>Evet, gönder</AlertDialogAction>
+                          <AlertDialogAction onClick={() => handleSendDraft()}>Evet, gönder</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                    <span className="text-sm text-muted-foreground">kalan: {queued.toLocaleString('tr-TR')}</span>
+                    <span className="text-sm text-muted-foreground">elle: {batch} tane / tık</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Domaini korumak için 25&apos;şer gönderiyoruz — bitince tekrar basın.
-                  </p>
                 </div>
               )}
             </CardContent>

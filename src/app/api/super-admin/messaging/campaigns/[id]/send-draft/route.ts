@@ -175,10 +175,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const recipientsCol = campRef.collection(COLLECTIONS.recipients);
 
-  // Bu istekte işlenecek pending alıcılar (domain ısıtma → en çok 50).
+  // İsteğe bağlı { count }: otomatik drip her çağrıda 1 gönderir. Üst sınır MAX_PER_REQUEST.
+  let perCall = MAX_PER_REQUEST;
+  try {
+    const reqBody = (await req.json()) as { count?: number };
+    if (typeof reqBody?.count === 'number' && reqBody.count >= 1) {
+      perCall = Math.min(Math.floor(reqBody.count), MAX_PER_REQUEST);
+    }
+  } catch {
+    /* gövde yok/parse edilemedi → varsayılan MAX_PER_REQUEST */
+  }
+
+  // Bu istekte işlenecek pending alıcılar (domain ısıtma → en çok MAX_PER_REQUEST).
   let pendingSnap;
   try {
-    pendingSnap = await recipientsCol.where('status', '==', 'pending').limit(MAX_PER_REQUEST).get();
+    pendingSnap = await recipientsCol.where('status', '==', 'pending').limit(perCall).get();
   } catch {
     return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'Alıcılar okunamadı.' }, { status: 500 });
   }
