@@ -116,7 +116,10 @@ export class ResendEmailProvider implements EmailProvider {
   }
 
   async parseWebhook(req: Request): Promise<DeliveryEventInput[]> {
-    const json = (await req.json()) as { type?: string; data?: { email_id?: string; created_at?: string } };
+    const json = (await req.json()) as {
+      type?: string;
+      data?: { email_id?: string; created_at?: string; click?: { link?: string } };
+    };
     const eventType = json.type ?? '';
     const mapped = RESEND_EVENT_MAP[eventType];
     if (!mapped) return [];
@@ -128,6 +131,7 @@ export class ResendEmailProvider implements EmailProvider {
         providerMessageId,
         type: mapped,
         at: json.data?.created_at ? new Date(json.data.created_at) : new Date(),
+        link: json.data?.click?.link, // email.clicked → tıklanan URL
         raw: json,
       },
     ];

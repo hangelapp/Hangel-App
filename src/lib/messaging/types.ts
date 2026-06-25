@@ -31,6 +31,7 @@ export interface DeliveryEventInput {
   errorCode?: CanonicalErrorCode;
   errorMessage?: string;
   raw?: unknown;
+  link?: string; // tıklanan URL (email.clicked event'inde gelir)
 }
 
 export interface SmsSendInput {

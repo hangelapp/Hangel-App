@@ -101,14 +101,20 @@ async function applyEvent(event: DeliveryEventInput, driver: string): Promise<vo
   const statKey = statMap[event.type];
   if (statKey) updates[statKey] = FieldValue.increment(1);
 
+  // Recipient güncellemesi: izlenen HER event türü için kendi zaman damgası
+  // (deliveredAt / openedAt / clickedAt / bouncedAt ...). ÖNCEDEN sadece statusMap
+  // türleri (delivered/failed/bounced/unsubscribed) yazılıyordu → opened/clicked
+  // timestamp'i hiç kaydedilmiyordu. clicked'da tıklanan URL de (clickedLink) yazılır.
+  const recUpdate: Record<string, unknown> = {
+    [`${event.type}At`]: FieldValue.serverTimestamp(),
+  };
+  if (statusMap[event.type]) recUpdate.status = statusMap[event.type];
+  else if (event.type === 'opened' || event.type === 'clicked') recUpdate.status = event.type;
+  if (event.type === 'clicked' && event.link) recUpdate.clickedLink = event.link;
+
   await Promise.all([
     Object.keys(updates).length > 0 ? campRef.update(updates) : Promise.resolve(),
-    statusMap[event.type]
-      ? recipientRef.update({
-          status: statusMap[event.type],
-          [`${event.type}At`]: FieldValue.serverTimestamp(),
-        })
-      : Promise.resolve(),
+    recipientRef.update(recUpdate),
   ]);
 }
 

@@ -46,6 +46,7 @@ interface RecipientDoc {
   deliveredAt?: TS;
   openedAt?: TS;
   clickedAt?: TS;
+  clickedLink?: string; // tıklanan URL (email.clicked)
   lastError?: string | null;
 }
 
@@ -229,6 +230,7 @@ export default function CampaignDetailPage() {
                     <th className="px-2 py-2 font-medium">Gönderildi</th>
                     <th className="px-2 py-2 font-medium">İletildi</th>
                     {isEmail && <th className="px-2 py-2 font-medium">Okundu</th>}
+                    {isEmail && <th className="px-2 py-2 font-medium">Tıkladı</th>}
                     <th className="px-2 py-2 font-medium">Kayıt oldu</th>
                     <th className="py-2 pl-2 font-medium">Durum</th>
                   </tr>
@@ -245,6 +247,25 @@ export default function CampaignDetailPage() {
                         {isEmail && (
                           <td className="whitespace-nowrap px-2 py-1.5 text-muted-foreground">{fmt(r.openedAt) ?? '—'}</td>
                         )}
+                        {isEmail && (
+                          <td className="px-2 py-1.5">
+                            {r.clickedLink ? (
+                              <a
+                                href={r.clickedLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={r.clickedLink}
+                                className="block max-w-[170px] truncate text-primary underline"
+                              >
+                                {r.clickedLink.replace(/^https?:\/\//, '')}
+                              </a>
+                            ) : r.clickedAt ? (
+                              <span className="whitespace-nowrap text-muted-foreground">{fmt(r.clickedAt)}</span>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                        )}
                         <td className="whitespace-nowrap px-2 py-1.5">
                           {reg ? <span className="font-medium text-emerald-700">{fmt(reg)}</span> : <span className="text-muted-foreground">—</span>}
                         </td>
@@ -258,9 +279,9 @@ export default function CampaignDetailPage() {
               </table>
               {isEmail && (
                 <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-                  <strong>İletildi / Okundu</strong> sütunları Resend webhook&apos;u (<code>/api/messaging/webhook/resend</code>) + Resend
-                  panelinde açılma takibi açık olduğunda dolar. <strong>Kayıt oldu</strong>: alıcının e-postası bir hangel hesabıyla
-                  eşleşirse o hesabın kayıt tarihidir.
+                  <strong>İletildi / Okundu / Tıkladı</strong> sütunları Resend webhook&apos;u (<code>/api/messaging/webhook/resend</code>) +
+                  açılma/tıklama takibi açık olduğunda dolar; <strong>Tıkladı</strong> alıcının tıkladığı bağlantıyı gösterir.
+                  <strong>Kayıt oldu</strong>: alıcının e-postası bir hangel hesabıyla eşleşirse o hesabın kayıt tarihidir.
                 </p>
               )}
             </div>
