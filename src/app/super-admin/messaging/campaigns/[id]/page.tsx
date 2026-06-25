@@ -76,9 +76,9 @@ const STATUS_BADGE: Record<string, string> = {
 // Otomatik gönderim hız profilleri. perTick = her tetikte gönderilen adet (endpoint üst sınırı 25),
 // intervalSec = tetikler arası saniye. Modül seviyesinde sabit → effect dependency sorunu yok.
 const SEND_PRESETS = [
-  { key: 'safe', label: 'Güvenli', perTick: 1, intervalSec: 30 },
-  { key: 'fast', label: 'Hızlı', perTick: 5, intervalSec: 15 },
-  { key: 'turbo', label: 'En hızlı', perTick: 25, intervalSec: 30 },
+  { key: 'm1', label: 'Dakikada 1', perTick: 1, intervalSec: 60 },
+  { key: 'm2', label: 'Dakikada 2', perTick: 1, intervalSec: 30 },
+  { key: 'm4', label: 'Dakikada 4', perTick: 1, intervalSec: 15 },
 ] as const;
 
 // q alıcı, p profil → tahmini bitiş dakikası.
@@ -184,7 +184,7 @@ export default function CampaignDetailPage() {
   // Otomatik (drip) gönderim: tek tık başlat → seçilen profilde parti parti gönderir.
   // Her çağrı sunucuda ≤25 mail + throttle (timeout/engelleme yok). Sekme açık kaldıkça çalışır.
   const [autoOn, setAutoOn] = useState(false);
-  const [presetIdx, setPresetIdx] = useState(2); // 'bir an önce' → varsayılan En hızlı
+  const [presetIdx, setPresetIdx] = useState(1); // varsayılan Dakikada 2 (her tık 1 mail)
   const preset = SEND_PRESETS[presetIdx];
   const queuedNow = data?.stats?.queued ?? 0;
   // Interval daima en güncel handleSendDraft'ı çağırsın diye ref (yoksa stale closure).
