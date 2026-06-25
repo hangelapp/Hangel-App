@@ -233,10 +233,15 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    overscroll-behavior-y: none;
+    /* iOS WKWebView: `overscroll-behavior-y: none` bazı iOS sürümlerinde body'nin
+       dikey kaydırmasını TAMAMEN donduruyor (Chrome'da olmaz). `contain` pull-to-
+       refresh/scroll-chaining'i yine engeller ama bu dondurma davranışını tetiklemez.
+       + iOS momentum kaydırma. */
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
   }
   html {
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: contain;
   }
 }
 
