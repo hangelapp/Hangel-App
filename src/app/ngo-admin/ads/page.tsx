@@ -125,6 +125,7 @@ interface ConnectionState {
     configured: boolean;
     connected: boolean;
     customerId?: string;
+    needsReconnect?: boolean; // bağlı ama refresh token ölü → yeniden bağlanmalı
 }
 
 interface MetaConnectionState {
@@ -273,6 +274,7 @@ export default function AdsPage() {
                 configured: data.configured === true,
                 connected: data.connected === true,
                 customerId: typeof data.customerId === 'string' ? data.customerId : undefined,
+                needsReconnect: data.needsReconnect === true,
             });
         } catch {
             /* sessizce yoksay; bağlantı durumu olmadan da sayfa çalışır */
@@ -1063,23 +1065,43 @@ export default function AdsPage() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3">
-                                    <BadgeCheck className="h-6 w-6 text-emerald-600 shrink-0" />
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-[14px] font-semibold text-emerald-900">Google Ads bağlı</p>
-                                        {connection.customerId && (
-                                            <span className="inline-flex items-center mt-0.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[12px] font-semibold text-emerald-700">
-                                                Müşteri No: {connection.customerId}
-                                            </span>
-                                        )}
+                                {connection.needsReconnect ? (
+                                    <div className="rounded-2xl bg-amber-50 border border-amber-300 p-4 space-y-2.5">
+                                        <div className="flex items-start gap-3">
+                                            <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0" />
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-[14px] font-semibold text-amber-900">Bağlantının süresi doldu</p>
+                                                <p className="text-[13px] text-amber-800 leading-relaxed">
+                                                    Google yetkisi yenilenemedi (oturum süresi dolmuş olabilir). Yayına devam etmek için hesabını yeniden bağla.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={connectGoogleAds}
+                                            disabled={connecting}
+                                            className="w-full h-11 rounded-2xl bg-amber-600 text-white flex items-center justify-center gap-2 text-[14px] font-semibold active:scale-[0.98] transition disabled:opacity-60">
+                                            {connecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Bağlanıyor...</> : <><Link2 className="h-[18px] w-[18px]" /> Yeniden Bağla</>}
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={connectGoogleAds}
-                                        disabled={connecting}
-                                        className="text-[12px] font-semibold text-emerald-800 underline underline-offset-2 shrink-0 disabled:opacity-60">
-                                        {connecting ? 'Bağlanıyor…' : 'Yeniden bağla'}
-                                    </button>
-                                </div>
+                                ) : (
+                                    <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3">
+                                        <BadgeCheck className="h-6 w-6 text-emerald-600 shrink-0" />
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-[14px] font-semibold text-emerald-900">Google Ads bağlı</p>
+                                            {connection.customerId && (
+                                                <span className="inline-flex items-center mt-0.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[12px] font-semibold text-emerald-700">
+                                                    Müşteri No: {connection.customerId}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={connectGoogleAds}
+                                            disabled={connecting}
+                                            className="text-[12px] font-semibold text-emerald-800 underline underline-offset-2 shrink-0 disabled:opacity-60">
+                                            {connecting ? 'Bağlanıyor…' : 'Yeniden bağla'}
+                                        </button>
+                                    </div>
+                                )}
 
                                 {publishablePlans.length > 0 ? (
                                     <div className="space-y-2.5">
