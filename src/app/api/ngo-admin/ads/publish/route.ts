@@ -194,6 +194,10 @@ export async function POST(req: NextRequest) {
       : undefined,
     // Günlük bütçe (TL) → micros. Yoksa 1 TL'ye düşer (güvenli alt sınır).
     dailyBudgetMicros: String(Math.round((typeof plan.dailyBudget === 'number' ? plan.dailyBudget : 1) * 1_000_000)),
+    // Konum (geo) hedefleme — string ID'ler; boş/undefined ⇒ tüm Türkiye.
+    geoTargetIds: Array.isArray(plan.geoTargetIds)
+      ? plan.geoTargetIds.filter((x) => typeof x === 'string')
+      : undefined,
   };
 
   let campaignResourceName: string;

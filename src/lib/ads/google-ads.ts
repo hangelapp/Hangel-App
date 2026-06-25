@@ -460,6 +460,8 @@ export interface AdPlanForCampaign {
   headlines?: string[];
   descriptions?: string[];
   dailyBudgetMicros?: string;
+  /** Google geo target ID'leri (string). Boş/undefined ⇒ tüm Türkiye ('2792'). */
+  geoTargetIds?: string[];
 }
 
 /** POST a single Google Ads REST mutate and return the parsed JSON, or throw. */
@@ -571,6 +573,33 @@ export async function createSearchCampaign(
     },
   ], lcid);
   const campaignResourceName = firstResourceName(campaignOut, 'campaign');
+
+  // 2b) Konum (geo) + dil hedefleme — campaign criteria. geoTargetIds boşsa tüm
+  //     Türkiye ('2792'); her ID için bir location kriteri + sabit Türkçe dil kriteri.
+  //     Geo başarısız olsa bile kampanya zaten oluştu → hatayı yut (kampanyayı patlatma).
+  try {
+    const geoIds = plan.geoTargetIds?.length
+      ? plan.geoTargetIds.map(digitsOnly).filter(Boolean)
+      : ['2792'];
+    const criteriaOps: unknown[] = geoIds.map((gid) => ({
+      create: {
+        campaign: campaignResourceName,
+        location: { geoTargetConstant: `geoTargetConstants/${gid}` },
+      },
+    }));
+    criteriaOps.push({
+      create: {
+        campaign: campaignResourceName,
+        language: { languageConstant: 'languageConstants/1037' },
+      },
+    });
+    await mutate(config, accessToken, id, 'campaignCriteria', criteriaOps, lcid);
+  } catch (geoErr) {
+    console.warn('[ads] campaignCriteria (geo/language) failed; campaign already created', {
+      campaignResourceName,
+      raw: geoErr instanceof Error ? geoErr.message : String(geoErr),
+    });
+  }
 
   // 3) Ad group under the campaign.
   const adGroupOut = await mutate(config, accessToken, id, 'adGroups', [

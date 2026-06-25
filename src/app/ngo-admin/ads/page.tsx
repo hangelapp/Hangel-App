@@ -20,7 +20,9 @@ import {
     Megaphone, HandCoins, Users, Heart, Sparkles, Globe, Check, ExternalLink,
     Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2, Link2, BadgeCheck, Copy,
     Facebook, Music2, Building2, Info, Hash, Film, Target, Image as ImageIcon, BarChart3,
+    FlaskConical, MapPin, XCircle, Lightbulb, Plus,
 } from 'lucide-react';
+import { TR_PROVINCES } from '@/lib/ads/tr-geo';
 import { useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { useToast } from '@/hooks/use-toast';
@@ -47,6 +49,8 @@ interface AdProposal {
     headlines?: string[];
     descriptions?: string[];
     regions?: string[];
+    // Google geo target ID'leri (TR_PROVINCES id'leri). Boş/undefined ⇒ tüm Türkiye.
+    geoTargetIds?: string[];
     estReach: string;
     // Meta (Facebook/Instagram) alanları — platforma özel önerilerde dolar.
     audience?: string;
@@ -60,6 +64,15 @@ interface AdProposal {
     hashtags?: string[];
     // AI'nın önerdiği günlük bütçe (₺) — kullanıcı kurmadan önce düzenleyebilir.
     dailyBudgetTRY?: number;
+}
+
+// Yapay zeka reklam denetim raporu — /api/ngo-admin/ads/validate yanıtı.
+interface ValidateReport {
+    valid: boolean;
+    score: number; // 0-100
+    violations: string[];
+    warnings: string[];
+    fixes: string[];
 }
 
 const KIND_META: Record<ProposalKind, { label: string; icon: React.ElementType; tint: string }> = {
@@ -209,6 +222,11 @@ export default function AdsPage() {
     // Serbest metin → AI reklam durumu (her platform kendi metni + yükleniyor durumu)
     const [customTextByPlatform, setCustomTextByPlatform] = useState<Record<AdPlatform, string>>({ google: '', meta: '', tiktok: '' });
     const [customLoadingPlatform, setCustomLoadingPlatform] = useState<AdPlatform | null>(null);
+
+    // Yapay zeka denetim (validate) durumu — key bazında hangi rapor yükleniyor + sonuçlar.
+    // key: kartlarda `${kind}-${i}`; manuel formda 'manual'.
+    const [testingKey, setTestingKey] = useState<string | null>(null);
+    const [reportByKey, setReportByKey] = useState<Record<string, ValidateReport>>({});
 
     // Meta (Facebook/Instagram) bağlantı durumu — Google ile birebir paralel
     const [metaConnection, setMetaConnection] = useState<MetaConnectionState>({ configured: false, connected: false });
@@ -734,7 +752,7 @@ export default function AdsPage() {
         }
     };
 
-    const chooseProposal = async (p: AdProposal, platform: AdPlatform, dailyBudget?: number) => {
+    const chooseProposal = async (p: AdProposal, platform: AdPlatform, dailyBudget?: number, geoTargetIds?: string[]) => {
         if (!user) {
             toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
             return;
@@ -750,6 +768,7 @@ export default function AdsPage() {
                     kind: p.kind, title: p.title, goal: p.goal, landing: p.landing,
                     keywords: p.keywords, headlines: p.headlines, descriptions: p.descriptions,
                     regions: p.regions, estReach: p.estReach,
+                    geoTargetIds: geoTargetIds ?? p.geoTargetIds,
                     dailyBudget: typeof dailyBudget === 'number' ? dailyBudget : p.dailyBudgetTRY,
                 }),
             });
@@ -795,6 +814,45 @@ export default function AdsPage() {
             toast({ variant: 'destructive', title: 'Oluşturulamadı', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
         } finally {
             setCustomLoadingPlatform(null);
+        }
+    };
+
+    // Planı yapay zeka ile denetle (Google) — /api/ngo-admin/ads/validate; Firestore'a YAZMAZ.
+    // key: kartlarda `${kind}-${i}`; manuel formda 'manual'.
+    const validateProposal = async (key: string, p: AdProposal) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
+            return;
+        }
+        setTestingKey(key);
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({
+                    platform: 'google',
+                    proposal: {
+                        title: p.title,
+                        kind: p.kind,
+                        landing: p.landing,
+                        keywords: p.keywords,
+                        headlines: p.headlines,
+                        descriptions: p.descriptions,
+                        dailyBudget: p.dailyBudgetTRY,
+                        geoTargetIds: p.geoTargetIds,
+                    },
+                }),
+            });
+            const data = (await res.json().catch(() => null)) as { report?: ValidateReport; message?: string } | null;
+            if (!res.ok || !data?.report) {
+                throw new Error(data?.message || 'Analiz tamamlanamadı.');
+            }
+            setReportByKey((prev) => ({ ...prev, [key]: data.report as ValidateReport }));
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Analiz edilemedi', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
+        } finally {
+            setTestingKey(null);
         }
     };
 
@@ -953,12 +1011,20 @@ export default function AdsPage() {
                         loading={customLoadingPlatform === 'google'}
                     />
 
+                    {/* MANUEL PLAN FORMU — kendi planını elle kur (kart olarak listeye eklenir) */}
+                    <ManualAdBlock
+                        onCreate={(p) => setProposalsByPlatform((prev) => ({ ...prev, google: [p, ...prev.google] }))}
+                        onTest={(p) => void validateProposal('manual', p)}
+                        testing={testingKey === 'manual'}
+                        report={reportByKey['manual']}
+                    />
+
                     <AiPlanBlock
                         platform="google"
                         proposals={proposalsByPlatform.google}
                         loading={loadingPlatform === 'google'}
                         onGenerate={() => void generate('google')}
-                        onChoose={(p, budget) => void chooseProposal(p, 'google', budget)}
+                        onChoose={(p, budget, geoTargetIds) => void chooseProposal(p, 'google', budget, geoTargetIds)}
                         onCopy={(p) => void copyPlan(p)}
                         selected={selected}
                         savedStatusByKind={savedStatusByKind}
@@ -969,6 +1035,9 @@ export default function AdsPage() {
                         entityName={entityName}
                         faaliyetAlani={faaliyetAlani}
                         metrics={adsMetrics}
+                        onTest={(key, p) => void validateProposal(key, p)}
+                        testingKey={testingKey}
+                        reportByKey={reportByKey}
                     />
                 </section>
 
@@ -1545,6 +1614,218 @@ function CustomAdBlock({ platform, value, onChange, onGenerate, loading }: {
 }
 
 /**
+ * İl çok-seçim (Google geo target). Boş seçim = tüm Türkiye.
+ * TR_PROVINCES chip listesi.
+ */
+function GeoSelect({ selected, onToggle }: { selected: string[]; onToggle: (id: string) => void }) {
+    const allTr = selected.length === 0;
+    return (
+        <div className="rounded-xl bg-card border border-border/50 p-2.5 space-y-2">
+            <div className="flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-[12px] font-semibold text-foreground">Konum hedefleme</span>
+                <span className="text-[11px] text-muted-foreground">{allTr ? '· tüm Türkiye' : `· ${selected.length} il`}</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+                {TR_PROVINCES.map((prov) => {
+                    const on = selected.includes(prov.id);
+                    return (
+                        <button key={prov.id} type="button" onClick={() => onToggle(prov.id)}
+                            className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium border transition active:scale-95',
+                                on ? 'bg-primary/10 border-primary text-primary' : 'bg-muted/40 border-border/60 text-muted-foreground')}>
+                            {on && <Check className="h-3 w-3" />} {prov.name}
+                        </button>
+                    );
+                })}
+            </div>
+            <p className="text-[10.5px] text-muted-foreground leading-relaxed">
+                Hiç il seçmezsen reklam <span className="font-medium text-foreground">tüm Türkiye’de</span> gösterilir.
+            </p>
+        </div>
+    );
+}
+
+/**
+ * Yapay zeka denetim raporu paneli — score + ihlal/uyarı/öneri listeleri.
+ * Karttaki/manuel formdaki "test et" sonucunda gösterilir.
+ */
+function ValidateReportPanel({ report }: { report?: ValidateReport }) {
+    if (!report) return null;
+    const score = Math.max(0, Math.min(100, Math.round(report.score)));
+    const scoreTint = score >= 80 ? 'text-emerald-600 bg-emerald-500/10'
+        : score >= 50 ? 'text-amber-600 bg-amber-500/10'
+            : 'text-rose-600 bg-rose-500/10';
+    return (
+        <div className="mt-2 rounded-2xl bg-muted/40 border border-border/50 p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+                <span className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">Yapay zeka denetimi</span>
+                <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[13px] font-bold tabular-nums', scoreTint)}>
+                    {score}/100
+                </span>
+            </div>
+            {report.violations.length > 0 && (
+                <div className="rounded-xl bg-rose-50 border border-rose-200 p-2.5 space-y-1">
+                    <div className="flex items-center gap-1.5 text-rose-700">
+                        <XCircle className="h-4 w-4" />
+                        <span className="text-[12px] font-semibold">Düzeltmeden yayınlama</span>
+                    </div>
+                    <ul className="space-y-0.5 list-disc list-inside">
+                        {report.violations.map((v, i) => <li key={i} className="text-[12px] text-rose-800 leading-relaxed">{v}</li>)}
+                    </ul>
+                </div>
+            )}
+            {report.warnings.length > 0 && (
+                <div className="rounded-xl bg-amber-50 border border-amber-200 p-2.5 space-y-1">
+                    <div className="flex items-center gap-1.5 text-amber-700">
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-[12px] font-semibold">Uyarılar</span>
+                    </div>
+                    <ul className="space-y-0.5 list-disc list-inside">
+                        {report.warnings.map((w, i) => <li key={i} className="text-[12px] text-amber-800 leading-relaxed">{w}</li>)}
+                    </ul>
+                </div>
+            )}
+            {report.fixes.length > 0 && (
+                <div className="rounded-xl bg-blue-50 border border-blue-200 p-2.5 space-y-1">
+                    <div className="flex items-center gap-1.5 text-blue-700">
+                        <Lightbulb className="h-4 w-4" />
+                        <span className="text-[12px] font-semibold">Öneriler</span>
+                    </div>
+                    <ul className="space-y-0.5 list-disc list-inside">
+                        {report.fixes.map((f, i) => <li key={i} className="text-[12px] text-blue-800 leading-relaxed">{f}</li>)}
+                    </ul>
+                </div>
+            )}
+            {report.violations.length === 0 && report.warnings.length === 0 && report.fixes.length === 0 && (
+                <p className="text-[12px] text-emerald-700 leading-relaxed inline-flex items-center gap-1.5">
+                    <Check className="h-4 w-4" /> Sorun bulunamadı — yayına hazır.
+                </p>
+            )}
+        </div>
+    );
+}
+
+/**
+ * Manuel reklam planı formu (Google). CustomAdBlock'un kardeşi — STK yöneticisi
+ * başlık/anahtar kelime/başlık/açıklama/açılış/bütçe/il elle girer; "Planı Oluştur"
+ * yerel bir AdProposal üretir ve Google öneri listesinin başına eklenir (kart olur).
+ */
+function ManualAdBlock({ onCreate, onTest, testing, report }: {
+    onCreate: (p: AdProposal) => void;
+    onTest: (p: AdProposal) => void;
+    testing: boolean;
+    report?: ValidateReport;
+}) {
+    const [open, setOpen] = useState(false);
+    const [title, setTitle] = useState('');
+    const [keywords, setKeywords] = useState('');
+    const [headlines, setHeadlines] = useState('');
+    const [descriptions, setDescriptions] = useState('');
+    const [landing, setLanding] = useState<AdProposal['landing']>('kurum-sitesi');
+    const [budget, setBudget] = useState('100');
+    const [geo, setGeo] = useState<string[]>([]);
+
+    const toggleGeo = (id: string) => setGeo((cur) => cur.includes(id) ? cur.filter((g) => g !== id) : [...cur, id]);
+
+    const splitLines = (s: string) => s.split('\n').map((l) => l.trim()).filter(Boolean);
+    const splitCommas = (s: string) => s.split(',').map((l) => l.trim()).filter(Boolean);
+
+    const buildProposal = (): AdProposal => {
+        const budgetNum = Number(budget);
+        return {
+            kind: 'search-awareness',
+            title: title.trim() || 'Manuel reklam planı',
+            goal: 'Elle hazırlanan reklam planı',
+            landing,
+            keywords: splitCommas(keywords),
+            headlines: splitLines(headlines),
+            descriptions: splitLines(descriptions),
+            geoTargetIds: geo.length ? geo : undefined,
+            estReach: '—',
+            dailyBudgetTRY: Number.isFinite(budgetNum) && budgetNum > 0 ? budgetNum : undefined,
+        };
+    };
+
+    const canSubmit = title.trim().length > 0 && splitLines(headlines).length > 0;
+
+    return (
+        <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-3">
+            <button onClick={() => setOpen((o) => !o)} className="w-full flex items-start gap-3 text-left">
+                <span className="h-9 w-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Plus className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 flex-1 space-y-0.5">
+                    <p className="text-[14px] font-semibold text-foreground">Kendi planını elle oluştur</p>
+                    <p className="text-[12px] text-muted-foreground leading-relaxed">Başlık, anahtar kelime, başlık ve açıklamaları kendin gir; istersen yapay zekayla test et.</p>
+                </div>
+                <ChevronRight className={cn('h-5 w-5 text-muted-foreground shrink-0 transition', open && 'rotate-90')} />
+            </button>
+
+            {open && (
+                <div className="space-y-3 pt-1">
+                    <div className="space-y-1.5">
+                        <label className="text-[12px] font-semibold text-foreground">Reklam başlığı</label>
+                        <input value={title} onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Örn. Yaz kampını destekle"
+                            className="w-full h-11 rounded-2xl bg-muted border border-border/60 px-4 text-[14px] outline-none focus:ring-2 focus:ring-primary/40" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[12px] font-semibold text-foreground">Anahtar kelimeler <span className="font-normal text-muted-foreground">(virgülle)</span></label>
+                        <input value={keywords} onChange={(e) => setKeywords(e.target.value)}
+                            placeholder="bağış, gönüllü ol, çocuklara destek"
+                            className="w-full h-11 rounded-2xl bg-muted border border-border/60 px-4 text-[14px] outline-none focus:ring-2 focus:ring-primary/40" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[12px] font-semibold text-foreground">Başlıklar <span className="font-normal text-muted-foreground">(her satır bir başlık)</span></label>
+                        <textarea value={headlines} onChange={(e) => setHeadlines(e.target.value)} rows={3}
+                            placeholder={'Hayata dokun\nBugün bağış yap\nGönüllü ol'}
+                            className="w-full rounded-2xl bg-muted border border-border/60 px-4 py-3 text-[14px] outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[12px] font-semibold text-foreground">Açıklamalar <span className="font-normal text-muted-foreground">(her satır bir açıklama)</span></label>
+                        <textarea value={descriptions} onChange={(e) => setDescriptions(e.target.value)} rows={2}
+                            placeholder={'Desteğinle bir çocuğun hayatını değiştir.'}
+                            className="w-full rounded-2xl bg-muted border border-border/60 px-4 py-3 text-[14px] outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                        <div className="space-y-1.5">
+                            <label className="text-[12px] font-semibold text-foreground">Açılış sayfası</label>
+                            <select value={landing} onChange={(e) => setLanding(e.target.value as AdProposal['landing'])}
+                                className="w-full h-11 rounded-2xl bg-muted border border-border/60 px-3 text-[14px] outline-none focus:ring-2 focus:ring-primary/40">
+                                <option value="kurum-sitesi">Kurum siteniz</option>
+                                <option value="hangel-bagis">hangel bağış sayfası</option>
+                                <option value="hangel-gonulluluk">hangel gönüllülük</option>
+                            </select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-[12px] font-semibold text-foreground">Günlük bütçe (₺)</label>
+                            <input type="number" min={1} inputMode="numeric" value={budget} onChange={(e) => setBudget(e.target.value)}
+                                className="w-full h-11 rounded-2xl bg-muted border border-border/60 px-4 text-[14px] outline-none focus:ring-2 focus:ring-primary/40" />
+                        </div>
+                    </div>
+
+                    <GeoSelect selected={geo} onToggle={toggleGeo} />
+
+                    <div className="flex flex-col gap-2 pt-1">
+                        <button onClick={() => onTest(buildProposal())} disabled={testing || !canSubmit}
+                            className="w-full h-11 rounded-2xl bg-secondary text-foreground inline-flex items-center justify-center gap-2 text-[14px] font-semibold active:scale-[0.98] transition disabled:opacity-60">
+                            {testing
+                                ? <><Loader2 className="h-4 w-4 animate-spin" /> Analiz ediliyor… (1-2 dk)</>
+                                : <><FlaskConical className="h-[18px] w-[18px]" /> Yapay zeka ile test et</>}
+                        </button>
+                        <button onClick={() => { onCreate(buildProposal()); setOpen(false); }} disabled={!canSubmit}
+                            className="w-full h-12 rounded-2xl bg-primary text-primary-foreground inline-flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
+                            <Plus className="h-[18px] w-[18px]" /> Planı Oluştur
+                        </button>
+                    </div>
+                    <ValidateReportPanel report={report} />
+                </div>
+            )}
+        </div>
+    );
+}
+
+/**
  * Platforma özel AI reklam öneri bloğu (Google / Meta / TikTok).
  * Boşken "5 öneri oluştur" CTA; doluyken o platformun çıktı alanlarına göre
  * koşullu render. "Bunu Kur" → o platform için kaydeder; bağlıysa "Yayınla".
@@ -1553,12 +1834,13 @@ function AiPlanBlock({
     platform, proposals, loading, onGenerate, onChoose, onCopy, selected,
     savedStatusByKind, savedPlanByKind, connected, publishingId, onPublish,
     entityName, faaliyetAlani, metrics = [],
+    onTest, testingKey = null, reportByKey = {},
 }: {
     platform: AdPlatform;
     proposals: AdProposal[];
     loading: boolean;
     onGenerate: () => void;
-    onChoose: (p: AdProposal, dailyBudget?: number) => void;
+    onChoose: (p: AdProposal, dailyBudget?: number, geoTargetIds?: string[]) => void;
     onCopy?: (p: AdProposal) => void;
     selected: Set<ProposalKind>;
     savedStatusByKind: Map<ProposalKind, PlanStatus>;
@@ -1569,9 +1851,15 @@ function AiPlanBlock({
     entityName: string;
     faaliyetAlani: string;
     metrics?: AdsCampaignMetric[];
+    // Yapay zeka denetimi (yalnız Google'da geçilir).
+    onTest?: (key: string, p: AdProposal) => void;
+    testingKey?: string | null;
+    reportByKey?: Record<string, ValidateReport>;
 }) {
     // Öneri kartı başına kullanıcı tarafından düzenlenen günlük bütçe (₺) — key: `${kind}-${i}`.
     const [budgetEdits, setBudgetEdits] = useState<Record<string, string>>({});
+    // Kart başına seçilen iller (geo target ID'leri) — key: `${kind}-${i}`. Boş = tüm Türkiye.
+    const [locationEdits, setLocationEdits] = useState<Record<string, string[]>>({});
     // Aktif reklamın altındaki "İstatistik" panelinin açık olduğu plan (kind).
     const [statsOpenKind, setStatsOpenKind] = useState<ProposalKind | null>(null);
     const metricTotals = useMemo(() => metrics.reduce(
@@ -1622,6 +1910,16 @@ function AiPlanBlock({
                         const budgetRaw = budgetEdits[budgetKey] ?? String(defaultBudget);
                         const budgetNum = Number(budgetRaw);
                         const budgetValid = Number.isFinite(budgetNum) && budgetNum > 0;
+                        // Konum seçimi (geo target ID'leri) — boş = tüm Türkiye. key budget ile aynı.
+                        const selectedGeo = locationEdits[budgetKey] ?? p.geoTargetIds ?? [];
+                        const toggleGeo = (id: string) => setLocationEdits((prev) => {
+                            const cur = prev[budgetKey] ?? p.geoTargetIds ?? [];
+                            const next = cur.includes(id) ? cur.filter((g) => g !== id) : [...cur, id];
+                            return { ...prev, [budgetKey]: next };
+                        });
+                        // Denetim raporu/yükleniyor durumu (yalnız Google).
+                        const report = reportByKey[budgetKey];
+                        const isTesting = testingKey === budgetKey;
                         return (
                             <div key={`${p.kind}-${i}`} className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-3">
                                 <div className="flex items-start gap-3">
@@ -1730,6 +2028,11 @@ function AiPlanBlock({
                                     {p.dailyBudgetTRY != null && <span className="text-[11px] text-muted-foreground">AI önerisi: ₺{p.dailyBudgetTRY}</span>}
                                 </div>
 
+                                {/* KONUM — il çok-seçim; boş = tüm Türkiye (yalnız Google) */}
+                                {platform === 'google' && (
+                                    <GeoSelect selected={selectedGeo} onToggle={toggleGeo} />
+                                )}
+
                                 <div className="flex items-center justify-between gap-2 flex-wrap">
                                     <div className="text-[11px] text-muted-foreground">
                                         <span>{LANDING_LABEL[p.landing]}</span>
@@ -1763,7 +2066,7 @@ function AiPlanBlock({
                                                     : <>Yayınla <ChevronRight className="h-4 w-4" /></>}
                                             </button>
                                         ) : (
-                                            <button onClick={() => onChoose(p, budgetValid ? budgetNum : undefined)}
+                                            <button onClick={() => onChoose(p, budgetValid ? budgetNum : undefined, selectedGeo.length ? selectedGeo : undefined)}
                                                 className={cn('h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95',
                                                     isSel ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary text-primary-foreground')}>
                                                 {isSel ? <><Check className="h-4 w-4" /> Seçildi</> : <>Bunu Kur <ChevronRight className="h-4 w-4" /></>}
@@ -1771,6 +2074,20 @@ function AiPlanBlock({
                                         )}
                                     </div>
                                 </div>
+
+                                {/* YAPAY ZEKA İLE TEST ET — yalnız Google */}
+                                {platform === 'google' && onTest && (
+                                    <div className="pt-1">
+                                        <button onClick={() => onTest(budgetKey, { ...p, geoTargetIds: selectedGeo.length ? selectedGeo : undefined, dailyBudgetTRY: budgetValid ? budgetNum : p.dailyBudgetTRY })}
+                                            disabled={isTesting}
+                                            className="w-full h-10 rounded-xl bg-secondary text-foreground inline-flex items-center justify-center gap-2 text-[13px] font-semibold active:scale-[0.98] transition disabled:opacity-60">
+                                            {isTesting
+                                                ? <><Loader2 className="h-4 w-4 animate-spin" /> Analiz ediliyor… (1-2 dk)</>
+                                                : <><FlaskConical className="h-4 w-4" /> Yapay zeka ile test et</>}
+                                        </button>
+                                        <ValidateReportPanel report={report} />
+                                    </div>
+                                )}
                                 {savedStatus === 'active' && statsOpenKind === p.kind && (
                                     <div className="mt-3 rounded-2xl bg-muted/40 border border-border/50 p-3">
                                         {metricTotals.impressions === 0 && metricTotals.clicks === 0 ? (

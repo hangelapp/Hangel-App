@@ -46,9 +46,13 @@ export async function POST(req: NextRequest) {
     headlines: arr(body.headlines),
     descriptions: arr(body.descriptions),
     regions: arr(body.regions),
-    // Önerilen günlük bütçe (TL) — varsa kaydet.
+    // Konum (geo) hedefleme — gerçek Google geo target ID'leri (regions dekoratif kalır).
+    ...(Array.isArray(body.geoTargetIds)
+      ? { geoTargetIds: body.geoTargetIds.filter((x) => typeof x === 'string').slice(0, 20) }
+      : {}),
+    // Önerilen günlük bütçe (TL) — varsa kaydet (50-500 clamp; PATCH ile tutarlı).
     ...(typeof body.dailyBudget === 'number' && Number.isFinite(body.dailyBudget)
-      ? { dailyBudget: body.dailyBudget }
+      ? { dailyBudget: Math.min(500, Math.max(50, body.dailyBudget)) }
       : {}),
     // Meta alanları (Facebook/Instagram)
     audience: str(body.audience).slice(0, 500),
@@ -82,4 +86,53 @@ export async function GET(req: NextRequest) {
       })
     : [];
   return NextResponse.json({ plans });
+}
+
+/**
+ * PATCH /api/ngo-admin/ads/select — kayıtlı bir planın günlük bütçesini ve/veya
+ * konum (geo) hedeflemesini güncelle.
+ *
+ *   body: { planId, dailyBudget?, geoTargetIds? }
+ *
+ * Yetki: requireNgoAdmin scope 'ads'. Plan STK'ya ait değilse 403; yayındaysa
+ * ('active') düzenleme reddedilir (409). dailyBudget 50-500 TL aralığına kıstırılır.
+ */
+export async function PATCH(req: NextRequest) {
+  const auth = await requireNgoAdmin(req, { scope: 'ads' });
+  if ('error' in auth) return auth.error;
+  const { actor } = auth;
+
+  const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!body) return NextResponse.json({ errorCode: 'BAD_JSON', message: 'Geçersiz istek.' }, { status: 400 });
+
+  const planId = typeof body.planId === 'string' ? body.planId : '';
+  if (!planId) return NextResponse.json({ errorCode: 'MISSING', message: 'planId gerekli.' }, { status: 400 });
+
+  const db = getAdminFirestore();
+  const planRef = db.collection(COLLECTIONS.adPlans).doc(planId);
+  const snap = await planRef.get().catch(() => null);
+  if (!snap?.exists) {
+    return NextResponse.json({ errorCode: 'NOT_FOUND', message: 'Plan bulunamadı.' }, { status: 404 });
+  }
+  const plan = snap.data() as Record<string, unknown>;
+  if (plan.ngoId !== actor.ngoId) {
+    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Bu plan size ait değil.' }, { status: 403 });
+  }
+  if (plan.status === 'active') {
+    return NextResponse.json({ errorCode: 'PUBLISHED', message: 'Yayındaki plan düzenlenemez.' }, { status: 409 });
+  }
+
+  const update: Record<string, unknown> = {};
+  if (typeof body.dailyBudget === 'number' && Number.isFinite(body.dailyBudget)) {
+    update.dailyBudget = Math.min(500, Math.max(50, body.dailyBudget));
+  }
+  if (Array.isArray(body.geoTargetIds)) {
+    update.geoTargetIds = body.geoTargetIds.filter((x) => typeof x === 'string').slice(0, 20);
+  }
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ errorCode: 'NO_CHANGES', message: 'Güncellenecek alan yok.' }, { status: 400 });
+  }
+
+  await planRef.set(update, { merge: true });
+  return NextResponse.json({ ok: true });
 }
