@@ -5,12 +5,25 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { doc, collection, orderBy, query, limit, getDocs, where } from 'firebase/firestore';
-import { ArrowLeft, Mail, MessageSquare, Loader2, Activity } from 'lucide-react';
+import { ArrowLeft, Mail, MessageSquare, Loader2, Activity, Send, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useToast } from '@/hooks/use-toast';
 
 interface CampaignDoc {
   name?: string;
@@ -72,6 +85,9 @@ function fmt(d?: TS) {
 export default function CampaignDetailPage() {
   const params = useParams<{ id: string }>();
   const db = useFirestore();
+  const { user } = useUser();
+  const { toast } = useToast();
+  const [sending, setSending] = useState(false);
 
   const campRef = useMemoFirebase(() => doc(db, COLLECTIONS.campaigns, params.id), [db, params.id]);
   const { data, isLoading } = useDoc<CampaignDoc>(campRef);
@@ -118,6 +134,34 @@ export default function CampaignDetailPage() {
       cancelled = true;
     };
   }, [db, recipients]);
+
+  const handleSendDraft = async () => {
+    if (!user || sending) return;
+    setSending(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`/api/super-admin/messaging/campaigns/${params.id}/send-draft`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({
+          variant: 'destructive',
+          title: 'Gönderim başarısız',
+          description: json?.message ?? 'Bir hata oluştu, tekrar deneyin.',
+        });
+        return;
+      }
+      const sent = json?.sent ?? 0;
+      const remaining = json?.remaining ?? 0;
+      toast({ title: 'Gönderildi', description: `${sent} gönderildi, ${remaining} kaldı` });
+    } catch {
+      toast({ variant: 'destructive', title: 'Gönderim başarısız', description: 'Bir hata oluştu, tekrar deneyin.' });
+    } finally {
+      setSending(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -174,6 +218,65 @@ export default function CampaignDetailPage() {
         {isEmail && <StatCard label="Tıklandı" value={data.stats?.clicked ?? 0} accent="violet" />}
         <StatCard label="Başarısız" value={data.stats?.failed ?? 0} accent="rose" />
       </div>
+
+      {(() => {
+        const queued = data.stats?.queued ?? 0;
+        const status = data.status ?? 'draft';
+        const sendable = (status === 'draft' || status === 'sending') && queued > 0;
+        const isDone = (status === 'draft' || status === 'sending') && queued === 0;
+        if (!sendable && !isDone) return null;
+        const batch = Math.min(25, queued);
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Gönderim</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isDone ? (
+                <p className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
+                  <CheckCircle2 className="h-4 w-4" /> Tamamlandı ✓
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button disabled={sending || !user} className="gap-2">
+                          {sending ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" /> gönderiliyor...
+                            </>
+                          ) : (
+                            <>
+                              <Send className="h-4 w-4" /> {batch} kuruluşa gönder
+                            </>
+                          )}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Gönderimi onayla</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {batch} kuruluşa e-posta gönderilecek, emin misiniz?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>İptal</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleSendDraft}>Evet, gönder</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    <span className="text-sm text-muted-foreground">kalan: {queued.toLocaleString('tr-TR')}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Domaini korumak için 25&apos;şer gönderiyoruz — bitince tekrar basın.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
