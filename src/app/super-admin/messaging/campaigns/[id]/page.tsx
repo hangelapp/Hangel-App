@@ -73,6 +73,20 @@ const STATUS_BADGE: Record<string, string> = {
   cancelled: 'bg-gray-300 text-gray-700',
 };
 
+// Otomatik gönderim hız profilleri. perTick = her tetikte gönderilen adet (endpoint üst sınırı 25),
+// intervalSec = tetikler arası saniye. Modül seviyesinde sabit → effect dependency sorunu yok.
+const SEND_PRESETS = [
+  { key: 'safe', label: 'Güvenli', perTick: 1, intervalSec: 30 },
+  { key: 'fast', label: 'Hızlı', perTick: 5, intervalSec: 15 },
+  { key: 'turbo', label: 'En hızlı', perTick: 25, intervalSec: 30 },
+] as const;
+
+// q alıcı, p profil → tahmini bitiş dakikası.
+function etaMin(q: number, p: { perTick: number; intervalSec: number }): number {
+  if (q <= 0) return 0;
+  return Math.max(1, Math.ceil((Math.ceil(q / p.perTick) * p.intervalSec) / 60));
+}
+
 function fmt(d?: TS) {
   if (!d?.toDate) return null;
   try {
@@ -167,10 +181,11 @@ export default function CampaignDetailPage() {
     }
   };
 
-  // Otomatik (drip) gönderim: tek tık başlat → seçilen aralıkta her seferinde 1 gönderir.
-  // Sunucusuz timeout/engelleme riski yok (her çağrı 1 mail). Sekme açık kaldıkça çalışır.
+  // Otomatik (drip) gönderim: tek tık başlat → seçilen profilde parti parti gönderir.
+  // Her çağrı sunucuda ≤25 mail + throttle (timeout/engelleme yok). Sekme açık kaldıkça çalışır.
   const [autoOn, setAutoOn] = useState(false);
-  const [intervalSec, setIntervalSec] = useState(60);
+  const [presetIdx, setPresetIdx] = useState(2); // 'bir an önce' → varsayılan En hızlı
+  const preset = SEND_PRESETS[presetIdx];
   const queuedNow = data?.stats?.queued ?? 0;
   // Interval daima en güncel handleSendDraft'ı çağırsın diye ref (yoksa stale closure).
   const sendRef = useRef(handleSendDraft);
@@ -178,12 +193,14 @@ export default function CampaignDetailPage() {
 
   useEffect(() => {
     if (!autoOn) return;
-    void sendRef.current(1); // başlar başlamaz ilk gönderim
-    const t = setInterval(() => {
-      void sendRef.current(1);
-    }, Math.max(5, intervalSec) * 1000);
+    const p = SEND_PRESETS[presetIdx];
+    const tick = () => {
+      void sendRef.current(p.perTick);
+    };
+    tick(); // başlar başlamaz ilk parti
+    const t = setInterval(tick, p.intervalSec * 1000);
     return () => clearInterval(t);
-  }, [autoOn, intervalSec]);
+  }, [autoOn, presetIdx]);
 
   // Kuyruk bitince otomatiği durdur.
   useEffect(() => {
@@ -278,27 +295,26 @@ export default function CampaignDetailPage() {
                         </Button>
                       )}
                       <span className="text-sm text-muted-foreground">
-                        {autoOn
-                          ? `gönderiliyor — her ${intervalSec} sn'de 1 · kalan ${queued.toLocaleString('tr-TR')}`
-                          : `kalan ${queued.toLocaleString('tr-TR')} · tahmini ~${Math.ceil((queued * intervalSec) / 60)} dk`}
+                        {autoOn ? 'gönderiliyor' : 'kalan'} {queued.toLocaleString('tr-TR')} · {preset.label} · ~
+                        {etaMin(queued, preset)} dk
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs">
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs">
                       <span className="text-muted-foreground mr-1">hız:</span>
-                      {[60, 30, 15].map((s) => (
+                      {SEND_PRESETS.map((p, i) => (
                         <button
-                          key={s}
+                          key={p.key}
                           type="button"
                           disabled={autoOn}
-                          onClick={() => setIntervalSec(s)}
+                          onClick={() => setPresetIdx(i)}
                           className={cn(
                             'px-2 py-1 rounded border transition-colors disabled:opacity-50',
-                            intervalSec === s
+                            presetIdx === i
                               ? 'bg-primary text-primary-foreground border-primary'
                               : 'text-muted-foreground hover:bg-muted',
                           )}
                         >
-                          {s} sn&apos;de 1
+                          {p.label} (~{etaMin(queued, p)} dk)
                         </button>
                       ))}
                     </div>
