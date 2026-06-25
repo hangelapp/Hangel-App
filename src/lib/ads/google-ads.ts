@@ -341,7 +341,7 @@ export async function fetchCampaignMetrics(
   const lcid = digitsOnly(loginCustomerId || customerId) || id;
 
   const query =
-    'SELECT metrics.impressions, metrics.clicks, metrics.ctr, metrics.cost_micros FROM campaign DURING LAST_30_DAYS';
+    'SELECT metrics.impressions, metrics.clicks, metrics.ctr, metrics.cost_micros FROM campaign WHERE segments.date DURING LAST_30_DAYS';
 
   try {
     const res = await fetch(`${ADS_API_BASE}/customers/${id}/googleAds:searchStream`, {
@@ -417,7 +417,7 @@ export async function fetchCampaignMetricsByCampaign(
   const lcid = digitsOnly(loginCustomerId || customerId) || id;
 
   const query =
-    'SELECT campaign.id, campaign.name, campaign.status, metrics.impressions, metrics.clicks, metrics.ctr, metrics.cost_micros FROM campaign DURING LAST_30_DAYS';
+    'SELECT campaign.id, campaign.name, campaign.status, metrics.impressions, metrics.clicks, metrics.ctr, metrics.cost_micros FROM campaign WHERE segments.date DURING LAST_30_DAYS';
 
   try {
     const res = await fetch(`${ADS_API_BASE}/customers/${id}/googleAds:searchStream`, {
