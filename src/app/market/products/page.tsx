@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { Search, ShoppingBag, ArrowLeft, Percent, HeartHandshake, ArrowDownWideNarrow, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import {
@@ -61,6 +61,18 @@ export default function ProductsPage() {
   const { data: products, isLoading } =
     useCollection<CanonicalProduct>(productsQuery);
 
+  // Bağış oranı brands koleksiyonundan çözülür (scrape ürünlerinde donationRate yok).
+  const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
+  const { data: brands } = useCollection<{ name?: string; donationRate?: number }>(brandsQuery);
+  const normBrand = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').toLowerCase().trim();
+  const donationByBrand = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const b of brands || []) {
+      if (b.name && typeof b.donationRate === 'number' && b.donationRate > 0) m.set(normBrand(b.name), b.donationRate);
+    }
+    return m;
+  }, [brands]);
+
   const brandNames = useMemo(() => {
     const set = new Set<string>();
     for (const p of products || []) {
@@ -87,18 +99,20 @@ export default function ProductsPage() {
       const u = (p as CanonicalProduct & { updatedAt?: number; importedAt?: { seconds?: number } });
       return typeof u.updatedAt === 'number' ? u.updatedAt : (u.importedAt?.seconds ?? 0);
     };
+    const rateOf = (p: CanonicalProduct) => (typeof p.donationRate === 'number' && p.donationRate > 0 ? p.donationRate : (donationByBrand.get(normBrand(p.brandName || '')) ?? 0));
     if (sortMode === 'discount') {
-      list = list.filter((p) => p.salePrice != null && p.salePrice > 0 && p.salePrice < p.price);
-      list = [...list].sort((a, b) => (1 - (a.salePrice! / a.price)) < (1 - (b.salePrice! / b.price)) ? 1 : -1);
+      // İndirim oranı en yüksek üstte; indirimi olmayan (salePrice yok) alta.
+      const disc = (p: CanonicalProduct) => (p.salePrice != null && p.salePrice > 0 && p.salePrice < p.price ? 1 - p.salePrice / p.price : -1);
+      list = [...list].sort((a, b) => disc(b) - disc(a));
     } else if (sortMode === 'donation') {
-      list = [...list].sort((a, b) => (b.donationRate ?? 0) - (a.donationRate ?? 0));
+      list = [...list].sort((a, b) => rateOf(b) - rateOf(a));
     } else if (sortMode === 'price') {
       list = [...list].sort((a, b) => eff(a) - eff(b));
     } else if (sortMode === 'new') {
       list = [...list].sort((a, b) => ts(b) - ts(a));
     }
     return list;
-  }, [products, activeBrand, searchTokens, sortMode]);
+  }, [products, activeBrand, searchTokens, sortMode, donationByBrand]);
 
   const hasFilters = searchTerm.trim() !== '' || activeBrand !== 'Tümü';
 
@@ -157,15 +171,21 @@ export default function ProductsPage() {
             ? `${filtered.length.toLocaleString('tr-TR')}${filtered.length >= 120 ? '+' : ''} sonuç`
             : `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün listeleniyor`}
         </p>
-        {/* Arama yapılınca sonuçların üstünde sıralama/filtre çipleri (normal sayfada gizli). */}
+        {/* Arama yapılınca sonuçların üstünde sıralama çipleri (pazaryeri tarzı, ikonlu). */}
         {searchTokens.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-0.5">
-            {([['discount', 'İndirimli'], ['donation', 'En çok bağış'], ['price', 'Uygun fiyat'], ['new', 'Yeni gelenler']] as const).map(([key, label]) => (
+          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {([
+              ['discount', 'İndirimliler', Percent],
+              ['donation', 'En çok bağış', HeartHandshake],
+              ['price', 'En uygun fiyat', ArrowDownWideNarrow],
+              ['new', 'Yeni gelenler', Sparkles],
+            ] as const).map(([key, label, Icon]) => (
               <button
                 key={key}
                 onClick={() => setSortMode((m) => (m === key ? null : key))}
-                className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold transition ${sortMode === key ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground'}`}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition active:scale-95 ${sortMode === key ? 'border-primary bg-primary text-primary-foreground shadow-sm' : 'border-border bg-background text-foreground/70 hover:border-primary/50'}`}
               >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
                 {label}
               </button>
             ))}
