@@ -55,8 +55,17 @@ async function computeNational(db: FirebaseFirestore.Firestore) {
     Vakıf: { total: 0, phone: 0, email: 0, web: 0, ilce: 0, mahalle: 0 },
   };
 
+  // Platform / Federasyon üyelik kırılımı.
+  type Agg = { name: string; dernek: number; spor: number; vakif: number; total: number };
+  const platAgg: Record<string, Agg> = {};
+  const fedAgg: Record<string, Agg> = {};
+  const bumpArr = (agg: Record<string, Agg>, name: string, kind: 'dernek' | 'spor' | 'vakif') => {
+    const r = (agg[name] ||= { name, dernek: 0, spor: 0, vakif: 0, total: 0 });
+    r[kind]++; r.total++;
+  };
+
   const ds = await db.collection('registryDernekler')
-    .select('il', 'ilce', 'mahalle', 'telefon1', 'ePosta', 'webSite', 'faaliyetAlani').get();
+    .select('il', 'ilce', 'mahalle', 'telefon1', 'ePosta', 'webSite', 'faaliyetAlani', 'platforms', 'federations').get();
   ds.forEach((doc) => {
     const x = doc.data();
     const r = bump(x.il || '(boş)');
@@ -64,6 +73,9 @@ async function computeNational(db: FirebaseFirestore.Firestore) {
     const t = spor ? byType.SporKulübü : byType.Dernek;
     t.total++;
     if (spor) { r.spor++; totals.spor++; } else { r.dernek++; totals.dernek++; }
+    const kind: 'dernek' | 'spor' = spor ? 'spor' : 'dernek';
+    if (Array.isArray(x.platforms)) x.platforms.forEach((p: string) => bumpArr(platAgg, p, kind));
+    if (Array.isArray(x.federations)) x.federations.forEach((f: string) => bumpArr(fedAgg, f, kind));
     const p = has(x.telefon1), e = has(x.ePosta), w = has(x.webSite), ic = has(x.ilce), m = has(x.mahalle);
     if (p) { r.phone++; totals.phone++; t.phone++; }
     if (e) { r.email++; totals.email++; t.email++; }
@@ -73,12 +85,14 @@ async function computeNational(db: FirebaseFirestore.Firestore) {
   });
 
   const vs = await db.collection('registryVakiflar')
-    .select('il', 'ilce', 'mahalle', 'telefon1', 'telefon2', 'ePosta', 'eTebligat').get();
+    .select('il', 'ilce', 'mahalle', 'telefon1', 'telefon2', 'ePosta', 'eTebligat', 'platforms', 'federations').get();
   vs.forEach((doc) => {
     const x = doc.data();
     const r = bump(normIl(x.il || '(boş)'));
     r.vakif++; totals.vakif++;
     const t = byType.Vakıf; t.total++;
+    if (Array.isArray(x.platforms)) x.platforms.forEach((p: string) => bumpArr(platAgg, p, 'vakif'));
+    if (Array.isArray(x.federations)) x.federations.forEach((f: string) => bumpArr(fedAgg, f, 'vakif'));
     const p = has(x.telefon1) || has(x.telefon2), e = has(x.ePosta) || has(x.eTebligat), ic = has(x.ilce), m = has(x.mahalle);
     if (p) { r.phone++; totals.phone++; t.phone++; }
     if (e) { r.email++; totals.email++; t.email++; }
@@ -88,7 +102,11 @@ async function computeNational(db: FirebaseFirestore.Firestore) {
 
   const illerArr = Object.values(iller).map((r) => ({ ...r, total: r.dernek + r.spor + r.vakif })).sort((a, b) => b.total - a.total);
   totals.total = totals.dernek + totals.spor + totals.vakif;
-  return { generatedAt: Date.now(), totals, byType, iller: illerArr };
+  return {
+    generatedAt: Date.now(), totals, byType, iller: illerArr,
+    platforms: Object.values(platAgg).sort((a, b) => b.total - a.total),
+    federations: Object.values(fedAgg).sort((a, b) => b.total - a.total),
+  };
 }
 
 async function computeIlce(db: FirebaseFirestore.Firestore, il: string) {
