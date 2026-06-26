@@ -27,7 +27,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   Search, Mail, MessageSquare, MessageCircle, Phone, MapPin, Upload, Plus,
   Building2, Heart, Trophy, Server, Landmark, Loader2, AlertCircle, CheckCircle2,
-  ChevronDown, X, FileSpreadsheet, UserMinus,
+  ChevronDown, X, FileSpreadsheet, UserMinus, BarChart3,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { cn } from '@/lib/utils';
@@ -630,6 +630,9 @@ export default function OutreachHubPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button asChild variant="default" size="sm" title="Detaylı istatistikler">
+            <Link href="/super-admin/outreach/stats"><BarChart3 className="h-4 w-4 mr-1" /> İstatistikler</Link>
+          </Button>
           <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredRows.length === 0} title="Excel (.xlsx) indir">
             <FileSpreadsheet className="h-4 w-4 mr-1" />
             İndir ({selectedIds.size > 0 ? `${selectedIds.size} seçili` : `${filteredRows.length} kayıt`})
