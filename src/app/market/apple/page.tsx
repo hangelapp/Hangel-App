@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
+import { ProductSortChips, sortProducts, type SortMode } from '@/components/market/product-sort-chips';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, where, query, limit } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -50,6 +51,10 @@ export default function AppleProductsPage() {
     return list;
   }, [products, seed]);
 
+  // Sıralama çipi (boşken karışık; çip seçilince ona göre sıralı).
+  const [sortMode, setSortMode] = useState<SortMode>(null);
+  const displayed = useMemo(() => sortProducts(shuffled, sortMode, APPLE_RATE), [shuffled, sortMode]);
+
   return (
     <div className="flex min-h-full w-full max-w-full flex-col overflow-x-hidden bg-secondary/30">
       {/* Üst sticky bar (top-0: header'ın hemen altı) */}
@@ -78,20 +83,25 @@ export default function AppleProductsPage() {
         </div>
       </div>
 
+      {/* Pazaryeri sıralama çipleri (arama/kategori sayfalarıyla aynı) */}
+      <div className="px-4 pt-3">
+        <ProductSortChips value={sortMode} onChange={setSortMode} />
+      </div>
+
       <main className="w-full max-w-full overflow-x-hidden pb-32 pt-4">
-        {isLoading && shuffled.length === 0 ? (
+        {isLoading && displayed.length === 0 ? (
           <div className="grid grid-cols-2 gap-2.5 px-4 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
             {[...Array(10)].map((_, i) => (
               <Card key={i} variant="glass" className="h-72 animate-pulse" />
             ))}
           </div>
-        ) : shuffled.length === 0 ? (
+        ) : displayed.length === 0 ? (
           <div className="p-4">
             <EmptyState icon={Apple} title="Apple ürünü bulunamadı" description="Yakında burada olacaklar." />
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2.5 px-4 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
-            {shuffled.map((p) => (
+            {displayed.map((p) => (
               <ProductCard
                 key={p.id}
                 product={p}

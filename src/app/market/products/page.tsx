@@ -2,7 +2,8 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, ShoppingBag, ArrowLeft, Percent, HeartHandshake, ArrowDownWideNarrow, Sparkles } from 'lucide-react';
+import { Search, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { ProductSortChips, type SortMode } from '@/components/market/product-sort-chips';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import {
@@ -24,7 +25,7 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeBrand, setActiveBrand] = useState('Tümü');
   // Arama sonuçları üstündeki sıralama/filtre çipi (sadece arama yapılınca görünür).
-  const [sortMode, setSortMode] = useState<'discount' | 'donation' | 'price' | 'new' | null>(null);
+  const [sortMode, setSortMode] = useState<SortMode>(null);
 
   // Her yüklemede farklı `random` başlangıç noktası → ürünler rastgele gelir.
   // 0.8 tavanı: imleçten sonra her zaman bolca ürün kalır (limit dolar).
@@ -171,25 +172,9 @@ export default function ProductsPage() {
             ? `${filtered.length.toLocaleString('tr-TR')}${filtered.length >= 120 ? '+' : ''} sonuç`
             : `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün listeleniyor`}
         </p>
-        {/* Arama yapılınca sonuçların üstünde sıralama çipleri (pazaryeri tarzı, ikonlu). */}
+        {/* Arama yapılınca sonuçların üstünde sıralama çipleri (paylaşılan pazaryeri component'i). */}
         {searchTokens.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {([
-              ['discount', 'İndirimliler', Percent],
-              ['donation', 'En çok bağış', HeartHandshake],
-              ['price', 'En uygun fiyat', ArrowDownWideNarrow],
-              ['new', 'Yeni gelenler', Sparkles],
-            ] as const).map(([key, label, Icon]) => (
-              <button
-                key={key}
-                onClick={() => setSortMode((m) => (m === key ? null : key))}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition active:scale-95 ${sortMode === key ? 'border-primary bg-primary text-primary-foreground shadow-sm' : 'border-border bg-background text-foreground/70 hover:border-primary/50'}`}
-              >
-                <Icon className="h-3.5 w-3.5 shrink-0" />
-                {label}
-              </button>
-            ))}
-          </div>
+          <ProductSortChips value={sortMode} onChange={setSortMode} />
         )}
       </div>
 
