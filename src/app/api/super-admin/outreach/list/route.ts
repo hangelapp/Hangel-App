@@ -91,8 +91,11 @@ function parseAddress(addr: string | undefined): { city?: string; district?: str
   const mahMatch = addr.match(/\b([A-ZÇĞİÖŞÜ][\wÇĞİÖŞÜçğıöşü\.-]+?)\s+MAH(ALLESİ|\.|ALLE)/i);
   if (mahMatch) out.neighborhood = mahMatch[1].trim().replace(/\.$/, '');
 
-  // Slash split — son segment = il, ondan önceki = ilçe
-  const slashParts = addr.split('/').map((s) => s.trim()).filter(Boolean);
+  // Slash split — son segment = il, ondan önceki = ilçe.
+  // Kütük adresleri çoğu "İLÇE/İL/TURKIYE" ile bittiği için sondaki ülke ekini at.
+  const slashParts = addr.split('/').map((s) => s.trim())
+    .filter(Boolean)
+    .filter((p) => !/^t[uü]rk[iİ]ye$/i.test(p));
   if (slashParts.length >= 2) {
     out.city = slashParts[slashParts.length - 1].split(/\s+/).pop();
     const beforeSlash = slashParts[slashParts.length - 2];
@@ -110,17 +113,26 @@ function parseAddress(addr: string | undefined): { city?: string; district?: str
   return out;
 }
 
+// Diakritik + büyük/küçük duyarsız karşılaştırma (il/ilçe/mahalle post-filter için).
+function nrm(s: string | undefined): string {
+  return (s || '').toLocaleLowerCase('tr')
+    .replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'u')
+    .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
+    .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c').trim();
+}
+
 function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot): OutreachRow {
   const data = doc.data();
   if (source === 'registryVakiflar') {
+    const parsed = parseAddress(data.adres);
     return {
       id: doc.id,
       name: data.name || '',
       shortName: data.kisaAd,
       type: 'Vakıf',
-      city: data.il,
-      district: data.ilce,
-      neighborhood: data.mahalle,
+      city: data.il || parsed.city,
+      district: data.ilce || parsed.district,
+      neighborhood: data.mahalle || parsed.neighborhood,
       phone: data.telefon1,
       phone2: data.telefon2,
       email: data.ePosta,
@@ -135,9 +147,8 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
     };
   }
   if (source === 'registryDernekler') {
-    const parsed = !data.il && !data.ilce && !data.mahalle
-      ? parseAddress(data.adres)
-      : {};
+    // Adresten il/ilçe/mahalle her zaman türet — kütükte alan boşsa adresten doldur.
+    const parsed = parseAddress(data.adres);
     return {
       id: doc.id,
       name: data.name || '',
@@ -163,14 +174,15 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
       federations: Array.isArray(data.federations) ? data.federations : undefined,
     };
   }
+  const parsed = parseAddress(data.address || data.adres);
   return {
     id: doc.id,
     name: data.name || '',
     shortName: data.shortName,
     type: data.type,
-    city: data.city,
-    district: data.district,
-    neighborhood: data.neighborhood,
+    city: data.city || parsed.city,
+    district: data.district || parsed.district,
+    neighborhood: data.neighborhood || parsed.neighborhood,
     phone: data.phone,
     phone2: data.phone2,
     email: data.email,
@@ -199,6 +211,10 @@ export async function GET(req: NextRequest) {
   const cursor = searchParams.get('cursor') || null;
   const search = (searchParams.get('search') || '').toLocaleLowerCase('tr').trim();
   const city = searchParams.get('city') || null;
+  // İlçe + Mahalle server-side post-filter (index gerekmez; il where ile daralan
+  // sonuç kümesi üzerinde bellek-içi diakritik-duyarsız eşleşme).
+  const district = nrm(searchParams.get('district') || '') || null;
+  const mahalle = nrm(searchParams.get('mahalle') || '') || null;
   const emailOnly = searchParams.get('emailOnly') === 'true';
   const phoneOnly = searchParams.get('phoneOnly') === 'true';
   // Default: aktif kayıtlar gösterilir (status != 'unsubscribed').
@@ -252,9 +268,12 @@ export async function GET(req: NextRequest) {
   let lastCursorDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
   let fetched = 0;
   const baseLimit = limitNum;
-  const perFetch = emailOnly || phoneOnly || search ? Math.min(MAX_LIMIT, baseLimit * 3) : baseLimit;
+  const postFilterActive = emailOnly || phoneOnly || !!search || !!district || !!mahalle;
+  const perFetch = postFilterActive ? Math.min(MAX_LIMIT, baseLimit * 3) : baseLimit;
+  // İlçe/mahalle gibi seyrek post-filter'larda sayfayı doldurabilmek için daha çok tur.
+  const maxIter = postFilterActive ? 20 : 5;
 
-  for (let iter = 0; iter < 5 && finalRows.length < baseLimit; iter++) {
+  for (let iter = 0; iter < maxIter && finalRows.length < baseLimit; iter++) {
     let iterQ = q;
     if (lastCursorDoc) iterQ = iterQ.startAfter(lastCursorDoc);
     iterQ = iterQ.limit(perFetch);
@@ -271,6 +290,8 @@ export async function GET(req: NextRequest) {
       if (!showUnsubscribed && isUnsubscribed) continue;
       if (emailOnly && !row.email) continue;
       if (phoneOnly && !row.phone) continue;
+      if (district && !(nrm(row.district).includes(district) || nrm(row.address).includes(district))) continue;
+      if (mahalle && !(nrm(row.neighborhood).includes(mahalle) || nrm(row.address).includes(mahalle))) continue;
       if (search && !(row.name.toLocaleLowerCase('tr').includes(search) || (row.address || '').toLocaleLowerCase('tr').includes(search))) continue;
       finalRows.push(row);
       if (finalRows.length >= baseLimit) break;
