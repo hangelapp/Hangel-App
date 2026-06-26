@@ -246,10 +246,18 @@ export async function GET(req: NextRequest) {
   // client-side post-filter ile bulamıyorduk — server-side prefix indekslemesi
   // ile native search.
   const searchPrefix = search.trim();
+  // İçerikten arama: en uzun kelimeyi searchPrefixes (kelime-öneki) array-contains ile
+  // getir, sonra tüm kelimeleri folded AND-substring ile doğrula. "ormancı" → "...Ormancılar...".
+  const searchFold = nrm(search);
+  const searchTokensArr = searchFold.split(/\s+/).filter(Boolean);
+  const searchToken = searchTokensArr.reduce((a, b) => (b.length > a.length ? b : a), '');
+  const useTokenSearch = searchToken.length >= 3;
   if (arrField && arrVal) {
     // Platform/Federasyon seçili: array-contains ile sorgula (sonuç küçük);
     // city/search/kamu/faaliyet/yıl bellek-içi post-filter, __name__ sırası.
     q = q.where(arrField, 'array-contains', arrVal);
+  } else if (useTokenSearch) {
+    q = q.where('searchPrefixes', 'array-contains', searchToken);
   } else if (source === 'registryVakiflar') {
     if (city) q = q.where('il', '==', city);
     if (searchPrefix) {
@@ -268,7 +276,7 @@ export async function GET(req: NextRequest) {
     q = q.orderBy('createdAt', 'desc');
   }
   // İl, vakıf/dernek kütüğünde where ile (indexli); diğer hallerde post-filter.
-  const cityWhereApplied = !arrField && (source === 'registryVakiflar' || source === 'registryDernekler') && !!city;
+  const cityWhereApplied = !arrField && !useTokenSearch && (source === 'registryVakiflar' || source === 'registryDernekler') && !!city;
 
   // Cursor — bulunamazsa CURSOR_INVALID dön (silent skip yerine)
   if (cursor) {
@@ -312,7 +320,10 @@ export async function GET(req: NextRequest) {
       if (phoneOnly && !row.phone) continue;
       if (district && !(nrm(row.district).includes(district) || nrm(row.address).includes(district))) continue;
       if (mahalle && !(nrm(row.neighborhood).includes(mahalle) || nrm(row.address).includes(mahalle))) continue;
-      if (search && !(row.name.toLocaleLowerCase('tr').includes(search) || (row.address || '').toLocaleLowerCase('tr').includes(search))) continue;
+      if (searchTokensArr.length) {
+        const hay = `${nrm(row.name)} ${nrm(row.shortName || '')} ${nrm(row.address)}`;
+        if (!searchTokensArr.every((tok) => hay.includes(tok))) continue;
+      }
       // İl where ile uygulanmadıysa (outreach veya platform/fed modu) burada süz.
       if (city && !cityWhereApplied && !nrm(row.city).includes(nrm(city))) continue;
       if (kamuYarariOnly && arrField && !row.isKamuYarari) continue;
