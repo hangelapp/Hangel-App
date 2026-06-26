@@ -120,6 +120,11 @@ function nrm(s: string | undefined): string {
     .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
     .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c').trim();
 }
+// Kuruluş tarihinden 4 haneli yıl çıkar (string "12.05.1995" / "1995" / Date).
+function yearOf(row: OutreachRow): number {
+  const m = String(row.kurulusTarihi || '').match(/\b(19|20)\d{2}\b/);
+  return m ? parseInt(m[0], 10) : 0;
+}
 
 function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot): OutreachRow {
   const data = doc.data();
@@ -222,6 +227,15 @@ export async function GET(req: NextRequest) {
   const showUnsubscribed = searchParams.get('showUnsubscribed') === 'true';
   // Sadece Kamu Yararına Çalışan Dernekler (326 doc) — server-side filter.
   const kamuYarariOnly = searchParams.get('kamuYarariOnly') === 'true';
+  // Platform / Federasyon — array-contains (tek-alan otomatik index, composite gerekmez).
+  const platform = searchParams.get('platform') || null;
+  const federation = searchParams.get('federation') || null;
+  const arrField: 'platforms' | 'federations' | null = platform ? 'platforms' : federation ? 'federations' : null;
+  const arrVal = platform || federation;
+  // Faaliyet alanı (+ detaylı) ve kuruluş yılı aralığı — post-filter.
+  const faaliyet = nrm(searchParams.get('faaliyet') || '') || null;
+  const foundedFrom = parseInt(searchParams.get('foundedFrom') || '', 10) || null;
+  const foundedTo = parseInt(searchParams.get('foundedTo') || '', 10) || null;
 
   const db = getAdminFirestore();
   let q: FirebaseFirestore.Query = db.collection(source);
@@ -232,7 +246,11 @@ export async function GET(req: NextRequest) {
   // client-side post-filter ile bulamıyorduk — server-side prefix indekslemesi
   // ile native search.
   const searchPrefix = search.trim();
-  if (source === 'registryVakiflar') {
+  if (arrField && arrVal) {
+    // Platform/Federasyon seçili: array-contains ile sorgula (sonuç küçük);
+    // city/search/kamu/faaliyet/yıl bellek-içi post-filter, __name__ sırası.
+    q = q.where(arrField, 'array-contains', arrVal);
+  } else if (source === 'registryVakiflar') {
     if (city) q = q.where('il', '==', city);
     if (searchPrefix) {
       q = q.where('nameLower', '>=', searchPrefix).where('nameLower', '<=', searchPrefix + '');
@@ -246,9 +264,11 @@ export async function GET(req: NextRequest) {
     }
     q = q.orderBy('nameLower');
   } else {
-    q = q.orderBy('createdAt', 'desc').limit(limitNum);
-    if (city) q = q.where('city', '==', city);
+    // outreachContacts: city/ilçe/mahalle/faaliyet vb. hepsi post-filter (index-free).
+    q = q.orderBy('createdAt', 'desc');
   }
+  // İl, vakıf/dernek kütüğünde where ile (indexli); diğer hallerde post-filter.
+  const cityWhereApplied = !arrField && (source === 'registryVakiflar' || source === 'registryDernekler') && !!city;
 
   // Cursor — bulunamazsa CURSOR_INVALID dön (silent skip yerine)
   if (cursor) {
@@ -268,7 +288,7 @@ export async function GET(req: NextRequest) {
   let lastCursorDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
   let fetched = 0;
   const baseLimit = limitNum;
-  const postFilterActive = emailOnly || phoneOnly || !!search || !!district || !!mahalle;
+  const postFilterActive = emailOnly || phoneOnly || !!search || !!district || !!mahalle || !!arrField || !!faaliyet || !!foundedFrom || !!foundedTo || (!!city && !cityWhereApplied);
   const perFetch = postFilterActive ? Math.min(MAX_LIMIT, baseLimit * 3) : baseLimit;
   // İlçe/mahalle gibi seyrek post-filter'larda sayfayı doldurabilmek için daha çok tur.
   const maxIter = postFilterActive ? 20 : 5;
@@ -293,6 +313,14 @@ export async function GET(req: NextRequest) {
       if (district && !(nrm(row.district).includes(district) || nrm(row.address).includes(district))) continue;
       if (mahalle && !(nrm(row.neighborhood).includes(mahalle) || nrm(row.address).includes(mahalle))) continue;
       if (search && !(row.name.toLocaleLowerCase('tr').includes(search) || (row.address || '').toLocaleLowerCase('tr').includes(search))) continue;
+      // İl where ile uygulanmadıysa (outreach veya platform/fed modu) burada süz.
+      if (city && !cityWhereApplied && !nrm(row.city).includes(nrm(city))) continue;
+      if (kamuYarariOnly && arrField && !row.isKamuYarari) continue;
+      if (faaliyet && !(nrm(row.faaliyetAlani).includes(faaliyet) || nrm(row.detayliFaaliyetAlani).includes(faaliyet))) continue;
+      if (foundedFrom || foundedTo) {
+        const y = yearOf(row);
+        if (!y || (foundedFrom && y < foundedFrom) || (foundedTo && y > foundedTo)) continue;
+      }
       finalRows.push(row);
       if (finalRows.length >= baseLimit) break;
     }

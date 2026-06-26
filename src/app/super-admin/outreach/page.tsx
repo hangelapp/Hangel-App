@@ -356,6 +356,9 @@ export default function OutreachHubPage() {
   const [showUnsubscribed, setShowUnsubscribed] = useState(false);
   const [faaliyetAlaniFilter, setFaaliyetAlaniFilter] = useState('');
   const [platformFilter, setPlatformFilter] = useState('');
+  const [federationFilter, setFederationFilter] = useState('');
+  const [foundedFrom, setFoundedFrom] = useState('');
+  const [foundedTo, setFoundedTo] = useState('');
   const [kamuYarariOnly, setKamuYarariOnly] = useState(false);
   // İl / İlçe / Mahalle süzgeçleri — client-side (yüklü satırlarda; kütükte il/ilçe
   // alanı her kaynakta yok, İstanbul "(Avrupa/Anadolu)" sonekli — bu yüzden adres
@@ -393,19 +396,17 @@ export default function OutreachHubPage() {
       if (emailOnly) params.set('emailOnly', 'true');
       if (phoneOnly) params.set('phoneOnly', 'true');
       if (showUnsubscribed) params.set('showUnsubscribed', 'true');
-      if (kamuYarariOnly && activeTab === 'dernekler') params.set('kamuYarariOnly', 'true');
-      // İl filtresi server-side. Dernekler için `il` alanı backfill ile dolduruldu
-      // (kütükNo plate code → neighborhoodsData key formatında, ör. "Tekirdağ").
-      if (ilFilter && (activeTab === 'vakiflar' || activeTab === 'dernekler')) {
-        params.set('city', ilFilter);
-      }
-      // İlçe + Mahalle de server-side (API adresten türetip post-filter eder).
-      if (ilceFilter && (activeTab === 'vakiflar' || activeTab === 'dernekler')) {
-        params.set('district', ilceFilter);
-      }
-      if (mahalleFilter && (activeTab === 'vakiflar' || activeTab === 'dernekler')) {
-        params.set('mahalle', mahalleFilter);
-      }
+      if (kamuYarariOnly) params.set('kamuYarariOnly', 'true');
+      // Tüm süzgeçler server-side — API her source (dernek/vakıf/outreach=spor) için
+      // il where + ilçe/mahalle/faaliyet/yıl post-filter, platform/federasyon array-contains.
+      if (ilFilter) params.set('city', ilFilter);
+      if (ilceFilter) params.set('district', ilceFilter);
+      if (mahalleFilter) params.set('mahalle', mahalleFilter);
+      if (faaliyetAlaniFilter) params.set('faaliyet', faaliyetAlaniFilter);
+      if (platformFilter) params.set('platform', platformFilter);
+      if (federationFilter) params.set('federation', federationFilter);
+      if (foundedFrom.trim()) params.set('foundedFrom', foundedFrom.trim());
+      if (foundedTo.trim()) params.set('foundedTo', foundedTo.trim());
 
       const res = await fetch(`/api/super-admin/outreach/list?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -432,7 +433,7 @@ export default function OutreachHubPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user, activeTab, searchTerm, emailOnly, phoneOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter, ilceFilter, mahalleFilter]);
+  }, [user, activeTab, searchTerm, emailOnly, phoneOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter, ilceFilter, mahalleFilter, faaliyetAlaniFilter, platformFilter, federationFilter, foundedFrom, foundedTo]);
 
   // "Tümünü Yükle" — loop ile son sayfaya kadar fetch et.
   // hasMore false olunca durur. Max 1000 sayfa güvenlik limiti (= 1M kayıt).
@@ -469,7 +470,7 @@ export default function OutreachHubPage() {
       const t = setTimeout(() => fetchPage(null, false), searchTerm ? 350 : 0);
       return () => clearTimeout(t);
     }
-  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter, ilceFilter, mahalleFilter, fetchPage]);
+  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter, ilceFilter, mahalleFilter, faaliyetAlaniFilter, platformFilter, federationFilter, foundedFrom, foundedTo, fetchPage]);
 
   // Cascading süzgeç seçenekleri (tüm Türkiye — neighborhoodsData)
   const ilOptions = useMemo(() => {
@@ -498,25 +499,13 @@ export default function OutreachHubPage() {
     return Array.from(set).sort((a, b) => a.localeCompare(b, 'tr'));
   }, [rows]);
 
-  const norm = (s: string) => (s || '').toLocaleLowerCase('tr');
+  // İl/ilçe/mahalle/faaliyet/platform/federasyon/yıl artık server-side süzülüyor.
+  // Client'ta yalnız tür (spor/federasyon vb. outreach içi tür) süzgeci kalır.
   const filteredRows = useMemo(() => {
-    const ilQ = norm(ilFilter), ilceQ = norm(ilceFilter), mahQ = norm(mahalleFilter);
-    const tQ = typeFilter;
-    const fQ = faaliyetAlaniFilter;
-    const pQ = platformFilter;
-    if (!ilQ && !ilceQ && !mahQ && !tQ && !fQ && !pQ) return rows;
-    return rows.filter((r) => {
-      if (tQ && !tQ.split(',').includes(r.type || '')) return false;
-      if (fQ && (r.faaliyetAlani || '') !== fQ) return false;
-      if (pQ && !(r.platforms || []).includes(pQ)) return false;
-      const city = norm(r.city || ''), dist = norm(r.district || ''), addr = norm(r.address || '');
-      const nb = norm(r.neighborhood || '');
-      if (ilQ && !(city.includes(ilQ) || addr.includes(ilQ))) return false;
-      if (ilceQ && !(dist === ilceQ || dist.includes(ilceQ) || addr.includes(ilceQ))) return false;
-      if (mahQ && !(addr.includes(mahQ) || nb.includes(mahQ))) return false;
-      return true;
-    });
-  }, [rows, ilFilter, ilceFilter, mahalleFilter, typeFilter, faaliyetAlaniFilter, platformFilter]);
+    if (!typeFilter) return rows;
+    const set = new Set(typeFilter.split(','));
+    return rows.filter((r) => set.has(r.type || ''));
+  }, [rows, typeFilter]);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -660,6 +649,9 @@ export default function OutreachHubPage() {
                 setTypeFilter(cat.typeFilter || '');
                 setFaaliyetAlaniFilter('');  // kategori değişince faaliyet/branş filtresi sıfırla
                 setPlatformFilter('');
+                setFederationFilter('');
+                setFoundedFrom('');
+                setFoundedTo('');
               }}
               className={cn(
                 'text-left rounded-xl border bg-card transition-all hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary',
@@ -759,18 +751,16 @@ export default function OutreachHubPage() {
                 >
                   <UserMinus className="h-4 w-4" />
                 </Button>
-                {activeTab === 'dernekler' && (
-                  <Button
-                    variant={kamuYarariOnly ? 'default' : 'outline'}
-                    size="icon"
-                    className="h-10 w-10"
-                    onClick={() => setKamuYarariOnly((v) => !v)}
-                    aria-label="Kamu Yararına çalışan dernekler"
-                    title="🏛 Kamu Yararına çalışan dernekler (326 kayıt)"
-                  >
-                    <Landmark className="h-4 w-4" />
-                  </Button>
-                )}
+                <Button
+                  variant={kamuYarariOnly ? 'default' : 'outline'}
+                  size="icon"
+                  className="h-10 w-10"
+                  onClick={() => setKamuYarariOnly((v) => !v)}
+                  aria-label="Kamu Yararına çalışan kuruluşlar"
+                  title="🏛 Kamu Yararına çalışan kuruluşlar"
+                >
+                  <Landmark className="h-4 w-4" />
+                </Button>
               </div>
 
               {/* Spor Kulüpleri için Faaliyet Alanı (branş) filtresi */}
@@ -827,6 +817,18 @@ export default function OutreachHubPage() {
                 />
               </div>
 
+              {/* Federasyon süzgeci — kayıtlı olunan federasyon/konfederasyona göre */}
+              <div className="w-52">
+                <SearchableSelect
+                  options={[...FEDERATIONS]}
+                  value={federationFilter}
+                  placeholder="Federasyon"
+                  searchPlaceholder="Federasyon ara..."
+                  onValueChange={setFederationFilter}
+                  triggerClassName="h-10 rounded-md border bg-background px-3"
+                />
+              </div>
+
 
               <div className="w-36">
                 <SearchableSelect options={ilOptions} value={ilFilter} placeholder="İl" searchPlaceholder="İl ara..."
@@ -845,8 +847,18 @@ export default function OutreachHubPage() {
                   onValueChange={setMahalleFilter}
                   triggerClassName="h-10 rounded-md border bg-background px-3" />
               </div>
-              {(ilFilter || ilceFilter || mahalleFilter || faaliyetAlaniFilter || platformFilter) && (
-                <Button variant="ghost" size="sm" onClick={() => { setIlFilter(''); setIlceFilter(''); setMahalleFilter(''); setFaaliyetAlaniFilter(''); setPlatformFilter(''); }}>
+
+              {/* Kuruluş yılı aralığı */}
+              <div className="flex items-center gap-1 shrink-0" title="Kuruluş yılı aralığı">
+                <Input type="number" inputMode="numeric" placeholder="Yıl ≥" value={foundedFrom}
+                  onChange={(e) => setFoundedFrom(e.target.value)} className="h-10 w-[88px] rounded-md" />
+                <span className="text-muted-foreground text-xs">–</span>
+                <Input type="number" inputMode="numeric" placeholder="Yıl ≤" value={foundedTo}
+                  onChange={(e) => setFoundedTo(e.target.value)} className="h-10 w-[88px] rounded-md" />
+              </div>
+
+              {(ilFilter || ilceFilter || mahalleFilter || faaliyetAlaniFilter || platformFilter || federationFilter || foundedFrom || foundedTo) && (
+                <Button variant="ghost" size="sm" onClick={() => { setIlFilter(''); setIlceFilter(''); setMahalleFilter(''); setFaaliyetAlaniFilter(''); setPlatformFilter(''); setFederationFilter(''); setFoundedFrom(''); setFoundedTo(''); }}>
                   <X className="h-4 w-4 mr-1" /> Temizle
                 </Button>
               )}
