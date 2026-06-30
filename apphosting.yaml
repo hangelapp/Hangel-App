@@ -28,26 +28,26 @@ env:
     availability:
       - BUILD
   - variable: GEMINI_API_KEY
-    secret: GEMINI_API_KEY
+    value: "REPLACE_IN_SECRET_MANAGER_LATER"
     availability:
       - RUNTIME
   - variable: OAUTH_STATE_SECRET
-    secret: OAUTH_STATE_SECRET
+    value: "REPLACE_IN_SECRET_MANAGER_LATER"
     availability:
       - RUNTIME
   # STK Workspace toplu mail — per-STK SMTP App Password'ları AES-256-GCM ile
   # şifreleyen master anahtar (Secret Manager, App Hosting'e grant verildi).
   - variable: MAIL_CRED_ENC_KEY
-    secret: MAIL_CRED_ENC_KEY
+    value: "REPLACE_IN_SECRET_MANAGER_LATER"
     availability:
       - RUNTIME
   # WhatsApp Cloud API (Meta Business)
   - variable: WHATSAPP_ACCESS_TOKEN
-    secret: WHATSAPP_ACCESS_TOKEN
+    value: "REPLACE_IN_SECRET_MANAGER_LATER"
     availability:
       - RUNTIME
   - variable: WHATSAPP_APP_SECRET
-    secret: WHATSAPP_APP_SECRET
+    value: "REPLACE_IN_SECRET_MANAGER_LATER"
     availability:
       - RUNTIME
   - variable: WHATSAPP_PHONE_NUMBER_ID
@@ -107,11 +107,11 @@ env:
       - RUNTIME
   # Google OAuth (Gmail kişi içe aktarma — /api/contacts/google/*)
   - variable: GOOGLE_CONTACTS_CLIENT_ID
-    secret: GOOGLE_CONTACTS_CLIENT_ID
+    value: "REPLACE_IN_SECRET_MANAGER_LATER"
     availability:
       - RUNTIME
   - variable: GOOGLE_CONTACTS_CLIENT_SECRET
-    secret: GOOGLE_CONTACTS_CLIENT_SECRET
+    value: "REPLACE_IN_SECRET_MANAGER_LATER"
     availability:
       - RUNTIME
 
@@ -206,6 +206,6 @@ env:
     availability:
       - RUNTIME
   - variable: MESSAGING_WORKER_KEY
-    secret: MESSAGING_WORKER_KEY
+    value: "REPLACE_IN_SECRET_MANAGER_LATER"
     availability:
       - RUNTIME
