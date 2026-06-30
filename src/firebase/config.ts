@@ -1,8 +1,8 @@
 export const firebaseConfig = {
-  apiKey: "AIzaSyAdh2WOfbPRh67DHKSBbznGVPRrGj0_ZfI",
-  authDomain: "hangel-new-v18-87297865-9bcc3.firebaseapp.com",
-  projectId: "hangel-new-v18-87297865-9bcc3",
-  storageBucket: "hangel-new-v18-87297865-9bcc3.firebasestorage.app",
-  messagingSenderId: "1082171206975",
-  appId: "1:1082171206975:web:8c2f26e0d4d262706a378a"
+  apiKey: "AIzaSyAP689V_IUGV6qqd3g6BM3mLh9ix3jDN0g",
+  authDomain: "hangelorg.firebaseapp.com",
+  projectId: "hangelorg",
+  storageBucket: "hangelorg.firebasestorage.app",
+  messagingSenderId: "1082876850664",
+  appId: "1:1082876850664:web:c17a8c500ab668408cb45d"
 };

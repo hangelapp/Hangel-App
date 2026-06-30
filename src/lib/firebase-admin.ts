@@ -7,7 +7,7 @@ import path from 'path';
 import fs from 'fs';
 
 // Firebase Storage bucket — client config (src/firebase/config.ts) ile aynı.
-const STORAGE_BUCKET = 'hangel-new-v18-87297865-9bcc3.firebasestorage.app';
+const STORAGE_BUCKET = 'hangelorg.firebasestorage.app';
 
 let adminApp: App | null = null;
 

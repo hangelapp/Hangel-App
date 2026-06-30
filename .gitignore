@@ -13,6 +13,9 @@
 # testing
 /coverage
 
+# firestore yedekleri — veri/PII kod reposuna commit EDİLMEZ (off-site sakla)
+/backups
+
 # next.js
 /.next/
 # Next.js output (but keep Capacitor fallback)
@@ -106,4 +109,6 @@ android/keystore.properties
 android/app/*.yeni-bak
 android/app/upload_certificate.pem
 
-/.apphosting/
+/.apphosting/.hangelorg-sa.json
+.hangelorg-sa.json
+/new-app
