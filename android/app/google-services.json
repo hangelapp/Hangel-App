@@ -1,41 +1,40 @@
 {
   "project_info": {
-    "project_number": "1082171206975",
-    "project_id": "hangel-new-v18-87297865-9bcc3",
-    "storage_bucket": "hangel-new-v18-87297865-9bcc3.firebasestorage.app"
+    "project_number": "1082876850664",
+    "project_id": "hangelorg",
+    "storage_bucket": "hangelorg.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1082171206975:android:d56b547ec9bbe3db6a378a",
+        "mobilesdk_app_id": "1:1082876850664:android:a0c0a369ac1713118cb45d",
         "android_client_info": {
           "package_name": "com.hangel.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1082171206975-oauportlc5db4c9imffihvf1sqov6fs2.apps.googleusercontent.com",
+          "client_id": "1082876850664-uad61n8fmj7albutmmr38l5of3tpeqs1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCLzN9-TVEq-h0h-Fnxj-kjfu5Ny5ooBiM"
+          "current_key": "AIzaSyAKFXrQESO6JYRnKAG8r_vLlJEz-F3-51Q"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1082171206975-oauportlc5db4c9imffihvf1sqov6fs2.apps.googleusercontent.com",
+              "client_id": "1082876850664-uad61n8fmj7albutmmr38l5of3tpeqs1.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "1082171206975-8744meejjc9549333l9rptv4sbnoueor.apps.googleusercontent.com",
+              "client_id": "1082876850664-73btuqegov724rqhcb3ujli4ujujdb96.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.hangel.ios.app",
-                "app_store_id": "6664058822"
+                "bundle_id": "com.hangel.ios.app"
               }
             }
           ]
