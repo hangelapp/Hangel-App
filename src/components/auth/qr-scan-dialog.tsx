@@ -14,9 +14,10 @@ import { Capacitor } from '@capacitor/core';
 import { scanQrNative } from '@/lib/native-qr';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import { Loader2, CheckCircle2, KeyRound } from 'lucide-react';
 
 export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { toast } = useToast();
@@ -27,6 +28,8 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   const handledRef = useRef(false);
   const [status, setStatus] = useState<'scanning' | 'approving' | 'done' | 'error'>('scanning');
   const [errMsg, setErrMsg] = useState('');
+  const [showCode, setShowCode] = useState(false); // kamerasız: kodu elle gir
+  const [codeInput, setCodeInput] = useState('');
   // Yalnız ANDROID native'de VE ML Kit plugin'i bu build'de MEVCUTSA native tarayıcı
   // kullan: eski/OEM Android WebView'ları getUserMedia'yı düzgün desteklemiyordu.
   // isPluginAvailable kontrolü kritik → henüz yeni APK'yı kurmamış (plugin'siz) eski
@@ -58,6 +61,28 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       setTimeout(() => onOpenChange(false), 1500);
     } catch { setStatus('error'); setErrMsg('Bağlantı hatası.'); }
   }, [user, toast, onOpenChange]);
+
+  // Kamerasız cihaz: diğer cihazın ekranındaki KODU elle girip onaylar.
+  const submitCode = useCallback(async () => {
+    const c = codeInput.trim().toUpperCase().replace(/\s+/g, '');
+    if (c.length < 4) return;
+    if (!user) { setStatus('error'); setErrMsg('Önce bu cihazda giriş yapmalısın.'); return; }
+    stop();
+    setStatus('approving');
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/auth/qr-login/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ code: c }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setStatus('error'); setErrMsg(data?.message || 'Kod onaylanamadı.'); return; }
+      setStatus('done');
+      toast({ title: 'Giriş onaylandı 🧡', description: 'Diğer cihazda giriş yapılıyor.' });
+      setTimeout(() => onOpenChange(false), 1500);
+    } catch { setStatus('error'); setErrMsg('Bağlantı hatası.'); }
+  }, [codeInput, user, toast, onOpenChange, stop]);
 
   const startCam = useCallback(async () => {
     handledRef.current = false;
@@ -192,6 +217,33 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
               )}
               {status === 'approving' && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>
+              )}
+            </div>
+          )}
+
+          {/* Kamerasız cihaz: diğer cihazın ekranındaki kodu elle gir. */}
+          {(status === 'scanning' || status === 'approving') && (
+            <div className="w-full pt-1">
+              {!showCode ? (
+                <button
+                  onClick={() => { stop(); setShowCode(true); }}
+                  className="flex w-full items-center justify-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-primary"
+                >
+                  <KeyRound className="h-3.5 w-3.5" /> Kamera açılmıyor mu? <span className="text-primary underline underline-offset-2">Kodu gir</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={codeInput}
+                    onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => { if (e.key === 'Enter') void submitCode(); }}
+                    placeholder="EKRANDAKİ KOD"
+                    maxLength={8}
+                    autoFocus
+                    className="text-center font-mono text-lg font-bold uppercase tracking-[0.25em]"
+                  />
+                  <Button onClick={() => void submitCode()} disabled={codeInput.trim().length < 4}>Onayla</Button>
+                </div>
               )}
             </div>
           )}

@@ -7,7 +7,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/layout/user-nav';
 import { QrScanDialog } from '@/components/auth/qr-scan-dialog';
-import { DeviceHandoffDialog } from '@/components/shared/device-handoff-dialog';
 import { usePathname } from 'next/navigation';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -28,7 +27,6 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   // Why: iOS 26 header pattern'i (sayfa üstünde flat, scroll'da prominent).
   const [isScrolled, setIsScrolled] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
-  const [handoffOpen, setHandoffOpen] = useState(false);
   // Scroll handler rAF ile throttle edilir — her scroll event'inde setState
   // çağrılmaz, frame başına en fazla bir kez okunur (jank önlenir).
   useEffect(() => {
@@ -131,11 +129,13 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
               </Button>
             )}
 
-            {/* QR — cihazlar arası "diğer cihazda aç": masaüstündeyse telefonda,
-                telefon/tablette ise bilgisayarda açacak QR/adres gösterir. */}
-            <Button variant="ghost" size="icon" aria-label="Diğer cihazda aç" title="Diğer cihazda aç" onClick={() => setHandoffOpen(true)}>
-              <QrCode className="h-5 w-5" />
-            </Button>
+            {/* QR Okut — giriş yapmış kullanıcı başka cihazın QR'ını ya da kodunu
+                okutup/girip o cihazı giriş yaptırır (kamerasız cihazlar kodla). */}
+            {user && (
+              <Button variant="ghost" size="icon" aria-label="QR Okut" title="QR Okut" onClick={() => setScanOpen(true)}>
+                <QrCode className="h-5 w-5" />
+              </Button>
+            )}
 
             {isUserLoading ? (
                 <div className="w-9 h-9 rounded-full bg-muted animate-pulse ml-1" />
@@ -149,11 +149,6 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
           </div>
         </div>
         {user && <QrScanDialog open={scanOpen} onOpenChange={setScanOpen} />}
-        <DeviceHandoffDialog
-          open={handoffOpen}
-          onOpenChange={setHandoffOpen}
-          onScan={user ? () => setScanOpen(true) : undefined}
-        />
       </header>
   );
 }

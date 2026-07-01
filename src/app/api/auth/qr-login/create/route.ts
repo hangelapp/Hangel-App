@@ -18,12 +18,23 @@ export const dynamic = 'force-dynamic';
 
 const TTL_MS = 5 * 60 * 1000;
 
+// Kamerasız cihazlar için insan-okur kısa kod: karışan karakterler (0/O/1/I) yok.
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function shortCode(len = 6): string {
+  const b = randomBytes(len);
+  let s = '';
+  for (let i = 0; i < len; i++) s += CODE_ALPHABET[b[i] % CODE_ALPHABET.length];
+  return s;
+}
+
 export async function POST() {
   const token = randomBytes(24).toString('hex');
+  const code = shortCode(6);
   await getAdminFirestore().collection(COLLECTIONS.qrLogins).doc(token).set({
     status: 'pending',
+    code, // QR okutulamayan cihaz bu kodu girerek onaylatır
     createdAt: FieldValue.serverTimestamp(),
     expiresAtMs: Date.now() + TTL_MS,
   });
-  return NextResponse.json({ token, ttlMs: TTL_MS });
+  return NextResponse.json({ token, code, ttlMs: TTL_MS });
 }

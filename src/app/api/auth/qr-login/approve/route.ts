@@ -23,11 +23,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ errorCode: 'UNAUTH', message: 'Oturum geçersiz.' }, { status: 401 });
   }
 
-  const body = (await req.json().catch(() => null)) as { token?: string } | null;
-  const token = typeof body?.token === 'string' ? body.token.trim() : '';
+  const body = (await req.json().catch(() => null)) as { token?: string; code?: string } | null;
+  let token = typeof body?.token === 'string' ? body.token.trim() : '';
+  const code = typeof body?.code === 'string' ? body.code.trim().toUpperCase().replace(/\s+/g, '') : '';
+  const dbAdmin = getAdminFirestore();
+
+  // Kamerasız cihaz kısa KOD girdiyse → doc token'ını bul (kod tek-kullanımlık, pending).
+  if (!token && code) {
+    // Tek-alan eşitlik (otomatik indeksli); status/expiry kontrolü aşağıda doc üzerinden.
+    const q = await dbAdmin.collection(COLLECTIONS.qrLogins).where('code', '==', code).limit(1).get();
+    if (!q.empty) token = q.docs[0].id;
+  }
   if (!token) return NextResponse.json({ errorCode: 'BAD', message: 'Kod gerekli.' }, { status: 400 });
 
-  const ref = getAdminFirestore().collection(COLLECTIONS.qrLogins).doc(token);
+  const ref = dbAdmin.collection(COLLECTIONS.qrLogins).doc(token);
   const snap = await ref.get();
   if (!snap.exists) return NextResponse.json({ errorCode: 'NOT_FOUND', message: 'Kod bulunamadı.' }, { status: 404 });
 

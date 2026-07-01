@@ -82,6 +82,7 @@ function QrLoginPageInner() {
   const { toast } = useToast();
 
   const [qrDataUrl, setQrDataUrl] = useState('');
+  const [code, setCode] = useState(''); // kamerasız cihaz için insan-okur kod
   const [loading, setLoading] = useState(false);
   const [expired, setExpired] = useState(false);
   const [view, setView] = useState<'qr' | 'notifications'>('qr');
@@ -111,6 +112,7 @@ function QrLoginPageInner() {
     cleanup();
     setExpired(false);
     setQrDataUrl('');
+    setCode('');
     setLoading(true);
     try {
       const res = await fetch('/api/auth/qr-login/create', { method: 'POST' });
@@ -120,6 +122,7 @@ function QrLoginPageInner() {
       const url = `${window.location.origin}/qr-login/${token}`;
       const QRCode = (await import('qrcode')).default;
       setQrDataUrl(await QRCode.toDataURL(url, { width: 240, margin: 1 }));
+      setCode(typeof data.code === 'string' ? data.code : '');
       setLoading(false);
       pollRef.current = setInterval(async () => {
         try {
@@ -220,8 +223,8 @@ function QrLoginPageInner() {
                   ))}
                 </ol>
 
-                {/* QR */}
-                <div className="flex shrink-0 items-center justify-center">
+                {/* QR + insan-okur KOD (kamerası açılmayan cihaz kodu girer) */}
+                <div className="flex shrink-0 flex-col items-center justify-center gap-4">
                   {loading ? (
                     <div className="flex h-[240px] w-[240px] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
                   ) : expired ? (
@@ -230,8 +233,17 @@ function QrLoginPageInner() {
                       <Button onClick={() => void start()}><RefreshCw className="mr-2 h-4 w-4" /> Yeni Kod</Button>
                     </div>
                   ) : qrDataUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={qrDataUrl} alt="hangel QR giriş kodu" width={240} height={240} className="rounded-2xl border" />
+                    <>
+                      <div className="rounded-[1.75rem] bg-white p-3 shadow-[0_8px_30px_rgba(0,0,0,0.08)] ring-1 ring-black/5">
+                        <img src={qrDataUrl} alt="hangel QR giriş kodu" width={216} height={216} className="rounded-2xl" />
+                      </div>
+                      {code && (
+                        <div className="text-center">
+                          <p className="text-[11px] font-medium text-muted-foreground">Kamerası açılmıyorsa bu kodu telefonuna gir</p>
+                          <p className="mt-1.5 font-mono text-[26px] font-black leading-none tracking-[0.35em] text-foreground">{code}</p>
+                        </div>
+                      )}
+                    </>
                   ) : null}
                 </div>
               </div>
