@@ -107,10 +107,12 @@ export async function POST(req: NextRequest) {
                 .get();
             if (!dupSnap.empty) {
                 const existingUid = dupSnap.docs[0].id;
+                const existingRole = dupSnap.docs[0].data()?.role as string | undefined;
                 // Sonraki girişlerde getUserByPhoneNumber doğrudan bulsun diye
                 // telefonu mevcut hesaba bağla (best-effort).
                 try { await adminAuth.updateUser(existingUid, { phoneNumber: fullPhone }); } catch { /* link best-effort */ }
-                const token = await adminAuth.createCustomToken(existingUid);
+                // Göç sonrası: Firestore role → JWT claim (Auth custom claim taşınmadı).
+                const token = await adminAuth.createCustomToken(existingUid, existingRole ? { role: existingRole } : undefined);
                 await ref.delete();
                 return NextResponse.json({ ok: true, customToken: token, isNewUser: false });
             }
@@ -136,8 +138,9 @@ export async function POST(req: NextRequest) {
                 .get();
             if (!dupSnap.empty && dupSnap.docs[0].id !== uid) {
                 const existingUid = dupSnap.docs[0].id;
+                const existingRole = dupSnap.docs[0].data()?.role as string | undefined;
                 try { await adminAuth.updateUser(existingUid, { phoneNumber: fullPhone }); } catch { /* link best-effort */ }
-                const token = await adminAuth.createCustomToken(existingUid);
+                const token = await adminAuth.createCustomToken(existingUid, existingRole ? { role: existingRole } : undefined);
                 await ref.delete();
                 return NextResponse.json({ ok: true, customToken: token, isNewUser: false });
             }
@@ -168,8 +171,10 @@ export async function POST(req: NextRequest) {
         }
 
         // Custom token üret + OTP doc'u sil — paralel
+        // Göç sonrası: Firestore role → JWT claim (Auth custom claim taşınmadı).
+        const userRole = existingDoc.exists ? (existingDoc.data()?.role as string | undefined) : undefined;
         const [customToken] = await Promise.all([
-            adminAuth.createCustomToken(uid),
+            adminAuth.createCustomToken(uid, userRole ? { role: userRole } : undefined),
             ref.delete(),
         ]);
 
