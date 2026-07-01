@@ -43,11 +43,11 @@ env:
       - RUNTIME
   # WhatsApp Cloud API (Meta Business)
   - variable: WHATSAPP_ACCESS_TOKEN
-    value: "REPLACE_IN_SECRET_MANAGER_LATER"
+    secret: WHATSAPP_ACCESS_TOKEN
     availability:
       - RUNTIME
   - variable: WHATSAPP_APP_SECRET
-    value: "REPLACE_IN_SECRET_MANAGER_LATER"
+    secret: WHATSAPP_APP_SECRET
     availability:
       - RUNTIME
   - variable: WHATSAPP_PHONE_NUMBER_ID
