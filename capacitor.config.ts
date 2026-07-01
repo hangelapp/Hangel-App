@@ -6,12 +6,13 @@ const config: CapacitorConfig = {
   appName: 'hangel',
   webDir: 'out',
   server: {
-    // Uzaktan hangel.org.tr yüklenir; WebView origin doğrudan https://hangel.org.tr olur
+    // Uzaktan hangel.org yüklenir; WebView origin doğrudan https://hangel.org olur
     // (SW + reCAPTCHA gerçek origin'de düzgün çalışır). DİKKAT: server.hostname'i
-    // YAYIN ADRESİYLE AYNI ('hangel.org.tr') yapmak Android'de Capacitor yerel
+    // YAYIN ADRESİYLE AYNI ('hangel.org') yapmak Android'de Capacitor yerel
     // sunucusunun bu host'u yakalayıp boş out/'u sunmasına → BEYAZ EKRAN'a yol açar.
     // Bu yüzden hostname/androidScheme verilmez (vc29 beyaz ekran kök nedeni).
-    url: 'https://hangel.org.tr',
+    // 2026-07-01: hangelorg göçü — hangel.org.tr (eski/kapalı) → hangel.org (yeni canlı).
+    url: 'https://hangel.org',
     cleartext: false,
   },
   ios: {
