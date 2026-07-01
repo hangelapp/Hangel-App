@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, HandCoins, FileText, UserPlus, Bell, Inbox, LogIn, Clock, Loader2, Timer } from 'lucide-react';
+import { Activity, HandCoins, FileText, UserPlus, Bell, Inbox, LogIn, LogOut, Loader2, Timer } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, orderBy, query, limit } from 'firebase/firestore';
 import Link from 'next/link';
@@ -46,7 +46,8 @@ const toDate = (val: unknown): Date | null => {
 
 const formatTs = (d: Date | null) => {
   if (!d) return '-';
-  return d.toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
+  // Tam işlem zamanı: gün.ay.yıl saat:dakika:saniye (kullanıcı isteği).
+  return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
 };
 
 const KIND_META: Record<ActivityEntry['kind'], { label: string; icon: typeof HandCoins; color: string }> = {
@@ -298,15 +299,18 @@ function SessionsPanel() {
   }, [authUser]);
 
   const filtered = roleFilter === 'all' ? items : items.filter(i => i.role === roleFilter);
-  const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' }) : '—');
+  // Giriş/çıkış zamanı: gün.ay.yıl saat:dakika:saniye.
+  const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—');
+  // Online süresi — saat/dakika/saniye hassasiyetiyle.
   const fmtDuration = (a: string | null, b: string | null): string | null => {
     if (!a || !b) return null;
     const ms = new Date(b).getTime() - new Date(a).getTime();
     if (!Number.isFinite(ms) || ms < 0) return null;
-    const mins = Math.round(ms / 60000);
-    if (mins < 1) return '1 dk\'dan az';
-    const h = Math.floor(mins / 60), m = mins % 60;
-    return h > 0 ? `${h} sa ${m} dk` : `${m} dk`;
+    const total = Math.round(ms / 1000);
+    const h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), s = total % 60;
+    if (h > 0) return `${h} sa ${m} dk ${s} sn`;
+    if (m > 0) return `${m} dk ${s} sn`;
+    return `${s} sn`;
   };
   const roleBadge = (role: string) => role === 'super-admin' ? 'bg-purple-100 text-purple-700' : role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-muted text-muted-foreground';
 
@@ -345,9 +349,9 @@ function SessionsPanel() {
             </div>
             <div className="text-right text-[11px] text-muted-foreground whitespace-nowrap">
               <p className="inline-flex items-center gap-1"><LogIn className="h-3 w-3 text-green-600" /> Giriş: {fmt(s.loginAt)}</p>
-              <p className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> Son: {fmt(s.lastActiveAt)}</p>
+              <p className="inline-flex items-center gap-1"><LogOut className="h-3 w-3 text-red-500" /> Çıkış: {fmt(s.lastActiveAt)}</p>
               {fmtDuration(s.loginAt, s.lastActiveAt) && (
-                <p className="inline-flex items-center gap-1 font-semibold text-foreground/70"><Timer className="h-3 w-3" /> {fmtDuration(s.loginAt, s.lastActiveAt)} online</p>
+                <p className="inline-flex items-center gap-1 font-semibold text-foreground/70"><Timer className="h-3 w-3" /> {fmtDuration(s.loginAt, s.lastActiveAt)} online kaldı</p>
               )}
             </div>
           </div>
