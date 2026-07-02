@@ -34,6 +34,23 @@ type OrgKind = 'event' | 'volunteer';
 const esc = (s: string) =>
   (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+// Önizleme iframe'inde A4 içeriğini KABIN GENİŞLİĞİNE sığdırır (yatay kırpılma yok).
+// Gerçek fiziksel genişlik (badge ~210mm, sertifika ~297mm) iframe'den geniş olduğunda
+// `zoom` ile küçültülür → sayfalar dikey akar, aşağı kaydırınca sıradaki A4 gelir.
+// Baskıda (@media print) zoom sıfırlanır → çıktı gerçek A4 ölçüsünde kalır.
+const FIT_SCRIPT = `<script>(function(){
+  function fit(){
+    var b=document.body; if(!b) return;
+    b.style.zoom='1';
+    var w=b.scrollWidth, avail=document.documentElement.clientWidth||w;
+    b.style.zoom = (w>avail && avail>0) ? String(avail/w) : '1';
+  }
+  window.addEventListener('resize',fit);
+  window.addEventListener('load',fit);
+  document.addEventListener('DOMContentLoaded',fit);
+  setTimeout(fit,60);setTimeout(fit,300);setTimeout(fit,800);
+})();</script>`;
+
 async function fetchAttendees(endpoint: string, token: string): Promise<{ event: EventInfo; attendees: Attendee[] }> {
   const res = await fetch(endpoint, { headers: { Authorization: `Bearer ${token}` } });
   const data = (await res.json().catch(() => null)) as { event?: EventInfo; attendees?: Attendee[]; message?: string } | null;
@@ -94,7 +111,7 @@ const BADGE_STYLES = `
   .b-back-t{font:700 12px/1.2 system-ui;color:#1c1c1e}
   .b-back-s{font:500 9px/1.3 system-ui;color:#8e8e93;max-width:70mm}
   @page{size:A4 portrait;margin:0}
-  @media print{ .badge{border-color:#e5e5ea} }
+  @media print{ body{zoom:1 !important} .badge{border-color:#e5e5ea} }
 `;
 
 // ---- Ortak: seçili belge JPEG/HTML'lerini üret ----
@@ -110,7 +127,7 @@ async function buildBadgeSheetHtml(kind: OrgKind, list: Attendee[], ev: EventInf
   return `<!doctype html><html lang="tr"><head><meta charset="utf-8">
   <style>*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#f2f2f7}
-  ${BADGE_STYLES}</style></head><body><div class="sheet">${cards.join('') || '<p style="padding:40px;color:#8e8e93">Kişi seçin.</p>'}</div></body></html>`;
+  ${BADGE_STYLES}</style></head><body><div class="sheet">${cards.join('') || '<p style="padding:40px;color:#8e8e93">Kişi seçin.</p>'}</div>${FIT_SCRIPT}</body></html>`;
 }
 
 function certInputFor(kind: OrgKind, a: Attendee, ev: EventInfo, ngoName: string, logoUrl: string | undefined, seed: string) {
@@ -139,8 +156,8 @@ async function buildCertSheetHtml(kind: OrgKind, list: Attendee[], ev: EventInfo
   .page{width:297mm;height:210mm;margin:6mm auto;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.12)}
   .page img{width:100%;height:100%;display:block;object-fit:contain}
   @page{size:A4 landscape;margin:0}
-  @media print{ body{background:#fff} .page{margin:0;box-shadow:none;page-break-after:always} }
-  </style></head><body>${pages || '<p style="padding:40px;font-family:system-ui;color:#8e8e93">Kişi seçin.</p>'}</body></html>`;
+  @media print{ body{background:#fff;zoom:1 !important} .page{margin:0;box-shadow:none;page-break-after:always} }
+  </style></head><body>${pages || '<p style="padding:40px;font-family:system-ui;color:#8e8e93">Kişi seçin.</p>'}${FIT_SCRIPT}</body></html>`;
   return { html, jpegs };
 }
 
@@ -232,8 +249,18 @@ function BulkDocDialog({
     const el = doc?.querySelector('.sheet') as HTMLElement | null;
     if (!el) return null;
     const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([import('html2canvas'), import('jspdf')]);
-    const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff' });
-    const img = canvas.toDataURL('image/jpeg', 0.92);
+    // Önizlemede fit için uygulanan `zoom`'u yakalama sırasında sıfırla → PDF tam
+    // çözünürlükte (gerçek A4) alınır; sonra geri koy.
+    const bodyEl = doc?.body as HTMLElement | undefined;
+    const prevZoom = bodyEl?.style.zoom ?? '';
+    if (bodyEl) bodyEl.style.zoom = '1';
+    let img: string;
+    try {
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff' });
+      img = canvas.toDataURL('image/jpeg', 0.92);
+    } finally {
+      if (bodyEl) bodyEl.style.zoom = prevZoom;
+    }
     const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
     pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
     return pdf.output('blob');
