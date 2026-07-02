@@ -13,10 +13,13 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Tag, Store as StoreIcon, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Tag, Store as StoreIcon, ChevronRight, SlidersHorizontal, ArrowDownUp, Check } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { BrandLogo } from '@/components/market/brand-logo';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { collection, limit, query, where, getCountFromServer } from 'firebase/firestore';
@@ -95,6 +98,36 @@ export default function BrandProfilePage() {
 
   const brandForLogo = { id: key, slug: key, name: brandName, category: '', type: 'brand', logoUrl: '', targetDomain: '', donationRate: avgRate } as Brand;
 
+  // ── Kategori sekmeleri + Filtre/Sırala ──
+  const [activeCat, setActiveCat] = useState<string>('Tümü');
+  const [sortKey, setSortKey] = useState<'default' | 'donation' | 'priceAsc' | 'priceDesc' | 'discount'>('default');
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [dealsOnly, setDealsOnly] = useState(false);
+
+  const categories = useMemo(() => {
+    const c = new Set<string>();
+    for (const p of products ?? []) if (p.category) c.add(p.category);
+    return ['Tümü', ...Array.from(c).sort((a, b) => a.localeCompare(b, 'tr'))];
+  }, [products]);
+
+  const isDeal = (p: CanonicalProduct) => typeof p.salePrice === 'number' && p.salePrice > 0 && p.salePrice < p.price;
+  const shown = useMemo(() => {
+    let list = [...(products ?? [])];
+    if (activeCat !== 'Tümü') list = list.filter((p) => p.category === activeCat);
+    if (inStockOnly) list = list.filter((p) => { const a = (p.availability || '').toLowerCase(); return !a || a.includes('stock') || a.includes('stok'); });
+    if (dealsOnly) list = list.filter(isDeal);
+    const price = (p: CanonicalProduct) => (typeof p.salePrice === 'number' && p.salePrice > 0 ? p.salePrice : p.price);
+    const discount = (p: CanonicalProduct) => (isDeal(p) ? 1 - (p.salePrice as number) / p.price : 0);
+    switch (sortKey) {
+      case 'donation': list.sort((a, b) => (Number(b.donationRate) || 0) - (Number(a.donationRate) || 0)); break;
+      case 'priceAsc': list.sort((a, b) => price(a) - price(b)); break;
+      case 'priceDesc': list.sort((a, b) => price(b) - price(a)); break;
+      case 'discount': list.sort((a, b) => discount(b) - discount(a)); break;
+    }
+    return list;
+  }, [products, activeCat, inStockOnly, dealsOnly, sortKey]);
+  const activeFilterCount = (inStockOnly ? 1 : 0) + (dealsOnly ? 1 : 0);
+
   return (
     <div className="flex min-h-full w-full max-w-full flex-col overflow-x-hidden bg-secondary/30">
       {/* Üst bar */}
@@ -151,17 +184,69 @@ export default function BrandProfilePage() {
         </div>
       )}
 
+      {/* Kategori sekmeleri + Filtre/Sırala */}
+      {(products?.length ?? 0) > 0 && (
+        <div className="flex items-center gap-2 border-b border-border bg-background px-3 py-2">
+          <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {categories.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setActiveCat(c)}
+                className={cn(
+                  'shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                  activeCat === c ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground hover:bg-secondary/70',
+                )}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="shrink-0 gap-1.5 rounded-full">
+                <SlidersHorizontal className="h-4 w-4" /> Filtre{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Filtrele</DropdownMenuLabel>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setInStockOnly((v) => !v); }}>
+                {inStockOnly ? <Check className="mr-2 h-4 w-4" /> : <span className="mr-2 w-4" />} Yalnız stokta
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setDealsOnly((v) => !v); }}>
+                {dealsOnly ? <Check className="mr-2 h-4 w-4" /> : <span className="mr-2 w-4" />} Yalnız indirimli
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="shrink-0 gap-1.5 rounded-full">
+                <ArrowDownUp className="h-4 w-4" /> Sırala
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Sırala</DropdownMenuLabel>
+              {([['default', 'Önerilen'], ['donation', 'Bağış (çok→az)'], ['discount', 'İndirim (çok→az)'], ['priceAsc', 'Fiyat (az→çok)'], ['priceDesc', 'Fiyat (çok→az)']] as const).map(([k, label]) => (
+                <DropdownMenuItem key={k} onSelect={() => setSortKey(k)}>
+                  {sortKey === k ? <Check className="mr-2 h-4 w-4" /> : <span className="mr-2 w-4" />} {label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+
       {/* Ürün grid */}
       <main className="w-full max-w-full overflow-x-hidden p-4 pb-32">
         {isLoading && !products?.length ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {[...Array(8)].map((_, i) => <div key={i} className="aspect-[3/4] w-full animate-pulse rounded-2xl bg-muted" />)}
           </div>
-        ) : !products?.length ? (
-          <EmptyState icon={Tag} title="Ürün bulunamadı" description="Bu markaya ait ürün şu an listede yok." />
+        ) : !shown.length ? (
+          <EmptyState icon={Tag} title="Ürün bulunamadı" description={activeCat !== 'Tümü' || activeFilterCount > 0 ? 'Seçili filtrelere uygun ürün yok.' : 'Bu markaya ait ürün şu an listede yok.'} />
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {products.map((p) => <ProductCard key={p.id} product={p} />)}
+            {shown.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         )}
       </main>
