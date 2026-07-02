@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-02";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "a20f6afe",
+    "date": "2026-07-02",
+    "subject": "feat(events): kartlara 'Google'da Ücretsiz Tanıt' butonu → Reklam Yönetimi (Google tab)"
+  },
+  {
     "hash": "0d894e91",
     "date": "2026-07-02",
     "subject": "feat(ngo-admin): etkinlik & gönüllülük kartlarına İncele ikonu (sağ üst → public sayfa yeni sekme)"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "a71ce1ff",
     "date": "2026-07-02",
     "subject": "chore(market): brands-all cache v2 (121 gerçek logo brandDirectory'de)"
-  },
-  {
-    "hash": "a223aa37",
-    "date": "2026-07-02",
-    "subject": "Merge: brands-all brandDirectory (370 markaya domain/logo)"
   }
 ];

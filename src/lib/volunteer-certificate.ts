@@ -90,7 +90,7 @@ export type VolunteerCertificateInput = {
   logoUrl?: string;
 };
 
-export async function generateVolunteerCertificate(input: VolunteerCertificateInput): Promise<Blob> {
+export async function buildVolunteerCertificateJpeg(input: VolunteerCertificateInput): Promise<{ jpeg: string; code: string }> {
   const { taskTitle, organizerName, userName, date, certificateId } = input;
   const code = input.code || buildCertCode({ country: input.country, kind: 'volunteer', idSeed: certificateId });
   const verify = certVerifyUrl(code);
@@ -164,6 +164,12 @@ export async function generateVolunteerCertificate(input: VolunteerCertificateIn
 </svg>`;
 
   const jpeg = await rasterizeSvgToJpeg(svg, PX_W, PX_H, 2);
+  return { jpeg, code };
+}
+
+/** A5 tek-sayfa PDF blob (kullanıcı-tarafı tekil indirme — davranış değişmedi). */
+export async function generateVolunteerCertificate(input: VolunteerCertificateInput): Promise<Blob> {
+  const { jpeg } = await buildVolunteerCertificateJpeg(input);
   const { default: jsPDF } = await import('jspdf');
   const pdf = new jsPDF({ unit: 'mm', format: [VCERT_WIDTH_MM, VCERT_HEIGHT_MM], orientation: 'landscape', compress: true });
   pdf.addImage(jpeg, 'JPEG', 0, 0, VCERT_WIDTH_MM, VCERT_HEIGHT_MM);

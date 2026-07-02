@@ -141,7 +141,7 @@ function rasterizeSvgToJpeg(svg: string, widthPx: number, heightPx: number, scal
   });
 }
 
-export async function generateEventCertificate(input: EventCertificateInput): Promise<Blob> {
+export async function buildEventCertificateJpeg(input: EventCertificateInput): Promise<{ jpeg: string; code: string }> {
   const { eventName, eventDate, userName, organizerName, role, certificateId, verifyUrl } = input;
 
   // iOS FIX 2026-06-20: html2canvas WKWebView'de "pdf oluşturulurken hata oluştu"
@@ -206,6 +206,12 @@ export async function generateEventCertificate(input: EventCertificateInput): Pr
 </svg>`;
 
   const jpeg = await rasterizeSvgToJpeg(svg, PX_W, PX_H, 2);
+  return { jpeg, code };
+}
+
+/** A5 tek-sayfa PDF blob (kullanıcı-tarafı tekil indirme — davranış değişmedi). */
+export async function generateEventCertificate(input: EventCertificateInput): Promise<Blob> {
+  const { jpeg } = await buildEventCertificateJpeg(input);
   const { default: jsPDF } = await import('jspdf');
   const pdf = new jsPDF({ unit: 'mm', format: [CERT_WIDTH_MM, CERT_HEIGHT_MM], orientation: 'landscape', compress: true });
   pdf.addImage(jpeg, 'JPEG', 0, 0, CERT_WIDTH_MM, CERT_HEIGHT_MM);
