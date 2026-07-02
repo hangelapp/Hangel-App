@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-07-02";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "6e2d4601",
+    "date": "2026-07-02",
+    "subject": "Merge remote-tracking branch 'origin/main' into feature/all-brands-list"
+  },
+  {
+    "hash": "5e15e8c9",
+    "date": "2026-07-02",
+    "subject": "feat(bulk-docs): gerçek QR-serili sertifika (A4) + önlü-arkalı yaka (A6 4-up) + ayrı Yazdır/Paylaş/İndir"
+  },
+  {
+    "hash": "bb34cdd0",
+    "date": "2026-07-02",
+    "subject": "fix(auth): dayanıklı oturum — IndexedDB persistence (sürekli çıkış giderildi)"
+  },
+  {
     "hash": "a20f6afe",
     "date": "2026-07-02",
     "subject": "feat(events): kartlara 'Google'da Ücretsiz Tanıt' butonu → Reklam Yönetimi (Google tab)"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "cd8c8e85",
     "date": "2026-07-02",
     "subject": "chore(market): brands-all cache v3 (Asus/Capcom/Anker/A4Tech logo düzeltmesi)"
-  },
-  {
-    "hash": "83caf537",
-    "date": "2026-07-02",
-    "subject": "feat(market): Marka (ürün markası) ile Mağaza (satıcı) ayrımı"
-  },
-  {
-    "hash": "977a60c5",
-    "date": "2026-07-02",
-    "subject": "Merge: brands-all cache v2 + 121 gerçek logo"
-  },
-  {
-    "hash": "a71ce1ff",
-    "date": "2026-07-02",
-    "subject": "chore(market): brands-all cache v2 (121 gerçek logo brandDirectory'de)"
   }
 ];

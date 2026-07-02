@@ -72,6 +72,8 @@ import { ListingForm, type ListingFormValues } from './_components/listing-form'
 import { ApplicationReviewCard, type ApplicationReviewItem } from './_components/application-review-card';
 import { CompletionScoringDialog, type ScoringItem } from './_components/completion-scoring-dialog';
 import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
+import { EventAttendees } from '@/components/events/event-attendees';
+import { EventBadgeCards, EventCertificates } from '@/components/events/event-bulk-docs';
 
 /** Volunteering doc'larında status henüz mevcut değilse default 'Aktif' kabul
  *  ederiz — eski dokümanlar bozulmasın. */
@@ -120,12 +122,14 @@ function ListingsTab({
   applicationCounts,
   ngoId,
   ngoName,
+  ngoLogoUrl,
   isLoading,
 }: {
   opportunities: VolunteeringWithStatus[];
   applicationCounts: Map<string, number>;
   ngoId: string | null;
   ngoName: string;
+  ngoLogoUrl?: string;
   isLoading: boolean;
 }) {
   const { t } = useTranslation();
@@ -361,6 +365,9 @@ function ListingsTab({
                   <Pencil className="h-3.5 w-3.5 mr-1.5" />
                   {t('ngo_admin_volunteering.listings.editBtn')}
                 </Button>
+                <EventAttendees eventId={opp.id} label="Gönüllüler" endpoint={`/api/volunteering/${opp.id}/attendees`} />
+                <EventBadgeCards eventId={opp.id} eventName={opp.title} ngoName={ngoName} logoUrl={ngoLogoUrl} orgKind="volunteer" attendeesEndpoint={`/api/volunteering/${opp.id}/attendees`} />
+                <EventCertificates eventId={opp.id} eventName={opp.title} ngoName={ngoName} logoUrl={ngoLogoUrl} orgKind="volunteer" attendeesEndpoint={`/api/volunteering/${opp.id}/attendees`} />
                 <Button
                   variant="secondary"
                   size="sm"
@@ -892,8 +899,9 @@ function VolunteeringPage() {
     if (!db || !entityId) return null;
     return query(collection(db, COLLECTIONS.ngos), where('__name__', '==', entityId));
   }, [db, entityId]);
-  const { data: ngoData } = useCollection<{ id: string; name?: string }>(ngoQuery);
+  const { data: ngoData } = useCollection<{ id: string; name?: string; logoUrl?: string; avatarUrl?: string }>(ngoQuery);
   const ngoName = ngoData?.[0]?.name ?? '';
+  const ngoLogoUrl = ngoData?.[0]?.logoUrl ?? ngoData?.[0]?.avatarUrl ?? undefined;
 
   // Süper-admin iş kalemi kataloğu — tamamlama dialog'unda yönetici seçer,
   // puan + mali değer otomatik hesaplanır.
@@ -940,6 +948,7 @@ function VolunteeringPage() {
             applicationCounts={applicationCounts}
             ngoId={entityId}
             ngoName={ngoName}
+            ngoLogoUrl={ngoLogoUrl}
             isLoading={oppsLoading}
           />
         </TabsContent>

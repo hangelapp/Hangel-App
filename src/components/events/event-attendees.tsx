@@ -49,7 +49,7 @@ function docFileNameBase(data: AttendeesResponse): string {
 // Etkinlik katılımcı listesi — yalnızca yetkili (super-admin / organizatör) görür.
 // "Katılımcılar" → dialogda İNDİRİLECEK BELGE GÖRÜNÜMÜNDE liste + Yazdır / İndir
 // (PDF) / Paylaş. Üçü de aynı belgeyi (buildDocBody) baz alır.
-export function EventAttendees({ eventId, label = 'Katılımcılar' }: { eventId: string; label?: string }) {
+export function EventAttendees({ eventId, label = 'Katılımcılar', endpoint }: { eventId: string; label?: string; endpoint?: string }) {
   const { user } = useUser();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -62,7 +62,7 @@ export function EventAttendees({ eventId, label = 'Katılımcılar' }: { eventId
     setLoading(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch(`/api/events/${eventId}/attendees`, { headers: { authorization: `Bearer ${token}` } });
+      const res = await fetch(endpoint || `/api/events/${eventId}/attendees`, { headers: { authorization: `Bearer ${token}` } });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || 'Yüklenemedi');
       setData(body);
