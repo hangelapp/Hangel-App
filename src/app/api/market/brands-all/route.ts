@@ -137,7 +137,7 @@ const getCachedAllBrands = unstable_cache(
     brands.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
     return brands;
   },
-  ['market-brands-all-v1'],
+  ['market-brands-all-v2'],
   { revalidate: CACHE_TTL_SECONDS },
 );
 
@@ -145,7 +145,7 @@ export async function GET() {
   try {
     const brands = await getCachedAllBrands();
     return NextResponse.json(
-      { version: 1, count: brands.length, brands },
+      { version: 2, count: brands.length, brands },
       {
         headers: {
           'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,
