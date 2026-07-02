@@ -61,7 +61,7 @@ export async function GET(req: Request) {
             {who ? `${who}, bir alışverişini bağışa dönüştürdü` : 'Bir alışveriş bağışa dönüştü'}
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', marginBottom: px(20) }}>
-            <div style={{ display: 'flex', fontSize: px(140), fontWeight: 800, lineHeight: 1 }}>₺{fmtAmount}</div>
+            <div style={{ display: 'flex', fontSize: px(140), fontWeight: 800, lineHeight: 1 }}>{fmtAmount} TL</div>
             <div style={{ display: 'flex', fontSize: px(34), fontWeight: 600, opacity: 0.9, paddingBottom: px(18), marginLeft: px(14) }}>
               bağış
             </div>
@@ -78,7 +78,7 @@ export async function GET(req: Request) {
               fontWeight: 700,
             }}
           >
-            ≈ {eq.count} {eq.unit} {eq.emoji}
+            ~{eq.count} {eq.unit} değerinde
           </div>
           {ngos.length > 0 && (
             <div style={{ display: 'flex', fontSize: px(24), opacity: 0.92, marginTop: px(22) }}>
@@ -88,9 +88,8 @@ export async function GET(req: Request) {
         </div>
 
         {/* Alt: davet */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: px(26) }}>
-          <div style={{ display: 'flex', fontWeight: 700 }}>Sen de katıl → hangel.org</div>
-          <div style={{ display: 'flex' }}>🧡</div>
+        <div style={{ display: 'flex', alignItems: 'center', fontSize: px(26) }}>
+          <div style={{ display: 'flex', fontWeight: 700 }}>Sen de katıl · hangel.org</div>
         </div>
       </div>
     ),
