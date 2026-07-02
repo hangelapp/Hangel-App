@@ -932,9 +932,9 @@ export default function DiscoverPage() {
                     })}
                   </div>
 
-                  {/* Tüm markalar — yatay buton (arama yanındaki icon yerine geçti).
-                      market'teki BÜTÜN ürün markalarını (/market/brands/all) açar;
-                      marka şeridindeki "Tümü" (/market/brands) yalnız ajans markaları. */}
+                  {/* Tüm MARKALAR — market'teki BÜTÜN ürün markalarını (Nike, Apple, Ülker...)
+                      /market/brands/all açar. "Mağazalar" şeridinin "Tümü"sü ise /market/brands
+                      (satıcılar). Marka ≠ Mağaza. */}
                   <div className="px-4 pt-1">
                     <Button
                       asChild
@@ -992,8 +992,10 @@ export default function DiscoverPage() {
                   resolveRate={resolveProductRate}
                   onSeeAll={scrollToAll}
                 />
-                {/* Marka kartları şeridi — Öne Çıkanlar ürünlerinin ÜZERİNDE. */}
-                <BrandStrip title="Markalar" items={brandStripItems} />
+                {/* Mağaza kartları şeridi (3 ajanstan gelen satıcılar) — Öne Çıkanlar'ın ÜZERİNDE.
+                    NOT: bunlar MAĞAZA (Media Markt, Sportive...); ürün MARKALARI (Nike, Apple)
+                    "Tüm Markalar" butonunda (/market/brands/all). */}
+                <BrandStrip title="Mağazalar" items={brandStripItems} />
                 <ProductStrip
                   title="Öne Çıkanlar"
                   icon={Sparkles}
@@ -1016,10 +1018,10 @@ export default function DiscoverPage() {
               </>
             )}
 
-            {/* Marka araması — arama bir markayla eşleşirse o markanın kartı
-                ÜRÜNLERİN ÜSTÜNDE çıkar (önce marka sayfası, sonra ürünler). */}
+            {/* Mağaza araması — arama bir mağazayla (satıcı) eşleşirse o mağazanın
+                kartı ürünlerin ÜSTÜNDE çıkar. */}
             {matchedBrands.length > 0 && (
-              <BrandStrip title="Marka" items={matchedBrands} showSeeAll={false} />
+              <BrandStrip title="Mağaza" items={matchedBrands} showSeeAll={false} />
             )}
 
             {/* ── 6. "Tüm Ürünler" ana grid ── */}

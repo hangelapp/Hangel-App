@@ -71,7 +71,7 @@ export default function BrandsListPage() {
           <div className="relative min-w-0 flex-grow">
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Marka ara"
+              placeholder="Mağaza ara"
               className="h-11 rounded-2xl border-none bg-muted/50 pl-10 text-base focus-visible:ring-1"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -80,7 +80,7 @@ export default function BrandsListPage() {
         </div>
         <div className="flex items-center gap-2 px-1">
           <Store className="h-4 w-4 text-primary" aria-hidden="true" />
-          <h1 className="text-sm font-bold text-foreground">Markalar</h1>
+          <h1 className="text-sm font-bold text-foreground">Mağazalar</h1>
           {brands.length > 0 && (
             <span className="text-xs font-medium text-muted-foreground">{brands.length}</span>
           )}

@@ -42,8 +42,8 @@ export const BrandLogo = ({ brand, padding = 'p-3' }: { brand: Brand; padding?: 
 
   if (hasError || !sources[srcIndex]) {
     return (
-      <div className="absolute inset-0 rounded-2xl bg-primary/10 flex items-center justify-center p-2">
-        <span className="text-primary font-black text-xl">{brand.name.charAt(0)}</span>
+      <div className="absolute inset-0 flex items-center justify-center bg-white">
+        <span className="text-primary font-black text-2xl">{brand.name.charAt(0)}</span>
       </div>
     );
   }
@@ -56,18 +56,24 @@ export const BrandLogo = ({ brand, padding = 'p-3' }: { brand: Brand; padding?: 
     });
   };
 
+  // Beyaz kare + ortalanmış, tam oturan logo. `object-contain` + `max-*-full`
+  // ile logo kareye sığar, taşmaz, bozulmaz. Düşük çözünürlüklü (bulanık) kaynak
+  // gelirse (< 32px) bir sonraki (daha keskin) kaynağa geçilir.
   return (
-    <img
-      src={sources[srcIndex]}
-      alt={brand.name}
-      className={`absolute inset-0 w-full h-full object-contain ${padding}`}
-      onLoad={(e) => {
-        const img = e.currentTarget;
-        if (img.naturalWidth < 16 || img.naturalHeight < 16) tryNext();
-      }}
-      onError={tryNext}
-      loading="lazy"
-      referrerPolicy="no-referrer"
-    />
+    <div className={`absolute inset-0 flex items-center justify-center overflow-hidden bg-white ${padding}`}>
+      <img
+        src={sources[srcIndex]}
+        alt={brand.name}
+        className="max-h-full max-w-full object-contain"
+        onLoad={(e) => {
+          const img = e.currentTarget;
+          if (img.naturalWidth < 32 || img.naturalHeight < 32) tryNext();
+        }}
+        onError={tryNext}
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+      />
+    </div>
   );
 };

@@ -35,7 +35,11 @@ export interface CanonicalProduct {
   feedId: string;
   offerId: string;
   brandId?: string | null;// hangel brands koleksiyonundaki id (bağlandıysa)
-  brandName: string;
+  brandName: string;      // MAĞAZA (satıcı) adı — feed/offer adı (Media Markt, Sportive...)
+  // Ürünün MARKASI (Nike/Apple/Ülker) — başlıktan/mağaza adından çıkarılır
+  // (src/lib/market/brand-extract). Mağazadan bağımsız; /market/brand/<key> profili.
+  productBrand?: string | null;
+  productBrandKey?: string | null; // normalize anahtar (marka sorgusu/route için)
   externalId: string;     // feed içindeki ürün id
   title: string;
   description?: string;

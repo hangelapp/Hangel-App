@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Sparkles,
   Store,
+  Tag,
   Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -50,13 +51,30 @@ export function ProductDetailClient({ id }: { id: string }) {
   );
   const { data: product, isLoading } = useDoc<CanonicalProduct>(productRef);
 
-  // Marka — bağış oranını çözmek + BrandLogo'yu beslemek + profil linki için.
-  // Ürün bir hangel markasına bağlıysa (brandId) çekilir; değilse atlanır.
+  // MAĞAZA (satıcı) — ürünün geldiği 3-ajans offer'ı. `brandName` mağaza adıdır.
+  // Mağaza doc id: brandId varsa o; yoksa source+feedId'den türetilir
+  // (ao-/ra-/go-<feedId>). Mağaza logosu + profil linki + bağış oranı için.
+  const storeId = useMemo(() => {
+    if (product?.brandId) return product.brandId;
+    const pre =
+      product?.source === 'affocean' ? 'ao'
+      : product?.source === 'reklamaction' ? 'ra'
+      : product?.source === 'gelirortaklari' ? 'go'
+      : '';
+    return pre && product?.feedId ? `${pre}-${product.feedId}` : null;
+  }, [product?.brandId, product?.source, product?.feedId]);
+
   const brandRef = useMemoFirebase(
-    () => (product?.brandId ? doc(db, COLLECTIONS.brands, product.brandId) : null),
-    [db, product?.brandId]
+    () => (storeId ? doc(db, COLLECTIONS.brands, storeId) : null),
+    [db, storeId]
   );
+  // `brand` = MAĞAZA dokümanı (logo/ad/oran). Değişken adı geriye uyum için korunur.
   const { data: brand } = useDoc<Brand>(brandRef);
+
+  // MARKA (ürün markası: Nike/Apple/Ülker) — başlıktan çıkarılmış `productBrand`.
+  // Mağazadan bağımsız; marka profiline (/market/brand/<key>) gider. Boş olabilir.
+  const productBrand = (product?.productBrand || '').trim();
+  const productBrandKey = (product?.productBrandKey || '').trim();
 
   // "Ürüne Git" — market marka CTA'sını yansıtır: oturum zorunlu + tıklama/
   // alışveriş izi (userId+brandId+productId) bildirim olarak yazılır. Dışa giden
@@ -380,34 +398,18 @@ export function ProductDetailClient({ id }: { id: string }) {
             <span className="truncate text-foreground/70">{product.title}</span>
           </nav>
 
-          {/* 3. Marka satırı — logo + tıklanır marka adı */}
-          <div className="flex items-center gap-2.5">
-            {brand ? (
-              <Link
-                href={`/market/${product.brandId}`}
-                className="relative block h-10 w-10 shrink-0 overflow-hidden rounded-xl border bg-white"
-                aria-label={product.brandName}
-              >
-                <BrandLogo brand={brand} />
-              </Link>
-            ) : (
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border bg-white text-primary">
-                <Store className="h-5 w-5" aria-hidden="true" />
-              </span>
-            )}
-            {product.brandId ? (
-              <Link
-                href={`/market/${product.brandId}`}
-                className="text-sm font-black uppercase tracking-wide text-primary hover:underline"
-              >
-                {product.brandName}
-              </Link>
-            ) : (
-              <span className="text-sm font-black uppercase tracking-wide text-muted-foreground">
-                {product.brandName}
-              </span>
-            )}
-          </div>
+          {/* 3. MARKA satırı — ürünün markası (Nike/Apple/Ülker). Trendyol'da olduğu
+              gibi başlığın üstünde; marka profiline (/market/brand/<key>) gider.
+              Marka çıkarılamadıysa satır gizlenir (yalnız mağazada listelenir). */}
+          {productBrand && productBrandKey ? (
+            <Link
+              href={`/market/brand/${encodeURIComponent(productBrandKey)}`}
+              className="inline-flex items-center gap-1.5 text-sm font-black uppercase tracking-wide text-primary hover:underline"
+            >
+              <Tag className="h-4 w-4" aria-hidden="true" />
+              {productBrand}
+            </Link>
+          ) : null}
 
           {/* 4. Ürün başlığı — tam, kesilmemiş */}
           <h1 className="text-xl font-bold leading-snug text-foreground">{product.title}</h1>
@@ -489,6 +491,32 @@ export function ProductDetailClient({ id }: { id: string }) {
               <span className="inline-flex items-center gap-1"><ExternalLink className="h-3.5 w-3.5 text-primary" /> Ödeme markada</span>
             </div>
           </div>
+
+          {/* 7. MAĞAZA (Satıcı) kartı — ürünü hangi mağazanın sitesinden çektiğimiz.
+              Trendyol'daki "Satıcı" kutusu; tıklanınca o mağazanın profiline gider. */}
+          {product.brandName && (
+            <Link
+              href={storeId ? `/market/${storeId}` : `/market/products?brand=${encodeURIComponent(product.brandName)}`}
+              className="flex items-center gap-3 rounded-2xl border bg-card p-3.5 transition-colors hover:border-primary/40 hover:bg-primary/5"
+            >
+              <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border bg-white">
+                {brand ? (
+                  <BrandLogo brand={brand} />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-primary">
+                    <Store className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Satıcı Mağaza
+                </p>
+                <p className="truncate text-sm font-black text-foreground">{product.brandName}</p>
+              </div>
+              <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+            </Link>
+          )}
 
           {/* 8. Ürün açıklaması */}
           {product.description && (

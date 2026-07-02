@@ -15,6 +15,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
+import { extractProductBrand, normKey } from '@/lib/market/brand-extract';
 import { COLLECTIONS } from '@/firebase/collections';
 import { listGelirOrtaklariFeeds } from '@/lib/feed/gelirortaklari';
 import { ingestProducts, type FeedSourceKind } from '@/lib/feed/registry';
@@ -122,8 +123,15 @@ export async function POST(req: NextRequest) {
       const slice = products.slice(i, i + 450);
       const batch = fs.batch();
       for (const p of slice) {
+        // Ürün MARKASI (Nike/Apple) — başlıktan/mağaza adından çıkar (Marka≠Mağaza).
+        const pb = extractProductBrand(p.title || '', p.brandName || '');
         // Arama için token'la (başlık+marka+kategori) — array-contains-any sorgusu.
-        const withTokens = { ...p, searchTokens: searchTokensFor(p) };
+        const withTokens = {
+          ...p,
+          productBrand: pb,
+          productBrandKey: pb ? normKey(pb) : null,
+          searchTokens: searchTokensFor(p),
+        };
         batch.set(fs.collection(PRODUCTS).doc(p.id), stripUndefined(withTokens), { merge: true });
       }
       await batch.commit();

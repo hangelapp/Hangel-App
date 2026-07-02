@@ -119,7 +119,7 @@ export default function AllBrandsListPage() {
               return (
                 <Link
                   key={b.id}
-                  href={`/market/products?brand=${encodeURIComponent(b.name)}`}
+                  href={`/market/brand/${encodeURIComponent(b.id)}`}
                   className="group"
                 >
                   <div className="flex flex-col items-center space-y-2 text-center">
