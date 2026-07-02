@@ -74,6 +74,7 @@ import { CompletionScoringDialog, type ScoringItem } from './_components/complet
 import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
 import { EventAttendees } from '@/components/events/event-attendees';
 import { EventBadgeCards, EventCertificates } from '@/components/events/event-bulk-docs';
+import { VolunteeringCheckinQR } from '@/components/volunteering/volunteering-checkin-qr';
 
 /** Volunteering doc'larında status henüz mevcut değilse default 'Aktif' kabul
  *  ederiz — eski dokümanlar bozulmasın. */
@@ -392,6 +393,7 @@ function ListingsTab({
                   <Pencil className="h-3.5 w-3.5 mr-1.5" />
                   {t('ngo_admin_volunteering.listings.editBtn')}
                 </Button>
+                <VolunteeringCheckinQR oppId={opp.id} logoUrl={ngoLogoUrl} />
                 <EventAttendees eventId={opp.id} label="Gönüllüler" endpoint={`/api/volunteering/${opp.id}/attendees`} />
                 <EventBadgeCards eventId={opp.id} eventName={opp.title} ngoName={ngoName} logoUrl={ngoLogoUrl} orgKind="volunteer" attendeesEndpoint={`/api/volunteering/${opp.id}/attendees`} />
                 <EventCertificates eventId={opp.id} eventName={opp.title} ngoName={ngoName} logoUrl={ngoLogoUrl} orgKind="volunteer" attendeesEndpoint={`/api/volunteering/${opp.id}/attendees`} />
