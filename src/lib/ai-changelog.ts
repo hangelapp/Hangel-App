@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-02";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "4a3e387c",
+    "date": "2026-07-02",
+    "subject": "feat(volunteering): kartlara Gönüllüler + Yaka Kartları + Sertifikalar (bulk-docs orgKind=volunteer)"
+  },
+  {
     "hash": "6e2d4601",
     "date": "2026-07-02",
     "subject": "Merge remote-tracking branch 'origin/main' into feature/all-brands-list"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "ccf1bc15",
     "date": "2026-07-02",
     "subject": "chore(market): brands-all cache v4 (195 gerçek marka logosu sitelerden)"
-  },
-  {
-    "hash": "cd8c8e85",
-    "date": "2026-07-02",
-    "subject": "chore(market): brands-all cache v3 (Asus/Capcom/Anker/A4Tech logo düzeltmesi)"
   }
 ];

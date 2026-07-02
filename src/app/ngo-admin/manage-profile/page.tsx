@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Instagram, Linkedin, Youtube, ArrowLeft, MapPin, Palette, FileText, X, Save, Building2, Users, Loader2, ShieldAlert } from 'lucide-react';
+import { Upload, Instagram, Linkedin, Youtube, ArrowLeft, MapPin, Palette, FileText, X, Save, Building2, Users, Loader2, ShieldAlert, Eye } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useRouter } from 'next/navigation';

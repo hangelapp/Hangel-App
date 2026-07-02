@@ -29,6 +29,10 @@ export type ListingFormValues = {
   eventEnd: string;
   city: string;
   district: string;
+  address: string;
+  locationType: string;
+  socialArea: string;
+  commitment: string;
   capacity: number;
   skills: string[];
   interests: string[];
@@ -43,10 +47,25 @@ const EMPTY: ListingFormValues = {
   eventEnd: '',
   city: '',
   district: '',
+  address: '',
+  locationType: 'Saha',
+  socialArea: '',
+  commitment: 'Tek Günlük',
   capacity: 1,
   skills: [],
   interests: [],
 };
+
+// Kanonik seçenekler — rozet motoru socialArea'yı normalize eder (resolveBadgeArea).
+const SOCIAL_AREAS = [
+  'Eğitim', 'Sağlık', 'Çevre', 'Hayvan Hakları', 'Afet & Acil Yardım', 'Sosyal Yardım',
+  'Kültür & Sanat', 'Spor', 'İnsan Hakları', 'Teknoloji', 'Gıda & Beslenme',
+  'Yaşlı Bakımı', 'Çocuk', 'Kadın', 'Mülteci & Göç', 'Engelli Hakları',
+];
+const LOCATION_TYPES = ['Saha', 'Online', 'Hibrit'];
+const COMMITMENTS = ['Tek Günlük', 'Kısa Süreli', 'Düzenli', 'Sürekli'];
+const selectCls =
+  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
 type Props = {
   initialValues?: Partial<ListingFormValues>;
@@ -183,6 +202,65 @@ export function ListingForm({ initialValues, onSubmit, onCancel, submitting }: P
             onChange={(e) => update('capacity', Math.max(1, Number(e.target.value) || 1))}
             required
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="listing-address">Açık Adres (saha için — opsiyonel)</Label>
+          <Input
+            id="listing-address"
+            value={values.address}
+            onChange={(e) => update('address', e.target.value)}
+            placeholder="Cadde, sokak, no — yol tarifi ve buluşma noktası için"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="listing-area">Sosyal Alan</Label>
+          <select
+            id="listing-area"
+            className={selectCls}
+            value={values.socialArea}
+            onChange={(e) => update('socialArea', e.target.value)}
+          >
+            <option value="">Seçin…</option>
+            {SOCIAL_AREAS.map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+            {values.socialArea && !SOCIAL_AREAS.includes(values.socialArea) && (
+              <option value={values.socialArea}>{values.socialArea}</option>
+            )}
+          </select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="listing-loctype">Katılım Şekli</Label>
+          <select
+            id="listing-loctype"
+            className={selectCls}
+            value={values.locationType}
+            onChange={(e) => update('locationType', e.target.value)}
+          >
+            {LOCATION_TYPES.map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="listing-commit">Süre / Bağlılık</Label>
+          <select
+            id="listing-commit"
+            className={selectCls}
+            value={values.commitment}
+            onChange={(e) => update('commitment', e.target.value)}
+          >
+            {COMMITMENTS.map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+            {values.commitment && !COMMITMENTS.includes(values.commitment) && (
+              <option value={values.commitment}>{values.commitment}</option>
+            )}
+          </select>
         </div>
       </div>
 

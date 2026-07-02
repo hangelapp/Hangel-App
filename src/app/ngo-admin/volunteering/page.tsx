@@ -167,13 +167,14 @@ function ListingsTab({
         description: values.description,
         organization: ngoName,
         ngoId,
-        socialArea: editing?.socialArea ?? '',
+        socialArea: values.socialArea,
         interests: values.interests,
         skills: values.skills,
         location: {
           city: values.city,
           district: values.district,
-          type: editing?.location?.type ?? 'Saha',
+          type: values.locationType,
+          ...(values.address.trim() ? { address: values.address.trim() } : {}),
         },
         dates: {
           applicationStart: values.applicationStart,
@@ -185,7 +186,7 @@ function ListingsTab({
           needed: values.capacity,
           applications: editing?.volunteerCount?.applications ?? 0,
         },
-        commitment: editing?.commitment ?? 'Tek Günlük',
+        commitment: values.commitment,
       };
 
       if (editing) {
@@ -287,6 +288,10 @@ function ListingsTab({
         city: editing.location?.city ?? '',
         district: editing.location?.district ?? '',
         capacity: editing.volunteerCount?.needed ?? 1,
+        address: editing.location?.address ?? '',
+        locationType: editing.location?.type ?? 'Saha',
+        socialArea: editing.socialArea ?? '',
+        commitment: editing.commitment ?? 'Tek Günlük',
         skills: editing.skills ?? [],
         interests: editing.interests ?? [],
       }
