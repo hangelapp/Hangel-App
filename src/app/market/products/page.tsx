@@ -32,6 +32,16 @@ export default function ProductsPage() {
   const [randSeed, setRandSeed] = useState(0);
   useEffect(() => { setRandSeed(Math.random() * 0.8); }, []);
 
+  // "Tüm Markalar" (/market/brands/all) listesinden gelen ?brand=<ad> — o
+  // markanın ürünleri sunucudan (where brandName) çekilir, chip önseçili gelir.
+  // useSearchParams yerine window (Suspense sınırı gerektirmesin).
+  const [brandParam, setBrandParam] = useState('');
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const b = new URLSearchParams(window.location.search).get('brand') || '';
+    if (b) { setBrandParam(b); setActiveBrand(b); }
+  }, []);
+
   // Arama: yazma durunca (350ms) tetiklenir; kelimelere bölünür (Türkçe İ/ı normalize).
   // Boşsa rastgele "gözat" modu; doluysa TÜM katalogda searchTokens araması.
   const [debounced, setDebounced] = useState('');
@@ -53,11 +63,14 @@ export default function ProductsPage() {
 
   const productsQuery = useMemoFirebase(
     () =>
-      searchTokens.length > 0
+      // Marka görünümü: arama yoksa o markanın ürünlerini sunucudan getir.
+      brandParam && searchTokens.length === 0
+        ? query(collection(db, COLLECTIONS.products), where('brandName', '==', brandParam), limit(120))
+        : searchTokens.length > 0
         // Tüm katalogda kelime araması (ilk token sunucuda; çoklu kelime aşağıda daraltılır).
         ? query(collection(db, COLLECTIONS.products), where('searchTokens', 'array-contains', searchTokens[0]), limit(120))
         : query(collection(db, COLLECTIONS.products), orderBy('random'), startAt(randSeed), limit(120)),
-    [db, randSeed, searchTokens]
+    [db, randSeed, searchTokens, brandParam]
   );
   const { data: products, isLoading } =
     useCollection<CanonicalProduct>(productsQuery);
