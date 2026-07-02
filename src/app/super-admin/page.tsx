@@ -8,6 +8,7 @@ import { useSuperAdminPermissions, slugFromPath } from '@/hooks/use-super-admin-
 // P2-4: closed icon set for superAdminNavItems lookup — replaces `import * as Icons`.
 import {
   Activity,
+  Award,
   BarChart3,
   Bell,
   Brain,
@@ -40,6 +41,7 @@ import {
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Activity,
+  Award,
   BarChart3,
   Bell,
   Brain,
@@ -147,6 +149,7 @@ const superAdminNavSections = [
             { href: '/super-admin/events', label: 'Etkinlik Yönetimi', icon: 'Calendar', description: 'Öğrenci kulüplerinin oluşturduğu etkinlikleri onayla veya reddet.' },
             { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper', description: 'Tüm gönderileri denetle ve yönet.' },
             { href: '/super-admin/surveys', label: 'Anket & Değerlendirmeler', icon: 'Star', description: 'Kullanıcı keşif anketleri ve uygulama değerlendirmelerini görüntüle.' },
+            { href: '/super-admin/badges', label: 'Rozet & Sertifika Yönetimi', icon: 'Award', description: 'Özel/dönemsel rozet oluştur, kullanıcılara rozet ver, özel puan tanımla; sertifika ve rozetleri yönet.' },
         ],
     },
     {

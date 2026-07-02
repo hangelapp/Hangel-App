@@ -2,10 +2,13 @@
 
 import React, { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Star, CheckCircle, Lock, Award } from 'lucide-react';
+import { Star, CheckCircle, Lock, Award, Share2, HandCoins, HeartHandshake, UserPlus, Sparkles } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { computeAreaPoints, mapCategoryToBadgeArea, enrichBadges, type TierEnrichedBadge } from '@/lib/badge-points';
+import { computeAreaPoints, computePointsBreakdown, mapCategoryToBadgeArea, enrichBadges, type TierEnrichedBadge } from '@/lib/badge-points';
+import { isSpecialKind, SPECIAL_BADGE_DEFAULT_COLOR, type EarnedSpecialBadge } from '@/lib/special-badges';
+import { shareBadge } from '@/lib/share-badge';
+import { useToast } from '@/hooks/use-toast';
 import type { Application } from '@/lib/types';
 import { useUser, useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase';
 import { doc, collection, query, where, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -95,7 +98,7 @@ const NextBadgeGoal = ({ nextBadge, t }: { nextBadge: NextBadgeRow | null; t: (k
  */
 type TierBadge = BadgeType & { prevTierRequired: number };
 
-const VectorBadge = ({ badge, t }: { badge: TierBadge; t: (key: string) => string }) => {
+const VectorBadge = ({ badge, t, onShare }: { badge: TierBadge; t: (key: string) => string; onShare?: () => void }) => {
     const isEarned = badge.currentPoints >= badge.pointsRequired;
     const Icon = badge.iconName;
     const colors = levelColors[badge.level];
@@ -162,6 +165,15 @@ const VectorBadge = ({ badge, t }: { badge: TierBadge; t: (key: string) => strin
                         )}
                     </div>
                 </div>
+                {isEarned && onShare && (
+                    <button
+                        type="button"
+                        onClick={onShare}
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#E34234]/30 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[#E34234] transition-colors hover:bg-[#E34234]/10"
+                    >
+                        <Share2 className="h-3 w-3" /> Paylaş
+                    </button>
+                )}
             </div>
         </Card>
     );
@@ -169,8 +181,10 @@ const VectorBadge = ({ badge, t }: { badge: TierBadge; t: (key: string) => strin
 
 export default function MyBadgesPage() {
     const { t } = useTranslation();
+    const { toast } = useToast();
     const { user: authUser } = useUser();
     const db = useFirestore();
+    const firstName = authUser?.displayName?.split(' ')[0] || undefined;
     const userDocRef = useMemoFirebase(
         () => authUser ? doc(db, COLLECTIONS.users, authUser.uid) : null,
         [db, authUser?.uid],
@@ -286,6 +300,32 @@ export default function MyBadgesPage() {
     const { data: pastVolunteeringData } = useCollection<PastVolunteeringDoc>(pastVolunteeringRef);
     const pastVolunteering = useMemo(() => pastVolunteeringData ?? [], [pastVolunteeringData]);
 
+    // Kullanıcının kazandığı ROZET kayıtları (users/{uid}/badges) — özel/dönemsel
+    // rozetler (kind: special/seasonal) buradan gelir ve EN ÜSTTE gösterilir.
+    type EarnedBadgeDoc = EarnedSpecialBadge & { earnedAt?: { seconds?: number } | null };
+    const earnedBadgesRef = useMemoFirebase(
+        () => (db && authUser ? collection(db, COLLECTIONS.users, authUser.uid, COLLECTIONS.badges) : null),
+        [db, authUser?.uid],
+    );
+    const { data: earnedBadgesData } = useCollection<EarnedBadgeDoc>(earnedBadgesRef);
+    const specialBadges = useMemo<EarnedSpecialBadge[]>(() => {
+        return (earnedBadgesData ?? [])
+            .filter((b) => isSpecialKind(b.kind))
+            .map((b) => ({
+                id: b.id,
+                badgeId: b.badgeId || b.id,
+                name: b.name,
+                description: b.description,
+                emoji: b.emoji,
+                status: b.status,
+                colorHex: b.colorHex,
+                priority: Number(b.priority) || 100,
+                kind: b.kind,
+                earnedAtMs: b.earnedAt?.seconds ? b.earnedAt.seconds * 1000 : 0,
+            }))
+            .sort((a, b) => (b.priority || 0) - (a.priority || 0) || (b.earnedAtMs || 0) - (a.earnedAtMs || 0));
+    }, [earnedBadgesData]);
+
     // Top-level veya stats.* — invite akışı top-level yazıyor, signup stats altına yazıyor.
     type UserDataLike = {
         impactScore?: number;
@@ -355,6 +395,29 @@ export default function MyBadgesPage() {
         [donations, ngoCategoryById, pastVolunteering, inviteCount]
     );
 
+    // Puanların KAYNAK bazında dökümü (şeffaflık: "+X bağış, +Y gönüllülük…").
+    const breakdown = useMemo(
+        () => computePointsBreakdown({ donations, ngoCategoryById, pastVolunteering, inviteCount }),
+        [donations, ngoCategoryById, pastVolunteering, inviteCount]
+    );
+    const selectionTotal = useMemo(
+        () => Object.values(selectionAreaPoints).reduce((a, b) => a + (Number(b) || 0), 0),
+        [selectionAreaPoints]
+    );
+
+    // Rozet paylaş — alan (tier) rozeti.
+    const handleShareTierBadge = async (badge: TierBadge) => {
+        const res = await shareBadge({ name: badge.name, sub: badge.level, area: badge.socialArea, who: firstName });
+        if (res === 'copied') toast({ title: 'Bağlantı kopyalandı', description: 'Rozet kartın panoya kopyalandı.' });
+        else if (res === 'failed') toast({ variant: 'destructive', title: 'Paylaşılamadı' });
+    };
+    // Rozet paylaş — özel/dönemsel rozet.
+    const handleShareSpecial = async (b: EarnedSpecialBadge) => {
+        const res = await shareBadge({ name: b.name, sub: b.status, emoji: b.emoji, who: firstName, color: b.colorHex || SPECIAL_BADGE_DEFAULT_COLOR });
+        if (res === 'copied') toast({ title: 'Bağlantı kopyalandı', description: 'Rozet kartın panoya kopyalandı.' });
+        else if (res === 'failed') toast({ variant: 'destructive', title: 'Paylaşılamadı' });
+    };
+
     // PRD birincil sinyali: supportedNgos/volunteerNgos seçimlerinden gelen 10'luk
     // puanlar (selectionAreaPoints) ile bağış/gönüllülük/davet aktivitesinden
     // hesaplanan puanları (computed) topla; ardından saklı puan ile max al.
@@ -379,7 +442,8 @@ export default function MyBadgesPage() {
         if (serialize(storedAreaPoints) === serialize(effectiveAreaPoints)) return;
         (async () => {
             try {
-                await updateDoc(doc(db, COLLECTIONS.users, authUser.uid), { areaPoints: effectiveAreaPoints });
+                const totalPoints = Object.values(effectiveAreaPoints).reduce((a, b) => a + (Number(b) || 0), 0);
+                await updateDoc(doc(db, COLLECTIONS.users, authUser.uid), { areaPoints: effectiveAreaPoints, totalPoints });
             } catch {
                 // non-fatal: puan kalıcılaştırması başarısızsa UI yine hesaplanan değerlerle çalışır.
             }
@@ -517,6 +581,57 @@ export default function MyBadgesPage() {
                 </TabsContent>
 
                 <TabsContent value="badges" className="mt-8 space-y-12">
+                    {/* Özel & Dönemsel rozetler — en üstte, prestijli/kısa ömürlü olduğu için. */}
+                    {specialBadges.length > 0 && (
+                        <div className="space-y-4">
+                            <div className="px-1">
+                                <h2 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                                    <Sparkles className="h-5 w-5 text-primary" /> Özel & Dönemsel Rozetler
+                                </h2>
+                                <p className="text-xs font-medium text-muted-foreground mt-0.5">Sana özel verilen ayrıcalıklı rozetler.</p>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {specialBadges.map((b) => {
+                                    const color = b.colorHex || SPECIAL_BADGE_DEFAULT_COLOR;
+                                    return (
+                                        <Card key={b.id} className="rounded-3xl border-2 p-5 flex items-center gap-4" style={{ borderColor: `${color}55`, background: `${color}0d` }}>
+                                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl shadow-sm" style={{ background: color }}>
+                                                <span>{b.emoji || '🏅'}</span>
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-bold truncate">{b.name}</p>
+                                                    <Badge variant="outline" className="shrink-0 text-[9px] font-black uppercase" style={{ borderColor: color, color }}>{b.status || 'Özel'}</Badge>
+                                                </div>
+                                                {b.description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{b.description}</p>}
+                                                <button type="button" onClick={() => handleShareSpecial(b)} className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest" style={{ color }}>
+                                                    <Share2 className="h-3 w-3" /> Paylaş
+                                                </button>
+                                            </div>
+                                        </Card>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Puan kırılımı — şeffaflık. */}
+                    {breakdown.total + selectionTotal > 0 && (
+                        <Card className="bg-muted/40">
+                            <CardHeader className="pb-3">
+                                <CardTitle className="text-base">Puanların nereden geliyor?</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                                    <div className="flex items-center gap-2"><HandCoins className="h-4 w-4 text-primary shrink-0" /><span><b>+{breakdown.donation.toLocaleString('tr-TR')}</b> <span className="text-muted-foreground">bağış</span></span></div>
+                                    <div className="flex items-center gap-2"><HeartHandshake className="h-4 w-4 text-primary shrink-0" /><span><b>+{breakdown.volunteering.toLocaleString('tr-TR')}</b> <span className="text-muted-foreground">gönüllülük</span></span></div>
+                                    <div className="flex items-center gap-2"><UserPlus className="h-4 w-4 text-primary shrink-0" /><span><b>+{breakdown.invite.toLocaleString('tr-TR')}</b> <span className="text-muted-foreground">davet</span></span></div>
+                                    <div className="flex items-center gap-2"><Star className="h-4 w-4 text-primary shrink-0" /><span><b>+{selectionTotal.toLocaleString('tr-TR')}</b> <span className="text-muted-foreground">seçim/ilgi</span></span></div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {enrichedBadges.length === 0 && (
                         <EmptyState
                             icon={Award}
@@ -544,7 +659,7 @@ export default function MyBadgesPage() {
                                 </div>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                                     {areaBadges.map(badge => (
-                                        <VectorBadge key={badge.id} badge={badge} t={t} />
+                                        <VectorBadge key={badge.id} badge={badge} t={t} onShare={() => handleShareTierBadge(badge)} />
                                     ))}
                                 </div>
                             </div>

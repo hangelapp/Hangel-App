@@ -19,7 +19,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { collection, doc, getCountFromServer, limit, orderBy, query } from 'firebase/firestore';
-import { Globe, Handshake, Heart, MapPin, School, Sparkles, Star } from 'lucide-react';
+import { Award, Globe, Handshake, Heart, MapPin, School, Sparkles, Star } from 'lucide-react';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -62,6 +62,7 @@ const METRICS: ReadonlyArray<{
   unitKey: 'unitPoints' | 'unitHours' | 'unitCurrency';
   icon: typeof Star;
 }> = [
+  { key: 'totalPoints', labelKey: 'tabPoints', unitKey: 'unitPoints', icon: Award },
   { key: 'impactScore', labelKey: 'tabImpact', unitKey: 'unitPoints', icon: Star },
   { key: 'volunteerHours', labelKey: 'tabVolunteer', unitKey: 'unitHours', icon: Handshake },
   { key: 'totalDonation', labelKey: 'tabDonation', unitKey: 'unitCurrency', icon: Heart },
@@ -199,7 +200,7 @@ export default function LeaderboardPage() {
 
   const [scope, setScope] = useState<Scope>('country');
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
-  const [metric, setMetric] = useState<MetricKey>('impactScore');
+  const [metric, setMetric] = useState<MetricKey>('totalPoints');
 
   // PERF: en yüksek etki puanlı ilk 100 kullanıcı (top-level impactScore alanı —
   // tüm puan yazımları buraya increment edilir). Tüm koleksiyonu indirmez.

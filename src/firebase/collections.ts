@@ -27,6 +27,9 @@ export const COLLECTIONS = {
   badges: 'badges',
   certificates: 'certificates',
   pastVolunteering: 'pastVolunteering',
+  // Süper-admin tarafından yönetilen özel/dönemsel rozet tanımları (top-level).
+  // Kullanıcıya verilince kopyası users/{uid}/badges/{id} altına kind:'special' yazılır.
+  specialBadges: 'specialBadges',
   // FCM push tokens. Doc id = the token string itself; one doc per
   // browser/device. Path: users/{uid}/fcmTokens/{token}. See FEAT-FCM-PUSH-NOTIF.
   fcmTokens: 'fcmTokens',

@@ -233,8 +233,9 @@ export async function awardBadgesForUser(
       merged[area] = Math.max(Number(storedAreaPoints[area]) || 0, Number(computed[area]) || 0);
     }
 
-    // areaPoints'i kalıcılaştır (istemci de aynısını yazar; tutarlı).
-    await userRef.set({ areaPoints: merged }, { merge: true });
+    // areaPoints + toplam puanı kalıcılaştır (totalPoints = liderlik sıralaması).
+    const totalPoints = Object.values(merged).reduce((a, b) => a + (Number(b) || 0), 0);
+    await userRef.set({ areaPoints: merged, totalPoints }, { merge: true });
 
     // Hangi rozetler hak edildi? (currentPoints >= pointsRequired)
     const earnedIds = new Set(earnedBadgesSnap.docs.map((d) => d.id));

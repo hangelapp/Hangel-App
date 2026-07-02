@@ -179,6 +179,51 @@ export function computeAreaPoints(input: ComputeAreaPointsInput): Record<string,
   return totals;
 }
 
+/** Puanların kaynak bazında dökümü (şeffaflık: "+X bağış, +Y gönüllülük"). */
+export interface PointsBreakdown {
+  donation: number;
+  volunteering: number;
+  invite: number;
+  total: number;
+}
+
+/**
+ * Aktiviteden gelen puanları KAYNAK bazında ayırır (alan bazında değil).
+ * my-badges'te "puanların nereden geliyor" kırılımını göstermek için.
+ * Seçim (selection) puanları burada YOK — onlar sayfada ayrı hesaplanır.
+ */
+export function computePointsBreakdown(input: ComputeAreaPointsInput): PointsBreakdown {
+  const donations = Array.isArray(input?.donations) ? input.donations : [];
+  const ngoCategoryById =
+    input?.ngoCategoryById && typeof input.ngoCategoryById === 'object' ? input.ngoCategoryById : {};
+  const pastVolunteering = Array.isArray(input?.pastVolunteering) ? input.pastVolunteering : [];
+  const inviteCount = Number(input?.inviteCount) || 0;
+
+  let donation = 0;
+  for (const d of donations) {
+    if (!d?.status || !CONFIRMED_DONATION_STATUSES.includes(d.status)) continue;
+    for (const ngoId of Array.isArray(d?.ngoIds) ? d.ngoIds : []) {
+      if (!ngoId || ngoId === 'Atanmamış') continue;
+      if (mapCategoryToBadgeArea(ngoCategoryById[ngoId])) donation += DONATION_AREA_POINTS;
+    }
+  }
+
+  let volunteering = 0;
+  for (const doc of pastVolunteering) {
+    let area: string | null = null;
+    if (doc?.socialArea) area = doc.socialArea;
+    else if (doc?.area) area = doc.area;
+    else if (doc?.ngoId && ngoCategoryById[doc.ngoId]) area = mapCategoryToBadgeArea(ngoCategoryById[doc.ngoId]);
+    if (!area) continue;
+    volunteering += typeof doc?.points === 'number' && doc.points > 0 ? doc.points : DEFAULT_VOLUNTEERING_POINTS;
+  }
+
+  const invite = inviteCount > 0 ? inviteCount * INVITE_AREA_POINTS : 0;
+  donation = Math.round(donation);
+  volunteering = Math.round(volunteering);
+  return { donation, volunteering, invite, total: donation + volunteering + invite };
+}
+
 import type { Badge as BadgeDef, BadgeLevel } from './types';
 import { badges as STATIC_BADGES } from './data';
 

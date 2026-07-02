@@ -25,6 +25,7 @@ import {
   type StreakState,
   type StreakSignal,
 } from '@/lib/streak';
+import { notifyUser } from '@/lib/notify-user';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -69,21 +70,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const userRef = db.collection(COLLECTIONS.users).doc(uid);
   const today = istanbulDayKey();
 
-  let result: StreakState;
+  let tr: { next: StreakState; freezeUsed: boolean };
   try {
-    result = await db.runTransaction(async (tx) => {
+    tr = await db.runTransaction(async (tx) => {
       const snap = await tx.get(userRef);
       if (!snap.exists) {
         // Kullanıcı dokümanı henüz yoksa streak yazmayı denemeyiz (başka akış
         // oluşturur); seriyi sessizce atla.
-        return emptyStreak();
+        return { next: emptyStreak(), freezeUsed: false };
       }
       const prev = (snap.get('streak') as StreakState | undefined) ?? null;
-      const { next, changed } = applyStreakSignal(prev, signal, today);
+      const { next, changed, freezeUsed: fu } = applyStreakSignal(prev, signal, today);
       if (changed) {
         tx.set(userRef, { streak: next }, { merge: true });
       }
-      return next;
+      return { next, freezeUsed: fu };
     });
   } catch (e) {
     return NextResponse.json(
@@ -93,6 +94,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       },
       { status: 500 },
     );
+  }
+  const result = tr.next;
+  const freezeUsed = tr.freezeUsed;
+
+  // Dondurma tüketildiyse kullanıcıyı bilgilendir — bir günü kaçırdı ama serisi
+  // kurtarıldı. Motive edici; best-effort (seri yanıtını bloklamaz).
+  if (freezeUsed) {
+    try {
+      await notifyUser({
+        userId: uid,
+        type: 'streak_freeze_used',
+        title: 'Serini kurtardık! 🧊',
+        body: `Bir günü kaçırdın ama dondurma hakkın devreye girdi — ${result.current} günlük serin devam ediyor. Kalan dondurma: ${result.freezeCount}.`,
+        link: '/my-badges',
+      });
+    } catch (e) {
+      console.warn('[streak/ping] freeze notify failed', e instanceof Error ? e.message : String(e));
+    }
   }
 
   return NextResponse.json({

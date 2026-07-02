@@ -22,6 +22,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
+import { awardBadgesForUser } from '@/lib/award-badges';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,6 +44,7 @@ interface DonationData {
   ngo?: string[];
   ngoIds?: string[];
   ngoSplit?: NgoSplitEntry[];
+  userId?: string;
 }
 
 async function getSuperAdminUid(req: NextRequest): Promise<string | null> {
@@ -143,12 +145,14 @@ export async function POST(req: NextRequest) {
   let netTotal = 0;
   let ngoName = ngoId;
   const donationIds: string[] = [];
+  const donorUids = new Set<string>(); // ödenen bağışların sahipleri → otomatik rozet
   for (const docSnap of matched) {
     const d = docSnap.data() as DonationData;
     const { amount, ngoName: resolvedName } = netShareForNgo(d, ngoId);
     netTotal += amount;
     if (resolvedName && resolvedName !== ngoId) ngoName = resolvedName;
     donationIds.push(docSnap.id);
+    if (d.userId) donorUids.add(d.userId);
   }
   // Yuvarlama gürültüsünü kırp.
   netTotal = Math.round(netTotal * 100) / 100;
@@ -215,6 +219,17 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('[payout] batch commit failed', err);
     return NextResponse.json({ errorCode: 'WRITE_FAILED', message: 'Ödeme kaydedilemedi.' }, { status: 500 });
+  }
+
+  // Bağış "Yatırıldı" olduğu an, sahibi kullanıcıların rozetlerini yeniden
+  // hesapla → bağıştan doğan yeni rozetler artık gönüllülük beklemeden düşer.
+  // Best-effort: payout yanıtını asla bloklamaz/başarısız kılmaz.
+  try {
+    await Promise.allSettled(
+      Array.from(donorUids).map((uid) => awardBadgesForUser(db, uid, { notify: true })),
+    );
+  } catch (e) {
+    console.warn('[payout] badge award pass failed', e instanceof Error ? e.message : String(e));
   }
 
   return NextResponse.json({
