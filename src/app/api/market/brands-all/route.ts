@@ -94,6 +94,20 @@ const getCachedAllBrands = unstable_cache(
       /* brands koleksiyonu opsiyonel */
     }
 
+    // brandDirectory: ürün-only markalar için tek tek bulunmuş gerçek domain
+    // (+ opsiyonel logoUrl). Doc id = normBrandKey. En düşük öncelik (offers/
+    // brands koleksiyonu yoksa devreye girer).
+    const dirMap = new Map<string, { logoUrl: string; domain: string }>();
+    try {
+      const dsnap = await db.collection('brandDirectory').get();
+      dsnap.forEach((d) => {
+        const o = d.data() as { logoUrl?: string; domain?: string };
+        dirMap.set(d.id, { logoUrl: o?.logoUrl || '', domain: o?.domain || '' });
+      });
+    } catch {
+      /* brandDirectory opsiyonel */
+    }
+
     const brands: AllBrand[] = [];
     for (const [key, acc] of map) {
       // En sık geçen yazımı seç; eşitlikte gösterime daha uygun olanı yeğle.
@@ -109,8 +123,9 @@ const getCachedAllBrands = unstable_cache(
       }
       const bd = brandDocMap.get(key);
       const offer = offerMap.get(key);
-      const logoUrl = bd?.logoUrl || offer?.logoUrl || '';
-      const domain = bd?.domain || offer?.domain || '';
+      const dir = dirMap.get(key);
+      const logoUrl = bd?.logoUrl || offer?.logoUrl || dir?.logoUrl || '';
+      const domain = bd?.domain || offer?.domain || dir?.domain || '';
       brands.push({
         id: key,
         name,
