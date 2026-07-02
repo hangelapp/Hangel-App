@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
-import { normalizeDefs, computeScore } from '@/lib/transparency';
+import { recomputeNgoTransparency } from '@/lib/transparency-server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -58,27 +58,15 @@ export async function POST(req: NextRequest) {
   const next = criteria.map((c) => (String(c.id) === String(itemId) ? { ...c, status: (approved ? 'approved' : 'pending') as 'approved' | 'pending' } : c));
   await tRef.set({ criteria: next, updatedAt: new Date().toISOString() }, { merge: true });
 
-  // İlgili NGO'nun puanını GÜNCEL kriter tanımlarından hesapla (madde puanı değişse
-  // bile doğru). Yalnız onaylı maddeler sayılır.
-  let approvedScore: number;
-  try {
-    const critSnap = await db.collection(COLLECTIONS.transparencyCriteria).get();
-    const raw = critSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) }));
-    const defs = normalizeDefs(raw as never);
-    approvedScore = computeScore(defs, next as never, { requireApproved: true }).met;
-  } catch {
-    approvedScore = next
-      .filter((c) => c.isCompleted && c.status !== 'pending')
-      .reduce((sum, c) => sum + (Number(c.points) || 0), 0);
-  }
-
+  // İlgili NGO'nun puanını GÜNCEL kriter tanımları + PROFİL otomatik karşılamayla
+  // YÜZDE olarak hesapla ve yayınla (belge + profil birleşimi).
+  let approvedScore: number | null = null;
   let ngoUpdated: string | null = null;
   try {
     const ngoQ = await db.collection(COLLECTIONS.ngos).where('adminUserId', '==', ownerUid).limit(1).get();
     if (!ngoQ.empty) {
-      const ngoDoc = ngoQ.docs[0];
-      await ngoDoc.ref.set({ transparencyScore: approvedScore, transparencyUpdatedAt: new Date().toISOString() }, { merge: true });
-      ngoUpdated = ngoDoc.id;
+      ngoUpdated = ngoQ.docs[0].id;
+      approvedScore = await recomputeNgoTransparency(db, ngoUpdated);
     }
   } catch {
     // NGO eşleşmesi/yazımı başarısızsa onay yine de kaydedildi.

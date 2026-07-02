@@ -443,6 +443,17 @@ export default function ManageProfilePage() {
           'files.charter': charterFile ?? null,
           updatedAt: new Date().toISOString(),
         });
+        // Şeffaflık skorunu tazele — profil (web/e-posta/telefon/adres/üyelik) ilgili
+        // kriterleri otomatik karşılar; kart/liste/profildeki % anında güncellenir.
+        if (activeEntity.kind === 'ngo') {
+          authUser?.getIdToken?.().then((tk) => {
+            if (tk) fetch('/api/ngo-admin/transparency/refresh', {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ngoId: activeEntity.data.id }),
+            }).catch(() => {});
+          }).catch(() => {});
+        }
         toast({ title: t('ngo_admin_manage_profile.toastSaved'), description: t('ngo_admin_manage_profile.toastSavedDesc') });
       } catch (err) {
         console.error('Profile save failed:', err);

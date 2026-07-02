@@ -23,7 +23,7 @@ import { doc, collection, query, where, updateDoc, increment, arrayUnion, arrayR
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLLECTIONS } from '@/firebase/collections';
-import { normalizeDefs, mergeCriteria, computeScore } from '@/lib/transparency';
+import { normalizeDefs, mergeCriteria, computeScore, mergeWithProfile } from '@/lib/transparency';
 import { useVerifiedAction } from '@/hooks/use-verified-action';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 
@@ -437,17 +437,17 @@ export default function NgoProfilePage() {
   // Şeffaflık: kriter TANIMLARI koleksiyondan (canlı), STK VERİSİ transparency doc'undan.
   // Onaylı = isCompleted && status !== 'pending'. Yüzde = karşılanan puan / toplam puan.
   const transparencyDefs = normalizeDefs(transparencyCritDocs as never);
-  const hasTransparencyData = Array.isArray(transparencyDoc?.criteria) && transparencyDoc!.criteria!.length > 0;
-  const transparencyScoreInfo = computeScore(transparencyDefs, transparencyDoc?.criteria as never, { requireApproved: true });
+  // Profildeki bilgiler (web, e-posta, telefon, adres, üyelik) ilgili kriterleri
+  // OTOMATİK karşılar → yüklenen belgelerle birleştirilir. Böylece kart/liste/profil
+  // her yerde AYNI gerçek endeks görünür.
+  const transparencyMerged = mergeWithProfile(transparencyDefs, transparencyDoc?.criteria as never, ngo as never);
+  const transparencyScoreInfo = computeScore(transparencyDefs, transparencyMerged as never, { requireApproved: true });
   const transparencyTotalPoints = transparencyScoreInfo.total;
   const transparencyMetPoints = transparencyScoreInfo.met;
   const transparencyPercent = transparencyScoreInfo.percent;
   const transparencyScore = transparencyPercent;
-  // Sekmede gösterilecek birleşik kriter listesi (tanım + STK verisi).
-  const realCriteria = hasTransparencyData
-    ? mergeCriteria(transparencyDefs, transparencyDoc?.criteria as never)
-    : null;
-  const transparencyCriteria: ProfileCriteriaItem[] = (realCriteria ?? mergeCriteria(transparencyDefs, undefined)) as ProfileCriteriaItem[];
+  // Sekmede gösterilecek birleşik kriter listesi (tanım + STK verisi + profil otomatik).
+  const transparencyCriteria: ProfileCriteriaItem[] = mergeCriteria(transparencyDefs, transparencyMerged as never) as ProfileCriteriaItem[];
 
   const ngoAnalytics = (ngo as NGO & { analytics?: { gaId?: string; gtmId?: string; metaPixelId?: string } }).analytics;
 

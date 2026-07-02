@@ -144,6 +144,84 @@ export function mergeCriteria(defs: CriterionDef[], saved?: RawSubmission[] | nu
 }
 
 /**
+ * STK PROFİLİNDEKİ bilgilerin şeffaflık kriterlerine yansıması.
+ *
+ * Profildeki bilgiler (web sitesi, e-posta, telefon, adres, üyelikler) ilgili
+ * kriterleri OTOMATİK karşılar — STK'nın ayrıca panele girmesine gerek kalmaz.
+ * Böylece profildeki bilgiler puantaja yansır. Belge kriterleri (Faaliyet Belgesi,
+ * Tüzük, raporlar, denetim) profilden türetilemez; yükleme+onay gerektirir.
+ */
+export interface NgoProfileLike {
+  contact?: {
+    website?: string; email?: string; phone?: string;
+    address?: string | { fullAddress?: string; city?: string; district?: string };
+    social?: { instagram?: string; twitter?: string; facebook?: string; linkedin?: string };
+  };
+  website?: string;
+  memberOf?: string[];
+  federations?: string[];
+}
+
+const nn = (v: unknown) => (v !== undefined && v !== null && String(v).trim() !== '' ? String(v).trim() : '');
+
+/** Bir kriterin profil karşılığını döndürür (varsa değer, yoksa ''). İsimle eşleşir (yeniden adlandırmaya dayanıklı). */
+export function profileValueForCriterion(def: CriterionDef, ngo: NgoProfileLike): string {
+  const n = (def.name || '').toLocaleLowerCase('tr-TR').replace(/i̇/g, 'i');
+  const c = ngo.contact || {};
+  const addr = typeof c.address === 'string'
+    ? c.address
+    : nn(c.address?.fullAddress) || [nn(c.address?.city), nn(c.address?.district)].filter(Boolean).join(' ');
+  const mem = [...(ngo.memberOf || []), ...(ngo.federations || [])].map((x) => String(x).toLocaleLowerCase('tr-TR'));
+  if (/web ?sitesi|web ?site|website|web adres/.test(n)) return nn(c.website) || nn(ngo.website);
+  if (/e-?posta|e-?mail|\bmail\b/.test(n)) return nn(c.email);
+  if (/telefon|phone|gsm|cep/.test(n)) return nn(c.phone);
+  if (/posta adres|yazışma adres/.test(n)) return nn(addr);
+  if (/ofis adres|merkez adres|^adres|\badres\b/.test(n)) return nn(addr);
+  if (/açık açık/.test(n)) return mem.some((m) => m.includes('açık açık')) ? 'Açık Açık' : '';
+  if (/afet platform/.test(n)) return mem.some((m) => m.includes('afet')) ? 'Afet Platformu' : '';
+  return '';
+}
+
+/**
+ * Profilden otomatik karşılanan kriterler için "onaylı" gönderim öğeleri üretir.
+ * (isCompleted + status:'approved' — anında puana sayılır.)
+ */
+export function deriveProfileSubmissions(defs: CriterionDef[], ngo?: NgoProfileLike | null): Array<Partial<CriteriaItem> & { id: string; auto: true }> {
+  if (!ngo) return [];
+  const out: Array<Partial<CriteriaItem> & { id: string; auto: true }> = [];
+  for (const d of defs) {
+    const v = profileValueForCriterion(d, ngo);
+    if (v) out.push({ id: d.id, isCompleted: true, status: 'approved', textValue: v, linkUrl: /link/.test(d.type) ? v : undefined, auto: true });
+  }
+  return out;
+}
+
+/**
+ * STK'nın yüklediği veri + profilden türetilen otomatik veriyi birleştirir.
+ * STK'nın kendi girdiği (yüklediği/onaylı) veri ÖNCELİKLİdir; profil yalnız boş
+ * kalan kriterleri otomatik karşılar.
+ */
+export function mergeWithProfile(
+  defs: CriterionDef[],
+  saved?: RawSubmission[] | null,
+  ngo?: NgoProfileLike | null,
+): Array<Partial<CriteriaItem> & { id: string }> {
+  const savedMap = submissionMap(saved);
+  const derived = deriveProfileSubmissions(defs, ngo);
+  const out: Array<Partial<CriteriaItem> & { id: string }> = [];
+  const seen = new Set<string>();
+  for (const [id, item] of savedMap) { out.push({ ...item, id }); seen.add(id); }
+  for (const d of derived) {
+    const existing = savedMap.get(d.id);
+    // STK zaten tamamlamışsa profil ezmesin; değilse profil otomatik karşılasın.
+    if (existing?.isCompleted) continue;
+    if (seen.has(d.id)) { const i = out.findIndex((x) => x.id === d.id); if (i >= 0) out[i] = d; }
+    else { out.push(d); seen.add(d.id); }
+  }
+  return out;
+}
+
+/**
  * Skoru kriter TANIMLARI üzerinden hesaplar (puanlar koleksiyondan, veri STK'dan).
  * requireApproved=true ise yalnız status !== 'pending' (onaylı) maddeler sayılır.
  */

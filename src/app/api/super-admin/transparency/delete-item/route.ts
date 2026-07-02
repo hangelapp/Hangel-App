@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
-import { normalizeDefs, computeScore } from '@/lib/transparency';
+import { recomputeNgoTransparency } from '@/lib/transparency-server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -94,26 +94,14 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Skoru yeniden hesapla (temizlenen madde artık sayılmaz).
-  let approvedScore: number;
-  try {
-    const critSnap = await db.collection(COLLECTIONS.transparencyCriteria).get();
-    const raw = critSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) }));
-    const defs = normalizeDefs(raw as never);
-    approvedScore = computeScore(defs, next as never, { requireApproved: true }).met;
-  } catch {
-    approvedScore = next
-      .filter((c) => c.isCompleted && c.status !== 'pending')
-      .reduce((sum, c) => sum + (Number(c.points) || 0), 0);
-  }
-
+  // Skoru yeniden hesapla (temizlenen madde artık sayılmaz) — belge + PROFİL → YÜZDE.
+  let approvedScore: number | null = null;
   let ngoUpdated: string | null = null;
   try {
     const ngoQ = await db.collection(COLLECTIONS.ngos).where('adminUserId', '==', ownerUid).limit(1).get();
     if (!ngoQ.empty) {
-      const ngoDoc = ngoQ.docs[0];
-      await ngoDoc.ref.set({ transparencyScore: approvedScore, transparencyUpdatedAt: new Date().toISOString() }, { merge: true });
-      ngoUpdated = ngoDoc.id;
+      ngoUpdated = ngoQ.docs[0].id;
+      approvedScore = await recomputeNgoTransparency(db, ngoUpdated);
     }
   } catch {
     // NGO eşleşmesi/yazımı başarısızsa silme yine de kaydedildi.

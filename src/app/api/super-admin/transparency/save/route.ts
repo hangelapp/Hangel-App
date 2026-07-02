@@ -16,7 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
-import { normalizeDefs, computeScore } from '@/lib/transparency';
+import { recomputeNgoTransparency } from '@/lib/transparency-server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -102,28 +102,14 @@ export async function POST(req: NextRequest) {
     updatedAt: new Date().toISOString(),
   }));
 
-  // Puan, güncel kriter TANIMLARINDAN (transparencyCriteria) hesaplanır — maddenin
-  // puanı sonradan değişse bile doğru kalır.
-  let score: number;
-  try {
-    const critSnap = await db.collection(COLLECTIONS.transparencyCriteria).get();
-    const raw = critSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) }));
-    const defs = normalizeDefs(raw as never);
-    score = computeScore(defs, normalized as never, { requireApproved: true }).met;
-  } catch {
-    // Koleksiyon okunamazsa madde puanlarının toplamına düş (yedek).
-    score = normalized.filter((c) => c.isCompleted).reduce((sum, c) => sum + (Number(c.points) || 0), 0);
-  }
-
+  let score: number | null;
   try {
     await db.collection(COLLECTIONS.transparency).doc(ownerUid).set(
       { criteria: normalized, ngoId, updatedAt: new Date().toISOString() },
       { merge: true },
     );
-    await db.collection(COLLECTIONS.ngos).doc(ngoId).set(
-      { transparencyScore: score, transparencyUpdatedAt: new Date().toISOString() },
-      { merge: true },
-    );
+    // Skor = yüklenen belge + PROFİLDEN otomatik karşılanan kriterler → YÜZDE, yayınlanır.
+    score = await recomputeNgoTransparency(db, ngoId);
   } catch (err) {
     console.error('[transparency/save] write failed', err);
     return NextResponse.json({ errorCode: 'WRITE_FAILED', message: 'Kaydedilemedi.' }, { status: 500 });

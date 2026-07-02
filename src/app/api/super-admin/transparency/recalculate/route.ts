@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
-import { normalizeDefs, computeScore, type CriteriaItem } from '@/lib/transparency';
+import { normalizeDefs, computeScore, mergeWithProfile, type CriteriaItem, type NgoProfileLike } from '@/lib/transparency';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,34 +47,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ errorCode: 'READ_FAILED', message: 'Kriterler okunamadı.' }, { status: 500 });
   }
 
-  // 2) adminUid → ngoId haritası.
-  const adminToNgo = new Map<string, string>();
+  // 2) transparency verisi: adminUid → yüklenen kriterler.
+  const tByAdmin = new Map<string, CriteriaItem[]>();
   try {
-    const ngosSnap = await db.collection(COLLECTIONS.ngos).get();
-    ngosSnap.docs.forEach((d) => {
-      const a = (d.data() as { adminUserId?: string }).adminUserId;
-      if (a) adminToNgo.set(a, d.id);
-    });
+    const tSnap = await db.collection(COLLECTIONS.transparency).get();
+    tSnap.docs.forEach((d) => { tByAdmin.set(d.id, (d.data() as { criteria?: CriteriaItem[] }).criteria || []); });
   } catch (err) {
-    console.error('[transparency/recalculate] ngos read failed', err);
-    return NextResponse.json({ errorCode: 'READ_FAILED', message: 'STK listesi okunamadı.' }, { status: 500 });
+    console.error('[transparency/recalculate] transparency read failed', err);
+    return NextResponse.json({ errorCode: 'READ_FAILED', message: 'Şeffaflık verisi okunamadı.' }, { status: 500 });
   }
 
-  // 3) Her transparency doc'u için skoru hesapla, eşleşen NGO'ya yaz.
+  // 3) TÜM NGO'lar için: yüklenen belge + PROFİLDEN otomatik karşılanan kriterler
+  //    → birleşik YÜZDE skoru. (Belgesi olmayan ama profili dolu STK'lar da puan alır.)
   let updated = 0;
   let scanned = 0;
   try {
-    const tSnap = await db.collection(COLLECTIONS.transparency).get();
+    const ngosSnap = await db.collection(COLLECTIONS.ngos).get();
     const writes: Promise<unknown>[] = [];
-    tSnap.docs.forEach((d) => {
+    ngosSnap.docs.forEach((d) => {
       scanned++;
-      const ngoId = adminToNgo.get(d.id);
-      if (!ngoId) return;
-      const saved = (d.data() as { criteria?: CriteriaItem[] }).criteria;
-      const { met } = computeScore(defs, saved as never, { requireApproved: true });
+      const ngo = d.data() as NgoProfileLike & { adminUserId?: string };
+      const saved = ngo.adminUserId ? tByAdmin.get(ngo.adminUserId) : null;
+      const merged = mergeWithProfile(defs, saved as never, ngo);
+      const { percent } = computeScore(defs, merged as never, { requireApproved: true });
       writes.push(
-        db.collection(COLLECTIONS.ngos).doc(ngoId).set(
-          { transparencyScore: met, transparencyUpdatedAt: new Date().toISOString() },
+        d.ref.set(
+          { transparencyScore: percent, transparencyUpdatedAt: new Date().toISOString() },
           { merge: true },
         ),
       );
