@@ -18,7 +18,7 @@ import type { Brand } from '@/lib/types';
  *
  * Tıklayınca markanın ürünleri açılır (/market/products?brand=<ad>).
  */
-type AllBrand = { id: string; name: string; donationRate: number };
+type AllBrand = { id: string; name: string; donationRate: number; logoUrl?: string; domain?: string };
 
 export default function AllBrandsListPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -103,13 +103,17 @@ export default function AllBrandsListPage() {
           <div className="grid grid-cols-3 gap-3 p-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
             {brands.map((b) => {
               const rate = Math.max(0, Math.min(100, Number(b.donationRate) || 0));
+              // logoUrl: affiliate gerçek logosu (varsa). targetDomain: markanın
+              // sitesi → BrandLogo favicon/logoyu oradan çeker. İkisi de yoksa
+              // BrandLogo marka adından domain tahmin edip favicon dener.
               const brandForLogo = {
                 id: b.id,
                 slug: b.id,
                 name: b.name,
                 category: '',
                 type: 'brand',
-                logoUrl: '',
+                logoUrl: b.logoUrl || '',
+                targetDomain: b.domain || '',
                 donationRate: rate,
               } as Brand;
               return (

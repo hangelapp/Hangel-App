@@ -20,6 +20,7 @@ import { NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import type { QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { fetchAllAgencyOffers } from '@/lib/api-clients';
 import { normBrandKey, betterBrandDisplay } from '@/lib/brand-normalize';
 
 export const runtime = 'nodejs';
@@ -28,7 +29,9 @@ export const maxDuration = 120;
 
 const CACHE_TTL_SECONDS = 3600;
 
-type AllBrand = { id: string; name: string; donationRate: number };
+// logoUrl: affiliate ağının GERÇEK marka logosu (isimden eşleşirse). domain:
+// markanın sitesi (favicon için). İkisi de yoksa istemci ada göre favicon dener.
+type AllBrand = { id: string; name: string; donationRate: number; logoUrl?: string; domain?: string };
 
 const getCachedAllBrands = unstable_cache(
   async (): Promise<AllBrand[]> => {
@@ -62,6 +65,35 @@ const getCachedAllBrands = unstable_cache(
       map.set(key, cur);
     }
 
+    // Affiliate offers'tan gerçek logo + domain (isim normalizasyonuyla eşleşenler).
+    const offerMap = new Map<string, { logoUrl: string; domain: string }>();
+    try {
+      const offers = await fetchAllAgencyOffers();
+      for (const o of offers) {
+        const k = normBrandKey(o?.name || '');
+        if (!k || offerMap.has(k)) continue;
+        offerMap.set(k, { logoUrl: o?.logoUrl || '', domain: o?.targetDomain || '' });
+      }
+    } catch {
+      /* offers opsiyonel — logo yoksa istemci ada göre favicon dener */
+    }
+
+    // `brands` koleksiyonundaki küratörlü/doğrulanmış logo + gerçek domain
+    // (offers'tan önceliklidir). Ölü bucket URL'leri (hangel-new-v18) atlanır.
+    const brandDocMap = new Map<string, { logoUrl: string; domain: string }>();
+    try {
+      const bsnap = await db.collection('brands').get();
+      bsnap.forEach((d) => {
+        const o = d.data() as { name?: string; logoUrl?: string; targetDomain?: string };
+        const k = normBrandKey(o?.name || '');
+        if (!k || brandDocMap.has(k)) return;
+        const logo = o?.logoUrl && !o.logoUrl.includes('hangel-new-v18') ? o.logoUrl : '';
+        brandDocMap.set(k, { logoUrl: logo, domain: o?.targetDomain || '' });
+      });
+    } catch {
+      /* brands koleksiyonu opsiyonel */
+    }
+
     const brands: AllBrand[] = [];
     for (const [key, acc] of map) {
       // En sık geçen yazımı seç; eşitlikte gösterime daha uygun olanı yeğle.
@@ -75,10 +107,16 @@ const getCachedAllBrands = unstable_cache(
           name = betterBrandDisplay(name, variant);
         }
       }
+      const bd = brandDocMap.get(key);
+      const offer = offerMap.get(key);
+      const logoUrl = bd?.logoUrl || offer?.logoUrl || '';
+      const domain = bd?.domain || offer?.domain || '';
       brands.push({
         id: key,
         name,
         donationRate: acc.count > 0 ? Math.round(acc.sum / acc.count) : 0,
+        ...(logoUrl ? { logoUrl } : {}),
+        ...(domain ? { domain } : {}),
       });
     }
     brands.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
