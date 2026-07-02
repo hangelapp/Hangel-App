@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
@@ -131,7 +131,6 @@ const TransactionList = ({ transactions }: { transactions: DonationTransaction[]
 export default function DonationsPage() {
     const [currentMonthYear, setCurrentMonthYear] = useState('');
     const firestore = useFirestore();
-    const { user: authUser } = useUser();
     const { t } = useTranslation();
     const { id: ngoId } = useActiveEntity();
     // React 19 saflık: render içinde new Date() çağırmamak için bir kez snapshot.
@@ -168,13 +167,13 @@ export default function DonationsPage() {
 
     // Load monthly earnings from Firestore (yardımcı/legacy gösterim).
     const earningsQuery = useMemoFirebase(() => {
-        if (!authUser?.uid) return null;
+        if (!ngoId) return null;
         return query(
             collection(firestore, COLLECTIONS.monthlyEarnings),
-            where('ngoId', '==', authUser.uid),
+            where('ngoId', '==', ngoId),
             orderBy('month', 'desc')
         );
-    }, [firestore, authUser?.uid]);
+    }, [firestore, ngoId]);
 
     const { data: monthlyEarnings, isLoading: isEarningsLoading } = useCollection<MonthlyEarning>(earningsQuery);
 

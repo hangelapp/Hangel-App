@@ -3,6 +3,36 @@ export const AI_CHANGELOG_GENERATED = "2026-07-02";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "80464ac0",
+    "date": "2026-07-02",
+    "subject": "fix(events): lucide importunda duplicate 'Calendar' kaldır (webpack build kırılması)"
+  },
+  {
+    "hash": "41999750",
+    "date": "2026-07-02",
+    "subject": "feat(events): kart layout FIX + mobil butonlar + Yaka Kartları/Sertifikalar + Sosyal Medya fallback"
+  },
+  {
+    "hash": "c0a2d7e3",
+    "date": "2026-07-02",
+    "subject": "fix(transparency): firebase-admin type importunu kaldır (Next build '/' prerender kırılması)"
+  },
+  {
+    "hash": "28d17894",
+    "date": "2026-07-02",
+    "subject": "Merge remote-tracking branch 'origin/main' into feature/all-brands-list"
+  },
+  {
+    "hash": "b18349bc",
+    "date": "2026-07-02",
+    "subject": "feat(super-admin/activity): tab kategorizasyonu aktörün gerçek rolüne göre (users/{uid}.role) — invitation/notification sabit 'super-admin' yerine gerçek role"
+  },
+  {
+    "hash": "8ecaeb84",
+    "date": "2026-07-02",
+    "subject": "feat(market): brands/all — ünlü markalar üstte, az bilinenler altta, grup içi rastgele"
+  },
+  {
     "hash": "e37b589c",
     "date": "2026-07-02",
     "subject": "fix(stk): onaylanan STK'lar ana /ngos dizininde görünsün"
@@ -96,35 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "2e09df47",
     "date": "2026-07-01",
     "subject": "android: versionCode 32→33, versionName 2.0.9 (Play publish — 32 canlıyla çakışıyordu)"
-  },
-  {
-    "hash": "6580ae15",
-    "date": "2026-07-01",
-    "subject": "auth: girişte Firestore role -> JWT custom claim senkronu (göç fix)"
-  },
-  {
-    "hash": "4d7bad4c",
-    "date": "2026-07-01",
-    "subject": "iOS/Android: Capacitor url hangel.org.tr → hangel.org (hangelorg göçü)"
-  },
-  {
-    "hash": "713cc420",
-    "date": "2026-07-01",
-    "subject": "WhatsApp OTP: bind ACCESS_TOKEN + APP_SECRET to Secret Manager"
-  },
-  {
-    "hash": "67b230fd",
-    "date": "2026-07-01",
-    "subject": "migration: 8 secret -> placeholder (ilk deploy icin; gercek degerler Secret Manager'a sonra)"
-  },
-  {
-    "hash": "615bb6b0",
-    "date": "2026-07-01",
-    "subject": "migration: apphosting.yaml VAPID → hangelorg web push key"
-  },
-  {
-    "hash": "00346c42",
-    "date": "2026-06-30",
-    "subject": "migration: iOS/Android Firebase config → hangelorg"
   }
 ];

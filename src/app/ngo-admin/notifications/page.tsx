@@ -10,7 +10,7 @@ import {
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
@@ -65,22 +65,16 @@ function toMillis(v: NotifItem['createdAt']): number {
 export default function NgoNotificationsPage() {
     const router = useRouter();
     const db = useFirestore();
-    const { user: authUser } = useUser();
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Bildirim Merkezi: AKTİF KURUMA + yöneticiye düşen bildirimler.
-    // userId in [entityId, adminUid] → kuruma ait bildirimler (kullanıcıda olduğu
-    // gibi) + yöneticinin kişisel bildirimleri birlikte. orderBy yok → composite
-    // index gerekmesin; client-side sıralanır.
+    // Bildirim Merkezi: YALNIZCA aktif kurumun bildirimleri. Yöneticinin KİŞİSEL
+    // bildirimleri (authUser.uid) buraya KARIŞTIRILMAZ — kurum paneli sadece o
+    // kurumun verisini gösterir. orderBy yok → composite index gerekmesin; client-side sıralanır.
     const { id: entityId } = useActiveEntity();
-    const recipientIds = useMemo(
-        () => Array.from(new Set([authUser?.uid, entityId].filter(Boolean))) as string[],
-        [authUser?.uid, entityId],
-    );
     const notifQuery = useMemoFirebase(
-        () => (db && recipientIds.length > 0 ? query(collection(db, COLLECTIONS.notifications), where('userId', 'in', recipientIds)) : null),
-        [db, recipientIds],
+        () => (db && entityId ? query(collection(db, COLLECTIONS.notifications), where('userId', '==', entityId)) : null),
+        [db, entityId],
     );
     const { data: notifs, isLoading } = useCollection<NotifItem>(notifQuery);
 
