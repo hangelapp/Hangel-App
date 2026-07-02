@@ -3,9 +3,39 @@ export const AI_CHANGELOG_GENERATED = "2026-07-02";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "2eeb4a46",
+    "date": "2026-07-02",
+    "subject": "feat(transparency): profil bilgileri şeffaflık endeksine + panele yansısın"
+  },
+  {
+    "hash": "e46a4c51",
+    "date": "2026-07-02",
+    "subject": "Merge remote-tracking branch 'origin/main' into feature/all-brands-list"
+  },
+  {
+    "hash": "cf337316",
+    "date": "2026-07-02",
+    "subject": "fix: ngo-admin doğru kurum yönlendirme + dropdown/global taşma + Etkinlik Yönetimi (dernek/vakıf/kulüp) + QR kurum logosu + belge İncele/İndir/Sil + transparency delete"
+  },
+  {
+    "hash": "ccf1bc15",
+    "date": "2026-07-02",
+    "subject": "chore(market): brands-all cache v4 (195 gerçek marka logosu sitelerden)"
+  },
+  {
+    "hash": "cd8c8e85",
+    "date": "2026-07-02",
+    "subject": "chore(market): brands-all cache v3 (Asus/Capcom/Anker/A4Tech logo düzeltmesi)"
+  },
+  {
     "hash": "83caf537",
     "date": "2026-07-02",
     "subject": "feat(market): Marka (ürün markası) ile Mağaza (satıcı) ayrımı"
+  },
+  {
+    "hash": "977a60c5",
+    "date": "2026-07-02",
+    "subject": "Merge: brands-all cache v2 + 121 gerçek logo"
   },
   {
     "hash": "a71ce1ff",
@@ -13,14 +43,29 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "subject": "chore(market): brands-all cache v2 (121 gerçek logo brandDirectory'de)"
   },
   {
+    "hash": "a223aa37",
+    "date": "2026-07-02",
+    "subject": "Merge: brands-all brandDirectory (370 markaya domain/logo)"
+  },
+  {
     "hash": "8c84c7cc",
     "date": "2026-07-02",
     "subject": "feat(market): brands-all brandDirectory kaynağını okur"
   },
   {
+    "hash": "e8d1152d",
+    "date": "2026-07-02",
+    "subject": "Merge: /market/brands/all marka logoları (gerçek logo + favicon)"
+  },
+  {
     "hash": "291533f2",
     "date": "2026-07-02",
     "subject": "feat(market): /market/brands/all markalarına gerçek logo + favicon"
+  },
+  {
+    "hash": "b497ccfe",
+    "date": "2026-07-02",
+    "subject": "Merge feature/all-brands-list: 'Tüm Markalar' tüm ürün markalarını listeler"
   },
   {
     "hash": "19fc11df",
@@ -81,50 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "4129ae33",
     "date": "2026-06-30",
     "subject": "migration: yeni projeye (hangelorg) bağla — config + SA + import/export script + runbook"
-  },
-  {
-    "hash": "960dd54f",
-    "date": "2026-06-26",
-    "subject": "feat(market): sıralama çiplerini paylaşılan component yap + /market/apple'a ekle"
-  },
-  {
-    "hash": "e2899f79",
-    "date": "2026-06-26",
-    "subject": "outreach arama: içerikten (kelime-öneki) arama — searchPrefixes"
-  },
-  {
-    "hash": "dd0bd068",
-    "date": "2026-06-26",
-    "subject": "feat(market): arama sıralama çipleri çalışır + pazaryeri tasarımı (ikon)"
-  },
-  {
-    "hash": "7e7933bd",
-    "date": "2026-06-26",
-    "subject": "outreach stats: platform/federasyon kırılımı + Apple-estetiği redesign"
-  },
-  {
-    "hash": "45bd6994",
-    "date": "2026-06-26",
-    "subject": "outreach: federasyon/platform + faaliyet + kuruluş yılı süzgeçleri (tüm tablar)"
-  },
-  {
-    "hash": "ca77c4ce",
-    "date": "2026-06-26",
-    "subject": "outreach: detaylı istatistik sayfası + header butonu"
-  },
-  {
-    "hash": "6f06a186",
-    "date": "2026-06-26",
-    "subject": "outreach: il/ilçe/mahalle server-side süzme + adresten türetme"
-  },
-  {
-    "hash": "4e5ff7cf",
-    "date": "2026-06-25",
-    "subject": "fix(ios-scroll): overscroll-behavior-y none→contain — iOS'ta sayfa kaydırma donmasın"
-  },
-  {
-    "hash": "84944ef2",
-    "date": "2026-06-25",
-    "subject": "feat(legal): /google-entegrasyonu — OAuth doğrulama için uygulama amacı sayfası"
   }
 ];

@@ -94,7 +94,7 @@ export default function NgosPage() {
         //  - Adı "Demo"/"Test"/"Örnek" ile başlayan seed kayıtlarını gizle
         //  - joinDate yok ve tüm istatistikler 0 ise placeholder kabul et
         let filtered = enrichedNgos.filter((raw) => {
-            const ngo = raw as NGO & { status?: string; isDemo?: boolean };
+            const ngo = raw as NGO & { status?: string; isDemo?: boolean; adminUserId?: string; sourceApplicationId?: string; kutukNo?: string; registryNo?: string };
             if (ngo.status === 'Pasif') return false;
             // Taslak (ön kayıt / evrak yüklenmemiş) STK'lar herkese görünmez — sadece sahibi yönetir.
             if (ngo.status === 'taslak') return false;
@@ -103,7 +103,10 @@ export default function NgosPage() {
             if (nm.startsWith('demo ') || nm.startsWith('test ') || nm.startsWith('örnek ') || nm.startsWith('ornek ')) return false;
             const s = ngo.stats;
             const allZero = !s || ((s.donors ?? 0) === 0 && (s.volunteers ?? 0) === 0 && (s.followers ?? 0) === 0 && (s.totalDonation ?? 0) === 0);
-            if (!ngo.joinDate && allZero) return false;
+            // Gerçek kayıtlı + onaylı STK (adminUserId / başvuru / kütük no) ASLA placeholder
+            // sayılmaz — yeni onaylanan STK'nın stats'ı 0 ve joinDate'i boş olsa da listede görünür.
+            const isRealRegistered = !!(ngo.adminUserId || ngo.sourceApplicationId || ngo.kutukNo || ngo.registryNo);
+            if (!ngo.joinDate && allZero && !isRealRegistered) return false;
             return true;
         });
 

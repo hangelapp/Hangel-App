@@ -746,9 +746,9 @@ export default function NgoProfilePage() {
                     <div>
                         <p className="text-3xl font-bold text-primary">%{transparencyScore}</p>
                         <Progress value={transparencyScore} className="mt-2 h-2" />
-                        {realCriteria && (
+                        {transparencyMerged && (
                             <p className="text-xs text-muted-foreground mt-1.5">
-                                {transparencyMetPoints} / {transparencyTotalPoints} puan · {realCriteria.filter(c => c.isCompleted && c.status !== 'pending').length} / {realCriteria.length} kriter karşılandı
+                                {transparencyMetPoints} / {transparencyTotalPoints} puan · {transparencyMerged.filter((c) => c.isCompleted && c.status !== 'pending').length} / {transparencyMerged.length} kriter karşılandı
                             </p>
                         )}
                     </div>

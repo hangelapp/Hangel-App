@@ -500,6 +500,12 @@ export default function ApplicationsPage() {
           selectedIzinAmaclari: app.selectedIzinAmaclari || [],
           selectedServiceAreas: app.selectedServiceAreas || [],
           stats: { followers: 0, volunteers: 0, projects: 0 },
+          // Onaylanan STK doğrulanmış + yayında sayılır (taslak onayı handleApproveDraft ile
+          // tutarlı). joinDate set edilir; yoksa /ngos placeholder heuristiği stats=0 + joinDate
+          // boş olan yeni STK'yı gizliyordu.
+          verified: true,
+          documentsComplete: true,
+          joinDate: new Date().toISOString(),
         });
         return ref.id;
       }
