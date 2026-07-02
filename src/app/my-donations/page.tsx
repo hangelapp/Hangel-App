@@ -21,6 +21,8 @@ import { collection, query, where, doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { normalizeRates, computeDonationSplit, type DonationRates } from '@/lib/donation-split';
+import { DonationTimeline } from '@/components/donations/donation-timeline';
+import { shareImpact } from '@/lib/share-impact';
 
 type NgoSplitEntry = { ngoId: string; ngoName: string; amount: number };
 
@@ -194,6 +196,20 @@ export default function MyDonationsPage() {
         return sortDir === 'desc' ? -comparison : comparison;
       });
   }, [transactions, filterType, searchTerm, sortKey, sortDir]);
+
+  // Etki Kartını paylaş (story görseli / link / panoya kopyala).
+  const handleShare = async (donation: DonationTransaction) => {
+    const res = await shareImpact({
+      amount: parseFloat(donation.donationAmount) || 0,
+      ngos: donation.ngo,
+      who: authUser?.displayName?.split(' ')[0] || undefined,
+    });
+    if (res === 'copied') {
+      toast({ title: 'Bağlantı kopyalandı', description: 'Etki kartın panoya kopyalandı, istediğin yere yapıştır.' });
+    } else if (res === 'failed') {
+      toast({ variant: 'destructive', title: 'Paylaşılamadı', description: 'Lütfen tekrar dene.' });
+    }
+  };
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -404,6 +420,9 @@ export default function MyDonationsPage() {
                           }
                           return null;
                         })()}
+                        {donation.type === 'expense' && (
+                          <DonationTimeline isPaid={isPaid} isRejected={status === 'Reddedildi'} />
+                        )}
                         <div className='flex justify-between items-center text-xs'>
                           <div>
                             <span className='text-muted-foreground'>{t('dashboard.donations.transactionDate')}: </span>
@@ -412,7 +431,7 @@ export default function MyDonationsPage() {
                           <div className="flex">
                             <Button size="icon" variant="ghost" onClick={() => { setSelectedTransaction(donation); setIsReceiptOpen(true); }} aria-label={t('dashboard.donations.ariaViewReceipt')}><Eye className="h-4 w-4" /></Button>
                             <Button size="icon" variant="ghost" onClick={() => toast({ title: t('dashboard.donations.toastReceiptDownloading') })} aria-label={t('dashboard.donations.ariaDownloadReceipt')}><Download className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" onClick={() => toast({ title: t('dashboard.donations.toastShareOpening') })} aria-label={t('dashboard.donations.ariaShare')}><Share2 className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => handleShare(donation)} aria-label={t('dashboard.donations.ariaShare')}><Share2 className="h-4 w-4" /></Button>
                           </div>
                         </div>
                       </div>
