@@ -43,11 +43,44 @@ function corsHeaders(): HeadersInit {
   };
 }
 
+// Basit, örnek-içi (in-memory) hız sınırı: sahte/otomatik tıklama spam'ine karşı.
+// IP başına kayan pencerede sınır. Best-effort (Cloud Run örneği başına); PII
+// saklamaz, Firestore'a yazmaz — maliyet + KVKK dostu. Dağıtık değildir ama tek
+// bir kötüye kullananı tek örnekte anlamlı biçimde yavaşlatır.
+const RL_WINDOW_MS = 60_000;
+const RL_MAX = 30;
+const rlHits = new Map<string, number[]>();
+
+function clientIp(req: NextRequest): string {
+  const xff = req.headers.get('x-forwarded-for') || '';
+  return xff.split(',')[0].trim() || req.headers.get('x-real-ip') || 'unknown';
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const hits = (rlHits.get(ip) || []).filter((t) => now - t < RL_WINDOW_MS);
+  hits.push(now);
+  rlHits.set(ip, hits);
+  // Ara sıra bayat anahtarları temizle (bellek şişmesin).
+  if (rlHits.size > 5000) {
+    for (const [k, v] of rlHits) {
+      if (v.every((t) => now - t >= RL_WINDOW_MS)) rlHits.delete(k);
+    }
+  }
+  return hits.length > RL_MAX;
+}
+
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders() });
 }
 
 export async function POST(req: NextRequest) {
+  if (isRateLimited(clientIp(req))) {
+    return NextResponse.json(
+      { errorCode: 'RATE_LIMITED', message: 'Çok fazla istek. Lütfen biraz sonra tekrar dene.' },
+      { status: 429, headers: corsHeaders() },
+    );
+  }
   let body: { brandId?: string } | null = null;
   try { body = await req.json(); } catch { /* invalid JSON */ }
   const brandId = typeof body?.brandId === 'string' ? body.brandId.trim() : '';

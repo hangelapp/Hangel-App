@@ -56,19 +56,19 @@
         <div class="hangel-header">
           <img class="hangel-logo" src="${chrome.runtime.getURL('icons/icon-48.png')}" alt="hangel" />
           <div class="hangel-headtext">
-            <div class="hangel-title">Hatırlatayım galiba :)</div>
+            <div class="hangel-title">hangel</div>
             <div class="hangel-subtitle">
-              <strong>${escapeHtml(brand.name)}</strong> hangel üzerinden bağış yapsın istermisin?
+              <strong>${escapeHtml(brand.name)}</strong> alışverişini bir bağışa dönüştür.
             </div>
           </div>
         </div>
         <div class="hangel-rate">
-          Bu alışverişin <strong>%${brand.donationRate}</strong>'i seçtiğin STK'lara bağış olur.
+          Tutarın <strong>%${brand.donationRate}</strong>’i seçtiğin derneklere bağış olur
         </div>
         <div class="hangel-actions">
-          <button class="hangel-btn-yes">Yapsın</button>
-          <button class="hangel-btn-later">Sonra</button>
-          <button class="hangel-btn-never">Bir daha sorma</button>
+          <button class="hangel-btn-yes">Bağışa Dönüştür</button>
+          <button class="hangel-btn-later">Şimdi Değil</button>
+          <button class="hangel-btn-never">Bu sitede bir daha sorma</button>
         </div>
       </div>
     `;

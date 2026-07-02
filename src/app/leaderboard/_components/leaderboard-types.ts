@@ -17,6 +17,7 @@ export type LeaderboardUser = {
     volunteerHours?: number;
     totalDonation?: number;
     totalImpactValue?: number;
+    totalPoints?: number;
   };
   impactScore?: number;
   volunteerHours?: number;
