@@ -25,6 +25,8 @@ import {
     Mic2,
     ListOrdered,
     Pencil,
+    Calendar,
+    MapPin,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +35,7 @@ import { VenueManager } from './_components/venue-manager';
 import { EventAttendees } from '@/components/events/event-attendees';
 import { EventCheckinQR } from '@/components/events/event-checkin-qr';
 import { EventCompleteButton } from '@/components/events/event-complete-button';
+import { EventBadgeCards, EventCertificates } from '@/components/events/event-bulk-docs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Dialog,
@@ -609,19 +612,21 @@ export default function EventManagementPage() {
                                     {myEvents!.map((event) => (
                                         <div
                                             key={event.id}
-                                            className="p-4 border rounded-2xl flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between group hover:bg-accent/50 transition-colors"
+                                            className="rounded-3xl border border-border/60 bg-card p-4 shadow-sm transition-shadow hover:shadow-md flex flex-col gap-3.5"
                                         >
-                                            <div className="space-y-1 min-w-0">
-                                                <div className="flex items-center gap-2 min-w-0">
-                                                    <h4 className="font-bold break-words min-w-0">{event.name || t('ngo_admin_events.unnamedEvent')}</h4>
+                                            {/* Başlık + durum — tam genişlik (dikey harf akması FIX'i) */}
+                                            <div className="min-w-0">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <h4 className="font-bold text-[15px] leading-snug break-words text-foreground">{event.name || t('ngo_admin_events.unnamedEvent')}</h4>
                                                     <StatusBadge status={event.status} />
                                                 </div>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {event.date || event.startDate || '—'}
-                                                    {event.location?.city ? ` • ${event.location.city}` : ''}
+                                                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                                                    <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{event.date || event.startDate || '—'}</span>
+                                                    {event.location?.city ? <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{event.location.city}</span> : null}
                                                 </p>
                                             </div>
-                                            <div className="flex flex-nowrap items-center gap-2 overflow-x-auto sm:flex-wrap sm:overflow-x-visible sm:flex-shrink-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                                            {/* Aksiyonlar — sarılan ızgara (mobilde de hepsi görünür, taşma/sıkışma yok) */}
+                                            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
                                                 <SocialShareButton
                                                     kind="event"
                                                     item={{
@@ -634,12 +639,14 @@ export default function EventManagementPage() {
                                                         url: typeof window !== 'undefined' ? `${window.location.origin}/events/${event.id}` : '',
                                                     }}
                                                 />
-                                                <Button variant="outline" size="sm" onClick={() => openEdit(event)}>
+                                                <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => openEdit(event)}>
                                                     <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
                                                 </Button>
                                                 <EventCheckinQR eventId={event.id} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
                                                 <EventCompleteButton eventId={event.id} />
                                                 <EventAttendees eventId={event.id} />
+                                                <EventBadgeCards eventId={event.id} eventName={event.name || ''} ngoName={activeEntity?.data.name || ''} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
+                                                <EventCertificates eventId={event.id} eventName={event.name || ''} ngoName={activeEntity?.data.name || ''} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
                                             </div>
                                         </div>
                                     ))}

@@ -20,6 +20,31 @@ export const runtime = 'nodejs';
 
 const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
 
+/**
+ * AI kullanılamadığında (ör. GEMINI_API_KEY yok / flow hatası) deterministik,
+ * platforma uygun paylaşım metinleri üretir — böylece "Sosyal Medya" butonu HER
+ * ZAMAN çalışır (boş/hata yerine kullanılabilir metin döner).
+ */
+function templatePosts(
+  kind: SocialShareKind,
+  f: { title: string; description: string; date?: string; location?: string; city?: string; ngoName?: string; url?: string },
+): Array<{ platform: string; text: string; hashtags: string[] }> {
+  const when = f.date ? `\n📅 ${f.date}` : '';
+  const where = f.city || f.location ? `\n📍 ${f.city || f.location}` : '';
+  const url = f.url ? `\n${f.url}` : '';
+  const by = f.ngoName ? `\n— ${f.ngoName}` : '';
+  const desc = f.description ? `\n${f.description}` : '';
+  const noun = kind === 'event' ? 'etkinliğine' : 'ilanına';
+  const tags = kind === 'event' ? ['#hangel', '#etkinlik', '#sivilToplum'] : ['#hangel', '#gönüllülük', '#sivilToplum'];
+  return [
+    { platform: 'x', text: `${f.title}${when}${where}${by}${url}`.slice(0, 260), hashtags: tags },
+    { platform: 'instagram', text: `✨ ${f.title}${desc}${when}${where}${by}${url}`, hashtags: [...tags, '#iyilik'] },
+    { platform: 'facebook', text: `${f.title}${desc}${when}${where}${by}${url}`, hashtags: tags },
+    { platform: 'linkedin', text: `${f.ngoName || 'Kuruluşumuz'} olarak "${f.title}" ${noun} sizi davet ediyoruz.${desc}${when}${where}${url}`, hashtags: tags },
+    { platform: 'whatsapp', text: `*${f.title}*${desc}${when}${where}${by}${url}`, hashtags: [] },
+  ];
+}
+
 export async function POST(req: NextRequest) {
   const auth = await requireNgoAdmin(req);
   if ('error' in auth) return auth.error;
@@ -62,7 +87,18 @@ export async function POST(req: NextRequest) {
     if (e instanceof AIQuotaExceededError) {
       return NextResponse.json({ errorCode: 'QUOTA', message: 'Günlük yapay zeka hakkın doldu, yarın tekrar dene.' }, { status: 429 });
     }
-    console.error('[social-share] error', e);
-    return NextResponse.json({ errorCode: 'INTERNAL', message: 'Paylaşım metni oluşturulamadı, lütfen tekrar dene.' }, { status: 500 });
+    // AI kullanılamıyorsa (key yok / flow hatası) ŞABLON metinlerle devam et —
+    // buton hata yerine kullanılabilir paylaşım metni gösterir.
+    console.error('[social-share] AI hata, şablona düşülüyor', e);
+    const posts = templatePosts(kind, {
+      title,
+      description: str(body.description),
+      date: str(body.date) || undefined,
+      location: str(body.location) || undefined,
+      city: str(body.city) || undefined,
+      ngoName: str(body.ngoName) || undefined,
+      url: str(body.url) || undefined,
+    });
+    return NextResponse.json({ ok: true, posts, fallback: true });
   }
 }
