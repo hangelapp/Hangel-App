@@ -26,6 +26,7 @@ import {
     ListOrdered,
     Pencil,
     MapPin,
+    Eye,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -613,8 +614,9 @@ export default function EventManagementPage() {
                                             key={event.id}
                                             className="rounded-3xl border border-border/60 bg-card p-4 shadow-sm transition-shadow hover:shadow-md flex flex-col gap-3.5"
                                         >
-                                            {/* Başlık + durum — tam genişlik (dikey harf akması FIX'i) */}
-                                            <div className="min-w-0">
+                                            {/* Başlık + durum + İncele (public sayfayı yeni sekmede açar) */}
+                                            <div className="flex items-start justify-between gap-2">
+                                              <div className="min-w-0">
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <h4 className="font-bold text-[15px] leading-snug break-words text-foreground">{event.name || t('ngo_admin_events.unnamedEvent')}</h4>
                                                     <StatusBadge status={event.status} />
@@ -623,6 +625,10 @@ export default function EventManagementPage() {
                                                     <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{event.date || event.startDate || '—'}</span>
                                                     {event.location?.city ? <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{event.location.city}</span> : null}
                                                 </p>
+                                              </div>
+                                              <a href={`/events/${event.id}`} target="_blank" rel="noopener noreferrer" title="İncele — public sayfayı aç" aria-label="İncele" className="shrink-0 rounded-full p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                                                <Eye className="h-4 w-4" />
+                                              </a>
                                             </div>
                                             {/* Aksiyonlar — sarılan ızgara (mobilde de hepsi görünür, taşma/sıkışma yok) */}
                                             <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">

@@ -30,7 +30,7 @@ import {
   deleteDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { Loader2, PlusCircle, Pencil, Trash2, CheckCircle2, Users, Award } from 'lucide-react';
+import { Loader2, PlusCircle, Pencil, Trash2, CheckCircle2, Users, Award, Eye } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -320,7 +320,12 @@ function ListingsTab({
                       {opp.location?.district ? ` · ${opp.location.district}` : ''}
                     </CardDescription>
                   </div>
-                  <Badge variant={statusBadgeVariant(status)}>{status}</Badge>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Badge variant={statusBadgeVariant(status)}>{status}</Badge>
+                    <a href={`/volunteering/${opp.id}`} target="_blank" rel="noopener noreferrer" title="İncele — public sayfayı aç" aria-label="İncele" className="rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      <Eye className="h-4 w-4" />
+                    </a>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="text-sm flex items-center gap-3 flex-wrap">

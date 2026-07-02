@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-07-02";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "963b2c65",
+    "date": "2026-07-02",
+    "subject": "feat(messaging): Yöneticiye sor butonu (etkinlik/gönüllülük→kuruma DM) + aktivite log mesajlaşma tabı"
+  },
+  {
+    "hash": "06f5c27b",
+    "date": "2026-07-02",
+    "subject": "feat(market): marka profiline kategori sekmeleri + Filtre/Sırala"
+  },
+  {
+    "hash": "03d98d9b",
+    "date": "2026-07-02",
+    "subject": "feat(market): marka profili rötuşları + /market/shops + hız"
+  },
+  {
     "hash": "760dbbd6",
     "date": "2026-07-02",
     "subject": "Merge remote-tracking branch 'origin/main' into feature/all-brands-list"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "8c84c7cc",
     "date": "2026-07-02",
     "subject": "feat(market): brands-all brandDirectory kaynağını okur"
-  },
-  {
-    "hash": "e8d1152d",
-    "date": "2026-07-02",
-    "subject": "Merge: /market/brands/all marka logoları (gerçek logo + favicon)"
-  },
-  {
-    "hash": "291533f2",
-    "date": "2026-07-02",
-    "subject": "feat(market): /market/brands/all markalarına gerçek logo + favicon"
-  },
-  {
-    "hash": "b497ccfe",
-    "date": "2026-07-02",
-    "subject": "Merge feature/all-brands-list: 'Tüm Markalar' tüm ürün markalarını listeler"
   }
 ];
