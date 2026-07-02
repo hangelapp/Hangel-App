@@ -2,7 +2,7 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { getAuth, initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, inMemoryPersistence, type Auth } from 'firebase/auth';
 import {
   getFirestore,
   initializeFirestore,
@@ -51,20 +51,33 @@ export function initializeFirebase() {
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
-  const auth = getAuth(firebaseApp);
+  // OTURUM KALICILIĞI — DAYANIKLI zincir: IndexedDB önce, sonra localStorage,
+  // sonra bellek. Neden: eski `setPersistence(browserLocalPersistence)` yalnız
+  // localStorage'a yazıyordu; iOS Safari/WKWebView/PWA ve ITP'de localStorage
+  // kapanınca/7 günde silinip kullanıcıyı ATIYORDU. IndexedDB çok daha dayanıklı
+  // (uygulama/tarayıcı kapansa bile kalır). Ayrıca fire-and-forget setPersistence
+  // race'i kalktı — persistence artık init anında SENKRON kurulur. Kullanıcı
+  // AÇIKÇA çıkış yapmadıkça oturum açık kalır.
+  // initializeAuth yalnız ilk çağrıda çalışır; tekrarda/SSR'da getAuth'a düşer.
+  let auth: Auth;
+  if (typeof window === 'undefined') {
+    auth = getAuth(firebaseApp);
+  } else {
+    try {
+      auth = initializeAuth(firebaseApp, {
+        persistence: [indexedDBLocalPersistence, browserLocalPersistence, inMemoryPersistence],
+      });
+    } catch {
+      // Zaten initialize edilmiş (aynı app'te ikinci getSdks) → mevcut örneği al.
+      auth = getAuth(firebaseApp);
+    }
+  }
   // Default Firebase Auth dilini TR yap — cihaz English bile olsa SMS TR template kullanır.
   // Phone form çağrısı sırasında IndividualForm ülke koduna göre override eder.
   try {
     auth.languageCode = 'tr';
   } catch {
     /* readonly veya init incomplete */
-  }
-  // Oturum kalıcılığı: tarayıcı/ sekme kapansa bile oturum açık kalsın (localStorage).
-  // SSR'da window yok → atla.
-  if (typeof window !== 'undefined') {
-    void setPersistence(auth, browserLocalPersistence).catch(() => {
-      /* persistence desteklenmiyorsa default davranış sürer */
-    });
   }
   return {
     firebaseApp,
