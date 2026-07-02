@@ -106,7 +106,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   for (const targetUid of uids) {
     const certId = `evt-${eventId}-${targetUid}`;
     const certRef = db.collection(COLLECTIONS.certificates).doc(certId);
-    if ((await certRef.get()).exists) { alreadyDone++; continue; } // idempotent
+    const userCertRef = db.collection(COLLECTIONS.users).doc(targetUid).collection(COLLECTIONS.certificates).doc(certId);
+    const existingSnap = await certRef.get();
+    if (existingSnap.exists) {
+      // İdempotent: sertifika zaten var. ANCAK profil/my-badges YALNIZ kullanıcının
+      // alt koleksiyonundan (users/{uid}/certificates) okur. Eğer eski bir sürümde
+      // yalnız top-level yazıldıysa alt koleksiyon kopyası eksik olabilir → kullanıcı
+      // sertifikasını göremez. Burada eksikse tamamla (kendini iyileştirme); yeniden
+      // bildirim/puan YOK, yalnız görünürlüğü onarır.
+      const userCertSnap = await userCertRef.get();
+      if (!userCertSnap.exists) {
+        await userCertRef.set(existingSnap.data() as Record<string, unknown>, { merge: true });
+      }
+      alreadyDone++;
+      continue;
+    }
 
     // Sıralı kişi no + tiresiz Luhn'lı kod (H + ülke + tür + yıl + faaliyet + kişi + sağlama).
     // Yapısal alanlar ayrıca saklanır → /c doğrulamada DB'den gösterilir.
@@ -119,7 +133,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       completedAt: FieldValue.serverTimestamp(), issuedBy: uid,
     };
     await certRef.set(cert);
-    await db.collection(COLLECTIONS.users).doc(targetUid).collection(COLLECTIONS.certificates).doc(certId).set(cert);
+    await userCertRef.set(cert);
     // Katılım puanı (tamamlama anında).
     await db.collection(COLLECTIONS.users).doc(targetUid).update({ impactScore: FieldValue.increment(COMPLETION_POINTS) }).catch(() => undefined);
 
