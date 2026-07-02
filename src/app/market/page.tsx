@@ -933,14 +933,15 @@ export default function DiscoverPage() {
                   </div>
 
                   {/* Tüm markalar — yatay buton (arama yanındaki icon yerine geçti).
-                      Markaların liste sayfasını (/market/brands) açar. */}
+                      market'teki BÜTÜN ürün markalarını (/market/brands/all) açar;
+                      marka şeridindeki "Tümü" (/market/brands) yalnız ajans markaları. */}
                   <div className="px-4 pt-1">
                     <Button
                       asChild
                       className="h-12 w-full rounded-2xl bg-primary text-white shadow-sm hover:bg-primary/90"
                     >
                       <Link
-                        href="/market/brands"
+                        href="/market/brands/all"
                         className="flex items-center justify-center gap-2 text-sm font-bold text-white"
                       >
                         <Store className="h-5 w-5" />
