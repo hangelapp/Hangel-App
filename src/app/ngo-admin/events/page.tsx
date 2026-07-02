@@ -25,7 +25,6 @@ import {
     Mic2,
     ListOrdered,
     Pencil,
-    Calendar,
     MapPin,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
