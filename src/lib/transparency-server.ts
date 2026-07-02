@@ -9,11 +9,22 @@
  * Çağrılır: belge kaydet/onayla/sil rotaları + STK profil güncelleme rotaları
  * (profil değişince skor tazelenir) + toplu recalculate.
  */
-import type { Firestore } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { normalizeDefs, mergeWithProfile, computeScore, type CriteriaItem, type NgoProfileLike } from './transparency';
 
-export async function recomputeNgoTransparency(db: Firestore, ngoId: string): Promise<number | null> {
+// Admin Firestore'un yalnızca kullandığımız yüzeyi (firebase-admin type importu
+// bu server-yardımcısını client graph'a sızdırmasın diye yapısal tip kullanılır).
+type AdminDb = {
+  collection(path: string): {
+    doc(id: string): {
+      get(): Promise<{ exists: boolean; data(): unknown }>;
+      set(data: unknown, opts?: { merge?: boolean }): Promise<unknown>;
+    };
+    get(): Promise<{ docs: Array<{ id: string; data(): unknown }> }>;
+  };
+};
+
+export async function recomputeNgoTransparency(db: AdminDb, ngoId: string): Promise<number | null> {
   if (!ngoId) return null;
   // Güncel kriter tanımları.
   let defs;
