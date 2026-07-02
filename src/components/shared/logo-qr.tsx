@@ -54,7 +54,14 @@ export function LogoQr({
 
       // Kurum logosu yoksa hangel markasına düş (same-origin → canvas kirlenmez,
       // indirme de çalışır). Böylece her QR'ın ortasında görünür bir mark olur.
-      const logoSrc = logoUrl || '/logo.png';
+      const raw = logoUrl || '/logo.png';
+      // Harici (http/https) logoları same-origin proxy üzerinden çek — çoğu logo
+      // host'u CORS header göndermediğinden crossOrigin='anonymous' ile doğrudan
+      // yükleme başarısız oluyordu (→ logosuz QR). Proxy same-origin olduğu için
+      // canvas kirlenmez, indirme de çalışır. Yerel yol / data: URI doğrudan geçer.
+      const logoSrc = /^https?:\/\//i.test(raw)
+        ? `/api/img-proxy?url=${encodeURIComponent(raw)}`
+        : raw;
 
       const ctx = canvas.getContext('2d');
       if (!ctx) {

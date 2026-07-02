@@ -510,6 +510,15 @@ export default function ManageProfilePage() {
     );
   }
 
+  // Herkese açık profili yeni sekmede önizle — kaydedilmiş güncel hâli gösterir.
+  const openPreview = () => {
+    const id = activeEntity.data.id;
+    const path = activeEntity.kind === 'brand' ? `/market/${id}`
+      : activeEntity.kind === 'club' ? `/clubs/profile/${id}`
+      : `/ngos/${id}`;
+    window.open(path, '_blank', 'noopener');
+  };
+
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
@@ -526,10 +535,15 @@ export default function ManageProfilePage() {
                 </p>
             </div>
           </div>
-          <Button onClick={handleSave} size="sm" className="shadow-lg" disabled={isSaving}>
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            {t('ngo_admin_manage_profile.btnSave')}
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button type="button" onClick={openPreview} variant="outline" size="sm" className="gap-1.5">
+              <Eye className="h-4 w-4" /> <span className="hidden sm:inline">Önizle</span>
+            </Button>
+            <Button onClick={handleSave} size="sm" className="shadow-lg" disabled={isSaving}>
+              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              {t('ngo_admin_manage_profile.btnSave')}
+            </Button>
+          </div>
       </div>
 
       <form onSubmit={handleSave} className="space-y-8">
@@ -864,8 +878,11 @@ export default function ManageProfilePage() {
             </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-4 pb-10">
+        <div className="flex justify-end gap-3 pb-10">
           <Button type="button" variant="outline" onClick={() => router.back()}>{t('ngo_admin_manage_profile.btnCancel')}</Button>
+          <Button type="button" variant="outline" onClick={openPreview} className="gap-1.5">
+            <Eye className="h-4 w-4" /> Önizle
+          </Button>
           <Button type="submit" className="px-10 font-bold" disabled={isSaving}>
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {t('ngo_admin_manage_profile.btnSaveAll')}

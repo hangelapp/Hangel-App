@@ -575,17 +575,16 @@ function SideMenu() {
 // Aktif yönetilen entity'nin kimliği — her alt panelin başında görünür.
 function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
   // Show back button on all ngo admin pages, including the dashboard
   const showBackButton = true;
 
-  // SideMenu, Dashboard ve /ngo-admin landing sayfalarında gizli.
-  // Landing'de "Yönettiklerin" kart listesi + Yeni Kurum ekleme CTA'sı var,
-  // Dashboard'da Hızlı Başlangıç + kategori kart navigasyonu var; her ikisi de
-  // kendi içinde tam navigasyon sunduğu için zeminsiz sol menüye gerek yok.
-  const hideSideMenu = pathname === '/ngo-admin/dashboard' || pathname === '/ngo-admin';
+  // İkincil sol menü ARTIK HER SAYFADA GİZLİ. Tüm yönetim navigasyonu tek
+  // kaynaktan — Dashboard'daki "Yönetim Araçları" kart menüsünden — yürür.
+  // Böylece dış global menü + ikincil menü çakışması ("iki menü kafa karıştırıyor")
+  // ortadan kalkar; her admin sayfası sade kalır (yalnız içerik + geri butonu).
+  const hideSideMenu = true;
 
   return (
     <div className="min-h-dvh">

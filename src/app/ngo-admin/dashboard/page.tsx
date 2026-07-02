@@ -45,6 +45,9 @@ import {
   Inbox,
   Send,
   Wallet,
+  Award,
+  Presentation,
+  Contact,
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -89,6 +92,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Inbox,
   Send,
   Wallet,
+  Award,
+  Presentation,
+  Contact,
+  Clock,
   // WhatsApp İş kart ikonu: lucide'da WhatsApp glyph yok, MessageCircle ile alias.
   WhatsappBusiness: MessageCircle,
 };
@@ -139,6 +146,10 @@ const iconColorMap: { [key: string]: string } = {
   'briefcase': 'bg-blue-600',
   'network': 'bg-rose-500',
   'line-chart': 'bg-amber-600',
+  'award': 'bg-yellow-600',
+  'presentation': 'bg-fuchsia-500',
+  'contact': 'bg-cyan-600',
+  'clock': 'bg-slate-500',
 };
 
 const NavLink = ({ href, icon, label, comingSoon, beta }: { href: string, icon: string, label: string, comingSoon?: boolean, beta?: boolean }) => {
@@ -218,6 +229,7 @@ const buildNavGroups = (t: (key: string) => string): { title: string; items: Nav
             { id: 'profile', href: '/ngo-admin/manage-profile', label: t('ngo_admin_dashboard.itemProfile'), icon: 'user-cog', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
             { id: 'qr', href: '/ngo-admin/qr', label: t('ngo_admin_dashboard.itemQr'), icon: 'qr-code', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'], labelByKind: { ngo: t('ngo_admin_dashboard.itemQrNgo'), brand: t('ngo_admin_dashboard.itemQrBrand'), club: t('ngo_admin_dashboard.itemQrClub') } },
             { id: 'community-invite', href: '/ngo-admin/community-invite', label: 'Topluluğunu Davet Et', icon: 'users', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
+            { id: 'marketing-kit', href: '/ngo-admin/marketing-kit', label: 'Tanıtım Araçları', icon: 'presentation', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
         ]
     },
     {
@@ -227,6 +239,7 @@ const buildNavGroups = (t: (key: string) => string): { title: string; items: Nav
             { id: 'notifications', href: '/ngo-admin/notifications', label: t('ngo_admin_dashboard.itemNotifications'), icon: 'bell', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
             { id: 'posts', href: '/ngo-admin/posts', label: t('ngo_admin_dashboard.itemPosts'), icon: 'newspaper', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
             { id: 'impact-story', href: '/ngo-admin/impact-story', label: t('ngo_admin_dashboard.itemImpactStory'), icon: 'sparkles', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
+            { id: 'certificates', href: '/ngo-admin/certificates', label: 'Sertifikalarımız', icon: 'award', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
             { id: 'transparency', href: '/ngo-admin/transparency', label: t('ngo_admin_dashboard.itemTransparency'), icon: 'shield-check', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'] },
             { id: 'sustainability', href: '/ngo-admin/sustainability', label: t('ngo_admin_dashboard.itemSustainability'), icon: 'leaf', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['brand'] },
         ]
@@ -256,6 +269,8 @@ const buildNavGroups = (t: (key: string) => string): { title: string; items: Nav
             { id: 'mail', href: '/ngo-admin/mail', label: t('ngo_admin_dashboard.itemMail'), icon: 'mail', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'call-center', href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: 'phone-call', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'whatsapp-business', href: '/ngo-admin/whatsapp-business', label: 'WhatsApp İş', icon: 'whatsapp-business', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
+            { id: 'call-center-contacts', href: '/ngo-admin/call-center/contacts', label: 'Kişi Rehberi', icon: 'contact', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
+            { id: 'call-center-queue', href: '/ngo-admin/call-center/queue', label: 'Arama Sırası', icon: 'clock', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'messaging-packages', href: '/ngo-admin/messaging-packages', label: 'Kontör Paketleri', icon: 'wallet', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'dm', href: '/ngo-admin/dm', label: t('ngo_admin_dashboard.itemDm'), icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], beta: true },
             { id: 'marketing', href: '/ngo-admin/marketing', label: t('ngo_admin_dashboard.itemMarketing'), icon: 'target', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
@@ -431,34 +446,41 @@ function NgoDashboardPageContent() {
                     <p className="text-sm mt-1">{t('ngo_admin_dashboard.noEntityHint')}</p>
                 </div>
             ) : (
-            <div className="divide-y divide-border">
+            <div className="grid grid-cols-3 divide-x divide-border">
+                {/* En sık işlem gören canlı istatistikler — tek satır, yan yana. */}
                 {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
-                    <div className="flex items-center justify-between p-5 sm:p-6 transition-colors hover:bg-accent/30">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-2xl">
-                                <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
-                            </div>
-                            <div>
-                                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-0.5">{t('ngo_admin_dashboard.totalResources')}</p>
-                                <p className="text-2xl font-black tracking-tighter">{stats.totalDonation?.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }) || '0,00 ₺'}</p>
-                            </div>
+                    <div className="flex flex-col items-center justify-center gap-2 p-4 sm:p-5 text-center transition-colors hover:bg-accent/30">
+                        <div className="p-2.5 bg-green-100 dark:bg-green-900/30 rounded-2xl">
+                            <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-lg sm:text-2xl font-black tracking-tighter leading-none truncate">{stats.totalDonation?.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }) || '0 ₺'}</p>
+                            <p className="text-[10px] sm:text-xs font-black text-muted-foreground uppercase tracking-widest mt-1.5">{t('ngo_admin_dashboard.totalResources')}</p>
                         </div>
                     </div>
                 )}
 
                 {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
-                    <div className="flex items-center justify-between p-5 sm:p-6 transition-colors hover:bg-accent/30">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
-                                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <div>
-                                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-0.5">{t('ngo_admin_dashboard.activeCommunity')}</p>
-                                <p className="text-2xl font-black tracking-tighter">+{stats.volunteers?.toLocaleString('tr-TR') || stats.followers?.toLocaleString('tr-TR') || '0'}</p>
-                            </div>
+                    <div className="flex flex-col items-center justify-center gap-2 p-4 sm:p-5 text-center transition-colors hover:bg-accent/30">
+                        <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
+                            <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-lg sm:text-2xl font-black tracking-tighter leading-none truncate">{stats.volunteers?.toLocaleString('tr-TR') || '0'}</p>
+                            <p className="text-[10px] sm:text-xs font-black text-muted-foreground uppercase tracking-widest mt-1.5">{t('ngo_admin_dashboard.activeCommunity')}</p>
                         </div>
                     </div>
                 )}
+
+                <div className="flex flex-col items-center justify-center gap-2 p-4 sm:p-5 text-center transition-colors hover:bg-accent/30">
+                    <div className="p-2.5 bg-violet-100 dark:bg-violet-900/30 rounded-2xl">
+                        <HeartHandshake className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-lg sm:text-2xl font-black tracking-tighter leading-none truncate">{stats.followers?.toLocaleString('tr-TR') || '0'}</p>
+                        <p className="text-[10px] sm:text-xs font-black text-muted-foreground uppercase tracking-widest mt-1.5">Takipçi</p>
+                    </div>
+                </div>
             </div>
             )}
         </CardContent>
