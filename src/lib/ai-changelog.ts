@@ -3,6 +3,26 @@ export const AI_CHANGELOG_GENERATED = "2026-07-02";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "760dbbd6",
+    "date": "2026-07-02",
+    "subject": "Merge remote-tracking branch 'origin/main' into feature/all-brands-list"
+  },
+  {
+    "hash": "a35d65a1",
+    "date": "2026-07-02",
+    "subject": "feat(events): Yaka Kartları & Sertifikalar — uygulama-içi glass A4 önizleme + kişi seçimi (1/tümü)"
+  },
+  {
+    "hash": "69c1cdd5",
+    "date": "2026-07-02",
+    "subject": "feat(login): Apple tarzı 2. cihaz girişi (QR/Kod geçişi) + giriş konfetisi"
+  },
+  {
+    "hash": "da80d465",
+    "date": "2026-07-02",
+    "subject": "feat(market): brands/all tek akış (ünlüler üstte, az bilinenler altta) + 400+ marka"
+  },
+  {
     "hash": "37f2110b",
     "date": "2026-07-02",
     "subject": "fix(ngo-admin): kurum paneli veri sızıntıları — sadece aktif kuruma scope"
@@ -106,25 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "b497ccfe",
     "date": "2026-07-02",
     "subject": "Merge feature/all-brands-list: 'Tüm Markalar' tüm ürün markalarını listeler"
-  },
-  {
-    "hash": "19fc11df",
-    "date": "2026-07-02",
-    "subject": "feat(market): 'Tüm Markalar' butonu tüm ürün markalarını listeler"
-  },
-  {
-    "hash": "7a5d2106",
-    "date": "2026-07-01",
-    "subject": "feat(qr-login): kısa KOD + kamerasız kod-girişi + QR altında kod + Apple polish"
-  },
-  {
-    "hash": "d454336e",
-    "date": "2026-07-01",
-    "subject": "feat(activity): işlem zamanına saniye + giriş/çıkış netleştir + online süre saniyeli"
-  },
-  {
-    "hash": "9f26d901",
-    "date": "2026-07-01",
-    "subject": "feat(header): QR butonu cihazlar arası 'diğer cihazda aç' (adaptif)"
   }
 ];

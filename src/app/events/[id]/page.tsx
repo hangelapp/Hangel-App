@@ -32,6 +32,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { DistanceBadge } from '@/components/shared/distance-badge';
+import { AskManagerButton } from '@/components/shared/ask-manager-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -813,6 +814,7 @@ export default function EventDetailPage() {
             {/* İkincil eylem ızgarası — tüm butonlar AYNI boy/padding/rounded; tutarlı ızgara */}
             {isGoing && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 min-w-0">
+                <AskManagerButton orgId={eventOrganizerId} subject={`${event?.name || 'Etkinlik'} hakkında`} className="h-14 text-xs font-black" />
                 {/* Yaka Kartı */}
                 <AlertDialog>
                 <AlertDialogTrigger asChild>

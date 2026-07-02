@@ -8,6 +8,7 @@ import { DualCountdown } from '@/components/events/event-countdown';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { DistanceBadge } from '@/components/shared/distance-badge';
+import { AskManagerButton } from '@/components/shared/ask-manager-button';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -790,6 +791,7 @@ export default function VolunteeringDetailPage() {
                         <section className="space-y-4">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Onaylı gönüllü araçların</h2>
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+                        <AskManagerButton orgId={opportunity.ngoId} subject={`${opportunity.title} — gönüllülük hakkında`} />
                         <Button
                             size="lg"
                             variant="secondary"

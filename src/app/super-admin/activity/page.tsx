@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, HandCoins, FileText, UserPlus, Bell, Inbox, LogIn, LogOut, Loader2, Timer } from 'lucide-react';
+import { Activity, HandCoins, FileText, UserPlus, Bell, Inbox, LogIn, LogOut, Loader2, Timer, MessageSquare } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, orderBy, query, limit } from 'firebase/firestore';
 import Link from 'next/link';
@@ -30,6 +30,7 @@ interface DonationRow { id: string; status?: string; brandName?: string; brand?:
 interface ApplicationRow { id: string; name?: string; entityType?: string; status?: string; createdAt?: { toDate?: () => Date; seconds?: number } | string; }
 interface InvitationRow { id: string; inviteeName?: string; role?: string; ngoId?: string; brandId?: string; invitedBy?: string; invitedByName?: string; invitedAt?: { toDate?: () => Date; seconds?: number } | string; }
 interface NotificationRow { id: string; title?: string; body?: string; userId?: string; createdBy?: string; createdByName?: string; createdAt?: { toDate?: () => Date; seconds?: number } | string; }
+interface MessageRow { id: string; sender?: { name?: string } | string; senderId?: string; recipient?: { name?: string }; recipientId?: string; subject?: string; content?: string; timestamp?: { toDate?: () => Date; seconds?: number } | string; }
 
 const toDate = (val: unknown): Date | null => {
   if (!val) return null;
@@ -84,11 +85,14 @@ export default function SuperAdminActivityPage() {
   const appsQuery = useMemoFirebase(() => (db ? query(collection(db, COLLECTIONS.applications), orderBy('createdAt', 'desc'), limit(50)) : null), [db]);
   const invitationsQuery = useMemoFirebase(() => (db ? query(collection(db, COLLECTIONS.userInvitations), orderBy('invitedAt', 'desc'), limit(50)) : null), [db]);
   const notificationsQuery = useMemoFirebase(() => (db ? query(collection(db, COLLECTIONS.notifications), orderBy('createdAt', 'desc'), limit(50)) : null), [db]);
+  // Tüm DM mesajları (super-admin tüm messages'ı okuyabilir — firestore.rules).
+  const messagesQuery = useMemoFirebase(() => (db ? query(collection(db, COLLECTIONS.messages), orderBy('timestamp', 'desc'), limit(150)) : null), [db]);
 
   const { data: donations } = useCollection<DonationRow>(donationsQuery);
   const { data: applications } = useCollection<ApplicationRow>(appsQuery);
   const { data: invitations } = useCollection<InvitationRow>(invitationsQuery);
   const { data: notifications } = useCollection<NotificationRow>(notificationsQuery);
+  const { data: dmMessages } = useCollection<MessageRow>(messagesQuery);
 
   // İşlemi yapan kullanıcının adını çözmek için uid→ad haritası.
   const usersQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.users) : null), [db]);
@@ -180,7 +184,7 @@ export default function SuperAdminActivityPage() {
     return list.slice(0, 200);
   }, [donations, applications, invitations, notifications, userNameById, userRoleById]);
 
-  const [activeTab, setActiveTab] = useState<'all' | RoleCategory | 'oturum'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | RoleCategory | 'oturum' | 'mesajlar'>('all');
 
   const counts = useMemo(() => {
     const c: Record<'all' | RoleCategory, number> = { all: entries.length, admin: 0, user: 0, 'super-admin': 0 };
@@ -210,7 +214,7 @@ export default function SuperAdminActivityPage() {
           <CardDescription>En yeni işlemler üstte. Tıklayarak ilgili yönetim sayfasına gidebilirsin.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'all' | RoleCategory | 'oturum')}>
+          <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'all' | RoleCategory | 'oturum' | 'mesajlar')}>
             <TabsList className="mb-4 flex flex-wrap h-auto">
               {ROLE_TABS.map(t => (
                 <TabsTrigger key={t.value} value={t.value}>
@@ -218,6 +222,7 @@ export default function SuperAdminActivityPage() {
                 </TabsTrigger>
               ))}
               <TabsTrigger value="oturum" className="gap-1.5"><LogIn className="h-3.5 w-3.5" /> Giriş / Çıkış</TabsTrigger>
+              <TabsTrigger value="mesajlar" className="gap-1.5"><MessageSquare className="h-3.5 w-3.5" /> Mesajlaşmalar ({dmMessages?.length ?? 0})</TabsTrigger>
             </TabsList>
             {ROLE_TABS.map(t => (
               <TabsContent key={t.value} value={t.value}>
@@ -264,6 +269,34 @@ export default function SuperAdminActivityPage() {
             ))}
             <TabsContent value="oturum">
               <SessionsPanel />
+            </TabsContent>
+            <TabsContent value="mesajlar">
+              {!dmMessages || dmMessages.length === 0 ? (
+                <div className="py-16 flex flex-col items-center text-center gap-2">
+                  <MessageSquare className="h-12 w-12 text-muted-foreground/30" />
+                  <p className="text-muted-foreground text-sm italic">Henüz mesaj yok.</p>
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {dmMessages.map(m => {
+                    const senderName = (m.sender && typeof m.sender === 'object' ? m.sender.name : undefined) || userNameById.get(m.senderId || '') || 'Gönderen';
+                    const recipientName = m.recipient?.name || userNameById.get(m.recipientId || '') || 'Alıcı';
+                    return (
+                      <div key={m.id} className="flex items-start gap-3 py-3">
+                        <Avatar className="h-10 w-10 bg-muted">
+                          <AvatarFallback className="bg-blue-100 text-blue-700"><MessageSquare className="h-4 w-4" /></AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm break-words">{senderName} → {recipientName}</p>
+                          {m.subject && <p className="text-xs font-semibold text-muted-foreground truncate">{m.subject}</p>}
+                          <p className="text-xs text-muted-foreground break-words line-clamp-2">{m.content || '—'}</p>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground/70 whitespace-nowrap shrink-0">{formatTs(toDate(m.timestamp))}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
