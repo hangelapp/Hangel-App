@@ -3,21 +3,26 @@
 /**
  * Etkinlik toplu belgeleri — YAKA KARTLARI ve SERTİFİKALAR.
  *
- * Butona basınca (popover/dialog DEĞİL) katılımcılar çekilir ve yeni bir pencerede
- * yazdırılabilir, Apple-temiz bir ızgara açılır; üstte Yazdır / PDF İndir / Paylaş
- * araç çubuğu (yazdırmada gizlenir). "PDF İndir" = tarayıcının Yazdır→PDF'e Kaydet
- * akışı; "Paylaş" = Web Share (destekleyen cihazda), yoksa bağlantı kopyalanır.
+ * Butona basınca uygulama-içi bir glass Dialog açılır (yeni "pop-art" pencere DEĞİL):
+ *  - Solda katılımcı seçimi (1 kişi veya "Tümünü seç")
+ *  - Sağda GERÇEK A4 çıktı önizlemesi (izole iframe — seçilenler anında yansır)
+ *  - Altta "Yazdır / PDF olarak kaydet" (tarayıcının Yazdır→PDF akışı)
  *
+ * Önizleme + baskı aynı izole iframe dokümanını kullanır (app DOM'una
+ * dangerouslySetInnerHTML yok; kart/sertifika HTML'i sadece iframe içinde render edilir).
  * Katılımcılar: GET /api/events/{id}/attendees (RSVP "going") — organizatör yetkisi.
  */
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { IdCard, Award, Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { IdCard, Award, Loader2, Printer } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 
 type Attendee = { name?: string; email?: string };
 type EventInfo = { name?: string; date?: string; location?: string };
+type DocKind = 'badge' | 'cert';
 
 const esc = (s: string) =>
   (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -27,41 +32,6 @@ async function fetchAttendees(eventId: string, token: string): Promise<{ event: 
   const data = (await res.json().catch(() => null)) as { event?: EventInfo; attendees?: Attendee[]; message?: string } | null;
   if (!res.ok || !data) throw new Error(data?.message || 'Katılımcılar alınamadı.');
   return { event: data.event || {}, attendees: Array.isArray(data.attendees) ? data.attendees : [] };
-}
-
-// Ortak yazdırma penceresi (toolbar + ızgara). bodyHtml = kartlar/sertifikalar.
-function openPrintWindow(title: string, styles: string, bodyHtml: string, shareText: string) {
-  const w = window.open('', '_blank');
-  if (!w) return false;
-  const shareJs = `
-    async function doShare(){
-      try{ if(navigator.share){ await navigator.share({title:${JSON.stringify(title)}, text:${JSON.stringify(shareText)}}); return; } }catch(e){}
-      try{ await navigator.clipboard.writeText(${JSON.stringify(shareText)}); alert('Bilgi panoya kopyalandı.'); }catch(e){ alert('Paylaşım desteklenmiyor.'); }
-    }`;
-  w.document.write(`<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
-  <style>
-    *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Inter,system-ui,sans-serif;background:#f2f2f7;color:#1c1c1e}
-    .toolbar{position:sticky;top:0;z-index:10;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:14px;background:rgba(255,255,255,.8);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,.08)}
-    .toolbar button{font:600 15px/1 -apple-system,system-ui,sans-serif;border:none;border-radius:980px;padding:11px 20px;cursor:pointer;transition:.15s}
-    .btn-primary{background:#ff5722;color:#fff}.btn-primary:hover{background:#f4511e}
-    .btn-secondary{background:rgba(120,120,128,.12);color:#1c1c1e}.btn-secondary:hover{background:rgba(120,120,128,.2)}
-    .hint{width:100%;text-align:center;font:400 12px/1.4 system-ui;color:#8e8e93;margin-top:2px}
-    .sheet{padding:24px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
-    @media print{ .toolbar,.hint{display:none!important} body{background:#fff} .sheet{padding:0;gap:0} }
-    ${styles}
-  </style></head><body>
-  <div class="toolbar">
-    <button class="btn-primary" onclick="window.print()">🖨️ Yazdır</button>
-    <button class="btn-secondary" onclick="window.print()">⬇︎ PDF İndir</button>
-    <button class="btn-secondary" onclick="doShare()">↗︎ Paylaş</button>
-    <div class="hint">PDF için: Yazdır → Hedef "PDF olarak kaydet". Yaka kartlarını kesme çizgilerinden kesebilirsiniz.</div>
-  </div>
-  <div class="sheet">${bodyHtml}</div>
-  <script>${shareJs}</script>
-  </body></html>`);
-  w.document.close();
-  return true;
 }
 
 function badgeCardHtml(a: Attendee, ev: EventInfo, ngoName: string, logoUrl?: string) {
@@ -114,54 +84,149 @@ const CERT_STYLES = `
   .c-body{font:500 17px/1.6 system-ui;color:#3a3a3c;max-width:640px;margin:0 auto}
   .c-foot{display:flex;justify-content:space-between;margin-top:48px;padding-top:18px;border-top:1px solid #e5e5ea}
   .c-line{font:600 13px system-ui;color:#48484a}
-  @page{size:A4 landscape;margin:14mm}
 `;
 
-function useBulkDoc(build: (att: Attendee[], ev: EventInfo) => { title: string; styles: string; body: string; share: string }) {
+/** Seçili katılımcılardan A4 önizleme + baskı için izole HTML doküman üretir. */
+function buildSheetDoc(kind: DocKind, list: Attendee[], ev: EventInfo, ngoName: string, logoUrl?: string) {
+  const styles = kind === 'badge' ? BADGE_STYLES : CERT_STYLES;
+  const page = kind === 'cert' ? '@page{size:A4 landscape;margin:14mm}' : '@page{size:A4;margin:10mm}';
+  const body = list.map((a) => (kind === 'badge' ? badgeCardHtml(a, ev, ngoName, logoUrl) : certHtml(a, ev, ngoName, logoUrl))).join('');
+  return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Inter,system-ui,sans-serif;background:#f2f2f7;color:#1c1c1e}
+    .sheet{padding:20px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-content:flex-start}
+    .empty{padding:80px 16px;text-align:center;color:#8e8e93;font:500 14px system-ui}
+    @media print{ body{background:#fff} .sheet{padding:0;gap:${kind === 'badge' ? '8px' : '0'}} }
+    ${page}
+    ${styles}
+  </style></head><body>
+  <div class="sheet">${body || '<div class="empty">Önizlemek için en az bir kişi seçin.</div>'}</div>
+  </body></html>`;
+}
+
+function BulkDocDialog({
+  kind, eventId, eventName, ngoName, logoUrl, label, icon,
+}: {
+  kind: DocKind; eventId: string; eventName: string; ngoName: string; logoUrl?: string;
+  label: string; icon: React.ReactNode;
+}) {
   const { user } = useUser();
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const run = async (eventId: string) => {
+  const [attendees, setAttendees] = useState<Attendee[]>([]);
+  const [ev, setEv] = useState<EventInfo>({});
+  const [sel, setSel] = useState<Set<number>>(new Set());
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
     if (!user) { toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' }); return; }
+    let cancelled = false;
     setLoading(true);
-    try {
-      const token = await user.getIdToken();
-      const { event, attendees } = await fetchAttendees(eventId, token);
-      if (attendees.length === 0) { toast({ title: 'Katılımcı yok', description: 'Bu etkinlikte henüz katılımcı bulunmuyor.' }); return; }
-      const { title, styles, body, share } = build(attendees, event);
-      const ok = openPrintWindow(title, styles, body, share);
-      if (!ok) toast({ variant: 'destructive', title: 'Pencere açılamadı', description: 'Tarayıcı açılır pencereyi engelledi; izin verin.' });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'Oluşturulamadı', description: e instanceof Error ? e.message : 'Tekrar deneyin.' });
-    } finally { setLoading(false); }
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const { event, attendees: att } = await fetchAttendees(eventId, token);
+        if (cancelled) return;
+        setEv(event);
+        setAttendees(att);
+        setSel(new Set(att.map((_, i) => i))); // varsayılan: hepsi seçili
+      } catch (e) {
+        if (!cancelled) toast({ variant: 'destructive', title: 'Alınamadı', description: e instanceof Error ? e.message : 'Tekrar deneyin.' });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [open, user, eventId, toast]);
+
+  const selectedList = useMemo(() => attendees.filter((_, i) => sel.has(i)), [attendees, sel]);
+  const previewHtml = useMemo(
+    () => buildSheetDoc(kind, selectedList, ev, ngoName, logoUrl),
+    [kind, selectedList, ev, ngoName, logoUrl],
+  );
+
+  const allSelected = attendees.length > 0 && sel.size === attendees.length;
+  const toggleAll = () => setSel(allSelected ? new Set() : new Set(attendees.map((_, i) => i)));
+  const toggle = (i: number) => setSel((prev) => { const n = new Set(prev); if (n.has(i)) n.delete(i); else n.add(i); return n; });
+
+  const handlePrint = () => {
+    const w = iframeRef.current?.contentWindow;
+    if (!w || selectedList.length === 0) return;
+    w.focus();
+    w.print();
   };
-  return { run, loading };
+
+  return (
+    <>
+      <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => setOpen(true)}>
+        {icon} {label}
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-5 pb-3 shrink-0">
+            <DialogTitle>{label} — A4 çıktı önizleme</DialogTitle>
+            <DialogDescription className="text-xs">
+              Soldan kişi seç (1 kişi veya tümü); sağda A4 önizlemesini gör, yazdır ya da PDF olarak kaydet.
+            </DialogDescription>
+          </DialogHeader>
+
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+          ) : attendees.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground px-6 text-center">
+              Bu etkinlikte henüz katılımcı yok.
+            </div>
+          ) : (
+            <div className="flex-1 min-h-0 flex flex-col sm:flex-row">
+              {/* Kişi seçimi */}
+              <div className="sm:w-60 shrink-0 border-b sm:border-b-0 sm:border-r overflow-y-auto p-3 space-y-0.5 max-h-40 sm:max-h-none">
+                <label className="flex items-center gap-2 text-sm font-semibold py-1.5 cursor-pointer">
+                  <Checkbox checked={allSelected} onCheckedChange={toggleAll} /> Tümünü seç ({attendees.length})
+                </label>
+                <div className="h-px bg-border my-1" />
+                {attendees.map((a, i) => (
+                  <label key={i} className="flex items-center gap-2 text-sm py-1 cursor-pointer">
+                    <Checkbox checked={sel.has(i)} onCheckedChange={() => toggle(i)} />
+                    <span className="truncate">{a.name || 'Katılımcı'}</span>
+                  </label>
+                ))}
+              </div>
+              {/* A4 önizleme (izole iframe) */}
+              <div className="flex-1 min-h-0 bg-muted/20">
+                <iframe ref={iframeRef} srcDoc={previewHtml} title={`${label} A4 önizleme`} className="w-full h-full border-0" />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="p-4 border-t shrink-0 gap-2 sm:justify-between">
+            <span className="text-xs text-muted-foreground self-center">{selectedList.length} / {attendees.length} seçili</span>
+            <Button onClick={handlePrint} disabled={selectedList.length === 0}>
+              <Printer className="h-4 w-4 mr-2" /> Yazdır / PDF olarak kaydet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
 
 export function EventBadgeCards({ eventId, eventName, ngoName, logoUrl }: { eventId: string; eventName: string; ngoName: string; logoUrl?: string }) {
-  const { run, loading } = useBulkDoc((att, ev) => ({
-    title: `Yaka Kartları — ${eventName}`,
-    styles: BADGE_STYLES,
-    body: att.map((a) => badgeCardHtml(a, ev, ngoName, logoUrl)).join(''),
-    share: `${eventName} · ${att.length} katılımcı yaka kartı`,
-  }));
   return (
-    <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" disabled={loading} onClick={() => run(eventId)}>
-      {loading ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <IdCard className="h-4 w-4 mr-1.5" />} Yaka Kartları
-    </Button>
+    <BulkDocDialog
+      kind="badge" eventId={eventId} eventName={eventName} ngoName={ngoName} logoUrl={logoUrl}
+      label="Yaka Kartları" icon={<IdCard className="h-4 w-4 mr-1.5" />}
+    />
   );
 }
 
 export function EventCertificates({ eventId, eventName, ngoName, logoUrl }: { eventId: string; eventName: string; ngoName: string; logoUrl?: string }) {
-  const { run, loading } = useBulkDoc((att, ev) => ({
-    title: `Sertifikalar — ${eventName}`,
-    styles: CERT_STYLES,
-    body: att.map((a) => certHtml(a, ev, ngoName, logoUrl)).join(''),
-    share: `${eventName} · ${att.length} katılım sertifikası`,
-  }));
   return (
-    <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" disabled={loading} onClick={() => run(eventId)}>
-      {loading ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Award className="h-4 w-4 mr-1.5" />} Sertifikalar
-    </Button>
+    <BulkDocDialog
+      kind="cert" eventId={eventId} eventName={eventName} ngoName={ngoName} logoUrl={logoUrl}
+      label="Sertifikalar" icon={<Award className="h-4 w-4 mr-1.5" />}
+    />
   );
 }

@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-02";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "37f2110b",
+    "date": "2026-07-02",
+    "subject": "fix(ngo-admin): kurum paneli veri sızıntıları — sadece aktif kuruma scope"
+  },
+  {
     "hash": "80464ac0",
     "date": "2026-07-02",
     "subject": "fix(events): lucide importunda duplicate 'Calendar' kaldır (webpack build kırılması)"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "9f26d901",
     "date": "2026-07-01",
     "subject": "feat(header): QR butonu cihazlar arası 'diğer cihazda aç' (adaptif)"
-  },
-  {
-    "hash": "2e09df47",
-    "date": "2026-07-01",
-    "subject": "android: versionCode 32→33, versionName 2.0.9 (Play publish — 32 canlıyla çakışıyordu)"
   }
 ];
