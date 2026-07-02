@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-02";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "0d894e91",
+    "date": "2026-07-02",
+    "subject": "feat(ngo-admin): etkinlik & gönüllülük kartlarına İncele ikonu (sağ üst → public sayfa yeni sekme)"
+  },
+  {
     "hash": "963b2c65",
     "date": "2026-07-02",
     "subject": "feat(messaging): Yöneticiye sor butonu (etkinlik/gönüllülük→kuruma DM) + aktivite log mesajlaşma tabı"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "a223aa37",
     "date": "2026-07-02",
     "subject": "Merge: brands-all brandDirectory (370 markaya domain/logo)"
-  },
-  {
-    "hash": "8c84c7cc",
-    "date": "2026-07-02",
-    "subject": "feat(market): brands-all brandDirectory kaynağını okur"
   }
 ];

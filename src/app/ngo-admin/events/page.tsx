@@ -27,6 +27,7 @@ import {
     Pencil,
     MapPin,
     Eye,
+    Megaphone,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -646,6 +647,9 @@ export default function EventManagementPage() {
                                                 />
                                                 <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => openEdit(event)}>
                                                     <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
+                                                </Button>
+                                                <Button asChild variant="outline" size="sm" className="rounded-xl w-full sm:w-auto border-blue-500/30 text-blue-600 hover:bg-blue-500/10 hover:text-blue-700">
+                                                    <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)"><Megaphone className="h-4 w-4 mr-1.5" /> Google'da Ücretsiz Tanıt</a>
                                                 </Button>
                                                 <EventCheckinQR eventId={event.id} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
                                                 <EventCompleteButton eventId={event.id} />
