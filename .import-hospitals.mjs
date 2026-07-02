@@ -41,7 +41,7 @@ out center tags;`;
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': 'application/json',
-            'User-Agent': 'HangelImportBot/1.0 (+https://hangel.org.tr)',
+            'User-Agent': 'HangelImportBot/1.0 (+https://hangel.org)',
         },
         body: `data=${encodeURIComponent(query)}`,
     });

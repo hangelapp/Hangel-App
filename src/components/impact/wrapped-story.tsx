@@ -684,7 +684,7 @@ function drawScene(
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.font = '600 30px ui-sans-serif, system-ui, sans-serif';
-  ctx.fillText('hangel.org.tr · ' + data.periodLabel, w / 2, h - 90);
+  ctx.fillText('hangel.org · ' + data.periodLabel, w / 2, h - 90);
   ctx.restore();
 }
 

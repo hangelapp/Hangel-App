@@ -17,8 +17,8 @@ import {
   Upload,
   CheckCircle2,
 } from 'lucide-react';
-import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
+import { LogoQr } from '@/components/shared/logo-qr';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -76,6 +76,8 @@ interface EntityDoc {
   id: string;
   name?: string;
   shortLink?: string;
+  avatarUrl?: string;
+  logoUrl?: string;
 }
 
 export default function QrPage() {
@@ -83,6 +85,7 @@ export default function QrPage() {
   const { user: authUser } = useUser();
   const { t } = useTranslation();
   const [origin, setOrigin] = useState('');
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') setOrigin(window.location.origin);
@@ -113,12 +116,12 @@ export default function QrPage() {
     return `/clubs/profile/${activeEntity.id}`;
   }, [activeEntity]);
 
-  // Kısa link tanımlıysa profil bağlantısı odur (hangel.org.tr/s/{code}); değilse uzun yol.
+  // Kısa link tanımlıysa profil bağlantısı odur (hangel.org/s/{code}); değilse uzun yol.
   const profileUrl = origin
     ? (activeDoc?.shortLink ? `${origin}/s/${activeDoc.shortLink}` : (profilePath ? `${origin}${profilePath}` : ''))
     : '';
   // Davet URL'i: yeni kullanıcı kayıt akışına otomatik aksiyon için ref param ekliyoruz.
-  // Örn: https://hangel.org.tr/login/selection?action=register&ref=ngo:abc123
+  // Örn: https://hangel.org/login/selection?action=register&ref=ngo:abc123
   // login/selection sayfası bu paramı okuyup yeni kullanıcı dokümanına supportedNgos/joinedClubs/followedBrands yazar.
   const refParam = activeEntity ? `${activeEntity.kind}:${activeEntity.id}` : '';
   const inviteUrl = origin && refParam
@@ -426,9 +429,15 @@ export default function QrPage() {
           <CardDescription>{entityTypeLabel} {t('ngo_admin_qr.cardSubtitleSuffix')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">
-          {qrCodeUrl && (
-            <div className="bg-white p-4 rounded-lg">
-              <Image src={qrCodeUrl} alt={`${activeEntity.name} ${t('ngo_admin_qr.qrAltSuffix')}`} width={200} height={200} unoptimized />
+          {profileUrl && (
+            <div className="bg-white p-4 rounded-2xl shadow-sm">
+              <LogoQr
+                value={profileUrl}
+                logoUrl={activeDoc?.logoUrl || activeDoc?.avatarUrl}
+                size={200}
+                onDataUrl={setQrDataUrl}
+                className="rounded-lg"
+              />
             </div>
           )}
 
@@ -458,8 +467,8 @@ export default function QrPage() {
 
           <div className="w-full space-y-2">
             <div className="grid grid-cols-1 gap-2">
-              <Button variant="outline" asChild disabled={!qrCodeUrl}>
-                <a href={qrCodeUrl} download={`${activeEntity.id}-qr-kodu.png`}>
+              <Button variant="outline" asChild disabled={!qrDataUrl && !qrCodeUrl}>
+                <a href={qrDataUrl || qrCodeUrl} download={`${activeEntity.id}-qr-kodu.png`}>
                   <Download className="mr-2 h-4 w-4" />
                   {t('ngo_admin_qr.downloadQr')}
                 </a>

@@ -60,11 +60,11 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { label: "App Store",       href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // iOS — canlı
         { label: "Google Play",     href: "https://play.google.com/store/apps/details?id=com.hangel.app" },   // canlı
         { label: "AppGallery",      href: "https://appgallery.huawei.com/app/C113000000", status: 'yakında' }, // Huawei
-        { label: "Apple Watch",     href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // canlı (iOS app ile)
-        { label: "Mac App",         href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // canlı (Apple Silicon)
-        { label: "Apple Vision",    href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // canlı (Vision Pro, iPad uyumlu)
-        { label: "Microsoft Store", href: "https://hangel.org.tr/", status: 'PWA' },                          // Web zaten PWA
-        { label: "Chrome Uzantısı", href: "https://hangel.org.tr/", status: 'yakında' },                       // Chrome Web Store pending
+        { label: "Apple Watch",     href: "https://apps.apple.com/tr/app/hangel/id6664058822", status: 'beta' },              // beta — watchOS target (Faz 4)
+        { label: "Mac App",         href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // canlı — Designed for iPad (macOS 11+)
+        { label: "Apple Vision",    href: "https://apps.apple.com/tr/app/hangel/id6664058822", status: 'yakında' },              // yakında — visionOS target yok
+        { label: "Microsoft Store", href: "https://hangel.org/", status: 'PWA' },                          // Web zaten PWA
+        { label: "Chrome Uzantısı", href: "https://hangel.org/", status: 'yakında' },                       // Chrome Web Store pending
     ];
     
     const socialLinks = [

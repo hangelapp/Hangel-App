@@ -110,8 +110,8 @@ hangel'de yalnız değilsin.
 
 
 İletişim & destek: destek@hangel.org
-Web: hangel.org.tr
-Gizlilik: hangel.org.tr/privacy
+Web: hangel.org
+Gizlilik: hangel.org/privacy
 ```
 
 ---
@@ -182,8 +182,8 @@ You are not alone with hangel.
 
 
 Contact & support: support@hangel.org
-Web: hangel.org.tr
-Privacy: hangel.org.tr/privacy
+Web: hangel.org
+Privacy: hangel.org/privacy
 ```
 
 ---
@@ -240,9 +240,9 @@ Thank you for your social impact 💛
 
 | Field | Value |
 |---|---|
-| **Support URL** | https://hangel.org.tr/support |
-| **Marketing URL** | https://hangel.org.tr |
-| **Privacy Policy URL** | https://hangel.org.tr/privacy |
+| **Support URL** | https://hangel.org/support |
+| **Marketing URL** | https://hangel.org |
+| **Privacy Policy URL** | https://hangel.org/privacy |
 
 ---
 
@@ -329,7 +329,7 @@ APPLE WATCH
 
 APP CLIP
 - QR kod taranınca app yüklemeden açılır
-- Sample QR: https://hangel.org.tr/clip/event/sample
+- Sample QR: https://hangel.org/clip/event/sample
 
 CRITICAL ALERTS
 - Apple'a 4XVK68665U numaralı Critical Alerts başvurusu gönderildi (≤2026-06-29)
@@ -338,11 +338,11 @@ CRITICAL ALERTS
 
 GİZLİLİK
 - KVKK uyumlu, kişisel veri Türkiye'de saklanır
-- Privacy Policy: hangel.org.tr/privacy
+- Privacy Policy: hangel.org/privacy
 
 İletişim: ismailhilmi@hangel.org
 Destek: destek@hangel.org
-Web: hangel.org.tr
+Web: hangel.org
 ```
 
 ---
@@ -410,9 +410,9 @@ Apple öneriyor: **Lifestyle** birincil, **Social Networking** ikincil — gön�
 - [ ] Promotional text TR + EN
 - [ ] Screenshots tüm cihaz boyutlarında (10 SS x 4-5 cihaz = ~40 SS)
 - [ ] App Icon 1024x1024 (no transparency)
-- [ ] Support URL açılıyor: hangel.org.tr/support
-- [ ] Privacy URL açılıyor: hangel.org.tr/privacy
-- [ ] Marketing URL açılıyor: hangel.org.tr
+- [ ] Support URL açılıyor: hangel.org/support
+- [ ] Privacy URL açılıyor: hangel.org/privacy
+- [ ] Marketing URL açılıyor: hangel.org
 - [ ] Demo account test edildi
 - [ ] Reviewer notes (Türkçe + İngilizce mantıklı)
 - [ ] Critical Alerts entitlement (gelmezse yine submit edebilirsin)

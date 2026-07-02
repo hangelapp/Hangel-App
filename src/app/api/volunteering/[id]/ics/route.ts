@@ -44,13 +44,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!start) return new Response('Gönüllülük tarihi yok', { status: 422 });
   const end = parseLocal(v.dates?.eventEnd) ?? new Date(start.getTime() + 2 * 3600_000);
   const loc = [v.location?.address, v.location?.district, v.location?.city].filter(Boolean).join(', ');
-  const url = `https://hangel.org.tr/volunteering/${volunteeringId}`;
+  const url = `https://hangel.org/volunteering/${volunteeringId}`;
   const desc = `${v.description || ''}\nDüzenleyen: ${v.organizer || 'hangel'}\n${url}`.trim();
 
   const ics = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//hangel//TR//', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:hangel-vol-${volunteeringId}@hangel.org.tr`,
+    `UID:hangel-vol-${volunteeringId}@hangel.org`,
     `DTSTAMP:${fmtIcs(new Date())}`,
     `DTSTART:${fmtIcs(start)}`,
     `DTEND:${fmtIcs(end)}`,

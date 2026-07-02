@@ -58,7 +58,7 @@ export async function readNdefUrl(): Promise<ReadResult> {
 export async function writeNdefUrl(url: string): Promise<{ ok: boolean; errorMessage?: string }> {
   if (!Capacitor.isNativePlatform()) return { ok: false, errorMessage: 'Sadece mobil uygulamada.' };
   if (!/^https:\/\/hangel\.org\.tr\//i.test(url)) {
-    return { ok: false, errorMessage: 'Yalnız hangel.org.tr URL\'leri yazılabilir.' };
+    return { ok: false, errorMessage: 'Yalnız hangel.org URL\'leri yazılabilir.' };
   }
   try {
     // capgo write API NDEF URI record formatı bekler. Mesaj formatı plugin'e

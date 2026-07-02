@@ -109,7 +109,7 @@ export default function AutoTranslate() {
     const target = GTRANSLATE_LANG_MAP[language] || 'tr';
     const isTurkish = target === 'tr';
     const host = typeof window !== 'undefined' ? window.location.hostname : '';
-    const baseDomain = host.split('.').slice(-2).join('.'); // hangel.org.tr -> org.tr (kabul edilebilir; alternatif: tam host)
+    const baseDomain = host.split('.').slice(-2).join('.'); // örn. {slug}.hangel.org -> hangel.org (cookie base domain, tüm alt alanlarda geçerli)
 
     // Mevcut cookie değerini oku
     const current = document.cookie.split('; ').find(r => r.startsWith('googtrans='))?.split('=')[1];

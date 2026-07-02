@@ -157,7 +157,7 @@ export default function TimelinePage() {
   const handleShare = async (post: Post) => {
     // TODO(permalink): replace once /posts/[id] permalink view ships.
     // For now we deep-link back to the timeline anchor for this card.
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org.tr';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
     const url = `${origin}/timeline#post-${post.id}`;
     const shareData = { title: post.author?.name || 'hangel', text: post.content?.slice(0, 120) || '', url };
     try {

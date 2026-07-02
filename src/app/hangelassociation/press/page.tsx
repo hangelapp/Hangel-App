@@ -66,7 +66,7 @@ const APP_RELEASES: ReadonlyArray<PressRelease> = [
             'Uygulama; tasarımdan yazılıma, çeviriden hukuki danışmanlığa kadar onlarca yetenek alanında gönüllüyü doğru projeyle eşleştiriyor. Akıllı eşleştirme motoru, hem gönüllünün hem de kurumun zamanını verimli kullanmasını sağlıyor.',
             'hangel imece, lansman haftasında binlerce gönüllüyü yüzlerce sivil toplum projesiyle buluşturmayı hedefliyor.',
         ],
-        contact: 'Basın İletişim: basin@hangel.org · hangel.org.tr',
+        contact: 'Basın İletişim: basin@hangel.org · hangel.org',
     },
     {
         id: 'app-bagis-model',
@@ -78,7 +78,7 @@ const APP_RELEASES: ReadonlyArray<PressRelease> = [
             'hangel uygulaması, kullanıcıların günlük alışverişlerini doğrudan sosyal fayda üreten bağışlara dönüştüren yeni "bağış" modelini duyurdu. Anlaşmalı markalardan yapılan her alışveriş, kullanıcının seçtiği sosyal projeye katkıya dönüşüyor.',
             'Model, şeffaf bağış takibi sunarak kullanıcıların yarattıkları etkiyi gerçek zamanlı görmesine olanak tanıyor. Her bağışın hangi projeye, ne kadar katkı sağladığı uygulama içinde izlenebiliyor.',
         ],
-        contact: 'Basın İletişim: basin@hangel.org · hangel.org.tr',
+        contact: 'Basın İletişim: basin@hangel.org · hangel.org',
     },
 ];
 
@@ -94,7 +94,7 @@ const DERNEK_RELEASES: ReadonlyArray<PressRelease> = [
             'hangel Derneği, toplumsal sorunlara yenilikçi çözümler geliştirmek amacıyla Sosyal İnovasyon Merkezi’ni hizmete açtı. Merkez; sosyal girişimcileri, akademisyenleri ve gönüllüleri ortak projelerde bir araya getiriyor.',
             'Merkez bünyesinde yürütülecek programlar, fikir aşamasındaki sosyal projeleri uygulanabilir modellere dönüştürmeyi hedefliyor. İlk dönemde mentorluk, atölye ve saha desteği sağlanacak.',
         ],
-        contact: 'Basın İletişim: basin@hangel.org · hangel.org.tr',
+        contact: 'Basın İletişim: basin@hangel.org · hangel.org',
     },
     {
         id: 'dernek-etki-envanteri',
@@ -106,7 +106,7 @@ const DERNEK_RELEASES: ReadonlyArray<PressRelease> = [
             'hangel Derneği, sosyal etki verilerini derleyen ve envanterleyen "Sosyal Etki Envanteri" çalışmasının ilk raporunu kamuoyuyla paylaştı. Rapor, sivil toplum alanında ölçülebilir veri ihtiyacına yanıt veriyor.',
             'Çalışma; gönüllülük, bağış ve proje etkisini standart göstergelerle ortaya koyarak karar vericilere ve sivil topluma şeffaf bir referans sunuyor.',
         ],
-        contact: 'Basın İletişim: basin@hangel.org · hangel.org.tr',
+        contact: 'Basın İletişim: basin@hangel.org · hangel.org',
     },
 ];
 

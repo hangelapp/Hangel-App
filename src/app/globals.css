@@ -239,9 +239,15 @@
        + iOS momentum kaydırma. */
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
+    /* Global yatay taşma koruması: geniş bir öğe sağa taşarsa yatay kaydırma
+       oluşmaz (mobil + web). `clip`, `hidden`'dan farklı olarak position:sticky'yi
+       BOZMAZ (Safari 16+/Chrome 90+/WebView 17+). İstemli yatay kaydırma gereken
+       yerler kendi `overflow-x-auto` sarmalayıcısında çalışmaya devam eder. */
+    overflow-x: clip;
   }
   html {
     overscroll-behavior-y: contain;
+    overflow-x: clip;
   }
 }
 

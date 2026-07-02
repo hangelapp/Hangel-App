@@ -30,7 +30,7 @@ export function PublicContract({ slug }: { slug: string }) {
       <hr className="my-10 border-border/60" />
       <p className="text-xs text-muted-foreground leading-relaxed">
         hangel — Sosyal etki platformu ·{' '}
-        <a href="https://hangel.org.tr" className="hover:underline">hangel.org.tr</a> ·{' '}
+        <a href="https://hangel.org" className="hover:underline">hangel.org</a> ·{' '}
         <a href="mailto:privacy@hangel.org" className="hover:underline">privacy@hangel.org</a> ·{' '}
         <a href="mailto:kvkk@hangel.org" className="hover:underline">kvkk@hangel.org</a>
       </p>

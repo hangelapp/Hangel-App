@@ -1,7 +1,7 @@
 // ClipAPI — Hangel REST endpoints'i için minimal HTTP client.
 //
 // App Clip 15 MB sınırı nedeniyle Firebase SDK kullanılmaz. Bunun yerine
-// hangel.org.tr backend'inin REST endpoint'leri kullanılır:
+// hangel.org backend'inin REST endpoint'leri kullanılır:
 //
 //   GET  /api/clip/event/{id}     → ClipEventInfo (public, anonim)
 //   POST /api/clip/checkin        → 200 OK / 429 rate-limited
@@ -30,7 +30,7 @@ enum ClipAPIError: LocalizedError {
 
 enum ClipAPI {
     /// Production base URL. App Clip universal link domain ile aynı.
-    static let baseURL = URL(string: "https://hangel.org.tr")!
+    static let baseURL = URL(string: "https://hangel.org")!
 
     static func fetchEvent(id: String) async throws -> ClipEventInfo {
         let url = baseURL.appendingPathComponent("api/clip/event").appendingPathComponent(id)

@@ -252,7 +252,7 @@ async function generatePressReleasePdf(release: typeof PRESS_RELEASES[number]) {
     // Footer
     pdf.setFontSize(8);
     pdf.setTextColor(150, 150, 150);
-    pdf.text(`hangel.org.tr · ${PRESS_EMAIL}`, pageW / 2, pageH - 12, { align: 'center' });
+    pdf.text(`hangel.org · ${PRESS_EMAIL}`, pageW / 2, pageH - 12, { align: 'center' });
 
     const filename = `hangel-bulten-${release.date.replace(/\./g, '-')}-${release.title.slice(0, 40).replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`;
     pdf.save(filename);

@@ -3,13 +3,13 @@
  *
  * STK admin'leri etkinlik girişine, bağış masasına veya görev doğrulamasına
  * konulacak NFC etiketleri tanımlar. Etiketin URL'i Universal Link formatında
- * (`https://hangel.org.tr/...`) üretilir; iPhone NFC okuduğunda doğrudan app
+ * (`https://hangel.org/...`) üretilir; iPhone NFC okuduğunda doğrudan app
  * açılır (Faz 0 AASA).
  *
  * Tag tipleri ve hedef URL'leri:
- *  - event-checkin → https://hangel.org.tr/checkin/{eventId}
- *  - donate        → https://hangel.org.tr/donate/{ngoId}
- *  - task-verify   → https://hangel.org.tr/task/{taskId}/verify
+ *  - event-checkin → https://hangel.org/checkin/{eventId}
+ *  - donate        → https://hangel.org/donate/{ngoId}
+ *  - task-verify   → https://hangel.org/task/{taskId}/verify
  *
  * Etiketin fiziksel yazımı user tarafında (NFC writer app veya HangelNfcPlugin
  * üzerinden). Bu endpoint sadece "tag tanımını" oluşturur/listeler/siler.
@@ -22,7 +22,7 @@ import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
 
-const PUBLIC_ORIGIN = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hangel.org.tr';
+const PUBLIC_ORIGIN = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hangel.org';
 
 const PostBodySchema = z.object({
   type: z.enum(['event-checkin', 'donate', 'task-verify']),

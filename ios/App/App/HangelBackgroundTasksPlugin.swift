@@ -78,7 +78,7 @@ public class HangelBackgroundTasksPlugin: CAPPlugin, CAPBridgedPlugin {
         // Trigger WebView'da background hook (Capacitor "appStateChange" event yok,
         // bunun yerine custom event dispatcher kullanılabilir). MVP: sadece HTTP GET
         // ile feed endpoint'ini sıcak tut, sunucu tarafı geofence match yapar.
-        let url = URL(string: "https://hangel.org.tr/api/users/me/disaster-alerts?bg=1")!
+        let url = URL(string: "https://hangel.org/api/users/me/disaster-alerts?bg=1")!
         let dataTask = URLSession.shared.dataTask(with: url) { _, _, error in
             task.setTaskCompleted(success: error == nil)
         }
@@ -89,7 +89,7 @@ public class HangelBackgroundTasksPlugin: CAPPlugin, CAPBridgedPlugin {
         try? scheduleNextFeedRefresh()
         task.expirationHandler = { URLSession.shared.invalidateAndCancel() }
 
-        let url = URL(string: "https://hangel.org.tr/api/users/me/blood-feed?bg=1")!
+        let url = URL(string: "https://hangel.org/api/users/me/blood-feed?bg=1")!
         let dataTask = URLSession.shared.dataTask(with: url) { _, _, error in
             task.setTaskCompleted(success: error == nil)
         }

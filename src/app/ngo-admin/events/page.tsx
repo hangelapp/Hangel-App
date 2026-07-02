@@ -637,7 +637,7 @@ export default function EventManagementPage() {
                                                 <Button variant="outline" size="sm" onClick={() => openEdit(event)}>
                                                     <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
                                                 </Button>
-                                                <EventCheckinQR eventId={event.id} />
+                                                <EventCheckinQR eventId={event.id} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
                                                 <EventCompleteButton eventId={event.id} />
                                                 <EventAttendees eventId={event.id} />
                                             </div>

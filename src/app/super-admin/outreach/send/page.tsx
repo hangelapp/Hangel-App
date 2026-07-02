@@ -46,8 +46,8 @@ export default function OutreachSendPage() {
   const [subject, setSubject] = useState('hangel — toplumsal etki platformumuzla tanışmak ister misiniz?');
   const [body, setBody] = useState(
     channel === 'email'
-      ? `Merhaba {{name}} ekibi,\n\nhangel.org Türkiye'nin en büyük üniversite öğrencisi ve sosyal etki platformudur. Gönüllüler her alışverişlerinde kazanılan komisyonu seçtikleri STK'lara bağışlıyor.\n\nKuruluşunuzla tanışmak ve hangel ekosistemine davet etmek istiyoruz. Görüşmek için merhaba@hangel.org adresinden bize ulaşabilirsiniz.\n\nİyi günler dileriz,\nhangel ekibi\nhttps://hangel.org.tr`
-      : `hangel — Türkiye'nin sosyal etki platformu. Detay: hangel.org.tr/about`,
+      ? `Merhaba {{name}} ekibi,\n\nhangel.org Türkiye'nin en büyük üniversite öğrencisi ve sosyal etki platformudur. Gönüllüler her alışverişlerinde kazanılan komisyonu seçtikleri STK'lara bağışlıyor.\n\nKuruluşunuzla tanışmak ve hangel ekosistemine davet etmek istiyoruz. Görüşmek için merhaba@hangel.org adresinden bize ulaşabilirsiniz.\n\nİyi günler dileriz,\nhangel ekibi\nhttps://hangel.org`
+      : `hangel — Türkiye'nin sosyal etki platformu. Detay: hangel.org/about`,
   );
   const [fromEmail, setFromEmail] = useState('merhaba@hangel.org');
   const [fromName, setFromName] = useState('hangel');

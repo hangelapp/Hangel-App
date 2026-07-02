@@ -1,7 +1,7 @@
 /**
  * scripts/console-errors-scan.ts
  *
- * Hangel.org.tr canlı sayfalarda console error/warning topla.
+ * hangel.org canlı sayfalarda console error/warning topla.
  * Public sayfaları (login gerektirmeyen) tarar, runtime hatalarını listeler.
  */
 import { chromium, type ConsoleMessage } from 'playwright';
@@ -14,14 +14,14 @@ interface Issue {
 }
 
 const PAGES = [
-  'https://hangel.org.tr/',
-  'https://hangel.org.tr/about',
-  'https://hangel.org.tr/app',
-  'https://hangel.org.tr/social-impact',
-  'https://hangel.org.tr/association/about',
-  'https://hangel.org.tr/press',
-  'https://hangel.org.tr/login/selection',
-  'https://hangel.org.tr/brand/qr',
+  'https://hangel.org/',
+  'https://hangel.org/about',
+  'https://hangel.org/app',
+  'https://hangel.org/social-impact',
+  'https://hangel.org/association/about',
+  'https://hangel.org/press',
+  'https://hangel.org/login/selection',
+  'https://hangel.org/brand/qr',
 ];
 
 // Bilinen yarar/zararsız uyarılar — filtrelenir, raporu kirletmesin

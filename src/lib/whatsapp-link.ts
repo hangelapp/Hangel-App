@@ -3,7 +3,7 @@
  *
  * Template: hangel_welcome_link
  * Body: "Hoş geldin {{1}}! ..." (name)
- * URL button: https://hangel.org.tr/auth/wa?t={{1}} (token)
+ * URL button: https://hangel.org/auth/wa?t={{1}} (token)
  *
  * Env vars: WHATSAPP_ACCESS_TOKEN, WHATSAPP_APP_SECRET, WHATSAPP_PHONE_NUMBER_ID
  */

@@ -170,7 +170,7 @@ export function WrappedCard({ data }: { data: WrappedCardData }) {
 
             {/* Footer */}
             <div className="mt-auto pt-4 text-center">
-              <p className="text-xs font-medium tracking-[0.25em] text-white/80">hangel.org.tr</p>
+              <p className="text-xs font-medium tracking-[0.25em] text-white/80">hangel.org</p>
             </div>
           </div>
         </div>

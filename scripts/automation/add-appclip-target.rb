@@ -2,7 +2,7 @@
 # add-appclip-target.rb — HangelAppClip target'ını App.xcodeproj'a idempotent ekler.
 #
 # App Clip = parent app'ten ayrı, küçük (≤15 MB) bağımsız bir SwiftUI mini-app.
-# Kullanıcı App Clip Experience URL'ini (https://hangel.org.tr/clip/event/{id})
+# Kullanıcı App Clip Experience URL'ini (https://hangel.org/clip/event/{id})
 # QR / NFC / Safari ile açtığında iOS App Clip Card açar; clip indirilir ve
 # tek seferlik check-in akışı çalıştırılır.
 #
@@ -204,7 +204,7 @@ puts "  1. Apple Developer Console'da Identifier oluştur: #{CLIP_BUNDLE_ID}"
 puts "     → 'Parent App ID' = #{APP_BUNDLE_ID}"
 puts "     → Capabilities: Associated Domains, App Groups, App Clips"
 puts "  2. App Store Connect → My Apps → Hangel → App Clips → Advanced Experiences:"
-puts "     URL: https://hangel.org.tr/clip/event/* (Action: Show)"
+puts "     URL: https://hangel.org/clip/event/* (Action: Show)"
 puts "  3. Backend: /api/clip/event/{id} ve /api/clip/checkin endpoint'leri ekle"
 puts "  4. .well-known/apple-app-site-association'a appclips entry ekle:"
 puts "     { \"appclips\": { \"apps\": [\"NKZNY8NU8S.#{CLIP_BUNDLE_ID}\"] } }"

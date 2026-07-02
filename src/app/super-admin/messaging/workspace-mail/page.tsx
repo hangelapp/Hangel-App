@@ -103,7 +103,7 @@ export default function PlatformWorkspaceMailPage() {
     } catch { /* sessiz */ }
   }, [user]);
 
-  const defaultSig = ['hangel', 'hangel.org.tr'].join('\n');
+  const defaultSig = ['hangel', 'hangel.org'].join('\n');
   const startEditSig = () => { if (!sigText.trim()) setSigText(defaultSig); setSigEditing(true); };
   const saveSig = async () => {
     setSigSaving(true);

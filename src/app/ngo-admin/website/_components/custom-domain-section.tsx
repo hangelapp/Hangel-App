@@ -116,7 +116,7 @@ export function CustomDomainSection({ ngoId, initial }: { ngoId: string; initial
       )}
 
       <p className="text-[11px] text-muted-foreground">
-        Alternatif: kendi alan adın olmadan da siten <span className="font-mono">{'{kısa-link}'}.hangel.org.tr</span> adresinde yayında olur.
+        Alternatif: kendi alan adın olmadan da siten <span className="font-mono">{'{kısa-link}'}.hangel.org</span> adresinde yayında olur.
       </p>
     </div>
   );

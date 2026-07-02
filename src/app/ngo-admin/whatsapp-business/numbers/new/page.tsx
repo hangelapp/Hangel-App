@@ -41,7 +41,7 @@ import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { cn } from '@/lib/utils';
 
 const HANGEL_ORANGE = '#f34723';
-const WEBHOOK_URL = 'https://hangel.org.tr/api/integrations/whatsapp/webhook';
+const WEBHOOK_URL = 'https://hangel.org/api/integrations/whatsapp/webhook';
 const WEBHOOK_VERIFY_TOKEN = 'hangel-waba-verify-2026';
 
 const STEPS = [

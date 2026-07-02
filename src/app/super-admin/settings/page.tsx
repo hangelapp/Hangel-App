@@ -207,7 +207,7 @@ const SETTINGS_SECTIONS = [
     description: 'N-Kolay (mevcut) + İyzico/Stripe/PayTR alternatifleri, komisyon ayarları, A/B test.' },
   { id: 'asset-links', label: 'Digital Asset Links', icon: Link2, color: 'bg-sky-500',
     href: '/super-admin/settings/asset-links',
-    description: 'Android Play Store ↔ hangel.org.tr ilişkilendirmesi (assetlinks.json).' },
+    description: 'Android Play Store ↔ hangel.org ilişkilendirmesi (assetlinks.json).' },
   { id: 'backup-export', label: 'Yedekleme & Dışa Aktarma', icon: DatabaseBackup, color: 'bg-orange-600',
     href: '/super-admin/settings/backup-export',
     description: 'Firestore + Storage + tüm hangel altyapısının yedeği — tek butonla indir.' },

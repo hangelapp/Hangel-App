@@ -34,7 +34,7 @@ async function geocode(city: string, district?: string): Promise<{ lat: number; 
   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`;
   try {
     const r = await fetch(url, {
-      headers: { 'User-Agent': 'hangel.org.tr (weather lookup)' },
+      headers: { 'User-Agent': 'hangel.org (weather lookup)' },
       next: { revalidate: 86400 },
     });
     if (!r.ok) return null;

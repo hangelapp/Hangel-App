@@ -19,7 +19,7 @@ import { defineSecret } from 'firebase-functions/params';
 
 const REGION = 'europe-west1';
 const TIMEZONE = 'Europe/Istanbul';
-const APP_URL = 'https://hangel.org.tr';
+const APP_URL = 'https://hangel.org';
 const MESSAGING_WORKER_KEY = defineSecret('MESSAGING_WORKER_KEY');
 
 export const messagingWorkerTick = onSchedule(

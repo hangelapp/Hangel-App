@@ -3,7 +3,7 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 
 // Public kütük kısa-link çözümleyici (sunucu bileşeni).
-// hangel.org.tr/<kütükNo> bağlantısı bu /k/<kütükNo> rotasına gelir;
+// hangel.org/<kütükNo> bağlantısı bu /k/<kütükNo> rotasına gelir;
 // `kutukNo` alanı eşleşen STK'nın profiline (/ngos/<id>) yönlendirir.
 // Bilinmeyen kütük → not-found. Admin SDK ile okunduğu için Firestore
 // kurallarından bağımsızdır ve istemciye ham veri sızdırmaz.

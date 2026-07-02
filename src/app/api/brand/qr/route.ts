@@ -2,10 +2,10 @@
  * GET /api/brand/qr
  *
  * hangel branded QR code generator — telefon kamerasına gösterildiğinde
- * native QR tarayıcısı hedef URL'i açar (hangel.org.tr varsayılan).
+ * native QR tarayıcısı hedef URL'i açar (hangel.org varsayılan).
  *
  * Query parametreleri:
- *   url       — hedef URL (default: https://hangel.org.tr)
+ *   url       — hedef URL (default: https://hangel.org)
  *   size      — kenar uzunluğu px (default: 512, min 256, max 2048)
  *   format    — png | svg (default: png)
  *   fg        — foreground hex (default: hangel orange #f34723)
@@ -14,13 +14,13 @@
  *   ec        — error correction L|M|Q|H (default: H — center logo için H gerekli)
  *
  * Örnekler:
- *   /api/brand/qr                                      → 512px hangel.org.tr PNG
- *   /api/brand/qr?url=https://hangel.org.tr/etki&size=1024
+ *   /api/brand/qr                                      → 512px hangel.org PNG
+ *   /api/brand/qr?url=https://hangel.org/etki&size=1024
  *   /api/brand/qr?logo=0&fg=000000                     → klasik siyah/beyaz
  *   /api/brand/qr?format=svg                           → vektör (ölçeklenebilir)
  *
  * Edge cases:
- *   - URL boşsa fallback hangel.org.tr
+ *   - URL boşsa fallback hangel.org
  *   - Logo H seviyesinde error correction ile center'a yerleştirilir (≤%30 alan)
  *   - Cache-Control: 1 saat (statik branded asset)
  */
@@ -31,7 +31,7 @@ import sharp from 'sharp';
 
 export const runtime = 'nodejs';
 
-const DEFAULT_URL = 'https://hangel.org.tr';
+const DEFAULT_URL = 'https://hangel.org';
 const HANGEL_ORANGE = '#f34723';
 const HANGEL_NAVY = '#042654';
 

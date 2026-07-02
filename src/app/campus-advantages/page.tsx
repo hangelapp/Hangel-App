@@ -134,7 +134,7 @@ const TR = {
   // Beta / Yakında
   webTitle: 'Ücretsiz Kulüp Web Sitesi',
   webDesc:
-    'Markana özel, içeriğin değiştikçe otomatik güncellenen bir web sitesi (*.hangel.org.tr). Erişim kademeli olarak açılıyor.',
+    'Markana özel, içeriğin değiştikçe otomatik güncellenen bir web sitesi (*.hangel.org). Erişim kademeli olarak açılıyor.',
   webBadge: { kind: 'beta' as const },
   visibilityTitle: 'Görünürlük & Reklam Desteği',
   visibilityDesc:
@@ -231,7 +231,7 @@ const EN: typeof TR = {
 
   webTitle: 'Free Club Website',
   webDesc:
-    'A brand-specific website that updates automatically as your content changes (*.hangel.org.tr). Access is rolling out gradually.',
+    'A brand-specific website that updates automatically as your content changes (*.hangel.org). Access is rolling out gradually.',
   webBadge: { kind: 'beta' as const },
   visibilityTitle: 'Visibility & Promotion Support',
   visibilityDesc:

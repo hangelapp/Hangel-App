@@ -288,16 +288,20 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
   // otherwise we fall back, which keeps single-org admins safe.
   const selection = urlSelection || storedSelection;
 
-  const isSuperAdmin = userData?.role === 'super-admin';
-
   const active = useMemo<{ id: string | null; kind: EntityKind | null; type: EntityType | null }>(() => {
+    // Trust an explicit selection (deep link / landing click / switcher) whenever
+    // it carries a valid kind. Firestore rules are the real access gate, so we
+    // don't second-guess it against `managedList` here.
+    //
+    // BUG FIX: the old code only trusted the selection when it was already in
+    // `managedList`; otherwise it fell back to the FIRST org of `fallbackKind` —
+    // which could be a DIFFERENT entity of a DIFFERENT kind (e.g. clicking a
+    // dernek loaded the first brand, "gant"). `managedList` is incomplete for
+    // admins who manage an org via invitation / co-admin rather than a direct
+    // adminUserId match, so legitimate selections were being silently discarded.
     if (selection) {
       const selKind = typeToKind(selection.type);
-      const inList = managedList.some((o) => o.id === selection.id && o.kind === selKind);
-      // Trust the selection if it's in the managed list, OR if the list hasn't
-      // resolved yet, OR the user is super-admin (can view any entity).
-      const listResolved = managedList.length > 0;
-      if (selKind && (inList || !listResolved || isSuperAdmin)) {
+      if (selKind) {
         return { id: selection.id, kind: selKind, type: KIND_TO_TYPE[selKind] };
       }
     }
@@ -305,7 +309,7 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
       return { id: fallbackId, kind: fallbackKind, type: KIND_TO_TYPE[fallbackKind] };
     }
     return { id: null, kind: null, type: null };
-  }, [selection, managedList, fallbackKind, fallbackId, isSuperAdmin]);
+  }, [selection, fallbackKind, fallbackId]);
 
   const isLoading =
     isUserLoading || userDocLoading || ngosLoading || brandsLoading || clubsLoading;

@@ -280,7 +280,7 @@ async function sendViaSendGrid(
   if (!configureSendGrid()) {
     return { ok: false, errorMessage: 'SENDGRID_API_KEY missing' };
   }
-  const fromEmail = SENDGRID_FROM_EMAIL.value()?.trim() || 'no-reply@hangel.org.tr';
+  const fromEmail = SENDGRID_FROM_EMAIL.value()?.trim() || 'no-reply@hangel.org';
   const fromName = SENDGRID_FROM_NAME.value()?.trim() || 'hangel';
 
   try {

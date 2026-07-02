@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- hangel Hızlı Erişim widget'ı (iOS QuickAccessWidget paritesi).
      Üst: küçük "hangel" wordmark + "Hızlı Erişim". Altı: 2x2 hızlı eylem ızgarası.
-     Her kutu kendi PendingIntent'i ile https://hangel.org.tr/{route} App Link'ini açar.
+     Her kutu kendi PendingIntent'i ile https://hangel.org/{route} App Link'ini açar.
      Yeniden boyutlandırılabilir: 2x2'de ızgara, 4x1'de geniş şerit gibi görünür. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"

@@ -3,11 +3,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 /**
  * İki host-bazlı yönlendirme:
  *
- * 1) STK alt alan adı: `{slug}.hangel.org.tr` → o STK'nın YAYINLANMIŞ sitesi.
+ * 1) STK alt alan adı: `{slug}.hangel.org` → o STK'nın YAYINLANMIŞ sitesi.
  *    Middleware tek-etiketli, rezerve olmayan alt alanı yakalar ve
  *    `/ngo-sites/s/{slug}` render rotasına rewrite eder; orada STK shortLink/slug
  *    ile çözümlenip siteSettings'ten gerçek veriyle render edilir. (Ana domain,
- *    www ve App Hosting servis alan adları `.hangel.org.tr` ile bitmediği için
+ *    www ve App Hosting servis alan adları `.hangel.org` ile bitmediği için
  *    ETKİLENMEZ — güvenli.)
  *
  * 2) Kütük kısa-linki: ana alanda salt-rakam `/<kutukNo>` → `/k/<kutukNo>`.
@@ -15,7 +15,7 @@ import { NextResponse, type NextRequest } from 'next/server';
  * matcher API/_next/static asset'lerini dışlar.
  */
 const NUMERIC_KUTUK_RE = /^\/\d{4,12}$/;
-const ROOT_DOMAIN = 'hangel.org.tr';
+const ROOT_DOMAIN = 'hangel.org';
 // STK alt alanı SAYILMAYAN rezerve etiketler.
 const RESERVED_SUBS = new Set(['www', 'app', 'admin', 'api', 'mail', 'm', 'cdn', 'static', '']);
 // Uygulamanın KENDİ servis ettiği host'lar — custom domain SAYILMAZ.
@@ -37,7 +37,7 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const host = getHost(req);
 
-  // 1) STK alt alan adı: {slug}.hangel.org.tr → STK sitesi.
+  // 1) STK alt alan adı: {slug}.hangel.org → STK sitesi.
   if (host.endsWith('.' + ROOT_DOMAIN)) {
     const sub = host.slice(0, -(ROOT_DOMAIN.length + 1)); // baştaki "{sub}." → "{sub}"
     if (sub && !sub.includes('.') && !RESERVED_SUBS.has(sub)) {

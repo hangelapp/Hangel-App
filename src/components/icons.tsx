@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 /**
  * hangel resmi logo wordmark'ı.
  *
- * Varsayılan olarak https://hangel.org.tr (resmi public site) linkine sarılır.
+ * Varsayılan olarak https://hangel.org (resmi public site) linkine sarılır.
  * Logo nereye yerleştirilirse oradan kullanıcı tek tıkla canlı siteye gidebilir.
  *
  * - href prop'u ile özelleştirilebilir (örn. uygulama içinde "/" home'a yönelten)
@@ -17,7 +17,7 @@ export const HangelLogo: React.FC<
     href?: string | null;
     external?: boolean;
   }
-> = ({ href = 'https://hangel.org.tr', external = true, className, ...rest }) => {
+> = ({ href = 'https://hangel.org', external = true, className, ...rest }) => {
   const wordmark = (
     <span className={cn('font-bold text-primary', className)} {...rest}>
       hangel
@@ -30,7 +30,7 @@ export const HangelLogo: React.FC<
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
       className="inline-flex items-center hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
-      aria-label="hangel — toplumsal etki platformu (hangel.org.tr)"
+      aria-label="hangel — toplumsal etki platformu (hangel.org)"
     >
       {wordmark}
     </a>

@@ -30,7 +30,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 
 const PASS_TYPE_ID = process.env.PASSKIT_PASS_TYPE_ID ?? 'pass.com.hangel.ios.app';
 const TEAM_ID = process.env.PASSKIT_TEAM_ID ?? 'NKZNY8NU8S';
-const PUBLIC_ORIGIN = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hangel.org.tr';
+const PUBLIC_ORIGIN = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hangel.org';
 
 export interface EventPassInput {
   serialNumber: string;          // event id
@@ -177,7 +177,7 @@ export async function generateEventPass(input: EventPassInput): Promise<Buffer> 
   backFields.push({ key: 'ticketId', label: 'Kayıt No', value: input.ticketId ?? input.serialNumber });
   backFields.push({
     key: 'terms', label: 'Bilgi',
-    value: 'Bu kart yalnızca kayıtlı kullanıcı için geçerlidir. Girişte karekod taratılır. hangel.org.tr',
+    value: 'Bu kart yalnızca kayıtlı kullanıcı için geçerlidir. Girişte karekod taratılır. hangel.org',
   });
 
   const pass = new PKPass({

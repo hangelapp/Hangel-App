@@ -429,7 +429,7 @@ export default function EventDetailPage() {
   // Doğum tarihi — kartta GÖSTERİLMEZ; yalnız arka QR (vCard BDAY) içinde kodlanır.
   const cardBirthRaw = (user.personalInfo as { birthDate?: string } | undefined)?.birthDate || '';
   // hangel profil linki — kartta gösterilmez; yalnız arka QR (vCard URL) içinde.
-  const profileUrlForCard = authUser?.uid ? `hangel.org.tr/profile/${authUser.uid}` : '';
+  const profileUrlForCard = authUser?.uid ? `hangel.org/profile/${authUser.uid}` : '';
 
   const socialLinks = [];
     if (user.personalInfo?.social?.linkedin) socialLinks.push(`URL;TYPE=linkedin:https://linkedin.com/in/${user.personalInfo.social.linkedin}`);

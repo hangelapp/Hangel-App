@@ -2,7 +2,7 @@
  * /app — hangel'in indirme, erişim ve sosyal medya hub'ı.
  *
  * Public sayfa — login gerekmez. QR kod / kartvizit / sosyal medyada
- * "hangel.org.tr/app" linki paylaşıldığında kullanıcı tüm platformları
+ * "hangel.org/app" linki paylaşıldığında kullanıcı tüm platformları
  * tek sayfada görür ve cihazına uygun olanı indirir.
  *
  * Layout:
@@ -22,12 +22,12 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'hangel\'i indir · App Store, Google Play, AppGallery — hangel.org.tr',
+  title: 'hangel\'i indir · App Store, Google Play, AppGallery — hangel.org',
   description: 'hangel mobil uygulamasını iPhone, Android ve Huawei cihazlarına indir. Apple Watch, web ve PWA olarak da kullan. Tüm sosyal medya kanallarımız tek sayfada.',
   openGraph: {
     title: 'hangel — tüm platformlarda yanında',
     description: 'iOS, Android, Watch, web — hangel her cihazda. Sosyal medya kanallarımıza katıl.',
-    url: 'https://hangel.org.tr/app',
+    url: 'https://hangel.org/app',
   },
 };
 
@@ -81,7 +81,6 @@ const STORE_PLATFORMS: PlatformCard[] = [
     description: 'MacBook · macOS 11+ (iOS app Mac\'te çalışır)',
     icon: Laptop,
     href: 'https://apps.apple.com/tr/app/hangel/id6664058822',
-    badge: 'beta',
     available: true,
     iconColor: 'text-foreground',
   },
@@ -98,7 +97,7 @@ const STORE_PLATFORMS: PlatformCard[] = [
     name: 'Microsoft Store',
     description: 'Windows 10/11 — PWA',
     icon: Monitor,
-    href: 'https://hangel.org.tr/',
+    href: 'https://hangel.org/',
     badge: 'PWA',
     available: true,
     iconColor: 'text-blue-600',
@@ -119,10 +118,10 @@ const STORE_PLATFORMS: PlatformCard[] = [
 
 const WEB_PLATFORMS: PlatformCard[] = [
   {
-    name: 'hangel.org.tr',
+    name: 'hangel.org',
     description: 'Tarayıcıdan tek tıkla — kayıt + giriş',
     icon: Globe,
-    href: 'https://hangel.org.tr',
+    href: 'https://hangel.org',
     available: true,
     iconColor: 'text-primary',
   },
@@ -130,7 +129,7 @@ const WEB_PLATFORMS: PlatformCard[] = [
     name: 'Chrome',
     description: 'PWA olarak masaüstüne ekle',
     icon: Globe,
-    href: 'https://hangel.org.tr',
+    href: 'https://hangel.org',
     badge: 'PWA',
     available: true,
     iconColor: 'text-amber-600',
@@ -139,7 +138,7 @@ const WEB_PLATFORMS: PlatformCard[] = [
     name: 'Safari',
     description: 'iOS / macOS — Ana Ekrana Ekle',
     icon: Globe,
-    href: 'https://hangel.org.tr',
+    href: 'https://hangel.org',
     badge: 'PWA',
     available: true,
     iconColor: 'text-blue-500',
@@ -148,7 +147,7 @@ const WEB_PLATFORMS: PlatformCard[] = [
     name: 'Firefox',
     description: 'Tarayıcı eklentisi olarak',
     icon: Globe,
-    href: 'https://hangel.org.tr',
+    href: 'https://hangel.org',
     badge: 'PWA',
     available: true,
     iconColor: 'text-orange-600',
@@ -354,7 +353,7 @@ export default function AppHubPage() {
             hangel'i indir ya da sosyal medyada bizi takip et.
           </p>
 
-          {/* hangel.org.tr/app QR shortcut */}
+          {/* hangel.org/app QR shortcut */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-primary/20 shadow-sm">
             <QrCode className="h-4 w-4 text-primary" />
             <span className="text-xs font-medium text-muted-foreground">QR kodu için</span>
@@ -383,7 +382,7 @@ export default function AppHubPage() {
             {WEB_PLATFORMS.map(p => <PlatformCardItem key={p.name} p={p} />)}
           </div>
           <p className="text-[11px] text-muted-foreground mt-3 px-2 leading-relaxed">
-            <strong>PWA</strong> nedir? hangel.org.tr'yi tarayıcıdan açtıktan sonra
+            <strong>PWA</strong> nedir? hangel.org'yi tarayıcıdan açtıktan sonra
             "Ana Ekrana Ekle" / "Yükle" seçeneği ile hangel'i bir uygulama gibi kullanabilirsin.
             App Store / Play Store'a girmeden, anında.
           </p>
@@ -410,7 +409,7 @@ export default function AppHubPage() {
         <div className="pt-8 border-t text-center space-y-2 text-xs text-muted-foreground">
           <HangelLogo className="text-base" href={null} />
           <p>
-            <Link href="/" className="hover:text-primary transition-colors">hangel.org.tr</Link>
+            <Link href="/" className="hover:text-primary transition-colors">hangel.org</Link>
             {' · '}
             <Link href="/about" className="hover:text-primary transition-colors">hangel hakkında</Link>
             {' · '}

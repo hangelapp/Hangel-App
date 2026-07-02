@@ -96,7 +96,7 @@ export default function GoogleEntegrasyonuPage() {
         <section className="mt-12 border-t border-zinc-200 pt-6 text-sm text-zinc-500">
           <p>
             İletişim: <a href="mailto:ismailhilmi@hangel.org" className="font-medium text-zinc-700">ismailhilmi@hangel.org</a>
-            {' '}· <a href="https://hangel.org.tr" className="font-medium text-zinc-700">hangel.org.tr</a>
+            {' '}· <a href="https://hangel.org" className="font-medium text-zinc-700">hangel.org</a>
           </p>
           <p className="mt-2">© {new Date().getFullYear()} hangel · Sivil toplum için dijital platform.</p>
         </section>

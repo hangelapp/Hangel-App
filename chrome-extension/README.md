@@ -14,8 +14,8 @@ Rakuten Cashback tarzı affiliate hatırlatıcı. Fark: kullanıcıya cashback d
 ## Mimari
 
 ```
-hangel.org.tr/api/extension/brands   ← background.js her saatte bir çeker, chrome.storage.local'e cache'ler
-hangel.org.tr/api/extension/click    ← "Yapsın" tıklanınca affiliate URL döner
+hangel.org/api/extension/brands   ← background.js her saatte bir çeker, chrome.storage.local'e cache'ler
+hangel.org/api/extension/click    ← "Yapsın" tıklanınca affiliate URL döner
 ```
 
 | Dosya | Sorumluluk |
@@ -79,7 +79,7 @@ Belirtilen permissions için justification:
 - `tabs` — affiliate redirect (chrome.tabs.update)
 - `alarms` — 1 saatlik brand list refresh
 - `notifications` — gelecek faz (şu an kullanılmıyor — kaldırılabilir)
-- `host_permissions: hangel.org.tr/*` — API endpoint'leri
+- `host_permissions: hangel.org/*` — API endpoint'leri
 
 ### 6. Submit → Review
 - Standard Trust & Safety review: 1-3 iş günü
@@ -87,11 +87,11 @@ Belirtilen permissions için justification:
 
 ## Marka veri kaynağı
 
-`hangel.org.tr/api/extension/brands` → `fetchAllAgencyOffers()` (3 HasOffers network: reklamaction, affocean, gelirortaklari). Şu an **~150-200 marka** dönüyor (blocklist sonrası).
+`hangel.org/api/extension/brands` → `fetchAllAgencyOffers()` (3 HasOffers network: reklamaction, affocean, gelirortaklari). Şu an **~150-200 marka** dönüyor (blocklist sonrası).
 
 ## Faz 2 (sonra)
 
-- **Auth flow** — kullanıcı popup'tan "Giriş Yap" → hangel.org.tr OAuth callback → JWT chrome.storage.local'e yazılır. User-level click attribution + 2 STK seçim sync'i.
+- **Auth flow** — kullanıcı popup'tan "Giriş Yap" → hangel.org OAuth callback → JWT chrome.storage.local'e yazılır. User-level click attribution + 2 STK seçim sync'i.
 - **Auto-detect coupon** — sepet sayfasında otomatik kupon önerisi (Honey/Rakuten gibi)
 - **Donation impact widget** — "bu alışveriş ~₺X bağış üretir" tahmini
 - **Firefox + Edge Add-ons** portu (aynı Manifest V3 codebase)
@@ -99,6 +99,6 @@ Belirtilen permissions için justification:
 
 ## İletişim
 
-- Proje: https://hangel.org.tr
+- Proje: https://hangel.org
 - Sorumlu: hangel Uluslararası Sosyal Fayda Derneği
 - Mail: ismailhilmi@hangel.org

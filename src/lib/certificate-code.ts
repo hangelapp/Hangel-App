@@ -16,7 +16,7 @@
  * Saf TS (Firebase importu yok) — client (PDF) + server (API/route) ortak.
  */
 
-export const CERT_VERIFY_BASE = 'https://hangel.org.tr/c/';
+export const CERT_VERIFY_BASE = 'https://hangel.org/c/';
 
 export type CertKind = 'volunteer' | 'event' | 'blood' | 'ngo' | 'brand' | 'club';
 

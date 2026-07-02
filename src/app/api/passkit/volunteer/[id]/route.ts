@@ -137,7 +137,7 @@ export async function GET(
       address: fullAddress,
       timeLabel,
       ngoLogoUrl: v.organizerLogoUrl,
-      qrPayload: `https://hangel.org.tr/volunteering/${volunteeringId}`,
+      qrPayload: `https://hangel.org/volunteering/${volunteeringId}`,
     });
 
     return new NextResponse(new Uint8Array(buffer), {

@@ -61,7 +61,7 @@ async function render() {
 }
 
 document.getElementById('btn-open-hangel').addEventListener('click', () => {
-  chrome.tabs.create({ url: 'https://hangel.org.tr' });
+  chrome.tabs.create({ url: 'https://hangel.org' });
 });
 
 document.getElementById('btn-refresh').addEventListener('click', async (e) => {

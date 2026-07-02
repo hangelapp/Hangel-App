@@ -677,7 +677,7 @@ export async function createSearchCampaign(
   // RSA için geçerli bir mutlak URL ZORUNLU. plan.landing bir kod ('hangel-bagis')
   // gelirse ya da boşsa, güvenli varsayılana düş (yayın boş finalUrls ile patlamasın).
   const rawLanding = (plan.landing ?? '').trim();
-  const finalUrl = /^https?:\/\//i.test(rawLanding) ? rawLanding : 'https://hangel.org.tr';
+  const finalUrl = /^https?:\/\//i.test(rawLanding) ? rawLanding : 'https://hangel.org';
 
   await mutate(config, accessToken, id, 'adGroupAds', [
     {

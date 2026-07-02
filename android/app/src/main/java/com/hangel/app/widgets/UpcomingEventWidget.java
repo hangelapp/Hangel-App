@@ -25,11 +25,11 @@ import com.hangel.app.R;
  * yüzden çizim anındaki kalan süre metni yazılır. setData her oturum çağrıldığı
  * için değer tazelenir; ayrıca onUpdate updatePeriodMillis ile periyodik yenilenir.
  *
- * Tüm kart tıklanınca https://hangel.org.tr/events App Link'ini açar.
+ * Tüm kart tıklanınca https://hangel.org/events App Link'ini açar.
  */
 public class UpcomingEventWidget extends AppWidgetProvider {
 
-    private static final String ROUTE_URL = "https://hangel.org.tr/events";
+    private static final String ROUTE_URL = "https://hangel.org/events";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {

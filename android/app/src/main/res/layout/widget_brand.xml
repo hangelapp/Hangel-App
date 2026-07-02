@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- hangel markalı widget (2x2). Coral kart + wordmark + tagline.
-     Tüm kart tıklanınca https://hangel.org.tr/ App Link'ini açar. -->
+     Tüm kart tıklanınca https://hangel.org/ App Link'ini açar. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/brand_root"
     android:layout_width="match_parent"

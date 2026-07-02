@@ -3,7 +3,7 @@
 /**
  * /brand/qr — hangel branded QR code üreteci + indirme sayfası.
  *
- * Telefon kamerasıyla taratıldığında hangel.org.tr (veya özel URL) açar.
+ * Telefon kamerasıyla taratıldığında hangel.org (veya özel URL) açar.
  * Logo center'da, hangel orange + beyaz arka plan. Print + dijital için 5 boyut.
  *
  * Public sayfa — login gerekmez. Marketing materyalleri, basın kiti,
@@ -32,7 +32,7 @@ const SIZES = [
 
 export default function BrandQrPage() {
   const { toast } = useToast();
-  const [url, setUrl] = useState('https://hangel.org.tr');
+  const [url, setUrl] = useState('https://hangel.org');
   const [size, setSize] = useState(512);
   const [includeLogo, setIncludeLogo] = useState(true);
 
@@ -69,7 +69,7 @@ export default function BrandQrPage() {
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold font-headline">hangel QR Kod</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Telefon kamerasını bu QR kara tutmak yeterli — hangel.org.tr otomatik açılır.
+            Telefon kamerasını bu QR kara tutmak yeterli — hangel.org otomatik açılır.
             Afiş, kartvizit, sticker, sunum kapağı için indir + kullan.
           </p>
         </div>
@@ -83,7 +83,7 @@ export default function BrandQrPage() {
                 <Image
                   key={qrSrc}
                   src={qrSrc}
-                  alt={`hangel.org.tr QR kod — ${size}px`}
+                  alt={`hangel.org QR kod — ${size}px`}
                   fill
                   className="object-contain p-4"
                   unoptimized
@@ -113,7 +113,7 @@ export default function BrandQrPage() {
                     type="text"
                     value={url}
                     onChange={e => setUrl(e.target.value)}
-                    placeholder="https://hangel.org.tr"
+                    placeholder="https://hangel.org"
                     className="h-10 rounded-xl text-sm"
                   />
                 </div>
@@ -179,14 +179,14 @@ export default function BrandQrPage() {
                 <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
                 <div>
                   <p className="font-bold text-foreground">iOS Kamera</p>
-                  <p className="text-xs">Kamera uygulamasını aç, QR kara tut. Üstte beliren bildirim banner'ına dokun — hangel.org.tr Safari'de açılır.</p>
+                  <p className="text-xs">Kamera uygulamasını aç, QR kara tut. Üstte beliren bildirim banner'ına dokun — hangel.org Safari'de açılır.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-xl bg-card border">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
                 <div>
                   <p className="font-bold text-foreground">Android Kamera</p>
-                  <p className="text-xs">Google Lens veya kamerayı aç. QR algılanınca "Bağlantıyı Aç" çıkar — dokunarak Chrome'da hangel.org.tr açılır.</p>
+                  <p className="text-xs">Google Lens veya kamerayı aç. QR algılanınca "Bağlantıyı Aç" çıkar — dokunarak Chrome'da hangel.org açılır.</p>
                 </div>
               </div>
             </div>
@@ -212,8 +212,8 @@ export default function BrandQrPage() {
         {/* Footer — hangel branding */}
         <div className="text-center mt-8 pt-6 border-t flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <HangelLogo className="text-sm" href={null} /> · resmi marka asset'i
-          <a href="https://hangel.org.tr" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline ml-2">
-            hangel.org.tr <ExternalLink className="h-3 w-3" />
+          <a href="https://hangel.org" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline ml-2">
+            hangel.org <ExternalLink className="h-3 w-3" />
           </a>
         </div>
       </div>

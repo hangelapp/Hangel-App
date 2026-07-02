@@ -24,7 +24,7 @@ const INK = '#1f1f1f';        // Gece Siyahı
 const LIGHT = '#f1f1f1';      // Açık Gri
 const NAVY = '#042654';       // Lacivert
 
-const SITE = 'https://hangel.org.tr';
+const SITE = 'https://hangel.org';
 const qr = await QRCode.toDataURL(SITE, { margin: 1, width: 640, color: { dark: '#1f1f1f', light: '#ffffff' } });
 const qrLight = await QRCode.toDataURL(SITE, { margin: 1, width: 640, color: { dark: '#ffffff', light: '#00000000' } });
 
@@ -90,13 +90,13 @@ const presSlides = `
     <div class="wm" style="font-size:150px;font-weight:900">hangel</div>
     <div class="h2" style="margin-top:8px;font-weight:800">İyiliğe açılan kapı.</div>
     <div style="font-size:30px;margin-top:26px;opacity:.92;max-width:760px">Bağışçıyı, STK’ları, markaları ve gönüllüleri tek bir sürdürülebilir iyilik ekosisteminde buluşturan dijital platform.</div>
-    <div class="foot" style="color:rgba(255,255,255,.85)">hangel.org.tr</div>
+    <div class="foot" style="color:rgba(255,255,255,.85)">hangel.org</div>
   </div>
   <div class="slide">
     <div class="eyebrow coral">hangel nedir?</div>
     <div class="h2" style="margin-top:20px;max-width:1000px">Tek bağışa değil; <span class="coral">çeşitlendirilmiş, sürdürülebilir</span> kaynaklara dayanan bir iyilik altyapısı.</div>
     <div class="lead" style="margin-top:34px;max-width:980px">STK’lar için bağış, kurumsal iş birliği, alışverişle bağış ve gönüllülük yönetimini; markalar için sosyal etki ve görünürlüğü tek panelde toplar.</div>
-    <div class="foot">hangel.org.tr</div>
+    <div class="foot">hangel.org</div>
   </div>
   <div class="slide">
     <div class="eyebrow coral">Nasıl çalışır?</div>
@@ -105,7 +105,7 @@ const presSlides = `
       <div class="card"><div class="num">2</div><h3>Destekle</h3><p>Bağış, gönüllülük veya alışverişle iyiliğe katkı sağlar.</p></div>
       <div class="card"><div class="num">3</div><h3>Etkini gör</h3><p>Şeffaf raporlarla yarattığı etkiyi anlık takip eder.</p></div>
     </div>
-    <div class="foot">hangel.org.tr</div>
+    <div class="foot">hangel.org</div>
   </div>
   <div class="slide">
     <div class="eyebrow coral">Kimler için?</div>
@@ -114,12 +114,12 @@ const presSlides = `
       <div class="card"><h3>Markalar</h3><p>Sosyal sorumluluk, alışverişle bağış ve görünürlük.</p></div>
       <div class="card"><h3>Kulüpler</h3><p>Topluluk, etkinlik ve üye etkileşimi.</p></div>
     </div>
-    <div class="foot">hangel.org.tr</div>
+    <div class="foot">hangel.org</div>
   </div>
   <div class="slide grad" style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start">
     <div class="pill" style="margin-bottom:30px">${heart(24)} hadi tanışalım</div>
     <div class="h1">İyilik<br>herkesin hakkı.</div>
-    <div style="font-size:34px;margin-top:30px;font-weight:700">hangel.org.tr</div>
+    <div style="font-size:34px;margin-top:30px;font-weight:700">hangel.org</div>
   </div>
 `;
 await renderPDF(page(1280, 720, presSlides, slideCss), 'hangel-kurumsal-sunum.pdf', { width: '1280px', height: '720px' });
@@ -192,21 +192,21 @@ for (const post of posts) {
     body = `<div style="width:1080px;height:1080px;background:linear-gradient(150deg,${CORAL} 0%,${CORAL2} 100%);color:#fff;padding:96px;display:flex;flex-direction:column;justify-content:space-between">
          <div style="display:flex;justify-content:space-between;align-items:center"><span class="wm" style="font-size:54px">hangel</span>${heart(56)}</div>
          <div style="font-size:118px;font-weight:900;letter-spacing:-.05em;line-height:.92">${bigHtml}</div>
-         <div style="font-size:34px;font-weight:500;line-height:1.35;opacity:.95">${post.sub}<div style="margin-top:22px;font-weight:800;opacity:1">hangel.org.tr</div></div>
+         <div style="font-size:34px;font-weight:500;line-height:1.35;opacity:.95">${post.sub}<div style="margin-top:22px;font-weight:800;opacity:1">hangel.org</div></div>
        </div>`;
   } else if (post.theme === 'light') {
     const bigHtml = lines.map((l) => `<div style="border-left:12px solid ${CORAL};padding-left:30px">${l}</div>`).join('');
     body = `<div style="width:1080px;height:1080px;background:${LIGHT};color:${INK};padding:96px;display:flex;flex-direction:column;justify-content:space-between">
          <div style="display:flex;justify-content:space-between;align-items:center"><span class="wm coral" style="font-size:54px">hangel</span>${heart(56, CORAL)}</div>
          <div style="font-size:116px;font-weight:900;letter-spacing:-.05em;line-height:.96;display:flex;flex-direction:column;gap:18px">${bigHtml}</div>
-         <div style="font-size:34px;font-weight:500;line-height:1.35;color:${INK}">${post.sub}<div style="margin-top:22px;font-weight:800;color:${CORAL}">hangel.org.tr</div></div>
+         <div style="font-size:34px;font-weight:500;line-height:1.35;color:${INK}">${post.sub}<div style="margin-top:22px;font-weight:800;color:${CORAL}">hangel.org</div></div>
        </div>`;
   } else { // navy
     const bigHtml = lines.map((l) => `<div>${l}</div>`).join('');
     body = `<div style="width:1080px;height:1080px;background:${NAVY};color:#fff;padding:96px;display:flex;flex-direction:column;justify-content:space-between">
          <div style="display:flex;justify-content:space-between;align-items:center"><span class="wm" style="font-size:54px">hangel</span>${heart(56, CORAL)}</div>
          <div style="font-size:118px;font-weight:900;letter-spacing:-.05em;line-height:.92">${bigHtml.replace(/<div>(.*?)<\/div>/, `<div><span style="color:${CORAL}">$1</span></div>`)}</div>
-         <div style="font-size:34px;font-weight:500;line-height:1.35;opacity:.92">${post.sub}<div style="margin-top:22px;font-weight:800;color:${CORAL}">hangel.org.tr</div></div>
+         <div style="font-size:34px;font-weight:500;line-height:1.35;opacity:.92">${post.sub}<div style="margin-top:22px;font-weight:800;color:${CORAL}">hangel.org</div></div>
        </div>`;
   }
   await renderPNG(page(1080, 1080, body), 1080, 1080, post.f);
@@ -220,7 +220,7 @@ const donerKart = `
     <div style="font-size:40px;font-weight:900;letter-spacing:-.03em;line-height:1.05;margin-top:8px">Bu işletme<br>iyilik için<br>hangel’de</div>
     <p style="font-size:21px;color:#555;margin-top:18px;line-height:1.4">Alışverişin bir STK’ya destek olsun. QR’ı okut, hangel’e katıl.</p>
     <img src="${qr}" style="width:300px;height:300px;margin-top:26px"/>
-    <div style="font-size:24px;font-weight:800;color:${CORAL};margin-top:14px">hangel.org.tr</div>
+    <div style="font-size:24px;font-weight:800;color:${CORAL};margin-top:14px">hangel.org</div>
   </div>`;
 await renderPNG(page(591, 886, donerKart), 591, 886, 'doner-kart.png');
 
@@ -232,7 +232,7 @@ const poster = `
     <p style="font-size:42px;font-weight:500;margin-top:50px;line-height:1.4;max-width:900px;opacity:.96">Bu işletmeden yaptığın alışverişle bir sivil toplum kuruluşuna destek olabilirsin.</p>
     <div style="margin-top:auto;display:flex;align-items:center;gap:44px;background:#fff;color:${INK};border-radius:36px;padding:44px 50px">
       <img src="${qr}" style="width:280px;height:280px"/>
-      <div><div style="font-size:48px;font-weight:900;letter-spacing:-.02em">QR’ı okut, katıl</div><div style="font-size:36px;font-weight:800;color:${CORAL};margin-top:10px">hangel.org.tr</div></div>
+      <div><div style="font-size:48px;font-weight:900;letter-spacing:-.02em">QR’ı okut, katıl</div><div style="font-size:36px;font-weight:800;color:${CORAL};margin-top:10px">hangel.org</div></div>
     </div>
   </div>`;
 await renderPNG(page(1240, 1754, poster), 1240, 1754, 'magaza-poster.png');
@@ -246,7 +246,7 @@ const kasaA5 = `
     <div style="background:${CORAL};border-radius:40px;padding:40px;margin-top:40px">
       <img src="${qrLight}" style="width:380px;height:380px;display:block"/>
     </div>
-    <div style="font-size:30px;font-weight:800;color:${CORAL};margin-top:34px">hangel.org.tr</div>
+    <div style="font-size:30px;font-weight:800;color:${CORAL};margin-top:34px">hangel.org</div>
     <div style="margin-top:14px">${heart(40, CORAL)}</div>
   </div>`;
 await renderPNG(page(874, 1240, kasaA5), 874, 1240, 'kasa-a5.png');
@@ -265,7 +265,7 @@ const stand = `
     </div>
     <div style="margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:26px">
       <div style="background:#fff;border-radius:40px;padding:40px"><img src="${qr}" style="width:360px;height:360px;display:block"/></div>
-      <div style="font-size:48px;font-weight:900">hangel.org.tr</div>
+      <div style="font-size:48px;font-weight:900">hangel.org</div>
     </div>
   </div>`;
 await renderPNG(page(1000, 2353, stand), 1000, 2353, 'orumcek-stand.png');

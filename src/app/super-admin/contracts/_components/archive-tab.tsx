@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Loader2, Search, Archive, FileText, Building2, ShoppingBag, GraduationCap, CheckCircle2, Circle, Eye, Download } from 'lucide-react';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
+import { Loader2, Search, Archive, FileText, Building2, ShoppingBag, GraduationCap, CheckCircle2, Circle, Eye, Download, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, doc, updateDoc, serverTimestamp, query, orderBy, limit, documentId, type Timestamp } from 'firebase/firestore';
+import { collection, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, limit, documentId, type Timestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -48,6 +49,8 @@ export function ArchiveTab() {
   const [reviewFilter, setReviewFilter] = useState<string>('all');
   const [markingId, setMarkingId] = useState<string | null>(null);
   const [previewDoc, setPreviewDoc] = useState<ArchiveDoc | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ArchiveDoc | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Geçmiş belgeleri OTOMATİK tara — oturum başına bir kez (buton yok).
   useEffect(() => {
@@ -90,6 +93,23 @@ export function ArchiveTab() {
       toast({ variant: 'destructive', title: 'İşaretlenemedi', description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e instanceof Error ? e.message : 'Hata') });
     } finally {
       setMarkingId(null);
+    }
+  };
+
+  // Evrağı arşivden sil (yalnız super-admin — rules: documentArchive delete isSuperAdmin).
+  const confirmDelete = async () => {
+    const d = deleteTarget;
+    if (!d) return;
+    setDeleting(true);
+    try {
+      await deleteDoc(doc(db, COLLECTIONS.documentArchive, d.id));
+      toast({ title: 'Evrak silindi' });
+      setDeleteTarget(null);
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      toast({ variant: 'destructive', title: 'Silinemedi', description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e instanceof Error ? e.message : 'Hata') });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -205,9 +225,15 @@ export function ArchiveTab() {
                                 <span className="text-[10px] text-green-700 hidden sm:inline shrink-0" title="İnceleyen">{d.reviewedByName}</span>
                               )}
                               {d.fileUrl && (
-                                <button onClick={() => setPreviewDoc(d)} className="inline-flex items-center gap-1 text-xs text-primary hover:underline shrink-0">
+                                <button onClick={() => setPreviewDoc(d)} className="inline-flex items-center gap-1 text-xs text-primary hover:underline shrink-0" title="İncele">
                                   <Eye className="h-3 w-3" /> Önizle
                                 </button>
+                              )}
+                              {d.fileUrl && (
+                                <a href={d.fileUrl} target="_blank" rel="noopener noreferrer" download title="İndir"
+                                   className="inline-flex items-center text-muted-foreground hover:text-foreground shrink-0">
+                                  <Download className="h-3.5 w-3.5" />
+                                </a>
                               )}
                               <button
                                 onClick={() => toggleReview(d)}
@@ -218,6 +244,10 @@ export function ArchiveTab() {
                               >
                                 {markingId === d.id ? <Loader2 className="h-3 w-3 animate-spin" /> : d.reviewed ? <CheckCircle2 className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
                                 {d.reviewed ? 'İncelendi' : 'İncele'}
+                              </button>
+                              <button onClick={() => setDeleteTarget(d)} title="Sil"
+                                className="inline-flex items-center text-destructive hover:text-destructive/80 shrink-0">
+                                <Trash2 className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           ))}
@@ -258,6 +288,27 @@ export function ArchiveTab() {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Evrağı sil?</AlertDialogTitle>
+          <AlertDialogDescription>
+            &quot;{deleteTarget?.docType || 'Evrak'}&quot;{deleteTarget?.entityName ? ` — ${deleteTarget.entityName}` : ''} arşivden kalıcı olarak kaldırılacak. Bu işlem geri alınamaz.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting}>Vazgeç</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => { e.preventDefault(); void confirmDelete(); }}
+            disabled={deleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleting ? 'Siliniyor…' : 'Sil'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }

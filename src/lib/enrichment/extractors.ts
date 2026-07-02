@@ -170,7 +170,7 @@ export async function safeFetchText(url: string, timeoutMs = 8000): Promise<stri
     const t = setTimeout(() => ctrl.abort(), timeoutMs);
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; HangelEnricherBot/1.0; +https://hangel.org.tr)',
+        'User-Agent': 'Mozilla/5.0 (compatible; HangelEnricherBot/1.0; +https://hangel.org)',
         'Accept': 'text/html,application/xhtml+xml',
         'Accept-Language': 'tr,en;q=0.8',
       },

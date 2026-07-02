@@ -38,7 +38,7 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
  * ÖNEMLİ — bu `url` Firebase'in oobCode'u İŞLEDİKTEN SONRA döneceği "continueUrl"dir;
  * action handler'ın kendisi DEĞİLDİR. oobCode'u işleyen sayfa (mode + oobCode query
  * param'ları ile) Firebase Console → Authentication → Templates → "Action URL"
- * ayarıyla `https://hangel.org.tr/auth/action`'a yönlendirilir; bizim sayfamız
+ * ayarıyla `https://hangel.org/auth/action`'a yönlendirilir; bizim sayfamız
  * `applyActionCode(auth, oobCode)` çağırır.
  *
  * `handleCodeInApp` MUTLAKA `false` olmalı: `true` değeri, linki (artık kapatılmış)

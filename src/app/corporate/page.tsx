@@ -281,7 +281,7 @@ export default function CorporateShowcasePage() {
           icon: Globe,
           title: 'Your Own Corporate Website',
           description:
-            'Publish your organization’s own website on a *.hangel.org.tr address, ready to share.',
+            'Publish your organization’s own website on a *.hangel.org address, ready to share.',
         },
         {
           icon: PackageSearch,
@@ -358,7 +358,7 @@ export default function CorporateShowcasePage() {
           icon: Globe,
           title: 'Kendi Kurumsal Siteniz',
           description:
-            'Kurumunuzun kendi sitesini *.hangel.org.tr adresinde yayınlayın; paylaşmaya hazır.',
+            'Kurumunuzun kendi sitesini *.hangel.org adresinde yayınlayın; paylaşmaya hazır.',
         },
         {
           icon: PackageSearch,

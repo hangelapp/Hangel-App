@@ -636,7 +636,7 @@ export default function WebContentPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Anasayfa İçerikleri</CardTitle>
-                            <CardDescription>hangel.org.tr anasayfasının (/) tüm bölümlerini düzenleyin.</CardDescription>
+                            <CardDescription>hangel.org anasayfasının (/) tüm bölümlerini düzenleyin.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-4 p-4 border rounded-lg">

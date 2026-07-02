@@ -66,7 +66,7 @@ twilio (SMS/çağrı) · live-activity (iOS Live Activity APNs) · volunteer-cro
   Hata formatı: API route'lar `{ errorCode, message }` döner; raw error sızdırılmaz.
 - **Backend/altyapı:** Firebase — Auth, Firestore, **App Hosting** (web prod), Cloud Functions,
   Cloud Messaging (FCM push), Crashlytics. Admin SDK ile sunucu tarafı (rules bypass) işlemler.
-- **Mobil:** **Capacitor** — iOS + Android. App, **uzaktan `https://hangel.org.tr`'yi yükleyen**
+- **Mobil:** **Capacitor** — iOS + Android. App, **uzaktan `https://hangel.org`'yi yükleyen**
   bir WebView wrapper'ı (server.url). Bu yüzden **web deploy = mobil app'e anında yansır**
   (JS/route değişiklikleri app rebuild gerektirmez; sadece native config/plugin değişiklikleri rebuild ister).
   Native eklentiler: messaging, crashlytics, contacts, geolocation, keyboard, splash, statusbar, share, NFC.
@@ -76,7 +76,7 @@ twilio (SMS/çağrı) · live-activity (iOS Live Activity APNs) · volunteer-cro
   Mobil: **Codemagic** (manuel tetik) → iOS TestFlight / Android Play (AAB).
 
 ## 9) Platformlar & yayın
-- **Web:** https://hangel.org.tr (App Hosting). Ayrıca STK'lara `*.hangel.org.tr` alt alan (Cloudflare for SaaS).
+- **Web:** https://hangel.org (App Hosting). Ayrıca STK'lara `*.hangel.org` alt alan (Cloudflare for SaaS).
 - **iOS:** App Store (Team `NKZNY8NU8S`), bundle `com.hangel.ios.app`. TestFlight.
 - **Android:** Google Play, paket `com.hangel.app`. Üretimde.
 - **Chrome Extension:** wrapper + Web Store listing (planlı).
@@ -93,7 +93,7 @@ twilio (SMS/çağrı) · live-activity (iOS Live Activity APNs) · volunteer-cro
 ## 11) Altyapı & hesaplar (sır YOK — sadece referans)
 - Firebase projesi: `hangel-new-v18-87297865-9bcc3`.
 - GitHub: `github.com/hangelapp/new-app` (branch: main).
-- Domain: hangel.org.tr (mobil app buradan yüklenir).
+- Domain: hangel.org (mobil app buradan yüklenir).
 - > Not: Bazı hesaplar farklı maillerde (ör. Play şu an `ihadiguzel@gmail.com`); hepsini
   `ismailhilmi@hangel.org` altında toplama hedefi var.
 

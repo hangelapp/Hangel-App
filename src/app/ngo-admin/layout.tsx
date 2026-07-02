@@ -497,8 +497,9 @@ function SideMenuBody({ onNavigate }: { onNavigate?: () => void }) {
             {[...group.items]
               .sort((a, b) => Number(Boolean(a.comingSoon)) - Number(Boolean(b.comingSoon)))
               .map((item) => {
-              // Restrict the active events link to clubs only (disabled "Yakında" items still render)
-              if (item.href === '/ngo-admin/events' && !item.comingSoon && entityKind !== 'club') {
+              // Etkinlik Yönetimi: STK (dernek/vakıf/spor kulübü) + öğrenci kulübü açıp yönetir;
+              // yalnızca markada gizli (marka etkinlik düzenlemez).
+              if (item.href === '/ngo-admin/events' && !item.comingSoon && entityKind === 'brand') {
                 return null;
               }
               // Rol-bazlı kısıtlama: dar başlıklı yetkili kapsamı dışındaki modülü görmez.

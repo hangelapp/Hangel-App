@@ -3,7 +3,7 @@
 /**
  * /ngo-admin/call-center/test — bağımsız WebRTC santral test arayüzü.
  *
- * hangel WebRTC geçidine (Asterisk, wss://santral.hangel.org.tr) env'deki
+ * hangel WebRTC geçidine (Asterisk, wss://santral.hangel.org) env'deki
  * SIP endpoint ile kaydolur; numara çevirip kulaklıkla arama/cevaplama testi
  * yapılır. Onboarding/Firestore'a bağlı DEĞİL — ilk uçtan-uca test için.
  *

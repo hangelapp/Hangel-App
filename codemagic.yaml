@@ -51,7 +51,7 @@ workflows:
       - name: Build Next.js (static export to out/)
         script: |
           npm run build || true
-          # Capacitor webDir 'out' fakat server.url=hangel.org.tr olduğu için
+          # Capacitor webDir 'out' fakat server.url=hangel.org olduğu için
           # WebView canlı siteyi yükler. out/ dizini build sırasında lazım
           # (cap sync verify), runtime'da değil.
 

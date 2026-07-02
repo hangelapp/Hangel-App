@@ -5,7 +5,7 @@
 
 **Veri Sorumlusu / Hizmet Sağlayıcı:** [Şirket Ünvanı] — Mersis No: [XXXXX]
 **İYS Marka Adı:** HANGEL
-**İletişim:** iletisim@hangel.org.tr
+**İletişim:** iletisim@hangel.org
 
 ---
 
@@ -19,7 +19,7 @@
 
 Aşağıdaki kanallardan hangel ve iş ortakları (anlaşmalı STK'lar) hakkında **kampanya, etkinlik duyurusu, yeni bağış projesi, gönüllülük çağrısı, anket ve promosyon** içerikli ticari elektronik iletilerin gönderilmesine onay veriyorum:
 
-- ☐ **E-posta** (hangel.org.tr alan adından)
+- ☐ **E-posta** (hangel.org alan adından)
 - ☐ **SMS** (HANGEL kimliği ile)
 - ☐ **WhatsApp Business** (resmî onaylı mesaj şablonları)
 - ☐ **Mobil uygulama push bildirimi** (pazarlama kategorisi — işlemsel bildirimlerden ayrıdır)
@@ -31,7 +31,7 @@ Aşağıdaki kanallardan hangel ve iş ortakları (anlaşmalı STK'lar) hakkınd
   - `ileti.org.tr` üzerinden hesabınıza giriş yaparak,
   - Her ileti içindeki **"Aboneliği iptal et"** linkine tıklayarak,
   - `/settings/marketing-consent` sayfasındaki tek butonla,
-  - `red@hangel.org.tr` adresine e-posta göndererek,
+  - `red@hangel.org` adresine e-posta göndererek,
   - `IPTAL` yazıp gelen SMS numarasına ücretsiz cevap göndererek
   iletişim onayınızı **3 iş günü içinde** durdurabilirsiniz.
 

@@ -2,7 +2,7 @@
  * hangel Chrome Extension — Background Service Worker
  *
  * Sorumluluklar:
- *   1. Brand list cache: hangel.org.tr/api/extension/brands çekip
+ *   1. Brand list cache: hangel.org/api/extension/brands çekip
  *      chrome.storage.local'e yazar. TTL = 1 saat.
  *   2. Auth state: chrome.storage.local'de hangel_user_token tutar.
  *      Login flow: popup → "Giriş Yap" → yeni sekme açılır → callback'te
@@ -15,7 +15,7 @@
  * "Yapsın" tıkladığında o anki brandId hangel'e gider.
  */
 
-const API_BASE = 'https://hangel.org.tr';
+const API_BASE = 'https://hangel.org';
 const BRANDS_REFRESH_INTERVAL_MIN = 60;
 const BRANDS_STORAGE_KEY = 'hangel_brands_cache';
 

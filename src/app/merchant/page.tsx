@@ -252,7 +252,7 @@ const TR: MerchantContent = {
       icon: Globe,
       title: 'Kurumsal Site Yayını',
       description:
-        'Markanızın kendi sitesini *.hangel.org.tr adresinde yayınlama altyapısı kuruluyor.',
+        'Markanızın kendi sitesini *.hangel.org adresinde yayınlama altyapısı kuruluyor.',
       badge: { kind: 'yakinda' },
     },
     {
@@ -421,7 +421,7 @@ const EN: MerchantContent = {
       icon: Globe,
       title: 'Corporate Website Publishing',
       description:
-        'Infrastructure to publish your brand’s own website on a *.hangel.org.tr address is being built.',
+        'Infrastructure to publish your brand’s own website on a *.hangel.org address is being built.',
       badge: { kind: 'yakinda' },
     },
     {

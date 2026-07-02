@@ -460,10 +460,10 @@ export default function NgoProfilePage() {
     : '';
 
   // Kütük (devlet sicil) numarası ngo dokümanında birden fazla alan adıyla tutulabilir;
-  // ilk dolu olanı paylaşılabilir hangel.org.tr/<no> linki olarak gösteririz.
+  // ilk dolu olanı paylaşılabilir hangel.org/<no> linki olarak gösteririz.
   const ngoRegistry = ngo as NGO & { kutukNo?: string; registryNo?: string; registryNumber?: string; kutuk?: string };
   const kutukNo = (ngoRegistry.kutukNo ?? ngoRegistry.registryNo ?? ngoRegistry.registryNumber ?? ngoRegistry.kutuk ?? '').toString().trim();
-  const kutukShortLink = kutukNo ? `hangel.org.tr/${kutukNo}` : '';
+  const kutukShortLink = kutukNo ? `hangel.org/${kutukNo}` : '';
 
   const handleCopyKutuk = async () => {
     if (!kutukShortLink) return;
@@ -483,7 +483,7 @@ export default function NgoProfilePage() {
                     name={ngo.name}
                     description={ngo.about}
                     logoUrl={ngo.avatarUrl || ngo.coverPhotoUrl}
-                    url={`https://hangel.org.tr/ngos/${ngo.id}`}
+                    url={`https://hangel.org/ngos/${ngo.id}`}
                     foundedYear={(ngo as { foundedYear?: number | string }).foundedYear}
                     address={((): { city?: string; country?: string } | undefined => {
                         const loc = (ngo as { location?: { city?: string; country?: string } }).location;
@@ -492,9 +492,9 @@ export default function NgoProfilePage() {
                     sameAs={[(ngo as { website?: string }).website].filter(Boolean) as string[]}
                 />
                 <BreadcrumbSchema items={[
-                    { name: 'hangel', url: 'https://hangel.org.tr' },
-                    { name: 'STK\'lar', url: 'https://hangel.org.tr/ngos' },
-                    { name: ngo.name, url: `https://hangel.org.tr/ngos/${ngo.id}` },
+                    { name: 'hangel', url: 'https://hangel.org' },
+                    { name: 'STK\'lar', url: 'https://hangel.org/ngos' },
+                    { name: ngo.name, url: `https://hangel.org/ngos/${ngo.id}` },
                 ]} />
             </>
         )}

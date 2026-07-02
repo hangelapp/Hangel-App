@@ -554,7 +554,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
     const isSuperAdminPage = pathname.startsWith('/super-admin');
-    // STK yayınlanmış sitesi: {slug}.hangel.org.tr → /ngo-sites/** rewrite.
+    // STK yayınlanmış sitesi: {slug}.hangel.org → /ngo-sites/** rewrite.
     // Tamamen standalone (app chrome/menü/header YOK) — kendi layout'u render eder.
     const isNgoSitePage = pathname.startsWith('/ngo-sites');
 

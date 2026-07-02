@@ -434,7 +434,7 @@ export default function NgoEditPage() {
                     <Field label="İktisadi İşletme URL">
                         <Input value={form.economicEnterpriseUrl ?? ''} onChange={e => set('economicEnterpriseUrl', e.target.value)} />
                     </Field>
-                    <Field label="Kısa Link (hangel.org.tr/s/...)">
+                    <Field label="Kısa Link (hangel.org/s/...)">
                         <Input value={(form.shortLink as string) ?? ''} onChange={e => set('shortLink', e.target.value)} placeholder="ornek-stk" />
                     </Field>
                     <Field label="Sektör / Faaliyet Alanı">

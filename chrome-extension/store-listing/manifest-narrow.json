@@ -5,7 +5,7 @@
   "description": "hangel kayıtlı markalarda otomatik hatırlatıcı: 'Yapsın' de, komisyon seçtiğin STK'lara bağış olarak gitsin.",
   "version": "1.0.0",
   "default_locale": "tr",
-  "homepage_url": "https://hangel.org.tr",
+  "homepage_url": "https://hangel.org",
   "author": "hangel Uluslararası Sosyal Fayda Derneği",
   "icons": {
     "16": "icons/icon-16.png",
@@ -33,7 +33,7 @@
     "notifications"
   ],
   "host_permissions": [
-    "https://hangel.org.tr/*",
+    "https://hangel.org/*",
     "https://*.2-feel.com/*",
     "https://*.a101.com.tr/*",
     "https://*.advertstore.net/*",

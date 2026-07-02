@@ -11,7 +11,7 @@ import { PASS_ASSETS } from './pass-assets';
 
 const PASS_TYPE_ID = process.env.PASSKIT_PASS_TYPE_ID ?? 'pass.com.hangel.ios.app';
 const TEAM_ID = process.env.PASSKIT_TEAM_ID ?? 'NKZNY8NU8S';
-const PUBLIC_ORIGIN = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hangel.org.tr';
+const PUBLIC_ORIGIN = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hangel.org';
 
 export interface NgoCardInput {
   uid: string;
@@ -114,7 +114,7 @@ export async function generateNgoCard(input: NgoCardInput): Promise<Buffer> {
           {
             key: 'contact',
             label: 'hangel',
-            value: 'hangel.org.tr | destek@hangel.org',
+            value: 'hangel.org | destek@hangel.org',
           },
         ],
       },

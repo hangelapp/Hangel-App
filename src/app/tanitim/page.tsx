@@ -118,7 +118,7 @@ const CORPORATE: Feature[] = [
     icon: Award,
     title: 'Kendi Sitesi & Ürün Feed’i',
     description:
-      'Kurumsal site yayını (*.hangel.org.tr) ve ürün feed/PIM — markalar bağış oranıyla ürün listeler.',
+      'Kurumsal site yayını (*.hangel.org) ve ürün feed/PIM — markalar bağış oranıyla ürün listeler.',
   },
 ];
 

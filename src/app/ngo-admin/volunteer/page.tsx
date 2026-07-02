@@ -218,7 +218,7 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, a
     }, [applications]);
     // Herkese açık ilan linki için origin. SSR/ilk render'da window yok → canlı
     // domaine düş (PublishTab ile tutarlı), client'ta gerçek origin'e geçer.
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org.tr';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
 
     const handleToggleStatus = async (opp: Volunteering) => {
         const isActive = (opp as Volunteering & { status?: string }).status !== 'Pasif';
@@ -394,7 +394,7 @@ const PublishTab = ({ ngoId, opportunities }: { ngoId: string | null; opportunit
   const [selected, setSelected] = React.useState<string>('all');
   if (!ngoId) return <p className="text-center text-muted-foreground p-8">Kurum bulunamadı.</p>;
 
-  const base = 'https://hangel.org.tr';
+  const base = 'https://hangel.org';
   const embedUrl = selected === 'all'
     ? `${base}/api/public/volunteering/${ngoId}/embed`
     : `${base}/api/public/volunteering/${ngoId}/embed?listing=${selected}`;

@@ -8,7 +8,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     const b = await chromium.launch();
     const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 });
     try {
-      await p.goto('https://hangel.org.tr/market/discover', { waitUntil: 'domcontentloaded', timeout: 45000 });
+      await p.goto('https://hangel.org/market/discover', { waitUntil: 'domcontentloaded', timeout: 45000 });
       await p.waitForTimeout(9000);
       const m = await p.evaluate(() => {
         const banner = document.querySelector('[class*="snap-start"]');

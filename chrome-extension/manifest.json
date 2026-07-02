@@ -3,9 +3,9 @@
   "name": "hangel — Alışverişin Bağışa Dönüşsün",
   "short_name": "hangel",
   "description": "hangel kayıtlı markalarda otomatik hatırlatıcı: 'Yapsın' de, komisyon seçtiğin STK'lara bağış olarak gitsin.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "default_locale": "tr",
-  "homepage_url": "https://hangel.org.tr",
+  "homepage_url": "https://hangel.org",
   "author": "hangel Uluslararası Sosyal Fayda Derneği",
   "icons": {
     "16": "icons/icon-16.png",
@@ -33,7 +33,7 @@
     "notifications"
   ],
   "host_permissions": [
-    "https://hangel.org.tr/*"
+    "https://hangel.org/*"
   ],
   "content_scripts": [
     {

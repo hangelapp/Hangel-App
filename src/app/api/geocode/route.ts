@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`;
   try {
     const r = await fetch(url, {
-      headers: { 'User-Agent': 'hangel.org.tr (geocode)' },
+      headers: { 'User-Agent': 'hangel.org (geocode)' },
       next: { revalidate: 86400 },
     });
     if (!r.ok) {

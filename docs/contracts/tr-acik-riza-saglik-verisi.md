@@ -4,7 +4,7 @@
 # hangel Sağlık Verisi Açık Rıza Metni
 
 **Veri Sorumlusu:** [Şirket Ünvanı] — VERBİS: [XXXXX]
-**İletişim:** kvkk@hangel.org.tr · DPO: dpo@hangel.org.tr
+**İletişim:** kvkk@hangel.org · DPO: dpo@hangel.org
 
 ---
 
@@ -54,7 +54,7 @@ Türk Medeni Kanunu m.16 ve KVKK Kurul'un çocuk verilerine ilişkin rehberi uya
 
 ## 7. Haklarınız ve Rızanın Geri Alınması
 
-KVKK m.11 kapsamında verilerinize erişme, düzeltme, silme ve işlemeye itiraz haklarınız bulunmaktadır. Verdiğiniz açık rızayı **istediğiniz an, gerekçe göstermeksizin** `/settings/privacy/health-data` sayfasındaki tek butonla veya `kvkk@hangel.org.tr` adresine e-posta göndererek geri alabilirsiniz. Rıza geri alındığı anda kan grubu verisi silinir ve acil çağrı bildirimleri durur. **Geri alma geriye etkili değildir** — geçmişte gerçekleşmiş işlemler geçerliliğini korur.
+KVKK m.11 kapsamında verilerinize erişme, düzeltme, silme ve işlemeye itiraz haklarınız bulunmaktadır. Verdiğiniz açık rızayı **istediğiniz an, gerekçe göstermeksizin** `/settings/privacy/health-data` sayfasındaki tek butonla veya `kvkk@hangel.org` adresine e-posta göndererek geri alabilirsiniz. Rıza geri alındığı anda kan grubu verisi silinir ve acil çağrı bildirimleri durur. **Geri alma geriye etkili değildir** — geçmişte gerçekleşmiş işlemler geçerliliğini korur.
 
 ---
 

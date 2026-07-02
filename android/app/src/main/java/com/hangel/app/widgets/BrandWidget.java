@@ -12,11 +12,11 @@ import com.hangel.app.R;
 
 /**
  * hangel markalı widget (2x2, statik) — wordmark + "umudu büyütüyoruz" tagline.
- * Tüm kart tıklanınca https://hangel.org.tr/ App Link'i ile uygulamayı açar.
+ * Tüm kart tıklanınca https://hangel.org/ App Link'i ile uygulamayı açar.
  */
 public class BrandWidget extends AppWidgetProvider {
 
-    private static final String HOME_URL = "https://hangel.org.tr/";
+    private static final String HOME_URL = "https://hangel.org/";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {

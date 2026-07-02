@@ -34,7 +34,7 @@
 
 ## 0. Yönetici özeti
 
-hangel (hangel.org.tr), Türkiye'nin sosyal etki marketplace'idir — STK, marka, öğrenci kulübü ve bireysel gönüllüleri buluşturur. Mevcut iOS uygulaması **Capacitor + WebView** hibrit yapıda çalışır, `https://hangel.org.tr` web sitesini sarmalar. App Store'da `id6664058822` ile yayındadır.
+hangel (hangel.org), Türkiye'nin sosyal etki marketplace'idir — STK, marka, öğrenci kulübü ve bireysel gönüllüleri buluşturur. Mevcut iOS uygulaması **Capacitor + WebView** hibrit yapıda çalışır, `https://hangel.org` web sitesini sarmalar. App Store'da `id6664058822` ile yayındadır.
 
 Bu yol haritası, Apple ekosistem özelliklerinin entegrasyonunu **5 faz** halinde tarif eder:
 
@@ -60,10 +60,10 @@ Bu yol haritası, Apple ekosistem özelliklerinin entegrasyonunu **5 faz** halin
 ### 1.1. Mevcut yapı
 
 ```
-hangel.org.tr (Next.js 15.5 + React 19, Firebase App Hosting)
+hangel.org (Next.js 15.5 + React 19, Firebase App Hosting)
         ↑ HTTPS
         │
-[iOS Capacitor App] ── server.url = hangel.org.tr ──┐
+[iOS Capacitor App] ── server.url = hangel.org ──┐
         │                                            │
         ├── WKWebView (hangel web app)              │
         ├── @capacitor/app, browser, contacts,      │
@@ -90,7 +90,7 @@ Aşağıdaki Apple özellikleri WebView'dan çalıştırılamaz — **native Swi
 
 **Mimari:**
 
-1. **Mevcut Capacitor WebView container'ı koru** — hangel.org.tr'deki tüm sayfalar app içinde çalışmaya devam eder.
+1. **Mevcut Capacitor WebView container'ı koru** — hangel.org'deki tüm sayfalar app içinde çalışmaya devam eder.
 2. **Xcode projesine yeni Extension Target'lar ekle:**
    - Widget Extension (`HangelWidgets`)
    - Live Activity Extension (`HangelLiveActivities`)
@@ -159,7 +159,7 @@ npm install \
   appName: 'hangel',
   webDir: 'out',
   server: {
-    url: 'https://hangel.org.tr',
+    url: 'https://hangel.org',
     cleartext: false,
   },
   ios: {
@@ -231,7 +231,7 @@ Ana app target için aktif edilecekler:
 |------------|-----|---------------|
 | Push Notifications | 0 | — |
 | Sign in with Apple | 0 | — |
-| Associated Domains | 0 | `applinks:hangel.org.tr`<br>`webcredentials:hangel.org.tr` (autofill için) |
+| Associated Domains | 0 | `applinks:hangel.org`<br>`webcredentials:hangel.org` (autofill için) |
 | Background Modes | 0 | Remote notifications, Location updates, Background fetch |
 | App Groups | 1 | `group.com.hangel.app.shared` |
 | Wallet | 1 | Pass Type ID: `pass.com.hangel.ios.app` |
@@ -382,7 +382,7 @@ import { initializeFirebase } from '@/firebase';
 export async function signInWithApple(): Promise<void> {
   const options = {
     clientId: 'com.hangel.ios.app',
-    redirectURI: 'https://hangel.org.tr/auth/apple/callback',
+    redirectURI: 'https://hangel.org/auth/apple/callback',
     scopes: 'email name',
   };
   const result: SignInWithAppleResponse = await SignInWithApple.authorize(options);
@@ -790,14 +790,14 @@ export async function getCurrentLocation(): Promise<Position | null> {
 
 ### 5.5. Universal Links + App Links
 
-**Hedef:** `https://hangel.org.tr/...` linki/QR Safari yerine app'te açılsın.
+**Hedef:** `https://hangel.org/...` linki/QR Safari yerine app'te açılsın.
 
 #### iOS (Universal Links)
 
 1. **Apple Developer Console:** Bundle ID `com.hangel.ios.app` → Associated Domains capability ✓
 2. **Xcode:** Signing & Capabilities → "+" → Associated Domains → ekle:
-   - `applinks:hangel.org.tr`
-   - `webcredentials:hangel.org.tr`
+   - `applinks:hangel.org`
+   - `webcredentials:hangel.org`
 3. **Apple App Site Association (AASA) dosyası:**
    - Konum: `public/.well-known/apple-app-site-association`
    - **Dosya uzantısı YOK, MIME type `application/json`**
@@ -857,7 +857,7 @@ export function initDeepLinkListener(router: { push: (url: string) => void }) {
   App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
     try {
       const url = new URL(event.url);
-      // hangel.org.tr/checkin/abc → router.push('/checkin/abc')
+      // hangel.org/checkin/abc → router.push('/checkin/abc')
       router.push(url.pathname + url.search + url.hash);
     } catch {}
   });
@@ -891,22 +891,22 @@ Ana layout'ta `useEffect` ile init et.
     <action android:name="android.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="https" android:host="hangel.org.tr" />
+    <data android:scheme="https" android:host="hangel.org" />
   </intent-filter>
 </activity>
 ```
 
 #### Test senaryoları
 
-- iPhone'da Mesajlar → `https://hangel.org.tr/event/abc` link → uzun bas → "hangel App'te Aç" görünür
-- Safari → `hangel.org.tr/ngo/xyz` → smart banner görünür, tıklayınca app açılır
-- QR koddan `https://hangel.org.tr/checkin/abc` okutulduğunda direkt app açılır + `/checkin/abc` sayfasına gider
-- AASA test: `https://app-site-association.cdn-apple.com/a/v1/hangel.org.tr` cache'lendi mi
+- iPhone'da Mesajlar → `https://hangel.org/event/abc` link → uzun bas → "hangel App'te Aç" görünür
+- Safari → `hangel.org/ngo/xyz` → smart banner görünür, tıklayınca app açılır
+- QR koddan `https://hangel.org/checkin/abc` okutulduğunda direkt app açılır + `/checkin/abc` sayfasına gider
+- AASA test: `https://app-site-association.cdn-apple.com/a/v1/hangel.org` cache'lendi mi
 - `branch.io/resources/aasa-validator/` ile doğrula
 
 #### Done definition
 
-- [ ] AASA + assetlinks.json hangel.org.tr'den `application/json` content-type ile servis ediliyor
+- [ ] AASA + assetlinks.json hangel.org'den `application/json` content-type ile servis ediliyor
 - [ ] iPhone'da link tıklayınca app açılır
 - [ ] QR'dan link okutulduğunda app açılır
 - [ ] App içinde route doğru render olur (mevcut hangel router'ı)
@@ -1385,7 +1385,7 @@ export async function startEmergencyBloodActivity(req: {
   ],
   "locations": [],
   "relevantDate": "",
-  "webServiceURL": "https://hangel.org.tr/api/passkit/",
+  "webServiceURL": "https://hangel.org/api/passkit/",
   "authenticationToken": ""
 }
 ```
@@ -1434,7 +1434,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       barcodes: [
         {
           format: 'PKBarcodeFormatQR',
-          message: `https://hangel.org.tr/checkin/${id}`,
+          message: `https://hangel.org/checkin/${id}`,
           messageEncoding: 'iso-8859-1',
           altText: id.slice(0, 8),
         },
@@ -1506,7 +1506,7 @@ Tarayıcı `.pkpass` MIME type'ını tanır → Wallet'a ekleme dialog'u açar.
 - [ ] Buton tıklanınca .pkpass indirilir + Wallet'a ekleme dialog'u açılır
 - [ ] Pass eklendikten sonra Wallet'ta hangel logosu + etkinlik bilgileri + QR görünür
 - [ ] Etkinlik saati değişirse pass otomatik güncellenir (push trigger)
-- [ ] QR kod taratınca `https://hangel.org.tr/checkin/{id}` açılır (Universal Link → app içinde check-in)
+- [ ] QR kod taratınca `https://hangel.org/checkin/{id}` açılır (Universal Link → app içinde check-in)
 
 ---
 
@@ -1907,8 +1907,8 @@ Background location entitlement kullanımı sebep olarak "Etkinlik bittiğinde g
 
 App Store Connect → My Apps → hangel → App Clips → Advanced App Clip Experiences → "+":
 
-- URL Pattern: `https://hangel.org.tr/clip/event/*`
-- URL Pattern: `https://hangel.org.tr/clip/ngo/*`
+- URL Pattern: `https://hangel.org/clip/event/*`
+- URL Pattern: `https://hangel.org/clip/ngo/*`
 - Action: Show
 - Default Image, Title, Subtitle, Action ayarla
 
@@ -1933,7 +1933,7 @@ struct HangelClipApp: App {
 
     func handleUserActivity(_ activity: NSUserActivity) {
         guard let url = activity.webpageURL else { return }
-        // url: https://hangel.org.tr/clip/event/abc123
+        // url: https://hangel.org/clip/event/abc123
         let pathParts = url.pathComponents
         if pathParts.count >= 4 {
             ClipState.shared.eventId = pathParts[3]
@@ -2007,7 +2007,7 @@ struct EventInfo {
 #### Done definition
 
 - [ ] App Store Connect'e App Clip submit edildi
-- [ ] QR `https://hangel.org.tr/clip/event/abc` → iPhone'da App Clip Card açılır
+- [ ] QR `https://hangel.org/clip/event/abc` → iPhone'da App Clip Card açılır
 - [ ] Sign in with Apple → Firebase Auth'a düşer → `users/{uid}` + `eventRegistrations/{eventId}/{uid}` yazılır
 - [ ] "hangel'i indir" App Store'a yönlendirir
 
@@ -2027,7 +2027,7 @@ struct EventInfo {
 
 #### Etiket içeriği
 
-NDEF URL record: `https://hangel.org.tr/checkin/{eventId}` veya `/donate/{ngoId}` veya `/task/{taskId}`
+NDEF URL record: `https://hangel.org/checkin/{eventId}` veya `/donate/{ngoId}` veya `/task/{taskId}`
 
 Universal Link handler zaten kuruluysa (Faz 0.5) → NFC okutma → URL açılır → app açılır → ilgili sayfa render olur.
 
@@ -2789,7 +2789,7 @@ nfcTags/{tagId}
   ownerNgoId: string
   type: 'event-checkin'|'donate'|'task-verify'
   referenceId: string                  // eventId, ngoId, taskId
-  url: string                          // 'https://hangel.org.tr/checkin/...'
+  url: string                          // 'https://hangel.org/checkin/...'
   createdAt: Timestamp
   writtenAt: Timestamp | null
   writtenBy: string | null             // admin uid

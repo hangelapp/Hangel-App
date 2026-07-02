@@ -4,10 +4,10 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>appclips:hangel.org.tr</string>
-		<string>appclips:www.hangel.org.tr</string>
-		<string>applinks:hangel.org.tr</string>
-		<string>applinks:www.hangel.org.tr</string>
+		<string>appclips:hangel.org</string>
+		<string>appclips:www.hangel.org</string>
+		<string>applinks:hangel.org</string>
+		<string>applinks:www.hangel.org</string>
 	</array>
 	<key>com.apple.developer.parent-application-identifiers</key>
 	<array>

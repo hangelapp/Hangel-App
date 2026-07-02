@@ -136,7 +136,7 @@ const getCachedAllBrands = unstable_cache(
     brands.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
     return brands;
   },
-  ['market-brands-all-v3-productbrand'],
+  ['market-brands-all-v2-productbrand'],
   { revalidate: CACHE_TTL_SECONDS },
 );
 

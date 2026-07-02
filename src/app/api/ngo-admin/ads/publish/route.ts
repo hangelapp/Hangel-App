@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
 
   // landing bir KOD ('hangel-bagis' | 'hangel-gonulluluk' | 'kurum-sitesi') —
   // gerçek bir finalUrl'e çevir (RSA için mutlak URL zorunlu).
-  const SITE = 'https://hangel.org.tr';
+  const SITE = 'https://hangel.org';
   const profileUrl = `${SITE}/ngos/${actor.ngoId}`;
   const landingCode = typeof plan.landing === 'string' ? plan.landing : '';
   let landingUrl = profileUrl; // hangel-bagis + varsayılan

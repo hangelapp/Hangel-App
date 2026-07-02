@@ -5,13 +5,13 @@
 
 **Son güncelleme:** [GG.AA.YYYY]
 **Veri Sorumlusu:** [Şirket Ünvanı] — VERBİS Kayıt No: [XXXXX]
-**İletişim:** kvkk@hangel.org.tr
+**İletişim:** kvkk@hangel.org
 
 ---
 
 ## 1. Giriş
 
-hangel ("Platform"), `hangel.org.tr` web sitesi ile iOS/Android mobil uygulamaları üzerinden hizmet sunarken kullanıcı deneyimini iyileştirmek, hizmetlerin güvenliğini sağlamak ve yasal yükümlülüklerini yerine getirmek amacıyla çerezler ve benzeri izleme teknolojileri (yerel depolama, oturum depolama, SDK tanımlayıcıları) kullanmaktadır.
+hangel ("Platform"), `hangel.org` web sitesi ile iOS/Android mobil uygulamaları üzerinden hizmet sunarken kullanıcı deneyimini iyileştirmek, hizmetlerin güvenliğini sağlamak ve yasal yükümlülüklerini yerine getirmek amacıyla çerezler ve benzeri izleme teknolojileri (yerel depolama, oturum depolama, SDK tanımlayıcıları) kullanmaktadır.
 
 Bu politika; **6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK)**, **5651 sayılı Internet Ortamında Yapılan Yayınların Düzenlenmesi Kanunu**, **6563 sayılı Elektronik Ticaretin Düzenlenmesi Hakkında Kanun (ETK)** ile **Kişisel Verileri Koruma Kurulu'nun 20.06.2024 tarihli ve 2024/1158 sayılı çerez kullanımına ilişkin rehber kararı** uyarınca hazırlanmıştır.
 
@@ -70,7 +70,7 @@ Firebase ve Google Analytics hizmetleri, **Google LLC (ABD)** ve **Google Irelan
 
 ## 7. Haklarınız
 
-KVKK m.11 kapsamında; verilerinize erişme, düzeltme, silme, işlemeye itiraz etme ve veri taşınabilirliği haklarınız bulunmaktadır. Başvurularınızı `kvkk@hangel.org.tr` adresine veya VERBİS'te kayıtlı tebligat adresimize iletebilirsiniz. Şikâyetler için KVK Kurumu: `kvkk.gov.tr`.
+KVKK m.11 kapsamında; verilerinize erişme, düzeltme, silme, işlemeye itiraz etme ve veri taşınabilirliği haklarınız bulunmaktadır. Başvurularınızı `kvkk@hangel.org` adresine veya VERBİS'te kayıtlı tebligat adresimize iletebilirsiniz. Şikâyetler için KVK Kurumu: `kvkk.gov.tr`.
 
 ## 8. Güncellemeler
 

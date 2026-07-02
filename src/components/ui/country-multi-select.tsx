@@ -135,7 +135,7 @@ export function CountryMultiSelect({
             <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[280px] p-0" align="start">
+        <PopoverContent className="w-[280px] max-w-[calc(100vw-1rem)] p-0" align="start">
           <div className="p-2 border-b">
             <Input
               value={search}

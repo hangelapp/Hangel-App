@@ -133,7 +133,7 @@ export async function GET(
       address: fullAddress,
       timeLabel,
       ngoLogoUrl: e.organizerLogoUrl,
-      qrPayload: `https://hangel.org.tr/events/${eventId}`,
+      qrPayload: `https://hangel.org/events/${eventId}`,
     });
 
     return new NextResponse(new Uint8Array(buffer), {

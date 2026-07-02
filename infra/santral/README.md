@@ -10,13 +10,13 @@ yalnızca yazılımı ve geçidi sağlar.
 
 ```
   Tarayıcı (hangel paneli, SIP.js)
-        │  WSS  (wss://santral.hangel.org.tr:443)   [DTLS-SRTP, ICE, opus]
+        │  WSS  (wss://santral.hangel.org:443)   [DTLS-SRTP, ICE, opus]
         ▼
   ┌──────────────────────────────────────────────┐
   │  GEÇİT  (Ubuntu 22.04, tek VM, çok-kiracılı)   │
   │   • Asterisk (PJSIP)  — sinyalizasyon + medya  │
   │   • coturn (TURN/STUN) — NAT geçişi            │
-  │   • Let's Encrypt TLS  — santral.hangel.org.tr │
+  │   • Let's Encrypt TLS  — santral.hangel.org │
   └──────────────────────────────────────────────┘
         │  SIP/UDP 5060   [ulaw/alaw]
         ▼
@@ -63,10 +63,10 @@ uygula. Açılacak portlar:
 Kaynak `0.0.0.0/0` olabilir (tarayıcılar her yerden bağlanır).
 
 ### 3. DNS kaydı (Cloudflare)
-- Cloudflare → hangel.org.tr → **DNS → Records → Add record**
+- Cloudflare → hangel.org → **DNS → Records → Add record**
 - **A** kaydı: `santral` → VM'in dış IP'si
 - **Proxy durumu: DNS only (gri bulut)** — WSS/TURN proxy'lenemez, turuncu bulut KAPALI olmalı.
-- Yayılmayı bekle (`dig santral.hangel.org.tr` ile doğrula); sertifika için şart.
+- Yayılmayı bekle (`dig santral.hangel.org` ile doğrula); sertifika için şart.
 
 ### 4. Dosyaları sunucuya kopyala
 ```bash
@@ -97,8 +97,8 @@ yazar, servisleri başlatır. Idempotent — tekrar çalıştırılabilir.
 asterisk -rx 'pjsip show registrations'   # tenant1-pasifik-reg => Registered olmalı
 systemctl status coturn --no-pager
 ```
-Tarayıcı bağlantı adresi: `wss://santral.hangel.org.tr:443`,
-TURN: `turns:santral.hangel.org.tr:5349`.
+Tarayıcı bağlantı adresi: `wss://santral.hangel.org:443`,
+TURN: `turns:santral.hangel.org:5349`.
 
 ---
 

@@ -80,7 +80,7 @@ export function SearchableSelect({
                 key={item}
                 type="button"
                 className={cn(
-                  'w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-muted',
+                  'w-full truncate text-left px-3 py-2 text-sm rounded-lg hover:bg-muted',
                   value === item && 'bg-muted font-medium',
                 )}
                 onClick={() => select(item)}

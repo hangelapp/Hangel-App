@@ -78,8 +78,8 @@ async function main() {
   const domains = Array.from(domainSet).sort();
   const matches = domains.map(buildMatchPattern);
 
-  // host_permissions: hangel.org.tr + tüm marka domain'leri
-  const hostPermissions = ['https://hangel.org.tr/*', ...matches];
+  // host_permissions: hangel.org + tüm marka domain'leri
+  const hostPermissions = ['https://hangel.org/*', ...matches];
 
   const domainsPayload = {
     generatedAt: new Date().toISOString(),

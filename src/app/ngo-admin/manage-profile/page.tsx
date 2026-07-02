@@ -551,7 +551,7 @@ export default function ManageProfilePage() {
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelShortLink')}</Label>
                 <div className="flex items-center rounded-xl border h-11 overflow-hidden focus-within:ring-2 focus-within:ring-ring">
-                    <span className="px-3 text-sm text-muted-foreground bg-muted/50 h-full flex items-center select-none whitespace-nowrap">hangel.org.tr/s/</span>
+                    <span className="px-3 text-sm text-muted-foreground bg-muted/50 h-full flex items-center select-none whitespace-nowrap">hangel.org/s/</span>
                     <Input
                         value={shortLink}
                         onChange={(e) => setShortLink(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}

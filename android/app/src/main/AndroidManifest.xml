@@ -19,14 +19,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- App Links: hangel.org.tr links open Hangel app directly (Android verifies
+            <!-- App Links: hangel.org links open Hangel app directly (Android verifies
                  via .well-known/assetlinks.json on the domain at install time). -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="hangel.org.tr" />
-                <data android:scheme="https" android:host="www.hangel.org.tr" />
+                <data android:scheme="https" android:host="hangel.org" />
+                <data android:scheme="https" android:host="www.hangel.org" />
             </intent-filter>
         </activity>
 
@@ -39,7 +39,7 @@
         </provider>
 
         <!-- ===== Home-screen App Widget'ları (iOS WidgetKit ile parite) ===== -->
-        <!-- hangel Hızlı Erişim: 4 hızlı eylem, her biri hangel.org.tr App Link açar. -->
+        <!-- hangel Hızlı Erişim: 4 hızlı eylem, her biri hangel.org App Link açar. -->
         <receiver
             android:name="com.hangel.app.widgets.QuickAccessWidget"
             android:exported="false"
@@ -52,7 +52,7 @@
                 android:resource="@xml/widget_quick_access_info" />
         </receiver>
 
-        <!-- hangel markalı widget: wordmark + tagline → hangel.org.tr ana sayfa. -->
+        <!-- hangel markalı widget: wordmark + tagline → hangel.org ana sayfa. -->
         <receiver
             android:name="com.hangel.app.widgets.BrandWidget"
             android:exported="false"

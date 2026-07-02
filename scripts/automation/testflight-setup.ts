@@ -17,8 +17,8 @@ const BASE = 'https://api.appstoreconnect.apple.com/v1';
 
 const TEST_INFO = {
   feedbackEmail: 'ismailhilmi@hangel.org',
-  marketingUrl: 'https://hangel.org.tr',
-  privacyPolicyUrl: 'https://hangel.org.tr/privacy',
+  marketingUrl: 'https://hangel.org',
+  privacyPolicyUrl: 'https://hangel.org/privacy',
   contactFirstName: 'Ismail Hilmi',
   contactLastName: 'Adiguzel',
   contactEmail: 'ismailhilmi@hangel.org',

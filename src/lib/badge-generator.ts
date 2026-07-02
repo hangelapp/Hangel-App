@@ -72,7 +72,7 @@ export type BadgeInput = {
  * A6 arkalı önlü gönüllülük yaka kartı PDF üretir.
  *
  * Ön yüz: hangel logo, "gönüllülük sertifikası", kullanıcı adı, NGO adı, ilan başlığı, tarih.
- * Arka yüz: QR (hangel.org.tr/certificate/[id]), kısa açıklama, hangel.org.tr.
+ * Arka yüz: QR (hangel.org/certificate/[id]), kısa açıklama, hangel.org.
  */
 export async function generateVolunteerBadgePDF(
   certificate: Certificate,
@@ -89,7 +89,7 @@ export async function generateVolunteerBadgePDF(
   });
 
   // --- Paralel olarak QR + logo'yu data URI'ye çevir ---
-  const certUrl = `https://hangel.org.tr/certificate/${certificate.id}`;
+  const certUrl = `https://hangel.org/certificate/${certificate.id}`;
   const [logoUri, qrUri] = await Promise.all([
     typeof window !== 'undefined' ? urlToDataUri(HANGEL_LOGO_PATH) : Promise.resolve(null),
     generateQrDataUri(certUrl, 600),
@@ -198,7 +198,7 @@ export async function generateVolunteerBadgePDF(
   // Alt footer
   pdf.setFontSize(7);
   pdf.setTextColor(160, 160, 160);
-  pdf.text('hangel.org.tr', W / 2, H - 10, { align: 'center' });
+  pdf.text('hangel.org', W / 2, H - 10, { align: 'center' });
 
   // ============== ARKA YÜZ ==============
   pdf.addPage([W, H], 'portrait');
@@ -251,7 +251,7 @@ export async function generateVolunteerBadgePDF(
   pdf.setFontSize(7);
   pdf.setTextColor(r, g, b);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(`hangel.org.tr/certificate/${certificate.id}`, W / 2, qrY + qrSize + 11, {
+  pdf.text(`hangel.org/certificate/${certificate.id}`, W / 2, qrY + qrSize + 11, {
     align: 'center',
     maxWidth: W - 14,
   });
@@ -271,11 +271,11 @@ export async function generateVolunteerBadgePDF(
     maxWidth: W - 26,
   });
 
-  // Alt footer: hangel.org.tr
+  // Alt footer: hangel.org
   pdf.setFontSize(9);
   pdf.setTextColor(r, g, b);
   pdf.setFont('helvetica', 'bold');
-  pdf.text('hangel.org.tr', W / 2, H - 12, { align: 'center' });
+  pdf.text('hangel.org', W / 2, H - 12, { align: 'center' });
 
   pdf.setFontSize(7);
   pdf.setTextColor(160, 160, 160);
@@ -308,5 +308,5 @@ export function badgeFileName(certificate: Certificate): string {
  * Sertifika doğrulama URL'si (kanonik).
  */
 export function certificateUrl(certificate: Certificate): string {
-  return `https://hangel.org.tr/certificate/${certificate.id}`;
+  return `https://hangel.org/certificate/${certificate.id}`;
 }

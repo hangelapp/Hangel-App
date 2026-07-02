@@ -12,7 +12,7 @@
  * Dokunmadıkları:
  *   - Class names (HangelLogo, HangelApp, HangelService) — identifier
  *   - Bundle IDs (com.hangel.app) — zaten lowercase
- *   - Email domain (@hangel.org, @hangel.org.tr) — zaten lowercase
+ *   - Email domain (@hangel.org, @hangel.org) — zaten lowercase
  *   - Resmi şirket ünvanı (örn. "Hangel Teknoloji A.Ş.") — KORUR
  *
  * Çalıştırma:

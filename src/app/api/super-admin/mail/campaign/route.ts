@@ -187,7 +187,7 @@ export async function POST(req: Request) {
     ngoId: PLATFORM_MAIL_ID,
     templateId: null,
     subject: body.subject.trim(),
-    body: withSignature(body.body, account.signature?.trim() || ['hangel', 'hangel.org.tr', fromEmail].filter(Boolean).join('\n')),
+    body: withSignature(body.body, account.signature?.trim() || ['hangel', 'hangel.org', fromEmail].filter(Boolean).join('\n')),
     senderId: fromEmail,
     fromEmail,
     fromName: fromName || null,

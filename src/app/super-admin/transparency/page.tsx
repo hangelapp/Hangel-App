@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, addDoc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -154,6 +155,8 @@ export default function TransparencyPage() {
   const { data: transparencyDocs, isLoading: tLoading } = useCollection<{ id: string; criteria?: TItem[] }>(transparencyQuery);
   const [approvingKey, setApprovingKey] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<TItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ ownerUid: string; item: TItem } | null>(null);
+  const [deletingItem, setDeletingItem] = useState(false);
   // Süper-admin'in belge/bilgi düzenleyip onaylayabildiği tam editör hedefi.
   const [editorTarget, setEditorTarget] = useState<{ ngoId: string; ownerUid: string; name: string } | null>(null);
 
@@ -204,6 +207,28 @@ export default function TransparencyPage() {
       toast({ variant: 'destructive', title: 'İşlem başarısız', description: e instanceof Error ? e.message : '' });
     } finally {
       setApprovingKey(null);
+    }
+  };
+
+  // Kriter belgesini/bilgisini sil (Admin SDK route — transparency owner-only yazılır).
+  const confirmDeleteItem = async () => {
+    if (!authUser || !deleteTarget) return;
+    setDeletingItem(true);
+    try {
+      const token = await authUser.getIdToken();
+      const res = await fetch('/api/super-admin/transparency/delete-item', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ownerUid: deleteTarget.ownerUid, itemId: deleteTarget.item.id }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || 'Silinemedi');
+      toast({ title: 'Belge silindi', description: body.ngoUpdated ? `STK şeffaflık puanı: ${body.approvedScore}` : 'Kaydedildi.' });
+      setDeleteTarget(null);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Silinemedi', description: e instanceof Error ? e.message : '' });
+    } finally {
+      setDeletingItem(false);
     }
   };
 
@@ -386,6 +411,14 @@ export default function TransparencyPage() {
                           <div className="flex items-center gap-2 shrink-0">
                             <Button size="icon" variant="ghost" className="h-9 w-9" aria-label="İncele" disabled={!hasContent} onClick={() => setPreviewItem(it)}>
                               <Eye className="h-4 w-4" />
+                            </Button>
+                            {hasContent && it.fileUrl && (
+                              <Button asChild size="icon" variant="ghost" className="h-9 w-9" aria-label="İndir">
+                                <a href={it.fileUrl} target="_blank" rel="noopener noreferrer" download><FileText className="h-4 w-4" /></a>
+                              </Button>
+                            )}
+                            <Button size="icon" variant="ghost" className="h-9 w-9 text-destructive" aria-label="Sil" onClick={() => setDeleteTarget({ ownerUid: p.ownerUid, item: it })}>
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                             <Button size="sm" disabled={approvingKey === `${p.ownerUid}:${it.id}`} onClick={() => approveItem(p.ownerUid, it.id, true)} className="bg-green-600 hover:bg-green-700">
                               {approvingKey === `${p.ownerUid}:${it.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle className="h-4 w-4 mr-1.5" /> Onayla</>}
@@ -667,6 +700,27 @@ export default function TransparencyPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Belgeyi sil?</AlertDialogTitle>
+            <AlertDialogDescription>
+              &quot;{deleteTarget?.item.name}&quot; kriterine girilen belge/bilgi kaldırılacak ve STK&apos;nın şeffaflık puanı yeniden hesaplanacak. Bu işlem geri alınamaz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingItem}>Vazgeç</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); void confirmDeleteItem(); }}
+              disabled={deletingItem}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingItem ? 'Siliniyor…' : 'Sil'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

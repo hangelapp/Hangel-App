@@ -14,19 +14,19 @@ import com.hangel.app.R;
 /**
  * hangel Hızlı Erişim widget'ı — iOS QuickAccessWidget paritesi (statik, veri gerektirmez).
  *
- * 4 kutu, her biri kendi PendingIntent'i ile hangel.org.tr App Link'ini açar. Android'de
+ * 4 kutu, her biri kendi PendingIntent'i ile hangel.org App Link'ini açar. Android'de
  * özel "hangel://" şeması YOK; HTTPS App Links (autoVerify) Capacitor uygulamasını açar.
  *
- *   Bağış      → https://hangel.org.tr/social-impact
- *   Gönüllülük → https://hangel.org.tr/volunteering
- *   Etkinlikler→ https://hangel.org.tr/events
- *   Acil Kan   → https://hangel.org.tr/blood
+ *   Bağış      → https://hangel.org/social-impact
+ *   Gönüllülük → https://hangel.org/volunteering
+ *   Etkinlikler→ https://hangel.org/events
+ *   Acil Kan   → https://hangel.org/blood
  *
  * İçerik statik → updatePeriodMillis 0; sadece onUpdate/onEnabled'da bir kez kurulur.
  */
 public class QuickAccessWidget extends AppWidgetProvider {
 
-    private static final String BASE_URL = "https://hangel.org.tr";
+    private static final String BASE_URL = "https://hangel.org";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -52,7 +52,7 @@ public class QuickAccessWidget extends AppWidgetProvider {
     }
 
     /**
-     * ACTION_VIEW ile https://hangel.org.tr/{route} açan PendingIntent üretir.
+     * ACTION_VIEW ile https://hangel.org/{route} açan PendingIntent üretir.
      * FLAG_IMMUTABLE (API 23+; bu projede minSdk 24) ve her kutu için ayrı requestCode.
      */
     private static PendingIntent deepLink(Context context, String route, int requestCode) {

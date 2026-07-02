@@ -71,8 +71,8 @@ export const onNotificationCreated = onDocumentCreated(
             webpush: {
                 fcmOptions: { link: clickAction },
                 notification: {
-                    icon: 'https://hangel.org.tr/icon-192.png',
-                    badge: 'https://hangel.org.tr/badge-72.png',
+                    icon: 'https://hangel.org/icon-192.png',
+                    badge: 'https://hangel.org/badge-72.png',
                 },
             },
         };

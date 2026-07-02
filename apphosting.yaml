@@ -68,10 +68,10 @@ env:
     availability:
       - BUILD
       - RUNTIME
-  # Santral WebRTC geçidi (kendi sunucumuz — santral.hangel.org.tr). NEXT_PUBLIC:
+  # Santral WebRTC geçidi (kendi sunucumuz — santral.hangel.org). NEXT_PUBLIC:
   # softphone credential'ları doğası gereği tarayıcıda; rotate edilebilir.
   - variable: NEXT_PUBLIC_SANTRAL_WSS_URL
-    value: "wss://santral.hangel.org.tr/ws"
+    value: "wss://santral.hangel.org/ws"
     availability:
       - BUILD
       - RUNTIME
@@ -86,12 +86,12 @@ env:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_SANTRAL_SIP_DOMAIN
-    value: "santral.hangel.org.tr"
+    value: "santral.hangel.org"
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_SANTRAL_TURN_URL
-    value: "turn:santral.hangel.org.tr:3478"
+    value: "turn:santral.hangel.org:3478"
     availability:
       - BUILD
       - RUNTIME

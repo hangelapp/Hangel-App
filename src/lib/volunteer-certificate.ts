@@ -5,7 +5,7 @@
 // - Tasarım etkinlik sertifikasından FARKLI: üstte coral degrade bant + kalp motifi,
 //   ortada duygusal alıntı. iOS-GÜVENLİ: self-contained SVG → Image → canvas → jsPDF
 //   (html2canvas YOK, foreignObject YOK; sistem fontuyla Türkçe glyph'ler doğru).
-// - Doğrulama: H ile başlayan kısa kod + kontrol linki + QR (hangel.org.tr/c/{kod}).
+// - Doğrulama: H ile başlayan kısa kod + kontrol linki + QR (hangel.org/c/{kod}).
 
 import { buildCertCode, certVerifyUrl } from '@/lib/certificate-code';
 
@@ -159,7 +159,7 @@ export async function generateVolunteerCertificate(input: VolunteerCertificateIn
   ${qrUri ? `<image x="${PX_W - 54 - 40}" y="${PX_H - 54 - 44}" width="54" height="54" href="${qrUri}" xlink:href="${qrUri}"/>
   <text x="${PX_W - 40 - 27}" y="${PX_H - 30}" font-size="8" fill="#aeaeb2" text-anchor="middle">${escXml(fit(verifyShort, 32))}</text>` : ''}
 
-  <text x="${PX_W / 2}" y="${PX_H - 28}" font-size="12" font-weight="700" fill="${CORAL}" text-anchor="middle">hangel.org.tr</text>
+  <text x="${PX_W / 2}" y="${PX_H - 28}" font-size="12" font-weight="700" fill="${CORAL}" text-anchor="middle">hangel.org</text>
   <text x="${PX_W / 2}" y="${PX_H - 13}" font-size="9" fill="#c7c7cc" text-anchor="middle">Sertifika Kodu: ${escXml(code)}</text>
 </svg>`;
 

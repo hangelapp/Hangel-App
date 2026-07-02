@@ -220,7 +220,7 @@ export function LocationFields({
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-2 min-w-0">
         <Label>{cityLabel}{required && ' *'}</Label>
         {cityOptions.length > 0 ? (
           <SearchableSelect
@@ -236,7 +236,7 @@ export function LocationFields({
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 min-w-0">
         <Label>{districtLabel}{required && ' *'}</Label>
         {isTurkey || districtOptions.length > 0 ? (
           <SearchableSelect
@@ -254,7 +254,7 @@ export function LocationFields({
       </div>
 
       {showNeighborhood && (
-        <div className="space-y-2">
+        <div className="space-y-2 min-w-0">
           <Label>{labelNeighborhood}{required && ' *'}</Label>
           {isTurkey && neighborhoodOptions.length > 0 ? (
             <SearchableSelect
@@ -274,7 +274,7 @@ export function LocationFields({
 
       {/* Kapı No önce — kullanıcı talebi: Kapı No ile Açık Adres yer değiştirsin. */}
       {showDoorNo && (
-        <div className="space-y-2">
+        <div className="space-y-2 min-w-0">
           <Label>{labelDoorNo}</Label>
           <Input
             value={currentDoorNo}
@@ -286,7 +286,7 @@ export function LocationFields({
       )}
 
       {showOpenAddress && (
-        <div className="space-y-2 md:col-span-2">
+        <div className="space-y-2 md:col-span-2 min-w-0">
           <Label className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {labelOpenAddress}{required && ' *'}</Label>
           <PlaceAutocomplete
             value={currentOpenAddress}
@@ -320,7 +320,7 @@ export function LocationFields({
       )}
 
       {showPostalCode && (
-        <div className="space-y-2">
+        <div className="space-y-2 min-w-0">
           <Label>{labelPostalCode}</Label>
           <Input
             value={currentPostalCode}

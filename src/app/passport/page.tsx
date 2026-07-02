@@ -81,7 +81,7 @@ export default function PassportPage() {
       + `${formatNum(data.totalEvents)} ${t('passportPage.shareEvents')}\n`
       + `${formatTry(data.totalDonationsTry)} ${t('passportPage.shareDonations')}\n`
       + `\n#hangel #sosyaletki`;
-    const url = `https://hangel.org.tr/profile/${user.uid}`;
+    const url = `https://hangel.org/profile/${user.uid}`;
 
     if (Capacitor.isNativePlatform()) {
       try {

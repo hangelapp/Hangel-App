@@ -3,7 +3,7 @@
 /**
  * Native QR tarama — Capacitor (iOS/Android) üzerinde ML Kit barkod tarayıcı.
  *
- * NEDEN: app uzaktan https://hangel.org.tr'yi WebView'da yüklüyor; QR taraması
+ * NEDEN: app uzaktan https://hangel.org'yi WebView'da yüklüyor; QR taraması
  * eskiden getUserMedia + jsQR ile WebView içinde yapılıyordu. Bazı eski/OEM
  * Android WebView'ları getUserMedia'yı düzgün desteklemediğinden kamera ekranı
  * açılmıyordu. ML Kit `scan()` Google Play Services'in HAZIR kod tarayıcısını

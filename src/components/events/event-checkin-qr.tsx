@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { QrCode, ScanLine, Loader2, RefreshCw, CheckCircle2, Clock } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { LogoQr } from '@/components/shared/logo-qr';
 
 interface Person {
   uid: string; name: string; email: string;
@@ -32,16 +33,15 @@ interface AttendanceResponse {
 
 type Mode = 'kayit' | 'checkin';
 
-export function EventCheckinQR({ eventId }: { eventId: string }) {
+export function EventCheckinQR({ eventId, logoUrl }: { eventId: string; logoUrl?: string | null }) {
   const { user } = useUser();
   const { toast } = useToast();
   const [mode, setMode] = useState<Mode | null>(null);
-  const [qr, setQr] = useState('');
   const [data, setData] = useState<AttendanceResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
   const scanUrl = useCallback((m: Mode) => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org.tr';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
     return `${origin}/e/${eventId}/${m}`;
   }, [eventId]);
 
@@ -62,10 +62,9 @@ export function EventCheckinQR({ eventId }: { eventId: string }) {
   }, [eventId, user, toast]);
 
   const open = useCallback((m: Mode) => {
-    setMode(m); setData(null); setQr('');
-    import('qrcode').then((q) => q.default.toDataURL(scanUrl(m), { width: 360, margin: 1 })).then(setQr).catch(() => undefined);
+    setMode(m); setData(null);
     void loadList();
-  }, [scanUrl, loadList]);
+  }, [loadList]);
 
   const people = data?.people ?? [];
   const registered = people.filter((p) => p.registered);
@@ -92,12 +91,9 @@ export function EventCheckinQR({ eventId }: { eventId: string }) {
 
           {/* Büyük QR */}
           <div className="flex flex-col items-center gap-2">
-            {qr ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={qr} alt="QR" className="h-56 w-56 rounded-2xl border bg-white p-2 shadow-sm" />
-            ) : (
-              <div className="h-56 w-56 animate-pulse rounded-2xl bg-muted" />
-            )}
+            <div className="rounded-2xl border bg-white p-2 shadow-sm">
+              <LogoQr value={scanUrl(mode ?? 'checkin')} logoUrl={logoUrl} size={216} className="rounded-lg" />
+            </div>
             <p className="break-all text-center text-xs text-muted-foreground">{scanUrl(mode ?? 'checkin')}</p>
           </div>
 

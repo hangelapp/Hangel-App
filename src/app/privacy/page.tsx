@@ -96,7 +96,7 @@ export default function PrivacyPage() {
             <tr><td><code>activeTab</code></td><td>Mevcut sekme URL&apos;sini yerelde karşılaştırmak</td></tr>
             <tr><td><code>tabs</code></td><td>&quot;Yapsın&quot; tıklamasında affiliate URL&apos;e yönlendirmek</td></tr>
             <tr><td><code>alarms</code></td><td>Saatte bir marka listesi güncelleme</td></tr>
-            <tr><td><code>host_permissions: hangel.org.tr/*</code></td><td>Marka listesi + affiliate link API&apos;leri</td></tr>
+            <tr><td><code>host_permissions: hangel.org/*</code></td><td>Marka listesi + affiliate link API&apos;leri</td></tr>
           </tbody>
         </table>
 

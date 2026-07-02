@@ -89,9 +89,9 @@ const LANDING_LABEL: Record<AdProposal['landing'], string> = {
 };
 // Google Arama reklamında yeşil görünen URL — açılış sayfasına göre.
 const LANDING_DISPLAY_URL: Record<AdProposal['landing'], string> = {
-    'kurum-sitesi': 'hangel.org.tr',
-    'hangel-bagis': 'hangel.org.tr',
-    'hangel-gonulluluk': 'hangel.org.tr/gönüllülük',
+    'kurum-sitesi': 'hangel.org',
+    'hangel-bagis': 'hangel.org',
+    'hangel-gonulluluk': 'hangel.org/gönüllülük',
 };
 
 type PlanStatus = 'submitted' | 'approved' | 'linked' | 'active' | 'rejected';
@@ -2132,7 +2132,7 @@ function GoogleAdPreview({ headlines, descriptions, landing }: {
     descriptions?: string[];
     landing?: AdProposal['landing'];
 }) {
-    const displayUrl = landing ? LANDING_DISPLAY_URL[landing] : 'hangel.org.tr';
+    const displayUrl = landing ? LANDING_DISPLAY_URL[landing] : 'hangel.org';
     const title = (headlines ?? []).slice(0, 3).filter(Boolean).join(' | ');
     const desc = (descriptions ?? []).slice(0, 2).filter(Boolean).join(' ');
     if (!title && !desc) return null;

@@ -6,7 +6,7 @@
 //   3. Event yüklendi: başlık + STK + konum + "Check-in" butonu.
 //   4. Check-in tamamlandı: yeşil onay + "Hangel'i indir" CTA.
 //
-// Check-in REST endpoint: POST https://hangel.org.tr/api/clip/checkin
+// Check-in REST endpoint: POST https://hangel.org/api/clip/checkin
 // Body: { "eventId": "...", "deviceId": "<UUID>" }
 // Backend rate-limited; cihaz başına 24 saatte 1 check-in.
 
@@ -159,7 +159,7 @@ struct ContentView: View {
     private var footer: some View {
         VStack(spacing: 4) {
             Divider()
-            Text("hangel.org.tr · Sivil toplum + gönüllülük platformu")
+            Text("hangel.org · Sivil toplum + gönüllülük platformu")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
         }

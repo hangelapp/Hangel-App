@@ -1,6 +1,6 @@
 // HangelAppClipApp — App Clip entry point.
 //
-// Apple App Clip Experience: https://hangel.org.tr/clip/event/{eventId}
+// Apple App Clip Experience: https://hangel.org/clip/event/{eventId}
 // Kullanıcı QR kodu okuttuğunda iOS App Clip Card açar; Clip indirilir ve
 // `NSUserActivityTypeBrowsingWeb` üzerinden URL'i alır. URL'den `eventId`
 // parse edilip Firestore'dan etkinlik bilgileri çekilir, "Check-in" butonu
@@ -29,7 +29,7 @@ struct HangelAppClipApp: App {
     }
 
     /// App Clip invocation URL'i parse et.
-    /// URL şeması: https://hangel.org.tr/clip/event/{eventId}
+    /// URL şeması: https://hangel.org/clip/event/{eventId}
     private func handleUserActivity(_ activity: NSUserActivity) {
         guard let url = activity.webpageURL else { return }
         // pathComponents: ["/", "clip", "event", "{eventId}"]

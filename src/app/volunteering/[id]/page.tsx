@@ -334,7 +334,7 @@ export default function VolunteeringDetailPage() {
   // Doğum tarihi — kartta GÖSTERİLMEZ; yalnız arka QR (vCard BDAY) içinde kodlanır.
   const cardBirthRaw = (cardUser.personalInfo as { birthDate?: string } | undefined)?.birthDate || '';
   // hangel profil linki — kartta gösterilmez; yalnız arka QR (vCard URL) içinde.
-  const profileUrlForCard = authUser?.uid ? `hangel.org.tr/profile/${authUser.uid}` : '';
+  const profileUrlForCard = authUser?.uid ? `hangel.org/profile/${authUser.uid}` : '';
   // Arka QR = vCard: tel + mail + doğum + profil URL kodlu (metin olarak gösterilmez).
   const backQrData = [
     'BEGIN:VCARD', 'VERSION:3.0',

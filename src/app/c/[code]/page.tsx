@@ -2,7 +2,7 @@
 
 /**
  * /c/[code] — herkese açık (giriş gerektirmeyen) hangel sertifika doğrulama sayfası.
- * Kısa link: https://hangel.org.tr/c/{KOD}  (tiresiz, ör. H9022610076)
+ * Kısa link: https://hangel.org/c/{KOD}  (tiresiz, ör. H9022610076)
  *
  * Üç durum:
  *   • Geçerli + kayıtlı → yeşil onay + sahibi/etkinlik/STK/faaliyet/tarih (DB'den).
@@ -184,7 +184,7 @@ export default function CertificateVerifyPage() {
         <div className="mt-8 flex flex-col items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icon-512.png" alt="hangel" width={28} height={28} className="rounded-md" />
-          <span className="text-sm font-semibold" style={{ color: CORAL }}>hangel.org.tr</span>
+          <span className="text-sm font-semibold" style={{ color: CORAL }}>hangel.org</span>
         </div>
       </div>
     </div>

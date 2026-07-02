@@ -1,13 +1,13 @@
 /**
  * Android Digital Asset Links for App Links + WhatsApp One-Tap OTP.
  *
- * Served at: https://hangel.org.tr/.well-known/assetlinks.json
+ * Served at: https://hangel.org/.well-known/assetlinks.json
  * Content-Type: application/json
  *
  * package_name: com.hangel.app (Play Store)
  * sha256_cert_fingerprints: Play App Signing key SHA-256
  *
- * - common.handle_all_urls → App Links (hangel.org.tr links open in Hangel app)
+ * - common.handle_all_urls → App Links (hangel.org links open in Hangel app)
  * - common.get_login_creds  → WhatsApp One-Tap OTP autofill (Authentication template)
  */
 import { NextResponse } from 'next/server';

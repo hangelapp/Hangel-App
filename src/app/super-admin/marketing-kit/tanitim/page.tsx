@@ -21,7 +21,7 @@ export default function MarketingKitTanitimPreviewPage() {
           </h1>
           <p className="text-muted-foreground text-sm font-medium">
             “Herkese açık” + “Yayında” işaretlediğiniz materyaller — giriş yapmamış ziyaretçilerin de gördüğü
-            herkese açık sayfa. Konferanslarda <span className="font-bold">hangel.org.tr/tanitim</span> linkini açın.
+            herkese açık sayfa. Konferanslarda <span className="font-bold">hangel.org/tanitim</span> linkini açın.
           </p>
         </div>
         <Button asChild className="rounded-xl font-bold h-11 px-5 shrink-0">

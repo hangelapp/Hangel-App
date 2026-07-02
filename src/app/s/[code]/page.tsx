@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Kısa profil bağlantısı: hangel.org.tr/s/{code}
+ * Kısa profil bağlantısı: hangel.org/s/{code}
  * STK/marka/kulüp dokümanlarında shortLink == code olanı bulur ve profil sayfasına
  * yönlendirir. Kurumlar bu kodu yönetim panelinden (Profili Güncelle) belirler.
  */

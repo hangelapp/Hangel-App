@@ -20,7 +20,7 @@ public class MainActivity extends BridgeActivity {
         // WebView'in kamera/mikrofon izin isteğini ele al. WebView grant'i TEK BAŞINA
         // yetmez — Android 6+'da OS-seviyesi runtime CAMERA izni de alınmalı. O yüzden
         // izin yoksa önce kullanıcıdan iste, alınca WebView'e grant et (yoksa kamera
-        // "erişilemedi" hatası verir). İçerik yalnız birinci-taraf hangel.org.tr.
+        // "erişilemedi" hatası verir). İçerik yalnız birinci-taraf hangel.org.
         getBridge().getWebView().setWebChromeClient(new BridgeWebChromeClient(getBridge()) {
             @Override
             public void onPermissionRequest(final PermissionRequest request) {

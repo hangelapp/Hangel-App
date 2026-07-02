@@ -112,3 +112,4 @@ android/app/upload_certificate.pem
 /.apphosting/.hangelorg-sa.json
 .hangelorg-sa.json
 /new-app
+.old-sa.json

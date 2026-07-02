@@ -45,13 +45,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const loc = e.location?.type === 'Online'
     ? 'Online'
     : [e.location?.address, e.location?.district, e.location?.city].filter(Boolean).join(', ');
-  const url = `https://hangel.org.tr/events/${eventId}`;
+  const url = `https://hangel.org/events/${eventId}`;
   const desc = `${e.description || ''}\nDüzenleyen: ${e.organizer || 'hangel'}\n${url}`.trim();
 
   const ics = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//hangel//TR//', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:hangel-${eventId}@hangel.org.tr`,
+    `UID:hangel-${eventId}@hangel.org`,
     `DTSTAMP:${fmtIcs(new Date())}`,
     `DTSTART:${fmtIcs(start)}`,
     `DTEND:${fmtIcs(end)}`,

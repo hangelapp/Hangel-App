@@ -3,9 +3,9 @@
 /**
  * /super-admin/settings/asset-links
  *
- * Android Play Store ↔ hangel.org.tr Digital Asset Links yönetimi.
+ * Android Play Store ↔ hangel.org Digital Asset Links yönetimi.
  *
- * Bu sayfa hangel.org.tr/.well-known/assetlinks.json dosyasını yönetir:
+ * Bu sayfa hangel.org/.well-known/assetlinks.json dosyasını yönetir:
  *   - Mevcut JSON'ı görüntüle
  *   - Play Console'dan SHA-256 fingerprint çek ve ekle
  *   - Universal Links (iOS apple-app-site-association) ile birlikte yönet
@@ -38,7 +38,7 @@ export default function AssetLinksPage() {
       <div>
         <h1 className="text-3xl font-black tracking-tighter">Digital Asset Links</h1>
         <p className="text-muted-foreground text-sm font-medium mt-1">
-          Android uygulamanın hangel.org.tr URL'lerini direkt açabilmesi için domain doğrulama.
+          Android uygulamanın hangel.org URL'lerini direkt açabilmesi için domain doğrulama.
         </p>
       </div>
 
@@ -51,7 +51,7 @@ export default function AssetLinksPage() {
             <div>
               <CardTitle>Mevcut durum</CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
-                <code>hangel.org.tr/.well-known/assetlinks.json</code>
+                <code>hangel.org/.well-known/assetlinks.json</code>
               </p>
             </div>
           </div>
@@ -64,7 +64,7 @@ export default function AssetLinksPage() {
             </p>
           </div>
           <a
-            href="https://hangel.org.tr/.well-known/assetlinks.json"
+            href="https://hangel.org/.well-known/assetlinks.json"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center text-sm text-primary hover:underline"

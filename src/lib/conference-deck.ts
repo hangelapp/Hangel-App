@@ -35,7 +35,7 @@ export const DECK_ID = 'gelir-modeli-konferanslari';
 export const DECK_COLLECTION = 'siteSettings';
 export const DECK_DOC = 'conferenceDeck';
 // Kapanış/teşekkür QR'ının yönlendireceği hangel sayfası.
-export const DECK_QR_URL = 'https://hangel.org.tr/gelir-modeli-konferanslari';
+export const DECK_QR_URL = 'https://hangel.org/gelir-modeli-konferanslari';
 
 export const SLIDE_KIND_LABEL: Record<SlideKind, string> = {
   title: 'Başlık',

@@ -5,7 +5,7 @@
  * Next.js router'a yönlendirir.
  *
  * Tetiklendiği iki durum:
- *  - Universal Link: Safari/Mesajlar'dan tıklanan `https://hangel.org.tr/...`
+ *  - Universal Link: Safari/Mesajlar'dan tıklanan `https://hangel.org/...`
  *  - Custom Scheme: Siri Shortcuts / NFC etiketi `hangel://...`
  *
  * Apple Universal Link konfigürasyonu için `public/.well-known/apple-app-site-association`
@@ -39,7 +39,7 @@ export function initDeepLinkListener(navigate: (path: string) => void): Unsubscr
   void App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
     try {
       const url = new URL(event.url);
-      // Universal Link (http/https): hangel.org.tr/ngo/abc → /ngo/abc (sadece pathname)
+      // Universal Link (http/https): hangel.org/ngo/abc → /ngo/abc (sadece pathname)
       // Custom Scheme (hangel://): host İLK segmenttir → host + pathname'i BİRLEŞTİR.
       //   hangel://blood        → /blood
       //   hangel://event/123    → /event/123   (eski kod host'u düşürüp /123 yapıyordu — bug)

@@ -19,12 +19,12 @@ import com.hangel.app.R;
  * gösterir. Veri henüz yazılmadıysa placeholder (0 / "Gönüllü") gösterir; web
  * tarafı HangelWidget.setData(...) çağırınca gerçek değerle yeniden çizilir.
  *
- * Tüm kart tıklanınca https://hangel.org.tr/profile App Link'ini açar (Android'de
+ * Tüm kart tıklanınca https://hangel.org/profile App Link'ini açar (Android'de
  * hangel:// şeması YOK; autoVerify HTTPS App Links uygulamayı açar).
  */
 public class ImpactScoreWidget extends AppWidgetProvider {
 
-    private static final String ROUTE_URL = "https://hangel.org.tr/profile";
+    private static final String ROUTE_URL = "https://hangel.org/profile";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {

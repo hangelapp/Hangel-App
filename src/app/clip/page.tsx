@@ -29,7 +29,7 @@ export default function ClipLandingPage() {
             Etkinlikleri Gör
           </Link>
         </div>
-        <p className="mt-5 text-[11px] text-muted-foreground">hangel.org.tr</p>
+        <p className="mt-5 text-[11px] text-muted-foreground">hangel.org</p>
       </div>
     </main>
   );

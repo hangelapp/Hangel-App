@@ -11,7 +11,7 @@
  *   5. "Sonra" → toast kapanır (sayfayı kapatınca tekrar gelir)
  *   6. "Bir daha sorma" → 30 gün dismiss kaydedilir
  *
- * Privacy: brand match TAMAMEN local. Tab URL hangel.org.tr'ye GİTMEZ.
+ * Privacy: brand match TAMAMEN local. Tab URL hangel.org'ye GİTMEZ.
  * Sadece kullanıcı "Yapsın" derse o anki brandId gönderilir.
  */
 
@@ -21,8 +21,8 @@
   const DISMISS_DAYS = 30;
   const TOAST_ID = 'hangel-popart-toast';
 
-  // Sayfa zaten hangel.org.tr ise hiçbir şey yapma
-  if (window.location.hostname.endsWith('hangel.org.tr')) return;
+  // Sayfa zaten hangel.org ise hiçbir şey yapma
+  if (window.location.hostname.endsWith('hangel.org')) return;
 
   // Zaten toast inject edildi mi?
   if (document.getElementById(TOAST_ID)) return;
