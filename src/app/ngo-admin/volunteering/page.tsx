@@ -187,6 +187,19 @@ function ListingsTab({
           applications: editing?.volunteerCount?.applications ?? 0,
         },
         commitment: values.commitment,
+        hours: {
+          start: values.hoursStart,
+          end: values.hoursEnd,
+          total: values.hoursTotal,
+        },
+        amenities: {
+          transport: values.transport,
+          food: values.food,
+          accommodation: values.accommodation,
+        },
+        requirements: values.requirements,
+        participationCondition: values.participationCondition,
+        hasPreTraining: values.hasPreTraining,
       };
 
       if (editing) {
@@ -294,6 +307,15 @@ function ListingsTab({
         commitment: editing.commitment ?? 'Tek Günlük',
         skills: editing.skills ?? [],
         interests: editing.interests ?? [],
+        hoursStart: editing.hours?.start ?? '',
+        hoursEnd: editing.hours?.end ?? '',
+        hoursTotal: editing.hours?.total ?? 0,
+        transport: editing.amenities?.transport ?? false,
+        food: editing.amenities?.food ?? false,
+        accommodation: editing.amenities?.accommodation ?? false,
+        requirements: editing.requirements ?? [],
+        participationCondition: editing.participationCondition ?? '',
+        hasPreTraining: editing.hasPreTraining ?? false,
       }
     : undefined;
 

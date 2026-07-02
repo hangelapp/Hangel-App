@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, X } from 'lucide-react';
 import { useTranslation } from '@/components/providers/language-provider';
 import { LocationFields } from '@/components/shared/location-fields';
@@ -36,6 +37,16 @@ export type ListingFormValues = {
   capacity: number;
   skills: string[];
   interests: string[];
+  // İleri detaylar
+  hoursStart: string;
+  hoursEnd: string;
+  hoursTotal: number;
+  transport: boolean;
+  food: boolean;
+  accommodation: boolean;
+  requirements: string[];
+  participationCondition: string;
+  hasPreTraining: boolean;
 };
 
 const EMPTY: ListingFormValues = {
@@ -54,6 +65,15 @@ const EMPTY: ListingFormValues = {
   capacity: 1,
   skills: [],
   interests: [],
+  hoursStart: '',
+  hoursEnd: '',
+  hoursTotal: 0,
+  transport: false,
+  food: false,
+  accommodation: false,
+  requirements: [],
+  participationCondition: '',
+  hasPreTraining: false,
 };
 
 // Kanonik seçenekler — rozet motoru socialArea'yı normalize eder (resolveBadgeArea).
@@ -79,6 +99,7 @@ export function ListingForm({ initialValues, onSubmit, onCancel, submitting }: P
   const [values, setValues] = useState<ListingFormValues>({ ...EMPTY, ...initialValues });
   const [skillInput, setSkillInput] = useState('');
   const [interestInput, setInterestInput] = useState('');
+  const [requirementInput, setRequirementInput] = useState('');
 
   useEffect(() => {
     if (initialValues) {
@@ -90,17 +111,22 @@ export function ListingForm({ initialValues, onSubmit, onCancel, submitting }: P
     setValues((prev) => ({ ...prev, [key]: val }));
   };
 
-  const addChip = (kind: 'skills' | 'interests', raw: string) => {
+  type ChipKind = 'skills' | 'interests' | 'requirements';
+  const chipReset: Record<ChipKind, (v: string) => void> = {
+    skills: setSkillInput,
+    interests: setInterestInput,
+    requirements: setRequirementInput,
+  };
+  const addChip = (kind: ChipKind, raw: string) => {
     const v = raw.trim();
     if (!v) return;
     const current = values[kind];
     if (current.includes(v)) return;
     update(kind, [...current, v]);
-    if (kind === 'skills') setSkillInput('');
-    else setInterestInput('');
+    chipReset[kind]('');
   };
 
-  const removeChip = (kind: 'skills' | 'interests', val: string) => {
+  const removeChip = (kind: ChipKind, val: string) => {
     update(
       kind,
       values[kind].filter((s) => s !== val),
@@ -262,6 +288,102 @@ export function ListingForm({ initialValues, onSubmit, onCancel, submitting }: P
             )}
           </select>
         </div>
+      </div>
+
+      {/* İleri detaylar — hepsi opsiyonel */}
+      <div className="rounded-xl border bg-muted/20 p-3 space-y-4">
+        <p className="text-sm font-semibold">Detaylar (opsiyonel)</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="listing-hstart">Başlangıç Saati</Label>
+            <Input id="listing-hstart" type="time" value={values.hoursStart} onChange={(e) => update('hoursStart', e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="listing-hend">Bitiş Saati</Label>
+            <Input id="listing-hend" type="time" value={values.hoursEnd} onChange={(e) => update('hoursEnd', e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="listing-htotal">Toplam Saat (tahmini)</Label>
+            <Input
+              id="listing-htotal"
+              type="number"
+              min={0}
+              step={0.5}
+              value={values.hoursTotal}
+              onChange={(e) => update('hoursTotal', Math.max(0, Number(e.target.value) || 0))}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>İmkânlar</Label>
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox checked={values.transport} onCheckedChange={(c) => update('transport', c === true)} /> Ulaşım
+            </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox checked={values.food} onCheckedChange={(c) => update('food', c === true)} /> Yemek
+            </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox checked={values.accommodation} onCheckedChange={(c) => update('accommodation', c === true)} /> Konaklama
+            </label>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="listing-req">Gereksinimler / Belgeler</Label>
+          <div className="flex gap-2">
+            <Input
+              id="listing-req"
+              value={requirementInput}
+              onChange={(e) => setRequirementInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addChip('requirements', requirementInput);
+                }
+              }}
+              placeholder="Örn. Sağlık raporu, ehliyet, gönüllülük sözleşmesi…"
+            />
+            <Button type="button" variant="secondary" onClick={() => addChip('requirements', requirementInput)}>
+              {t('ngo_admin_volunteering.form.addBtn')}
+            </Button>
+          </div>
+          {values.requirements.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {values.requirements.map((s) => (
+                <Badge key={s} variant="secondary" className="font-normal">
+                  {s}
+                  <button
+                    type="button"
+                    className="ml-1 inline-flex"
+                    onClick={() => removeChip('requirements', s)}
+                    aria-label={t('ngo_admin_volunteering.form.removeAria')}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="listing-cond">Katılım Koşulu</Label>
+          <Textarea
+            id="listing-cond"
+            rows={2}
+            value={values.participationCondition}
+            onChange={(e) => update('participationCondition', e.target.value)}
+            placeholder="Katılım için özel koşul (yaş, deneyim, üyelik vb.) — varsa"
+          />
+        </div>
+
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <Checkbox checked={values.hasPreTraining} onCheckedChange={(c) => update('hasPreTraining', c === true)} />
+          Katılımdan önce ön-eğitim / oryantasyon var
+        </label>
       </div>
 
       <div className="space-y-2">
