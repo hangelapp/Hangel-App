@@ -29,8 +29,36 @@ export const maxDuration = 120;
 const CACHE_TTL_SECONDS = 3600;
 
 // logoUrl: affiliate ağının GERÇEK marka logosu (isimden eşleşirse). domain:
-// markanın sitesi (favicon için). İkisi de yoksa istemci ada göre favicon dener.
-type AllBrand = { id: string; name: string; donationRate: number; logoUrl?: string; domain?: string };
+// markanın sitesi (favicon için). famous: çok bilinen (ünlü) marka mı — /market/
+// brands/all bunları ÜSTTE, az bilinenleri ALTTA gösterir.
+type AllBrand = { id: string; name: string; donationRate: number; logoUrl?: string; domain?: string; famous?: boolean };
+
+// Çok bilinen (ünlü) markalar — yerel + uluslararası. Normalize edilip Set'e alınır;
+// bir marka `productBrandKey` VEYA normBrandKey(ad) ile bu sette eşleşirse famous.
+const FAMOUS_NAMES = [
+  'A101','Acer','Alcatel','Altınyıldız','Altus','Amazfit','Amd','Anker','Apple','Arçelik','Arnica','Arzum','Asus','Avansas',
+  'Babyliss','Baseus','Baymak','Beats','Beko','Belkin','Bella Maison','Benetton','Benq','Bissell','Black&decker','Bosch','Boyner','Braun',
+  'Canon','Capcom','Casio','Casper','Colins','Columbia','Converse','Corsair','Crucial',
+  'D&R','DAGİ','Daikin','Davidoff','Delonghi','Desa','Digiturk','Divarese','Dji','Doremusic','DS Damat','Duracell','Dyson',
+  'Ea','Ebebek','Ecovacs','Electrolux','Energizer','Epson','Everest','Exper','Eyup sabri tuncer',
+  'Fakir','Ferre','FLO','Flormar','Fujifilm',
+  'Gant','GAP','General mobile','Goldmaster','GoPro','Grundig','Guess',
+  'H&M','Haier','Harman kardon','Hatemoğlu','Hemington','Hikvision','Homend','Honor','Hoover','Hotiç','Hp','Htc Vive','HUAWEI','Hyperx',
+  'Instax','Intel','Intersport','İdefix','İpekyol','JBL',
+  'Karaca','Karcher','Kaspersky','Kenwood','Kingston','Kip','Kobo','Koçtaş','Kodak','Korkmaz','Koton','Krups','Kütahya Porselen',
+  'Land Rover','Lee','Lenovo','Lg','Linens','Logitech',
+  'Machka','Madame Coco','Marks & Spencer','Marshall','Mcafee(ue)','Microsoft','Mudo','Msi',
+  'Nautica','Nespresso','Network','Next','Nikon','Ninja','Nintendo','Nokia',
+  'Olympus','Oppo','Oral b','Özdilekteyim',
+  'Panasonic','Philips','Polaroid','Preo','Profilo','PUMA',
+  'Ramsey','Razer','Realme','Reeder','Remington','Revlon','Roborock','Rowenta',
+  'Samsonite','Samsung','Sandisk','Seagate','Sega','Sennheiser','SETUR','Shark','Siemens','Sinbo','Skechers','Slazenger','Sony','SuperStep','Süvari',
+  'Taç','Tatilbudur','Tchibo','TCL','Tecno','Tefal','Teknosa','Toshiba','Toyzz Shop','TP-Link','Ttec','Twist',
+  'Ugreen','Varta','Vestel','Vivo',
+  'Wahl','Warner bros','WD','Western digital','Wmf','Wrangler',
+  'Xbox','Xiaomi','Yargıcı','Zwilling','Infinix','Nubia','Xgimi',
+];
+const FAMOUS_KEYS = new Set(FAMOUS_NAMES.map((n) => normBrandKey(n)));
 
 const getCachedAllBrands = unstable_cache(
   async (): Promise<AllBrand[]> => {
@@ -125,18 +153,20 @@ const getCachedAllBrands = unstable_cache(
       const dir = dirMap.get(key);
       const logoUrl = bd?.logoUrl || offer?.logoUrl || dir?.logoUrl || '';
       const domain = bd?.domain || offer?.domain || dir?.domain || '';
+      const famous = FAMOUS_KEYS.has(key) || FAMOUS_KEYS.has(normBrandKey(name));
       brands.push({
         id: key,
         name,
         donationRate: acc.count > 0 ? Math.round(acc.sum / acc.count) : 0,
         ...(logoUrl ? { logoUrl } : {}),
         ...(domain ? { domain } : {}),
+        ...(famous ? { famous: true } : {}),
       });
     }
     brands.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
     return brands;
   },
-  ['market-brands-all-v5-productbrand'],
+  ['market-brands-all-v6-productbrand'],
   { revalidate: CACHE_TTL_SECONDS },
 );
 
@@ -144,7 +174,7 @@ export async function GET() {
   try {
     const brands = await getCachedAllBrands();
     return NextResponse.json(
-      { version: 4, count: brands.length, brands },
+      { version: 5, count: brands.length, brands },
       {
         headers: {
           'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,
