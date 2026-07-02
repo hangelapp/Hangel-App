@@ -22,6 +22,7 @@ import { OtpInput } from '@/components/ui/otp-input';
 import { getLanguageFromPhoneCode } from '@/lib/phone-locale';
 import { reportNonFatalError } from '@/lib/telemetry';
 import { trackOnboardingStep } from '@/lib/onboarding-analytics';
+import { celebrate } from '@/lib/celebrate';
 
 // IndividualForm — extracted verbatim from login/selection/page.tsx (P2-6c).
 // IMPORTANT: auth/Firestore flow MUST stay identical. Do not refactor logic.
@@ -97,6 +98,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
         setIsLoading(true);
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+            celebrate();
             // QR/davet linki ile gelen mevcut kullanıcı için de auto-action uygula
             // (PDF #6 — kayıtlı kullanıcı QR ile gelirse de seçili gelmeli).
             const referrerId = searchParams.get('ref') || null;
@@ -639,6 +641,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 return;
             }
             await signInWithCustomToken(getAuth(), data.customToken);
+            celebrate();
             onComplete(Boolean(data.isNewUser));
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Doğrulama hatası.';
@@ -827,7 +830,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                         href={`/login/qr${searchParams.get('next') ? `?next=${encodeURIComponent(searchParams.get('next') as string)}` : ''}`}
                         className="text-sm font-semibold text-primary underline underline-offset-4"
                     >
-                        Zaten üyeyim — hangel uygulamasıyla giriş yap
+                        Başka bir cihazla giriş yap
                     </Link>
                 </div>
             </div>

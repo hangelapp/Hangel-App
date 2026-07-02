@@ -71,16 +71,19 @@ const getCachedAllBrands = unstable_cache(
     // productBrandKey = normalize anahtar (marka profili sorgusu bununla yapılır).
     const stream = db
       .collection('products')
-      .select('productBrand', 'productBrandKey', 'donationRate')
+      .select('productBrand', 'productBrandKey', 'brandName', 'donationRate')
       .stream() as unknown as AsyncIterable<QueryDocumentSnapshot>;
 
     type Acc = { variants: Map<string, number>; sum: number; count: number };
     const map = new Map<string, Acc>();
     for await (const doc of stream) {
-      const d = doc.data() as { productBrand?: string; productBrandKey?: string; donationRate?: number };
-      const raw = (d.productBrand || '').trim();
-      const key = (d.productBrandKey || '').trim();
-      if (!raw || !key) continue; // markası çıkarılamamış ürünler listede yok
+      const d = doc.data() as { productBrand?: string; productBrandKey?: string; brandName?: string; donationRate?: number };
+      // Kanonik ürün markası (productBrand) varsa onu kullan; yoksa mağaza/satıcı
+      // adına (brandName) düş → böylece TÜM markalar (400+) listeye girer, yalnız
+      // markası çıkarılmış ~141 değil.
+      const raw = (d.productBrand || d.brandName || '').trim();
+      const key = ((d.productBrandKey || '').trim() || normBrandKey(raw));
+      if (!raw || !key) continue;
       const rate = Number(d.donationRate);
       const hasRate = Number.isFinite(rate) && rate > 0;
       const cur = map.get(key) ?? { variants: new Map<string, number>(), sum: 0, count: 0 };
@@ -166,7 +169,7 @@ const getCachedAllBrands = unstable_cache(
     brands.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
     return brands;
   },
-  ['market-brands-all-v6-productbrand'],
+  ['market-brands-all-v7-productbrand'],
   { revalidate: CACHE_TTL_SECONDS },
 );
 
@@ -174,7 +177,7 @@ export async function GET() {
   try {
     const brands = await getCachedAllBrands();
     return NextResponse.json(
-      { version: 5, count: brands.length, brands },
+      { version: 6, count: brands.length, brands },
       {
         headers: {
           'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,

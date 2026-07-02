@@ -19,6 +19,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { registerForPushToken } from '@/lib/fcm';
+import { celebrate } from '@/lib/celebrate';
 
 // Açık-redirect koruması: yalnız aynı-origin relative yol (login/selection ile birebir).
 function resolveNext(raw: string | null): string {
@@ -86,6 +87,7 @@ function QrLoginPageInner() {
   const [loading, setLoading] = useState(false);
   const [expired, setExpired] = useState(false);
   const [view, setView] = useState<'qr' | 'notifications'>('qr');
+  const [mode, setMode] = useState<'qr' | 'code'>('qr'); // masaüstünde QR mı yoksa insan-okur kod mu gösterilsin
   const [notifBusy, setNotifBusy] = useState(false);
   // Cihaza göre indirme — SSR'de fallback, mount'ta gerçek cihaza göre güncellenir
   // (hydration uyumsuzluğu olmasın diye effect içinde).
@@ -103,6 +105,7 @@ function QrLoginPageInner() {
 
   // Giriş başarılı → (izin daha hiç sorulmadıysa) bildirim açmaya teşvik; yoksa yönlendir.
   const afterLogin = useCallback(() => {
+    celebrate(); // giriş başarılı — Apple hissi konfeti + haptik
     const canPrompt = typeof Notification !== 'undefined' && Notification.permission === 'default';
     if (canPrompt) setView('notifications');
     else finish();
@@ -234,13 +237,51 @@ function QrLoginPageInner() {
                     </div>
                   ) : qrDataUrl ? (
                     <>
-                      <div className="rounded-[1.75rem] bg-white p-3 shadow-[0_8px_30px_rgba(0,0,0,0.08)] ring-1 ring-black/5">
-                        <img src={qrDataUrl} alt="hangel QR giriş kodu" width={216} height={216} className="rounded-2xl" />
-                      </div>
+                      {/* Apple tarzı segmented control — QR ile mi kod ile mi giriş */}
                       {code && (
-                        <div className="text-center">
-                          <p className="text-[11px] font-medium text-muted-foreground">Kamerası açılmıyorsa bu kodu telefonuna gir</p>
-                          <p className="mt-1.5 font-mono text-[26px] font-black leading-none tracking-[0.35em] text-foreground">{code}</p>
+                        <div className="inline-flex rounded-full bg-muted/70 p-1 text-[13px] font-semibold">
+                          <button
+                            type="button"
+                            onClick={() => setMode('qr')}
+                            className={`rounded-full px-4 py-1.5 transition-colors ${mode === 'qr' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
+                          >
+                            QR Kodu
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMode('code')}
+                            className={`rounded-full px-4 py-1.5 transition-colors ${mode === 'code' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
+                          >
+                            Kod
+                          </button>
+                        </div>
+                      )}
+
+                      {mode === 'qr' || !code ? (
+                        <div className="flex flex-col items-center gap-2.5">
+                          <div className="rounded-[1.75rem] bg-white p-3 shadow-[0_8px_30px_rgba(0,0,0,0.08)] ring-1 ring-black/5">
+                            <img src={qrDataUrl} alt="hangel QR giriş kodu" width={216} height={216} className="rounded-2xl" />
+                          </div>
+                          <p className="max-w-[240px] text-center text-[11px] font-medium text-muted-foreground">
+                            Telefonundaki <strong>hangel</strong> ile bu kodu tarat.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex h-[240px] w-[240px] flex-col items-center justify-center gap-4 text-center">
+                          {/* Apple doğrulama-kodu stili — kutulu haneler */}
+                          <div className="flex gap-1.5">
+                            {code.split('').map((ch, i) => (
+                              <div
+                                key={i}
+                                className="flex h-14 w-10 items-center justify-center rounded-2xl border border-border bg-card font-mono text-[26px] font-black leading-none text-foreground shadow-sm"
+                              >
+                                {ch}
+                              </div>
+                            ))}
+                          </div>
+                          <p className="max-w-[230px] text-center text-[11px] font-medium text-muted-foreground">
+                            Telefonundaki <strong>hangel</strong> uygulamasında bu kodu gir.
+                          </p>
                         </div>
                       )}
                     </>

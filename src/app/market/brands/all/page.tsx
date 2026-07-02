@@ -4,20 +4,19 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Search, Store, Star } from 'lucide-react';
+import { ArrowLeft, Search, Store } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { BrandLogo } from '@/components/market/brand-logo';
 import type { Brand } from '@/lib/types';
 
 /**
- * Tüm Markalar — market'teki BÜTÜN ürün markaları. Büyük "Tüm Markalar"
+ * Tüm Markalar — market'teki BÜTÜN ürün markaları (400+). Büyük "Tüm Markalar"
  * butonundan (/market) açılır. Veri /api/market/brands-all'dan gelir.
  *
- * DÜZEN: çok bilinen (ünlü) markalar ÜSTTE ("Öne Çıkan Markalar"), az bilinenler
- * ALTTA ("Diğer Markalar"). Her grup, HER AÇILIŞTA bir kez RASTGELE karıştırılır
- * (grup içinde sabit/alfabetik sıra YOK). Arama yapılınca düz filtreli liste.
- *
- * Tıklayınca markanın profili açılır (/market/brand/<key>).
+ * DÜZEN: TEK bir akan grid — çok bilinen (ünlü) markalar üstte, az bilinenler
+ * altta (görünür başlık/ayrım YOK, tek liste). Her iki grup da HER AÇILIŞTA bir
+ * kez RASTGELE karıştırılır (grup içinde sabit/alfabetik sıra yok). Arama
+ * yapılınca düz filtreli liste. Tıklayınca markanın profili açılır (/market/brand/<key>).
  */
 type AllBrand = {
   id: string;
@@ -38,11 +37,12 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-const GRID = 'grid grid-cols-3 gap-3 px-4 pb-4 pt-1 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6';
+const GRID = 'grid grid-cols-3 gap-3 p-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6';
 
 export default function AllBrandsListPage() {
   const [searchTerm, setSearchTerm] = useState('');
   // ordered = [karışık ünlüler ..., karışık az bilinenler ...] — mount'ta bir kez.
+  // Tek grid olarak basılır: ünlüler üstte, az bilinenler altta, görünür ayrım yok.
   const [ordered, setOrdered] = useState<AllBrand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -68,16 +68,11 @@ export default function AllBrandsListPage() {
     };
   }, []);
 
-  const searching = searchTerm.trim().length > 0;
-
-  const filtered = useMemo(() => {
+  const shown = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
     if (!q) return ordered;
     return ordered.filter((b) => (b.name || '').toLowerCase().includes(q));
   }, [ordered, searchTerm]);
-
-  const famousList = useMemo(() => ordered.filter((b) => b.famous), [ordered]);
-  const restList = useMemo(() => ordered.filter((b) => !b.famous), [ordered]);
 
   const renderCard = (b: AllBrand) => {
     const rate = Math.max(0, Math.min(100, Number(b.donationRate) || 0));
@@ -112,8 +107,6 @@ export default function AllBrandsListPage() {
     );
   };
 
-  const shownCount = searching ? filtered.length : ordered.length;
-
   return (
     <div className="flex min-h-full w-full max-w-full flex-col overflow-x-hidden bg-secondary/30">
       {/* Üst sticky bar — geri + arama + başlık */}
@@ -143,8 +136,8 @@ export default function AllBrandsListPage() {
         <div className="flex items-center gap-2 px-1">
           <Store className="h-4 w-4 text-primary" aria-hidden="true" />
           <h1 className="text-sm font-bold text-foreground">Tüm Markalar</h1>
-          {shownCount > 0 && (
-            <span className="text-xs font-medium text-muted-foreground">{shownCount}</span>
+          {shown.length > 0 && (
+            <span className="text-xs font-medium text-muted-foreground">{shown.length}</span>
           )}
         </div>
       </div>
@@ -156,39 +149,16 @@ export default function AllBrandsListPage() {
               <div key={i} className="aspect-square w-full animate-pulse rounded-2xl bg-muted" />
             ))}
           </div>
-        ) : ordered.length === 0 ? (
+        ) : shown.length === 0 ? (
           <div className="p-4">
-            <EmptyState icon={Store} title="Marka bulunamadı" description="Yakında burada olacaklar." />
+            <EmptyState
+              icon={Store}
+              title="Marka bulunamadı"
+              description={searchTerm ? 'Aramanı değiştirip tekrar dene.' : 'Yakında burada olacaklar.'}
+            />
           </div>
-        ) : searching ? (
-          filtered.length === 0 ? (
-            <div className="p-4">
-              <EmptyState icon={Store} title="Marka bulunamadı" description="Aramanı değiştirip tekrar dene." />
-            </div>
-          ) : (
-            <div className={GRID}>{filtered.map(renderCard)}</div>
-          )
         ) : (
-          <>
-            {famousList.length > 0 && (
-              <>
-                <div className="flex items-center gap-1.5 px-4 pt-4 pb-1">
-                  <Star className="h-4 w-4 text-primary" aria-hidden="true" />
-                  <h2 className="text-sm font-bold text-foreground">Öne Çıkan Markalar</h2>
-                </div>
-                <div className={GRID}>{famousList.map(renderCard)}</div>
-              </>
-            )}
-            {restList.length > 0 && (
-              <>
-                <div className="flex items-center gap-1.5 px-4 pt-4 pb-1">
-                  <Store className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  <h2 className="text-sm font-bold text-muted-foreground">Diğer Markalar</h2>
-                </div>
-                <div className={GRID}>{restList.map(renderCard)}</div>
-              </>
-            )}
-          </>
+          <div className={GRID}>{shown.map(renderCard)}</div>
         )}
       </main>
     </div>
