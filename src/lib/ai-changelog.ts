@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-02";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "e37b589c",
+    "date": "2026-07-02",
+    "subject": "fix(stk): onaylanan STK'lar ana /ngos dizininde görünsün"
+  },
+  {
     "hash": "2eeb4a46",
     "date": "2026-07-02",
     "subject": "feat(transparency): profil bilgileri şeffaflık endeksine + panele yansısın"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "00346c42",
     "date": "2026-06-30",
     "subject": "migration: iOS/Android Firebase config → hangelorg"
-  },
-  {
-    "hash": "4129ae33",
-    "date": "2026-06-30",
-    "subject": "migration: yeni projeye (hangelorg) bağla — config + SA + import/export script + runbook"
   }
 ];

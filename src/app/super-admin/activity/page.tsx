@@ -92,23 +92,39 @@ export default function SuperAdminActivityPage() {
 
   // İşlemi yapan kullanıcının adını çözmek için uid→ad haritası.
   const usersQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.users) : null), [db]);
-  const { data: usersData } = useCollection<{ id: string; name?: string; displayName?: string; email?: string }>(usersQuery);
+  const { data: usersData } = useCollection<{ id: string; name?: string; displayName?: string; email?: string; role?: string }>(usersQuery);
   const userNameById = useMemo(() => {
     const m = new Map<string, string>();
     (usersData || []).forEach(u => m.set(u.id, u.name || u.displayName || u.email || ''));
+    return m;
+  }, [usersData]);
+  // Aktörün GERÇEK rolü (users/{uid}.role) — tab kategorizasyonu sabit heuristik
+  // yerine gerçek role göre yapılır (super-admin / *-admin / user).
+  const userRoleById = useMemo(() => {
+    const m = new Map<string, string>();
+    (usersData || []).forEach(u => { if (u.role) m.set(u.id, u.role); });
     return m;
   }, [usersData]);
   const entries: ActivityEntry[] = useMemo(() => {
     const SYSTEM_ACTORS: Record<string, string> = { 'hangel-system': 'Sistem', 'emergency-system': 'Acil Sistemi', 'affiliate-webhook': 'Affiliate Webhook' };
     const resolveActor = (uid?: string, name?: string): string | undefined =>
       name || (uid ? (SYSTEM_ACTORS[uid] || userNameById.get(uid) || undefined) : undefined);
+    // Aktörün gerçek rolüne göre kategori (yoksa null → kind heuristiğine düşer).
+    const roleToCategory = (uid?: string): RoleCategory | null => {
+      if (!uid) return null;
+      const role = userRoleById.get(uid);
+      if (!role) return null;
+      if (role === 'super-admin') return 'super-admin';
+      if (role.includes('admin')) return 'admin';
+      return 'user';
+    };
     const list: ActivityEntry[] = [];
 
     (donations || []).forEach(d => {
       list.push({
         id: `donation-${d.id}`,
         kind: 'donation',
-        roleCategory: KIND_ROLE.donation,
+        roleCategory: roleToCategory(d.userId) ?? KIND_ROLE.donation,
         title: `${d.userName || 'Kullanıcı'} → ${d.brandName || d.brand || 'Marka'}`,
         subtitle: `${d.status || 'İşleme Alındı'} · ${d.donationAmount || '0'} ₺`,
         timestamp: toDate(d.createdAt),
@@ -133,7 +149,7 @@ export default function SuperAdminActivityPage() {
       list.push({
         id: `inv-${i.id}`,
         kind: 'invitation',
-        roleCategory: KIND_ROLE.invitation,
+        roleCategory: roleToCategory(i.invitedBy) ?? KIND_ROLE.invitation,
         title: `${i.inviteeName || 'Kullanıcı'} ${i.role || 'rol'} olarak atandı`,
         subtitle: i.ngoId ? `STK: ${i.ngoId}` : i.brandId ? `Marka: ${i.brandId}` : '—',
         timestamp: toDate(i.invitedAt),
@@ -146,7 +162,7 @@ export default function SuperAdminActivityPage() {
       list.push({
         id: `notif-${n.id}`,
         kind: 'notification',
-        roleCategory: KIND_ROLE.notification,
+        roleCategory: roleToCategory(n.createdBy) ?? KIND_ROLE.notification,
         title: n.title || 'Bildirim',
         subtitle: n.body || '—',
         timestamp: toDate(n.createdAt),
@@ -162,7 +178,7 @@ export default function SuperAdminActivityPage() {
     });
 
     return list.slice(0, 200);
-  }, [donations, applications, invitations, notifications, userNameById]);
+  }, [donations, applications, invitations, notifications, userNameById, userRoleById]);
 
   const [activeTab, setActiveTab] = useState<'all' | RoleCategory | 'oturum'>('all');
 
