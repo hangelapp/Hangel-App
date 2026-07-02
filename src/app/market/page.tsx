@@ -208,7 +208,9 @@ export default function DiscoverPage() {
         collection(db, COLLECTIONS.products),
         orderBy('random'),
         startAt(randSeed),
-        limit(300),
+        // Hız: başlangıçta 120 ürün yeter (şeritler + başlangıç grid'i). Önceden
+        // 300 yükleniyordu → ilk açılış ağırdı. Arama/scroll'da daha fazlası gelir.
+        limit(120),
       ),
     [db, randSeed],
   );
@@ -1141,7 +1143,7 @@ function BrandStrip({ title, items, showSeeAll = true }: { title: string; items:
           <span className="truncate">{title}</span>
         </h2>
         {showSeeAll && (
-          <Link href="/market/brands" className="inline-flex shrink-0 items-center gap-0.5 text-xs font-bold text-primary">
+          <Link href="/market/shops" className="inline-flex shrink-0 items-center gap-0.5 text-xs font-bold text-primary">
             Tümü <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         )}

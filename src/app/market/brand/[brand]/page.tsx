@@ -10,18 +10,22 @@
  * Görünen ad ilk üründen (`productBrand`) alınır. Logo BrandLogo ile marka
  * adından/domaininden çözülür.
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Tag, Store as StoreIcon } from 'lucide-react';
+import { ArrowLeft, Tag, Store as StoreIcon, ChevronRight } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
-import { collection, limit, query, where } from 'firebase/firestore';
+import { collection, limit, query, where, getCountFromServer } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import type { Brand } from '@/lib/types';
+
+// İki mağaza adını eşleştirmek için gevşek normalize (büyük/küçük + boşluk + TR).
+const normStore = (s: string) => (s || '').toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
+const srcPrefix = (s?: string) => (s === 'affocean' ? 'ao' : s === 'reklamaction' ? 'ra' : s === 'gelirortaklari' ? 'go' : '');
 
 export default function BrandProfilePage() {
   const params = useParams();
@@ -34,6 +38,26 @@ export default function BrandProfilePage() {
   );
   const { data: products, isLoading } = useCollection<CanonicalProduct>(productsQuery);
 
+  // Mağaza (satıcı) katalogu — gerçek logo + oran + profil linki için.
+  const storesQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.brands) : null), [db]);
+  const { data: allStores } = useCollection<Brand>(storesQuery);
+  const storeByName = useMemo(() => {
+    const m = new Map<string, Brand>();
+    for (const b of allStores ?? []) if (b?.name) m.set(normStore(b.name), b);
+    return m;
+  }, [allStores]);
+
+  // TAM ürün sayısı (sunucudan) — "120+" değil gerçek toplam.
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!db || !key) return;
+    let alive = true;
+    getCountFromServer(query(collection(db, COLLECTIONS.products), where('productBrandKey', '==', key)))
+      .then((s) => { if (alive) setTotalCount(s.data().count); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [db, key]);
+
   // Görünen marka adı = ürünlerdeki productBrand (kanonik, tek yazım).
   const brandName = useMemo(() => products?.find((p) => p.productBrand)?.productBrand || key, [products, key]);
 
@@ -44,12 +68,30 @@ export default function BrandProfilePage() {
     return rates.length ? Math.round(rates.reduce((a, b) => a + b, 0) / rates.length) : 0;
   }, [products]);
 
-  // Bu markanın satıldığı MAĞAZALAR (brandName = mağaza) — tekilleştir.
+  // Bu markayı satan MAĞAZALAR — logo + bağış oranı + profil linki ile.
   const stores = useMemo(() => {
-    const s = new Set<string>();
-    for (const p of products ?? []) if (p.brandName) s.add(p.brandName);
-    return Array.from(s).sort((a, b) => a.localeCompare(b, 'tr'));
-  }, [products]);
+    const map = new Map<string, { name: string; storeId: string; rateSum: number; rateCount: number }>();
+    for (const p of products ?? []) {
+      if (!p.brandName) continue;
+      const cur = map.get(p.brandName) ?? { name: p.brandName, storeId: '', rateSum: 0, rateCount: 0 };
+      const r = Number(p.donationRate);
+      if (Number.isFinite(r) && r > 0) { cur.rateSum += r; cur.rateCount += 1; }
+      if (!cur.storeId) {
+        const pre = srcPrefix(p.source);
+        cur.storeId = p.brandId || (pre && p.feedId ? `${pre}-${p.feedId}` : '');
+      }
+      map.set(p.brandName, cur);
+    }
+    return Array.from(map.values()).map((s) => {
+      const doc = storeByName.get(normStore(s.name));
+      const rate = doc && Number(doc.donationRate) > 0
+        ? Math.round(Number(doc.donationRate))
+        : (s.rateCount ? Math.round(s.rateSum / s.rateCount) : 0);
+      const brand = (doc ?? { id: s.storeId || s.name, slug: s.storeId || s.name, name: s.name, category: '', type: 'brand', logoUrl: '', targetDomain: '', donationRate: rate }) as Brand;
+      const storeId = (doc?.slug || doc?.id || s.storeId || '').toString();
+      return { name: s.name, rate, brand, storeId };
+    }).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+  }, [products, storeByName]);
 
   const brandForLogo = { id: key, slug: key, name: brandName, category: '', type: 'brand', logoUrl: '', targetDomain: '', donationRate: avgRate } as Brand;
 
@@ -74,7 +116,9 @@ export default function BrandProfilePage() {
         <div className="min-w-0">
           <h2 className="truncate text-lg font-black text-foreground">{brandName}</h2>
           <p className="mt-0.5 text-xs font-medium text-muted-foreground">
-            {products?.length ? `${products.length}${products.length >= 120 ? '+' : ''} ürün` : 'Ürünler yükleniyor…'}
+            {totalCount != null
+              ? `${totalCount.toLocaleString('tr-TR')} ürün`
+              : (products?.length ? `${products.length.toLocaleString('tr-TR')} ürün` : 'Ürünler yükleniyor…')}
             {avgRate > 0 && <> · ort. <span className="text-primary font-bold">%{avgRate}</span> bağış</>}
           </p>
         </div>
@@ -86,10 +130,21 @@ export default function BrandProfilePage() {
           <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
             <StoreIcon className="h-3.5 w-3.5" /> Bu markayı satan mağazalar
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {stores.map((s) => (
-              <Link key={s} href={`/market/products?brand=${encodeURIComponent(s)}`} className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground hover:bg-primary/10 hover:text-primary">
-                {s}
+              <Link
+                key={s.name}
+                href={s.storeId ? `/market/${encodeURIComponent(s.storeId)}` : `/market/products?brand=${encodeURIComponent(s.name)}`}
+                className="group flex items-center gap-2.5 rounded-2xl border border-border bg-card px-2.5 py-2 pr-3 transition-colors hover:border-primary/40 hover:bg-primary/5"
+              >
+                <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-border bg-white">
+                  <BrandLogo brand={s.brand} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-xs font-bold text-foreground">{s.name}</span>
+                  {s.rate > 0 && <span className="block text-[11px] font-semibold text-primary">%{s.rate} bağış</span>}
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               </Link>
             ))}
           </div>
