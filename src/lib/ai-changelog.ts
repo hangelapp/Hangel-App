@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-07-03";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "4d21a0ea",
+    "date": "2026-07-03",
+    "subject": "feat(gönüllülük+tanıtım): kart buton seti event ile eşitlendi + detay Sertifika + tanıtım Önizle/Paylaş"
+  },
+  {
+    "hash": "a55e1dc5",
+    "date": "2026-07-03",
+    "subject": "feat(feed): super-admin ingest limit 500→20000 + maxDuration 300 (tam katalog)"
+  },
+  {
+    "hash": "1d8caf7a",
+    "date": "2026-07-03",
+    "subject": "feat(feed): ingest tavanını 2000→20000 yükselt (tam katalog çekimi)"
+  },
+  {
     "hash": "3c46ccd8",
     "date": "2026-07-03",
     "subject": "feat(market): Mağazalar bölümü narçiçeği bant içinde — kutucuklar bandın içinde kayar"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "6e2d4601",
     "date": "2026-07-02",
     "subject": "Merge remote-tracking branch 'origin/main' into feature/all-brands-list"
-  },
-  {
-    "hash": "5e15e8c9",
-    "date": "2026-07-02",
-    "subject": "feat(bulk-docs): gerçek QR-serili sertifika (A4) + önlü-arkalı yaka (A6 4-up) + ayrı Yazdır/Paylaş/İndir"
-  },
-  {
-    "hash": "bb34cdd0",
-    "date": "2026-07-02",
-    "subject": "fix(auth): dayanıklı oturum — IndexedDB persistence (sürekli çıkış giderildi)"
-  },
-  {
-    "hash": "a20f6afe",
-    "date": "2026-07-02",
-    "subject": "feat(events): kartlara 'Google'da Ücretsiz Tanıt' butonu → Reklam Yönetimi (Google tab)"
   }
 ];

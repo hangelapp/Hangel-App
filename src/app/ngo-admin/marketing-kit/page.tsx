@@ -10,7 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
-import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
+import { PersonalizedMaterials, type PersonalizedOrg } from '@/components/marketing/personalized-materials';
 import {
   MARKETING_CATEGORIES,
   categoryLabel,
@@ -31,7 +32,26 @@ function formatBytes(bytes?: number): string {
 export default function OrgMarketingKitPage() {
   const db = useFirestore();
   const { toast } = useToast();
-  const { kind, isLoading: entityLoading } = useActiveEntity();
+  const { kind, id: activeId, isLoading: entityLoading } = useActiveEntity();
+  const { data: activeDoc } = useActiveEntityDoc<{ name?: string; avatarUrl?: string; logoUrl?: string; socialArea?: string; category?: string; socialAreas?: string[]; shortLink?: string }>();
+
+  // Kuruma özel materyaller için org verisi (ad, logo, sosyal alan, profil QR URL'i).
+  const org = useMemo<PersonalizedOrg | null>(() => {
+    if (!activeDoc) return null;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
+    const profilePath = activeDoc.shortLink
+      ? `/s/${activeDoc.shortLink}`
+      : activeId
+        ? kind === 'brand' ? `/market/${activeId}` : kind === 'club' ? `/clubs/profile/${activeId}` : `/ngos/${activeId}`
+        : '';
+    if (!profilePath) return null;
+    return {
+      name: activeDoc.name || '',
+      logoUrl: activeDoc.avatarUrl || activeDoc.logoUrl,
+      socialArea: activeDoc.socialArea || activeDoc.category || (Array.isArray(activeDoc.socialAreas) ? activeDoc.socialAreas[0] : undefined),
+      profileUrl: `${origin}${profilePath}`,
+    };
+  }, [activeDoc, activeId, kind]);
 
   // Paylaş — dosyayı native paylaşım sayfasıyla gönder; desteklenmezse bağlantıyı kopyala.
   const shareAsset = async (a: MarketingAsset) => {
@@ -105,6 +125,13 @@ export default function OrgMarketingKitPage() {
           içerikleri, döner kartlar, mağaza içi ekipmanlar, kasa önü A5 kartlar ve örümcek stand görselleri.
         </p>
       </div>
+
+      {org && (
+        <>
+          <PersonalizedMaterials org={org} />
+          <div className="h-px bg-border" />
+        </>
+      )}
 
       {visible.length === 0 ? (
         <Card className="rounded-[2rem] border-border shadow-xl">
