@@ -47,6 +47,8 @@ export function RewardManager({ kind, id }: Props) {
   const [prizes, setPrizes] = useState<RewardPrize[]>([emptyPrize()]);
   const [quizOn, setQuizOn] = useState(false);
   const [questions, setQuestions] = useState<QuizQuestion[]>([emptyQuestion()]);
+  const [activeQid, setActiveQid] = useState<string | null>(null);
+  const [live, setLive] = useState<LiveData | null>(null);
 
   const api = useCallback(
     async (method: 'GET' | 'POST', path: string, body?: unknown) => {
@@ -114,6 +116,56 @@ export function RewardManager({ kind, id }: Props) {
       setBusy(null);
     }
   };
+
+  // --- canlı soru (Sor / Sonucu Göster) ---
+  const ask = async (qid: string) => {
+    if (!qid) return toast({ variant: 'destructive', title: 'Önce soruyu kaydet' });
+    setBusy('ask');
+    try {
+      const r = await api('POST', '/api/rewards/ask', { kind, id, questionId: qid });
+      setActiveQid(qid);
+      setLive(null);
+      toast({ title: `Soru soruldu 🎯`, description: `${r.eligibleCount} katılımcının ekranında açıldı.` });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Sorulamadı', description: e instanceof Error ? e.message : '' });
+    } finally {
+      setBusy(null);
+    }
+  };
+  const reveal = async () => {
+    if (!activeQid) return;
+    setBusy('reveal');
+    try {
+      const r = await api('POST', '/api/rewards/reveal', { kind, id, questionId: activeQid });
+      setLive({ counts: r.counts, total: r.total, correctCount: r.correctCount, correctIndex: r.correctIndex, winners: r.winners, revealed: true });
+      setActiveQid(null);
+      const names = (r.winners || []).map((w: { name: string }) => w.name).join(', ');
+      toast({ title: 'Sonuç açıklandı 🎉', description: names ? `Kazananlar: ${names}` : `${r.correctCount} doğru cevap` });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Açıklanamadı', description: e instanceof Error ? e.message : '' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  // Aktif soru varken canlı sonucu ~2.5sn'de bir çek.
+  useEffect(() => {
+    if (!activeQid || !authUser) return;
+    let stop = false;
+    const poll = async () => {
+      try {
+        const token = await authUser.getIdToken();
+        const res = await fetch(`/api/rewards/live?kind=${kind}&id=${id}&questionId=${activeQid}`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) {
+          const d = await res.json();
+          if (!stop) setLive({ counts: d.counts || [], total: d.total || 0, correctCount: d.correctCount || 0, correctIndex: d.correctIndex, winners: d.winners || [], revealed: !!d.revealed });
+        }
+      } catch { /* yut */ }
+    };
+    poll();
+    const t = setInterval(poll, 2500);
+    return () => { stop = true; clearInterval(t); };
+  }, [activeQid, authUser, kind, id]);
 
   // --- yardımcı mutasyonlar ---
   const setPrize = (i: number, patch: Partial<RewardPrize>) => setPrizes((a) => a.map((p, idx) => (idx === i ? { ...p, ...patch } : p)));
@@ -224,10 +276,40 @@ export function RewardManager({ kind, id }: Props) {
                           <input type="checkbox" checked={q.checkinOnly} onChange={(e) => setQ(qi, { checkinOnly: e.target.checked })} />
                           Yalnız check-in yapanlar cevaplayabilsin (kopya önleme)
                         </label>
+
+                        {/* Canlı: Sor / sonuç */}
+                        <div className="pt-2 border-t">
+                          {activeQid === q.id ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-[11px] font-bold">
+                                <span className="inline-flex items-center gap-1 text-primary"><Radio className="h-3 w-3 animate-pulse" /> CANLI · {live?.total ?? 0} cevap</span>
+                                <span className="text-green-600">{live?.correctCount ?? 0} doğru</span>
+                              </div>
+                              {q.options.map((o, oi) => {
+                                const c = live?.counts?.[oi] ?? 0;
+                                const pct = live && live.total > 0 ? Math.round((c / live.total) * 100) : 0;
+                                const isCorrect = live?.correctIndex === oi;
+                                return (
+                                  <div key={oi} className="text-[11px]">
+                                    <div className="flex justify-between"><span>{LETTERS[oi]}. {o} {isCorrect && '✓'}</span><span>{c}</span></div>
+                                    <div className="h-1.5 rounded bg-muted overflow-hidden"><div className="h-full rounded" style={{ width: `${pct}%`, background: isCorrect ? '#22c55e' : '#f34723' }} /></div>
+                                  </div>
+                                );
+                              })}
+                              <Button size="sm" className="w-full" onClick={reveal} disabled={busy === 'reveal'}>
+                                {busy === 'reveal' ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Trophy className="h-4 w-4 mr-1" />} Sonucu Göster & Bitir
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button size="sm" variant="secondary" className="w-full" disabled={!q.id || !!activeQid || busy === 'ask'} onClick={() => ask(q.id)}>
+                              {busy === 'ask' ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Radio className="h-4 w-4 mr-1" />} {q.id ? 'Sor (canlı)' : 'Önce kaydet'}
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     ))}
                     <Button variant="outline" size="sm" onClick={() => setQuestions((a) => [...a, emptyQuestion()])}><Plus className="h-4 w-4 mr-1" /> Soru ekle</Button>
-                    <p className="text-[11px] text-muted-foreground">Canlı "Sor" butonu etkinlik gününde bu ekrana gelir. Şimdilik soruları kaydet.</p>
+                    <p className="text-[11px] text-muted-foreground">Kaydettikten sonra etkinlik anında her sorunun "Sor (canlı)" butonuyla katılımcıların ekranına tam ekran soru düşer. İlk doğru (veya çekiliş) kazanır.</p>
                   </div>
                 )}
               </div>
