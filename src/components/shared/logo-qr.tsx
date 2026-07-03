@@ -82,6 +82,12 @@ export function LogoQr({
         roundRectPath(ctx, pos - pad, pos - pad, box + pad * 2, box + pad * 2, plateR);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
+        // Narçiçeği (marka) ince çerçeve — logoyu vurgular. Stroke plakanın kenarına
+        // ortalanır; toplam merkez alanı ~%29 kalır (errorCorrectionLevel:'H' ~%30'a
+        // kadar tolere eder) → tarama bozulmaz.
+        ctx.lineWidth = Math.max(2, Math.round(box * 0.055));
+        ctx.strokeStyle = '#f34723';
+        ctx.stroke();
         // Logoyu yuvarlak köşeli kutuya kırparak çiz.
         ctx.beginPath();
         roundRectPath(ctx, pos, pos, box, box, Math.round(box * 0.2));

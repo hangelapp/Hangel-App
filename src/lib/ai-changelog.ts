@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-07-03";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "5f70fd87",
+    "date": "2026-07-03",
+    "subject": "fix(anasayfa): 'Ürünleri Keşfet' keşif kartını (Pazara Git + Kütüphaneyi Aç) kaldır"
+  },
+  {
+    "hash": "2e840709",
+    "date": "2026-07-03",
+    "subject": "feat(rewards): Faz 3 — Tamamla değerlendirme popart + konuşmacı puanlama (+20 puan)"
+  },
+  {
+    "hash": "3991a960",
+    "date": "2026-07-03",
+    "subject": "feat(rewards): Faz 2 — canlı soru-yarışması (Kahoot benzeri)"
+  },
+  {
     "hash": "015c2981",
     "date": "2026-07-03",
     "subject": "feat(brand): gerçek vektör logo dosyaları (public/brand) + logo-usage & press indirmeleri gerçek dosyalara"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "06f5c27b",
     "date": "2026-07-02",
     "subject": "feat(market): marka profiline kategori sekmeleri + Filtre/Sırala"
-  },
-  {
-    "hash": "03d98d9b",
-    "date": "2026-07-02",
-    "subject": "feat(market): marka profili rötuşları + /market/shops + hız"
-  },
-  {
-    "hash": "760dbbd6",
-    "date": "2026-07-02",
-    "subject": "Merge remote-tracking branch 'origin/main' into feature/all-brands-list"
-  },
-  {
-    "hash": "a35d65a1",
-    "date": "2026-07-02",
-    "subject": "feat(events): Yaka Kartları & Sertifikalar — uygulama-içi glass A4 önizleme + kişi seçimi (1/tümü)"
   }
 ];

@@ -191,6 +191,31 @@ export function categoryLabel(value: string): string {
   return MARKETING_CATEGORIES.find((c) => c.value === value)?.label ?? 'Diğer Materyaller';
 }
 
+/**
+ * Başlangıç paketini (public/marketing-kit) doğrudan MarketingAsset olarak verir —
+ * Firestore'a içe aktarım BEKLEMEDEN panellerde görünsün diye YERLEŞİK materyaller.
+ * Süper-admin daha sonra aynı seedKey ile gerçek kayıt eklerse, tüketen sayfa
+ * seedKey'e göre tekilleştirip Firestore sürümünü tercih eder.
+ */
+export function starterMarketingAssets(): MarketingAsset[] {
+  return MARKETING_STARTER_PACK.map((s) => ({
+    id: `builtin-${s.seedKey}`,
+    seedKey: s.seedKey,
+    title: s.title,
+    description: s.description,
+    category: s.category,
+    fileUrl: `${MARKETING_ASSET_BASE}${s.fileName}`,
+    storagePath: '',
+    fileName: s.fileName,
+    contentType: s.contentType,
+    thumbnailUrl: s.thumbnailFile ? `${MARKETING_ASSET_BASE}${s.thumbnailFile}` : undefined,
+    targetKinds: s.targetKinds,
+    isPublic: s.isPublic,
+    publicListed: s.isPublic,
+    status: 'yayinda' as MarketingStatus,
+  }));
+}
+
 export function targetKindLabel(value: string): string {
   return MARKETING_TARGET_KINDS.find((k) => k.value === value)?.label ?? value;
 }

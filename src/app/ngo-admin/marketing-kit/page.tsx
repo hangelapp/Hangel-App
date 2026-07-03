@@ -13,6 +13,7 @@ import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import {
   MARKETING_CATEGORIES,
   categoryLabel,
+  starterMarketingAssets,
   type MarketingAsset,
   type MarketingTargetKind,
 } from '@/lib/marketing-kit';
@@ -41,8 +42,12 @@ export default function OrgMarketingKitPage() {
   const myKind = (kind as MarketingTargetKind | null) ?? null;
 
   const visible = useMemo(() => {
-    if (!assets) return [];
-    return assets
+    // Yerleşik başlangıç paketi + Firestore'daki yayınlanmış materyaller.
+    // seedKey ile tekilleştir: aynı seedKey'de Firestore sürümü yerleşiğin yerine geçer.
+    const bySeed = new Map<string, MarketingAsset>();
+    for (const b of starterMarketingAssets()) bySeed.set(b.seedKey || b.id, b);
+    for (const a of assets || []) bySeed.set(a.seedKey || a.id, a);
+    return [...bySeed.values()]
       .filter((a) => !myKind || (a.targetKinds || []).includes(myKind))
       .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   }, [assets, myKind]);
