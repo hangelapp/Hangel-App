@@ -173,16 +173,44 @@ const getCachedAllBrands = unstable_cache(
   { revalidate: CACHE_TTL_SECONDS },
 );
 
+// Ön-hesaplanmış marka listesi burada saklanır → istekler 99k ürünü TARAMADAN
+// tek doküman okur. Yalnız doc yoksa/bayatsa (>6s) yeniden hesaplanır (unstable_cache
+// zaten taramayı 1s'te bir ile sınırlar). Ürünler yalnız ingest'te değiştiği için
+// 6s tazelik dengesi uygun; yeni çekilen ürünler en geç 6s içinde listeye yansır.
+const AGG_DOC_FRESH_MS = 6 * 3600 * 1000;
+
+const cacheHeaders = {
+  'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,
+};
+
 export async function GET() {
+  const db = getAdminFirestore();
+  const ref = db.collection('marketAggregates').doc('brandsAll');
+
+  // 1) HIZLI YOL — önceden hesaplanmış doküman (ürün taraması YOK).
+  try {
+    const snap = await ref.get();
+    if (snap.exists) {
+      const data = snap.data() as { brands?: AllBrand[]; updatedAt?: number };
+      const fresh = typeof data.updatedAt === 'number' && Date.now() - data.updatedAt < AGG_DOC_FRESH_MS;
+      if (Array.isArray(data.brands) && data.brands.length > 0 && fresh) {
+        return NextResponse.json(
+          { version: 7, count: data.brands.length, brands: data.brands },
+          { headers: cacheHeaders },
+        );
+      }
+    }
+  } catch {
+    /* doc okunamadı → hesaplama yoluna düş */
+  }
+
+  // 2) YAVAŞ YOL — hesapla (unstable_cache 1s ile sınırlı) + doc'a yaz (fire-and-forget).
   try {
     const brands = await getCachedAllBrands();
+    ref.set({ brands, updatedAt: Date.now() }).catch(() => { /* yazım opsiyonel */ });
     return NextResponse.json(
-      { version: 6, count: brands.length, brands },
-      {
-        headers: {
-          'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,
-        },
-      },
+      { version: 7, count: brands.length, brands },
+      { headers: cacheHeaders },
     );
   } catch (err) {
     console.error('/api/market/brands-all error', err);
