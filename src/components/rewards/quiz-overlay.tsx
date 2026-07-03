@@ -26,6 +26,7 @@ export type QuizSignal = {
   myOptionIndex?: number | null;
   revealed?: boolean;
   correctIndex?: number | null;
+  won?: boolean;
 };
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -80,16 +81,28 @@ export function QuizOverlay({ signal, onDismiss }: { signal: QuizSignal; onDismi
     return () => clearTimeout(t);
   }, [revealed, onDismiss]);
 
+  // Güvenlik: süre dolup admin sonucu açmazsa katılımcı sonsuza dek kilitlenmesin.
+  useEffect(() => {
+    if (!expired || revealed) return;
+    const t = setTimeout(onDismiss, 45000);
+    return () => clearTimeout(t);
+  }, [expired, revealed, onDismiss]);
+
   return (
     <div className="fixed inset-0 z-[2147483000] flex flex-col items-center justify-center bg-gradient-to-br from-[#f34723] via-[#ff6a4d] to-[#ff8a5c] p-6 text-white animate-in fade-in-0">
       <div className="w-full max-w-md">
-        <div className="mb-2 flex items-center justify-between text-sm font-semibold opacity-90">
+        <div className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold opacity-90">
           <span className="truncate">{signal.title || 'Canlı Soru'}</span>
-          {!revealed && (
-            <span className={cn('rounded-full px-3 py-1 tabular-nums', secondsLeft <= 5 ? 'bg-white text-[#f34723]' : 'bg-white/20')}>
-              {secondsLeft}s
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {!revealed && (
+              <span className={cn('rounded-full px-3 py-1 tabular-nums', secondsLeft <= 5 ? 'bg-white text-[#f34723]' : 'bg-white/20')}>
+                {secondsLeft}s
+              </span>
+            )}
+            <button type="button" onClick={onDismiss} aria-label="Kapat" className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 hover:bg-white/30">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <h2 className="text-2xl font-extrabold leading-tight mb-6">{signal.text}</h2>
@@ -126,7 +139,9 @@ export function QuizOverlay({ signal, onDismiss }: { signal: QuizSignal; onDismi
 
         <div className="mt-6 text-center text-sm font-semibold">
           {revealed ? (
-            answeredIndex === signal.correctIndex ? (
+            signal.won ? (
+              <span className="inline-flex items-center gap-1.5 text-base"><Trophy className="h-5 w-5" /> Kazandın! 🏆</span>
+            ) : answeredIndex === signal.correctIndex ? (
               <span className="inline-flex items-center gap-1.5"><Trophy className="h-4 w-4" /> Doğru cevap! 🎉</span>
             ) : (
               <span className="opacity-90">Doğru cevap işaretlendi.</span>

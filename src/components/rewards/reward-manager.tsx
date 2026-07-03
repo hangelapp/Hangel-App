@@ -76,6 +76,8 @@ export function RewardManager({ kind, id }: Props) {
       setPrizes(cfg?.raffle?.prizes?.length ? cfg.raffle.prizes : [emptyPrize()]);
       setQuizOn(!!cfg?.quiz?.enabled);
       setQuestions(cfg?.quiz?.questions?.length ? cfg.quiz.questions : [emptyQuestion()]);
+      // Canlı soru varsa admin paneli geri yüklensin (dialog kapanıp açılınca kaybolmasın).
+      if (cfg?.activeQuestionId) setActiveQid(cfg.activeQuestionId);
     } catch (e) {
       toast({ variant: 'destructive', title: 'Yüklenemedi', description: e instanceof Error ? e.message : '' });
     } finally {

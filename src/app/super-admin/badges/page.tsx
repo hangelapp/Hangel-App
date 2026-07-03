@@ -124,6 +124,15 @@ export default function SuperAdminBadgesPage() {
     return { uid: t };
   }, [target]);
 
+  // İşlem sonrası açık kullanıcı panelini sessizce tazele (bayat kalmasın).
+  const refreshUserInfo = async () => {
+    if (!targetBody || !userInfo) return;
+    try {
+      const r = await api('POST', { action: 'userInfo', ...targetBody });
+      setUserInfo(r as UserInfo);
+    } catch { /* sessiz */ }
+  };
+
   const grant = async () => {
     if (!targetBody) return toast({ variant: 'destructive', title: 'Kullanıcı (e-posta/telefon/uid) gir' });
     if (!grantBadgeId) return toast({ variant: 'destructive', title: 'Rozet seç' });
@@ -131,6 +140,7 @@ export default function SuperAdminBadgesPage() {
     try {
       await api('POST', { action: 'grant', badgeId: grantBadgeId, ...targetBody });
       toast({ title: 'Rozet verildi 🎖️', description: 'Kullanıcıya bildirim gönderildi.' });
+      await refreshUserInfo();
     } catch (e) {
       toast({ variant: 'destructive', title: 'Verilemedi', description: e instanceof Error ? e.message : '' });
     } finally {
@@ -144,6 +154,7 @@ export default function SuperAdminBadgesPage() {
     try {
       const r = await api('POST', { action: 'awardPoints', area: pointsArea, points: Number(pointsVal) || 0, ...targetBody });
       toast({ title: 'Puan verildi', description: `${pointsVal} puan · ${r.newBadges} yeni rozet` });
+      await refreshUserInfo();
     } catch (e) {
       toast({ variant: 'destructive', title: 'Verilemedi', description: e instanceof Error ? e.message : '' });
     } finally {

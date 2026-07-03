@@ -100,25 +100,29 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   // sınavı açar + katılımcıları sınava çağırır. Sertifika yalnız sınavı geçene verilir
   // (/api/exam/submit). Konfeti/değerlendirme popart'ı da sınav sonrasına bırakılır.
   const examSnap = await db.collection('examConfigs').doc(`event_${eventId}`).get();
-  const exam = examSnap.exists ? (examSnap.data() as { enabled?: boolean; requiredForCert?: boolean; questions?: unknown[] }) : null;
+  const exam = examSnap.exists ? (examSnap.data() as { enabled?: boolean; requiredForCert?: boolean; questions?: unknown[]; open?: boolean }) : null;
   const examGating = !!(exam?.enabled && exam?.requiredForCert && Array.isArray(exam.questions) && exam.questions.length > 0);
   if (examGating) {
+    const alreadyOpen = !!exam?.open;
     await db.collection('examConfigs').doc(`event_${eventId}`).set({ open: true, openedAt: Date.now() }, { merge: true });
-    await Promise.allSettled(
-      Array.from(uids).map((targetUid) =>
-        notifyUser({
-          userId: targetUid,
-          type: 'event_reminder',
-          title: 'Sınav açıldı — sertifikan için sınava gir 📝',
-          body: `${eventName} sertifikası için kısa bir sınavı geçmen gerekiyor. Sınava girmek için dokun 👉`,
-          link: `/events/${eventId}`,
-          data: { eventId, kind: 'exam-open' },
-          sender: { id: ngoId, name: ngoName, avatarUrl: eventLogo },
-        }),
-      ),
-    );
+    // Bildirimi yalnız İLK açılışta gönder → "Tamamla"ya tekrar basınca spam olmasın.
+    if (!alreadyOpen) {
+      await Promise.allSettled(
+        Array.from(uids).map((targetUid) =>
+          notifyUser({
+            userId: targetUid,
+            type: 'event_reminder',
+            title: 'Sınav açıldı — sertifikan için sınava gir 📝',
+            body: `${eventName} sertifikası için kısa bir sınavı geçmen gerekiyor. Sınava girmek için dokun 👉`,
+            link: `/events/${eventId}`,
+            data: { eventId, kind: 'exam-open' },
+            sender: { id: ngoId, name: ngoName, avatarUrl: eventLogo },
+          }),
+        ),
+      );
+    }
     await eventRef.update({ completedAt: FieldValue.serverTimestamp(), completedBy: uid, completed: true, examGated: true }).catch(() => undefined);
-    return NextResponse.json({ ok: true, examOpened: true, total: uids.size });
+    return NextResponse.json({ ok: true, examOpened: true, total: uids.size, notified: !alreadyOpen });
   }
 
   // Faaliyet no — yıl bazında sıralı; etkinliğe bir kez atanır (ilk tamamlamada).

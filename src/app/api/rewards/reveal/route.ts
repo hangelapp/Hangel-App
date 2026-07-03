@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
   // Sinyalleri reveal ile güncelle (uygun katılımcılar) → overlay doğru cevabı gösterir.
   const requireCheckin = !!q.checkinOnly || !cfg.isOnline;
-  const eligible = await getEligibleParticipants(kind, id, { requireCheckin });
+  const eligible = (await getEligibleParticipants(kind, id, { requireCheckin })).filter((p) => p.uid !== ctx!.uid);
   for (let i = 0; i < eligible.length; i += 400) {
     const batch = db.batch();
     for (const p of eligible.slice(i, i + 400)) {

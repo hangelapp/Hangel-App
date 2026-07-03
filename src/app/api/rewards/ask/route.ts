@@ -41,7 +41,9 @@ export async function POST(req: NextRequest) {
   if (!q) return NextResponse.json({ error: 'Soru bulunamadı.' }, { status: 404 });
 
   const requireCheckin = !!q.checkinOnly || !cfg.isOnline;
-  const eligible = await getEligibleParticipants(kind, id, { requireCheckin });
+  const eligibleAll = await getEligibleParticipants(kind, id, { requireCheckin });
+  // Organizatörün kendi cihazında overlay açılıp admin panelini kapatmasın.
+  const eligible = eligibleAll.filter((p) => p.uid !== ctx!.uid);
   if (eligible.length === 0) {
     return NextResponse.json({ error: 'Uygun katılımcı yok (kayıt/check-in bekleniyor).' }, { status: 409 });
   }

@@ -17,7 +17,7 @@
  * - Sezon ödülleri info kartı
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { collection, doc, limit, orderBy, query } from 'firebase/firestore';
 import { Award, Globe, Handshake, Heart, MapPin, School, Sparkles, Star } from 'lucide-react';
 
@@ -53,8 +53,6 @@ const MAX_LIST = 100;
 // kendi doc'u ayrıca alınıp birleştirilir → top 100 dışındaysa bile "senin sıran"
 // kartı doğru çalışır.
 const LEADERBOARD_FETCH_LIMIT = 100;
-// Liderlik tablosu, topluluk bu üye sayısına ulaşınca OTOMATİK açılır; altında gizli.
-const LEADERBOARD_MIN_USERS = 1000;
 
 const METRICS: ReadonlyArray<{
   key: MetricKey;
@@ -204,9 +202,11 @@ export default function LeaderboardPage() {
 
   // PERF: en yüksek etki puanlı ilk 100 kullanıcı (top-level impactScore alanı —
   // tüm puan yazımları buraya increment edilir). Tüm koleksiyonu indirmez.
+  // Aktif metriğe göre sırala → her sekme kendi gerçek liderlerini getirir
+  // (impactScore'a göre çekip totalPoints'e göre sıralamak yanlış #1 gösteriyordu).
   const usersRef = useMemoFirebase(
-    () => query(collection(db, COLLECTIONS.users), orderBy('impactScore', 'desc'), limit(LEADERBOARD_FETCH_LIMIT)),
-    [db],
+    () => query(collection(db, COLLECTIONS.users), orderBy(metric, 'desc'), limit(LEADERBOARD_FETCH_LIMIT)),
+    [db, metric],
   );
   const { data: topUsers, isLoading } = useCollection<LeaderboardUser>(usersRef);
 
@@ -275,7 +275,7 @@ export default function LeaderboardPage() {
 
       {/* Metrik sekmeleri */}
       <Tabs value={metric} onValueChange={(v) => setMetric(v as MetricKey)} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 rounded-2xl">
+        <TabsList className="grid w-full grid-cols-5 rounded-2xl">
           {METRICS.map((m) => {
             const Icon = m.icon;
             return (
