@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-03";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "c0e2ca0c",
+    "date": "2026-07-03",
+    "subject": "fix(feed): gelirortaklari satıcı=advertiser(feed.name), ürün <brand>=productBrand (Marka≠Mağaza)"
+  },
+  {
     "hash": "58d01910",
     "date": "2026-07-03",
     "subject": "feat(market): bağış şeritlerini (Yüzdeyle+Tutarla) marka profili + kategori görünümüne ekle"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "0d38808f",
     "date": "2026-07-03",
     "subject": "fix(impact-card): tofu glyph'leri gider — ₺→TL, ≈→~, emoji çıkarıldı (satori default font)"
-  },
-  {
-    "hash": "0cffa595",
-    "date": "2026-07-03",
-    "subject": "fix(events): katılım sertifikası alt koleksiyona yazılmıyordu → profilde görünmüyordu"
   }
 ];
