@@ -479,11 +479,23 @@ export default function DiscoverPage() {
 
   // ── Vitrin şeritleri — hepsi ÇEKİLEN ürünlerden client-side türetilir ──
 
-  // En Çok Bağış Yapanlar: çözülen bağış oranı yüksek → düşük.
+  // En Çok Yüzdeyle Bağış Yapanlar: çözülen bağış ORANI (%) yüksek → düşük.
   const topDonationStrip = useMemo(() => {
     return (products || [])
       .map((p) => ({ p, r: resolveProductRate(p) }))
       .sort((a, b) => b.r - a.r)
+      .slice(0, 21)
+      .map((x) => x.p);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, brandRate]);
+
+  // En Çok Tutarla Bağış Yapanlar: mutlak bağış TUTARI (₺) = oran × geçerli fiyat,
+  // yüksek → düşük. Pahalı + oranı iyi ürünler öne çıkar (kuruşça en çok bağış).
+  const topDonationAmountStrip = useMemo(() => {
+    return (products || [])
+      .map((p) => ({ p, amt: (resolveProductRate(p) / 100) * effectivePrice(p) }))
+      .filter((x) => x.amt > 0)
+      .sort((a, b) => b.amt - a.amt)
       .slice(0, 21)
       .map((x) => x.p);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -981,11 +993,18 @@ export default function DiscoverPage() {
 
                 {/* ── 5. Yatay ürün şeritleri ── */}
                 <ProductStrip
-                  title="En Çok Bağış Yapanlar"
+                  title="En Çok Yüzdeyle Bağış Yapanlar"
                   emoji="🧡"
                   items={topDonationStrip}
                   resolveRate={resolveProductRate}
                   onSeeAll={() => setSortBy('donationDesc')}
+                />
+                <ProductStrip
+                  title="En Çok Tutarla Bağış Yapanlar"
+                  emoji="💰"
+                  items={topDonationAmountStrip}
+                  resolveRate={resolveProductRate}
+                  onSeeAll={scrollToAll}
                 />
                 <ProductStrip
                   title="İndirimdekiler"

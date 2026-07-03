@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-07-03";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "e1744d88",
+    "date": "2026-07-03",
+    "subject": "feat(tanıtım): kuruma özel materyal üretici (logo + profil QR + sosyal alana göre söylem)"
+  },
+  {
+    "hash": "9111ec22",
+    "date": "2026-07-03",
+    "subject": "fix(qa): leaderboard aç + kritik reward/exam düzeltmeleri (QA turu)"
+  },
+  {
+    "hash": "e9a13129",
+    "date": "2026-07-03",
+    "subject": "perf(market): brands-all ön-hesaplama read-through (99k tarama maliyetini kaldır)"
+  },
+  {
     "hash": "4d21a0ea",
     "date": "2026-07-03",
     "subject": "feat(gönüllülük+tanıtım): kart buton seti event ile eşitlendi + detay Sertifika + tanıtım Önizle/Paylaş"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "9ec0d1a4",
     "date": "2026-07-02",
     "subject": "feat(volunteering): Düzenle formuna Sosyal Alan + Katılım Şekli + Süre/Bağlılık + Açık Adres"
-  },
-  {
-    "hash": "780b640f",
-    "date": "2026-07-02",
-    "subject": "feat(settings): Gizlilik'e Passkey (Face ID) kartı — bu cihaza passkey ekle"
-  },
-  {
-    "hash": "4a3e387c",
-    "date": "2026-07-02",
-    "subject": "feat(volunteering): kartlara Gönüllüler + Yaka Kartları + Sertifikalar (bulk-docs orgKind=volunteer)"
-  },
-  {
-    "hash": "6e2d4601",
-    "date": "2026-07-02",
-    "subject": "Merge remote-tracking branch 'origin/main' into feature/all-brands-list"
   }
 ];
