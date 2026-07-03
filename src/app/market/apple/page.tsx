@@ -25,8 +25,10 @@ const APPLE_RATE = 5;
 export default function AppleProductsPage() {
   const db = useFirestore();
 
+  // Marka≠Mağaza: fix sonrası brandName=MAĞAZA (MediaMarkt…), Apple ise productBrand.
+  // Apple ürünleri productBrandKey='apple' ile bulunur (brandName='Apple' artık yok).
   const productsQuery = useMemoFirebase(
-    () => query(collection(db, COLLECTIONS.products), where('brandName', '==', 'Apple'), limit(120)),
+    () => query(collection(db, COLLECTIONS.products), where('productBrandKey', '==', 'apple'), limit(120)),
     [db],
   );
   const { data: products, isLoading } = useCollection<CanonicalProduct>(productsQuery);
