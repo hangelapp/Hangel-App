@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { BrandLogo } from '@/components/market/brand-logo';
+import { ProductOtherSellers } from '@/components/market/product-other-sellers';
 import { ProductCard } from '@/components/market/product-card';
 import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -517,6 +518,9 @@ export function ProductDetailClient({ id }: { id: string }) {
               <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             </Link>
           )}
+
+          {/* 7b. Diğer satıcılar — aynı ürünü (GTIN/MPN) satan mağazalar, bağış oranıyla */}
+          <ProductOtherSellers product={product} />
 
           {/* 8. Ürün açıklaması */}
           {product.description && (

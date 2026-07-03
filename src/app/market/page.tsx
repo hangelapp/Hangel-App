@@ -65,6 +65,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { DonationStrips } from '@/components/market/donation-strips';
+import { CategoryFacets } from '@/components/market/category-facets';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -1048,6 +1049,10 @@ export default function DiscoverPage() {
 
             {/* ── 6. "Tüm Ürünler" ana grid ── */}
             <section ref={allProductsRef} className="px-4 pt-6 scroll-mt-4">
+              {/* Kategori profili: o kategorideki MAĞAZALAR & MARKALAR bağış oranıyla. */}
+              {activeCategory !== 'Tümü' && filtered.length >= 4 && (
+                <CategoryFacets products={filtered} className="mb-5" />
+              )}
               {/* Kategori/filtre görünümünde de bağış şeritleri (Yüzdeyle + Tutarla),
                   o sonuç kümesine göre. Az sonuçta gösterme (grid'le mükerrer olmasın). */}
               {hasFilters && filtered.length >= 8 && (
