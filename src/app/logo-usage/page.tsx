@@ -166,6 +166,10 @@ const ShowcaseCard = ({
 // Logo görseli zeminli mi (siyah/lacivert vb.) — JPG/PDF için arka plan rengi seçimini etkiler.
 type LogoExportFormat = 'png' | 'jpg' | 'pdf';
 
+// Gerçek marka varlık dosyaları (public/brand). Poppins Bold "hangel"
+// glyphleri OUTLINE (vektör path) — self-contained SVG + yüksek çöz. PNG.
+type BrandFiles = { svg?: string; png?: string };
+
 const LogoShowcaseCard = ({
     title,
     description,
@@ -173,13 +177,21 @@ const LogoShowcaseCard = ({
     baseName,
     captureBg,
     onDownload,
+    files,
+    previewSrc,
+    previewBg,
+    previewClass = 'w-40',
 }: {
     title: string;
     description: string;
-    children: React.ReactNode;
+    children?: React.ReactNode;
     baseName: string;
     captureBg: string;
     onDownload: (node: HTMLElement, baseName: string, format: LogoExportFormat, captureBg: string) => void;
+    files?: BrandFiles;
+    previewSrc?: string;
+    previewBg?: string;
+    previewClass?: string;
 }) => {
     const logoRef = useRef<HTMLDivElement>(null);
     const trigger = (format: LogoExportFormat) => {
@@ -189,24 +201,43 @@ const LogoShowcaseCard = ({
     };
     return (
         <Card className="rounded-3xl h-full flex flex-col bg-white overflow-hidden shadow-sm border border-black/5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
-            <div className="relative aspect-square w-full flex items-center justify-center p-6 bg-[#f5f5f7] border-b border-black/5">
+            <div className="relative aspect-square w-full flex items-center justify-center p-6 border-b border-black/5" style={{ backgroundColor: previewBg || '#f5f5f7' }}>
                 <div ref={logoRef} className="flex items-center justify-center">
-                    {children}
+                    {files && previewSrc
+                        ? <img src={previewSrc} alt={title} className={previewClass} />
+                        : children}
                 </div>
             </div>
             <CardContent className="p-4 flex-1 flex flex-col">
                 <h4 className="font-bold text-sm tracking-tight text-foreground">{title}</h4>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed flex-1">{description}</p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary" onClick={() => trigger('png')}>
-                        PNG <Download className="ml-1 h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary" onClick={() => trigger('jpg')}>
-                        JPG <Download className="ml-1 h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary" onClick={() => trigger('pdf')}>
-                        PDF <Download className="ml-1 h-3 w-3" />
-                    </Button>
+                    {files ? (
+                        <>
+                            {files.svg && (
+                                <Button asChild size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary">
+                                    <a href={files.svg} download>SVG <Download className="ml-1 h-3 w-3" /></a>
+                                </Button>
+                            )}
+                            {files.png && (
+                                <Button asChild size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary">
+                                    <a href={files.png} download>PNG <Download className="ml-1 h-3 w-3" /></a>
+                                </Button>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <Button size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary" onClick={() => trigger('png')}>
+                                PNG <Download className="ml-1 h-3 w-3" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary" onClick={() => trigger('jpg')}>
+                                JPG <Download className="ml-1 h-3 w-3" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary" onClick={() => trigger('pdf')}>
+                                PDF <Download className="ml-1 h-3 w-3" />
+                            </Button>
+                        </>
+                    )}
                 </div>
             </CardContent>
         </Card>
@@ -342,41 +373,59 @@ export default function LogoUsagePage() {
     // İndirilen görseller kullanıcının verdiği gibi: wordmark tam ortada (yatay+dikey),
     // doğru renk tonları (turuncu zeminde beyaz, beyaz zeminde turuncu, dernek için lacivert).
     // href={null} → indirme sırasında <a> sarmalayıcısı yok, html2canvas temiz yakalar.
+    // Resmi marka varlıkları — gerçek dosyalar (public/brand). Poppins Bold
+    // "hangel" vektör outline; SVG (ölçeklenir) + yüksek çözünürlüklü PNG.
+    // İndirilen dosya = önizlemede görünen dosya (birebir).
     const asLogos = [
         {
-            title: "Birincil Logo",
-            description: "Zeminsiz Logo (PNG / JPG / PDF)",
-            baseName: 'hangel-birincil-logo',
+            title: "Ana Logo",
+            description: "Turuncu wordmark, zeminsiz — birincil kullanım (SVG / PNG)",
+            baseName: 'hangel-logo',
             captureBg: '#ffffff',
-            content: <div className="flex items-center justify-center px-6 py-4"><HangelLogo href={null} className="text-4xl text-primary" /></div>
+            files: { svg: '/brand/hangel-wordmark.svg', png: '/brand/hangel-wordmark.png' },
+            previewSrc: '/brand/hangel-wordmark.svg',
+            previewBg: '#f5f5f7',
+            previewClass: 'w-40',
         },
         {
-            title: "İkincil Logo",
-            description: "Zeminli Logo (PNG / JPG / PDF)",
-            baseName: 'hangel-ikincil-logo',
-            captureBg: '#f34723',
-            content: <div className="flex items-center justify-center bg-primary rounded-2xl px-6 py-4"><HangelLogo href={null} className="text-4xl text-white" /></div>
-        },
-        {
-            title: "Üçüncül Logo",
-            description: "Beyaz Logo (PNG / JPG / PDF) – (Zorunlu hallerde)",
-            baseName: 'hangel-beyaz-logo',
+            title: "Beyaz Logo",
+            description: "Beyaz wordmark — koyu/renkli zeminler için (SVG / PNG)",
+            baseName: 'hangel-logo-beyaz',
             captureBg: '#1f1f1f',
-            content: <div className="flex items-center justify-center rounded-2xl px-6 py-4" style={{ backgroundColor: '#1f1f1f' }}><HangelLogo href={null} className="text-4xl text-white" /></div>
+            files: { svg: '/brand/hangel-wordmark-white.svg', png: '/brand/hangel-wordmark-white.png' },
+            previewSrc: '/brand/hangel-wordmark-white.svg',
+            previewBg: '#1f1f1f',
+            previewClass: 'w-40',
         },
         {
-            title: "Kare Logo",
-            description: "Turuncu kare zemin, tam logo — sosyal medya/avatar (PNG / JPG / PDF)",
-            baseName: 'hangel-kare-logo',
-            captureBg: '#f34723',
-            content: <div className="bg-primary rounded-2xl aspect-square w-32 flex items-center justify-center"><HangelLogo href={null} className="text-3xl text-white" /></div>
+            title: "Siyah Logo",
+            description: "Koyu wordmark — açık zeminde tek renk (SVG / PNG)",
+            baseName: 'hangel-logo-siyah',
+            captureBg: '#ffffff',
+            files: { svg: '/brand/hangel-wordmark-black.svg', png: '/brand/hangel-wordmark-black.png' },
+            previewSrc: '/brand/hangel-wordmark-black.svg',
+            previewBg: '#ffffff',
+            previewClass: 'w-40',
         },
         {
-            title: "App Icon",
-            description: "Mobil Uygulama Simgesi (PNG / JPG / PDF)",
-            baseName: 'hangel-app-icon',
+            title: "Kare İkon",
+            description: "Turuncu kare, beyaz logo — avatar / app ikon (SVG / PNG)",
+            baseName: 'hangel-ikon',
             captureBg: '#f34723',
-            content: <div className="bg-primary rounded-[22%] aspect-square w-28 flex items-center justify-center"><HangelLogo href={null} className="text-3xl text-white" /></div>
+            files: { svg: '/brand/hangel-icon.svg', png: '/brand/hangel-icon.png' },
+            previewSrc: '/brand/hangel-icon.svg',
+            previewBg: '#f5f5f7',
+            previewClass: 'w-28',
+        },
+        {
+            title: "Kare İkon (Beyaz)",
+            description: "Beyaz kare, turuncu logo — açık zemin avatar (SVG / PNG)",
+            baseName: 'hangel-ikon-beyaz',
+            captureBg: '#ffffff',
+            files: { svg: '/brand/hangel-icon-white.svg', png: '/brand/hangel-icon-white.png' },
+            previewSrc: '/brand/hangel-icon-white.svg',
+            previewBg: '#f5f5f7',
+            previewClass: 'w-28',
         },
     ];
 
@@ -528,9 +577,8 @@ export default function LogoUsagePage() {
                                     <h4 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">{t('marketing.logo.asLogolarTitle')}</h4>
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                         {asLogos.map((logo, index) => (
-                                            <LogoShowcaseCard key={index} title={logo.title} description={logo.description} baseName={logo.baseName} captureBg={logo.captureBg} onDownload={downloadLogo}>
-                                                {logo.content}
-                                            </LogoShowcaseCard>
+                                            <LogoShowcaseCard key={index} title={logo.title} description={logo.description} baseName={logo.baseName} captureBg={logo.captureBg} onDownload={downloadLogo}
+                                                files={logo.files} previewSrc={logo.previewSrc} previewBg={logo.previewBg} previewClass={logo.previewClass} />
                                         ))}
                                     </div>
                                 </div>

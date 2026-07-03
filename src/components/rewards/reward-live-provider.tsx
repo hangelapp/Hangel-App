@@ -7,10 +7,11 @@
  *
  * Sadece dinler; görünür bir DOM bırakmaz (konfeti kendi canvas'ını kullanır).
  */
-import { useEffect, useRef } from 'react';
-import { collection, limit, orderBy, query } from 'firebase/firestore';
-import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { useEffect, useRef, useState } from 'react';
+import { collection, doc, limit, orderBy, query } from 'firebase/firestore';
+import { useUser, useFirestore, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
+import { QuizOverlay, type QuizSignal } from './quiz-overlay';
 
 type CelebrationDoc = {
   id: string;
@@ -53,5 +54,25 @@ export function RewardLiveProvider() {
       .catch(() => undefined);
   }, [celebrations]);
 
-  return null;
+  // Canlı soru sinyali → tam ekran overlay.
+  const signalRef = useMemoFirebase(
+    () => (db && authUser ? doc(db, COLLECTIONS.users, authUser.uid, 'liveQuizSignal', 'current') : null),
+    [db, authUser?.uid],
+  );
+  const { data: signal } = useDoc<QuizSignal>(signalRef);
+  const [dismissedQid, setDismissedQid] = useState<string | null>(null);
+
+  const showQuiz =
+    !!signal &&
+    !!signal.active &&
+    !!signal.questionId &&
+    signal.questionId !== dismissedQid;
+
+  return (
+    <>
+      {showQuiz && signal && (
+        <QuizOverlay signal={signal} onDismiss={() => setDismissedQid(signal.questionId ?? null)} />
+      )}
+    </>
+  );
 }

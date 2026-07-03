@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, FileText, Image as ImageIcon, Palette, Mic, Rss, Users, Globe, BarChart3, TrendingUp, DownloadCloud, Type, Copy, FileDown, FileImage, FileType
+import { ArrowLeft, Download, FileText, Image as ImageIcon, Palette, Rss, Users, Globe, BarChart3, TrendingUp, DownloadCloud, Type, Copy, FileDown, FileImage, FileType
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -11,7 +11,6 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWebPage } from '@/hooks/use-site-content';
-import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useTranslation } from '@/components/providers/language-provider';
@@ -34,30 +33,51 @@ const LogoDisplayCard = ({
     description,
     children,
     onDownload,
+    files,
+    previewSrc,
+    previewBg,
 }: {
     title: string;
     description: string;
-    children: React.ReactNode;
+    children?: React.ReactNode;
     onDownload: (format: LogoFormat) => void;
+    files?: { svg?: string; png?: string };
+    previewSrc?: string;
+    previewBg?: string;
 }) => (
     <div className="border rounded-2xl bg-white/50 text-center flex flex-col">
-        <div className="h-32 w-full flex items-center justify-center p-6 bg-muted/30 rounded-t-2xl">
-            {children}
+        <div className={cn("h-32 w-full flex items-center justify-center p-6 rounded-t-2xl", !previewBg && "bg-muted/30")} style={previewBg ? { backgroundColor: previewBg } : undefined}>
+            {files && previewSrc ? <img src={previewSrc} alt={title} className="max-h-16 w-auto" /> : children}
         </div>
         <div className="p-4 flex-1 flex flex-col">
             <h4 className="font-bold text-sm">{title}</h4>
             <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
-            <div className="grid grid-cols-3 gap-1.5 mt-4">
-                <Button size="sm" variant="outline" className="text-[11px] h-8 px-0" onClick={() => onDownload('png')}>
-                    <FileImage className="h-3 w-3 mr-1" /> PNG
-                </Button>
-                <Button size="sm" variant="outline" className="text-[11px] h-8 px-0" onClick={() => onDownload('jpg')}>
-                    <FileImage className="h-3 w-3 mr-1" /> JPG
-                </Button>
-                <Button size="sm" variant="outline" className="text-[11px] h-8 px-0" onClick={() => onDownload('pdf')}>
-                    <FileType className="h-3 w-3 mr-1" /> PDF
-                </Button>
-            </div>
+            {files ? (
+                <div className="grid grid-cols-2 gap-1.5 mt-4">
+                    {files.svg && (
+                        <Button asChild size="sm" variant="outline" className="text-[11px] h-8 px-0">
+                            <a href={files.svg} download><FileType className="h-3 w-3 mr-1" /> SVG</a>
+                        </Button>
+                    )}
+                    {files.png && (
+                        <Button asChild size="sm" variant="outline" className="text-[11px] h-8 px-0">
+                            <a href={files.png} download><FileImage className="h-3 w-3 mr-1" /> PNG</a>
+                        </Button>
+                    )}
+                </div>
+            ) : (
+                <div className="grid grid-cols-3 gap-1.5 mt-4">
+                    <Button size="sm" variant="outline" className="text-[11px] h-8 px-0" onClick={() => onDownload('png')}>
+                        <FileImage className="h-3 w-3 mr-1" /> PNG
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-[11px] h-8 px-0" onClick={() => onDownload('jpg')}>
+                        <FileImage className="h-3 w-3 mr-1" /> JPG
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-[11px] h-8 px-0" onClick={() => onDownload('pdf')}>
+                        <FileType className="h-3 w-3 mr-1" /> PDF
+                    </Button>
+                </div>
+            )}
         </div>
     </div>
 );
@@ -442,20 +462,14 @@ export default function PressPage() {
 
                         <TabsContent value="logos">
                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <LogoDisplayCard title="Birincil Logo" description="Zeminsiz logo" onDownload={(f) => handleLogoDownload('primary', 'Birincil Logo', f)}>
-                                    <HangelLogo className="text-5xl text-primary" />
-                                </LogoDisplayCard>
-                                 <LogoDisplayCard title="İkincil Logo" description="Zeminli logo" onDownload={(f) => handleLogoDownload('secondary', 'İkincil Logo', f)}>
-                                    <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
-                                </LogoDisplayCard>
-                                <LogoDisplayCard title="Üçüncül Logo" description="Beyaz logo (zorunlu hallerde)" onDownload={(f) => handleLogoDownload('white', 'Üçüncül Logo', f)}>
-                                    <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center">
-                                       <HangelLogo className="text-5xl text-white" />
-                                    </div>
-                                </LogoDisplayCard>
-                                <LogoDisplayCard title="App Icon" description="Uygulama simgesi" onDownload={(f) => handleLogoDownload('app-icon', 'App Icon', f)}>
-                                   <div className="p-4 bg-primary rounded-2xl"><Mic className="h-10 w-10 text-white" /></div>
-                                </LogoDisplayCard>
+                                <LogoDisplayCard title="Ana Logo" description="Turuncu wordmark, zeminsiz" onDownload={(f) => handleLogoDownload('primary', 'Ana Logo', f)}
+                                    files={{ svg: '/brand/hangel-wordmark.svg', png: '/brand/hangel-wordmark.png' }} previewSrc="/brand/hangel-wordmark.svg" />
+                                <LogoDisplayCard title="Beyaz Logo" description="Koyu/renkli zeminler için" onDownload={(f) => handleLogoDownload('white', 'Beyaz Logo', f)}
+                                    files={{ svg: '/brand/hangel-wordmark-white.svg', png: '/brand/hangel-wordmark-white.png' }} previewSrc="/brand/hangel-wordmark-white.svg" previewBg="#1f1f1f" />
+                                <LogoDisplayCard title="Siyah Logo" description="Açık zeminde tek renk" onDownload={(f) => handleLogoDownload('primary', 'Siyah Logo', f)}
+                                    files={{ svg: '/brand/hangel-wordmark-black.svg', png: '/brand/hangel-wordmark-black.png' }} previewSrc="/brand/hangel-wordmark-black.svg" />
+                                <LogoDisplayCard title="Kare İkon" description="Turuncu kare, beyaz logo — avatar/app ikon" onDownload={(f) => handleLogoDownload('app-icon', 'Kare İkon', f)}
+                                    files={{ svg: '/brand/hangel-icon.svg', png: '/brand/hangel-icon.png' }} previewSrc="/brand/hangel-icon.svg" />
                             </div>
                         </TabsContent>
 

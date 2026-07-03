@@ -92,6 +92,40 @@ export async function resolveOrganizer(
   };
 }
 
+/** Tek kullanıcı uygun mu? (cevap API'sinde hızlı kontrol). */
+export async function isEligibleUser(
+  kind: RewardKind,
+  id: string,
+  uid: string,
+  requireCheckin: boolean,
+): Promise<boolean> {
+  const db = getAdminFirestore();
+  if (kind === 'event') {
+    if (requireCheckin) {
+      const s = await db.collection(COLLECTIONS.events).doc(id).collection('checkins').doc(uid).get();
+      return s.exists;
+    }
+    const s = await db.collection(COLLECTIONS.events).doc(id).collection('rsvps').doc(uid).get();
+    return s.exists && (s.data() as { status?: string }).status === 'going';
+  }
+  // volunteering: onaylı başvuru
+  const q = await db
+    .collection(COLLECTIONS.applications)
+    .where('entityId', '==', id)
+    .where('userId', '==', uid)
+    .where('status', '==', 'Onaylandı')
+    .limit(1)
+    .get();
+  return !q.empty;
+}
+
+/** Kullanıcı adını getir (tek). */
+export async function fetchName(uid: string): Promise<string> {
+  const s = await getAdminFirestore().collection(COLLECTIONS.users).doc(uid).get();
+  const d = (s.data() ?? {}) as { displayName?: string; name?: string };
+  return d.displayName || d.name || 'hangel gönüllüsü';
+}
+
 /** Kullanıcı adlarını toplu getir (winner/isim gösterimi için). */
 async function fetchNames(uids: string[]): Promise<Record<string, string>> {
   const db = getAdminFirestore();

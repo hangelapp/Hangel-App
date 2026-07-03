@@ -7,7 +7,7 @@
  * Yapılandırma /api/rewards/config, çekiliş /api/rewards/raffle üzerinden.
  */
 import { useCallback, useEffect, useState } from 'react';
-import { Gift, Loader2, Plus, Trash2, Trophy, Dice5 } from 'lucide-react';
+import { Gift, Loader2, Plus, Trash2, Trophy, Dice5, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,9 @@ import { useUser } from '@/firebase';
 import type { QuizQuestion, RewardPrize } from '@/lib/rewards';
 
 type Props = { kind: 'event' | 'volunteering'; id: string };
+
+const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+type LiveData = { counts: number[]; total: number; correctCount: number; correctIndex: number | null; winners: { uid: string; name: string }[]; revealed: boolean };
 
 const emptyPrize = (): RewardPrize => ({ name: '', count: 1 });
 const emptyQuestion = (): QuizQuestion => ({

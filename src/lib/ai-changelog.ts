@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-03";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "05dbe2d9",
+    "date": "2026-07-03",
+    "subject": "feat(volunteering): Yoklama/Check-in QR altyapısı"
+  },
+  {
     "hash": "393d8a99",
     "date": "2026-07-03",
     "subject": "feat(volunteering): Düzenle formuna ileri alanlar (saatler, imkânlar, gereksinimler, katılım koşulu, ön-eğitim) + leaderboard build-fix"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "da80d465",
     "date": "2026-07-02",
     "subject": "feat(market): brands/all tek akış (ünlüler üstte, az bilinenler altta) + 400+ marka"
-  },
-  {
-    "hash": "37f2110b",
-    "date": "2026-07-02",
-    "subject": "fix(ngo-admin): kurum paneli veri sızıntıları — sadece aktif kuruma scope"
   }
 ];
