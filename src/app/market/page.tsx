@@ -997,7 +997,7 @@ export default function DiscoverPage() {
                 {/* Mağaza kartları şeridi (3 ajanstan gelen satıcılar) — Öne Çıkanlar'ın ÜZERİNDE.
                     NOT: bunlar MAĞAZA (Media Markt, Sportive...); ürün MARKALARI (Nike, Apple)
                     "Tüm Markalar" butonunda (/market/brands/all). */}
-                <BrandStrip title="Mağazalar" items={brandStripItems} />
+                <BrandStrip title="Mağazalar" items={brandStripItems} band />
                 <ProductStrip
                   title="Öne Çıkanlar"
                   icon={Sparkles}
@@ -1133,26 +1133,44 @@ function BrandCard({ brand }: { brand: Brand }) {
 }
 
 // Marka şeridi — ürün şeritleriyle AYNI yatay format, marka kartlarıyla.
-function BrandStrip({ title, items, showSeeAll = true }: { title: string; items: Brand[]; showSeeAll?: boolean }) {
+// band=true → mağaza kutucukları narçiçeği (marka) bir bandın İÇİNDE yatay kaydırılır;
+// diğer ürün şeritlerinden görsel olarak ayrışır.
+function BrandStrip({ title, items, showSeeAll = true, band = false }: { title: string; items: Brand[]; showSeeAll?: boolean; band?: boolean }) {
   if (items.length === 0) return null;
+  const header = (
+    <div className="mb-2.5 flex items-center justify-between gap-2 px-4">
+      <h2 className={cn('flex min-w-0 items-center gap-1.5 text-base font-black', band ? 'text-white' : 'text-foreground')}>
+        <Store className={cn('h-4 w-4 shrink-0', band ? 'text-white' : 'text-primary')} aria-hidden="true" />
+        <span className="truncate">{title}</span>
+      </h2>
+      {showSeeAll && (
+        <Link href="/market/shops" className={cn('inline-flex shrink-0 items-center gap-0.5 text-xs font-bold', band ? 'text-white/90 hover:text-white' : 'text-primary')}>
+          Tümü <ChevronRight className="h-3.5 w-3.5" />
+        </Link>
+      )}
+    </div>
+  );
+  const row = (
+    <div className={cn('flex w-full min-w-0 gap-2.5 overflow-x-auto px-4 pb-1', NO_SCROLLBAR)}>
+      {items.map((b) => (
+        <BrandCard key={b.id} brand={b} />
+      ))}
+    </div>
+  );
+  if (band) {
+    return (
+      <section className="w-full max-w-full pt-6">
+        <div className="mx-3 rounded-[1.75rem] bg-gradient-to-br from-[#f34723] to-[#ff7d4d] py-4 shadow-md shadow-primary/25">
+          {header}
+          {row}
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="w-full max-w-full pt-6">
-      <div className="mb-2.5 flex items-center justify-between gap-2 px-4">
-        <h2 className="flex min-w-0 items-center gap-1.5 text-base font-black text-foreground">
-          <Store className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-          <span className="truncate">{title}</span>
-        </h2>
-        {showSeeAll && (
-          <Link href="/market/shops" className="inline-flex shrink-0 items-center gap-0.5 text-xs font-bold text-primary">
-            Tümü <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        )}
-      </div>
-      <div className={cn('flex w-full min-w-0 gap-2.5 overflow-x-auto px-4 pb-1', NO_SCROLLBAR)}>
-        {items.map((b) => (
-          <BrandCard key={b.id} brand={b} />
-        ))}
-      </div>
+      {header}
+      {row}
     </section>
   );
 }

@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-07-03";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "c085a0ac",
+    "date": "2026-07-03",
+    "subject": "feat(tanıtım+qr): STK tanıtım araçlarına yerleşik materyaller + QR merkez logoya narçiçeği çerçeve"
+  },
+  {
+    "hash": "5310d350",
+    "date": "2026-07-03",
+    "subject": "feat(exam): sertifika yeterlilik sınavı (sürekli eğitim formatı)"
+  },
+  {
     "hash": "5f70fd87",
     "date": "2026-07-03",
     "subject": "fix(anasayfa): 'Ürünleri Keşfet' keşif kartını (Pazara Git + Kütüphaneyi Aç) kaldır"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "0d894e91",
     "date": "2026-07-02",
     "subject": "feat(ngo-admin): etkinlik & gönüllülük kartlarına İncele ikonu (sağ üst → public sayfa yeni sekme)"
-  },
-  {
-    "hash": "963b2c65",
-    "date": "2026-07-02",
-    "subject": "feat(messaging): Yöneticiye sor butonu (etkinlik/gönüllülük→kuruma DM) + aktivite log mesajlaşma tabı"
-  },
-  {
-    "hash": "06f5c27b",
-    "date": "2026-07-02",
-    "subject": "feat(market): marka profiline kategori sekmeleri + Filtre/Sırala"
   }
 ];
