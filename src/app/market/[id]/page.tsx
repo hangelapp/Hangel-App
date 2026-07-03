@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { StoreProductsTab } from '@/components/market/store-products-tab';
 import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, ShieldAlert, CheckCircle2, AlertTriangle, MessageSquare, Loader2, BarChart3, TrendingUp, Users, FileText, Mail, Phone, Globe, Instagram, Linkedin, Twitter, Target } from 'lucide-react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -306,14 +307,19 @@ export default function BrandProfilePage() {
             </div>
         </div>
 
-      <Tabs defaultValue="about" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 px-2 bg-transparent h-14 items-center border-b rounded-none">
+      <Tabs defaultValue="products" className="w-full">
+        <TabsList className="grid w-full grid-cols-5 px-2 bg-transparent h-14 items-center border-b rounded-none">
+            <TabsTrigger value="products" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent font-bold">Ürünler</TabsTrigger>
             <TabsTrigger value="about" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent font-bold">Hakkında</TabsTrigger>
             <TabsTrigger value="stats" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent font-bold">Veriler</TabsTrigger>
             <TabsTrigger value="sustainability" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent font-bold">Etki</TabsTrigger>
             <TabsTrigger value="posts" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent font-bold">Akış</TabsTrigger>
         </TabsList>
         
+        <TabsContent value="products" className="p-4">
+            <StoreProductsTab storeName={brand.name} storeRate={Number(brand.donationRate) || undefined} />
+        </TabsContent>
+
         <TabsContent value="about" className="p-4 space-y-6">
             <Card className="rounded-[2rem] shadow-sm border-border">
                 <CardHeader><CardTitle className="text-lg flex items-center gap-2 font-bold"><Info className="h-5 w-5 text-primary"/> Marka Hakkında</CardTitle></CardHeader>

@@ -28,7 +28,7 @@ async function harvest(roots:string[]):Promise<string[]>{
   const skip=/blog|category|kategori|\/page|sayfa|\/brand|\bmarka|content|\/store|magaza|combination|image_sitemap|images?_sitemap/i;
   while(queue.length && out.size<MAXP && fetched<500){
     const u=queue.shift()!; if(seen.has(u))continue; seen.add(u); fetched++;
-    const xml=await get(u); if(!xml)continue;
+    const xml=await get(u,45000); if(!xml)continue; // sitemap index bazı sitelerde yavaş (Altınyıldız ~18s)
     for(const l of locs(xml)){
       if(isXmlSitemap(l)){ if(!seen.has(l)&&!skip.test(l)) queue.push(l); }
       else out.add(l);
@@ -53,11 +53,18 @@ async function productUrls(domain:string):Promise<string[]>{
 }
 function extract(html:string){
   const blocks=[...html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
-  for(const b of blocks){ try{ const j=JSON.parse(b.trim()); const arr=Array.isArray(j)?j:(j['@graph']||[j]);
-    for(const o of arr){ const t=o['@type']; if(t==='Product'||(Array.isArray(t)&&t.includes('Product'))){
-      const off=Array.isArray(o.offers)?o.offers[0]:o.offers; const price=Number(off?.price||off?.lowPrice||0);
-      if(o.name&&price>0) return {name:String(o.name),price,cur:off?.priceCurrency||'TRY',img:Array.isArray(o.image)?o.image[0]:o.image,avail:/InStock/i.test(off?.availability||'')?'in stock':'out of stock',sku:o.sku||o.mpn||''};
-    }}
+  // JSON-LD graph'inde Product dugumunu (mainEntity/itemOffered gibi ic ice olsa da) bul. Sosyopix ic ice; kontrol karakteri temizlenir.
+  const findProd=(node:any):any=>{ if(!node||typeof node!=='object') return null;
+    if(Array.isArray(node)){ for(const x of node){ const r=findProd(x); if(r) return r; } return null; }
+    const t=node['@type']; const isP=t==='Product'||(Array.isArray(t)&&t.includes('Product'));
+    if(isP){ let off=node.offers; if(Array.isArray(off)) off=off[0];
+      // bazı siteler (Skechers) offer alanlarını büyük harfle yazıyor: Price/PriceCurrency/Availability
+      const price=Number((off&&(off.price||off.lowPrice||off.Price||off.LowPrice))||0);
+      if(node.name&&price>0){ let img=node.image; if(Array.isArray(img)) img=img[0]; if(img&&typeof img==='object') img=img.contentUrl||img.url;
+        return {name:String(node.name),price,cur:(off&&(off.priceCurrency||off.PriceCurrency))||'TRY',img,avail:/InStock/i.test((off&&(off.availability||off.Availability))||'')?'in stock':'out of stock',sku:node.sku||node.mpn||''}; } }
+    for(const k of Object.keys(node)){ if(k==='@context') continue; const r=findProd(node[k]); if(r) return r; }
+    return null; };
+  for(const b of blocks){ try{ const j=JSON.parse(b.trim().replace(/[\u0000-\u001F]+/g,' ')); const r=findProd(j); if(r) return r;
   }catch{} }
   const og=(p:string)=>{const m=html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${p}["'][^>]+content=["']([^"']+)["']`,'i'));return m?m[1]:'';};
   const price=Number((og('product:price:amount')||og('og:price:amount')||'').replace(/[^\d.,]/g,'').replace(',','.'));

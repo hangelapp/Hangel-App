@@ -94,7 +94,7 @@ export default function BrandProfilePage() {
       const brand = (doc ?? { id: s.storeId || s.name, slug: s.storeId || s.name, name: s.name, category: '', type: 'brand', logoUrl: '', targetDomain: '', donationRate: rate }) as Brand;
       const storeId = (doc?.slug || doc?.id || s.storeId || '').toString();
       return { name: s.name, rate, brand, storeId };
-    }).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+    }).sort((a, b) => b.rate - a.rate || a.name.localeCompare(b.name, 'tr')); // en çok bağışlayan mağaza önce
   }, [products, storeByName]);
 
   const brandForLogo = { id: key, slug: key, name: brandName, category: '', type: 'brand', logoUrl: '', targetDomain: '', donationRate: avgRate } as Brand;
