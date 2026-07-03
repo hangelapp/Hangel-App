@@ -18,6 +18,8 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, where, query, limit } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { CanonicalProduct } from '@/lib/feed/types';
+import { ProductCategoryStrips } from '@/components/market/product-category-strips';
+import { isFalseBrandMatch } from '@/lib/market/brand-extract';
 
 // Apple ürünlerinde markaya özgü oran yok → platform varsayılanı (discover ile aynı).
 const APPLE_RATE = 5;
@@ -37,8 +39,15 @@ export default function AppleProductsPage() {
   const [seed, setSeed] = useState(0);
   useEffect(() => { setSeed(Math.floor(Math.random() * 2_147_483_646) + 1); }, []);
 
+  // Apple false-positive: "green apple", "apple cider", "apple peel" gibi meyve/gıda
+  // ürünlerini ele — bunlar Apple markası değil (extractProductBrand yanlış eşlemişti).
+  const cleanProducts = useMemo(
+    () => (products || []).filter((p) => !isFalseBrandMatch('Apple', p.title || '')),
+    [products],
+  );
+
   const shuffled = useMemo(() => {
-    const list = [...(products || [])];
+    const list = [...cleanProducts];
     let s = seed || 1;
     const rand = () => {
       s = (s + 0x6d2b79f5) | 0;
@@ -51,7 +60,7 @@ export default function AppleProductsPage() {
       [list[i], list[j]] = [list[j], list[i]];
     }
     return list;
-  }, [products, seed]);
+  }, [cleanProducts, seed]);
 
   // Sıralama çipi (boşken karışık; çip seçilince ona göre sıralı).
   const [sortMode, setSortMode] = useState<SortMode>(null);
@@ -91,6 +100,10 @@ export default function AppleProductsPage() {
       </div>
 
       <main className="w-full max-w-full overflow-x-hidden pb-32 pt-4">
+        {/* Kategori şeritleri (Telefon, Bilgisayar, Tablet, Aksesuar…) — filtre yokken */}
+        {sortMode === null && cleanProducts.length >= 8 && (
+          <div className="px-4 pb-4"><ProductCategoryStrips products={cleanProducts} /></div>
+        )}
         {isLoading && displayed.length === 0 ? (
           <div className="grid grid-cols-2 gap-2.5 px-4 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
             {[...Array(10)].map((_, i) => (

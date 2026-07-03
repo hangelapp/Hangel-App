@@ -80,6 +80,19 @@ const STORE_BRAND = new Map(DICT.map((d) => [d.n, d.raw]));
  * Ürünün gerçek markasını çıkar. storeName = ürünün `brandName` (mağaza) alanı.
  * Döner: kanonik marka adı veya null.
  */
+// Yaygın kelimeyle çakışan marka (Apple=elma) YANLIŞ eşleşmesi: başlıkta meyve/gıda
+// bağlamı var + MARKA (tech) bağlamı yoksa o "apple" markayı değil meyveyi anlatır.
+// (Green Apple göz kalemi, Apple Cider şampuan, Apple Peel krem → Apple markası DEĞİL.)
+const APPLE_FRUIT = /(apple cider|apple peel|green apple|yeşil elma|elma sirke|elma çay|apple vinegar|apple juice|apple seed|apfel|elma aromalı)/i;
+const APPLE_TECH = /(iphone|ipad|macbook|imac|airpod|apple watch|apple tv|magsafe|lightning|mac mini|mac studio|\bios\b|apple pencil|apple usb|apple türkiye)/i;
+export function isFalseBrandMatch(brandRaw: string, title: string): boolean {
+  if (normKey(brandRaw) === 'apple') {
+    const t = (title || '').toLocaleLowerCase('tr');
+    return APPLE_FRUIT.test(t) && !APPLE_TECH.test(t);
+  }
+  return false;
+}
+
 export function extractProductBrand(title: string, storeName: string): string | null {
   const sn = normKey(storeName);
   // 1) mağaza adı bilinen markaysa → marka = mağaza
@@ -88,7 +101,10 @@ export function extractProductBrand(title: string, storeName: string): string | 
   const t = ' ' + normKey(title) + ' ';
   for (const d of DICT) {
     if (AMBIGUOUS.has(d.n)) continue;
-    if (t.includes(' ' + d.n + ' ')) return d.raw;
+    if (t.includes(' ' + d.n + ' ')) {
+      if (isFalseBrandMatch(d.raw, title)) continue; // apple=meyve → marka sayma
+      return d.raw;
+    }
   }
   return null;
 }

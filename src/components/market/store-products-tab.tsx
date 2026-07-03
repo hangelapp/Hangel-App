@@ -9,6 +9,7 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { MarketListing } from '@/components/market/market-listing';
+import { ProductCategoryStrips } from '@/components/market/product-category-strips';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -34,5 +35,11 @@ export function StoreProductsTab({ storeName, storeRate }: { storeName: string; 
     ? (p: CanonicalProduct) => Number(p.donationRate) || storeRate
     : undefined;
 
-  return <MarketListing products={products} resolveRate={resolveRate} />;
+  return (
+    <div className="space-y-6">
+      {/* Mağazanın kendi ürünlerinden kategori şeritleri (Telefon, Bilgisayar, Tablet…) */}
+      <ProductCategoryStrips products={products} resolveRate={resolveRate} minItems={6} />
+      <MarketListing products={products} resolveRate={resolveRate} />
+    </div>
+  );
 }

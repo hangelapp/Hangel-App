@@ -66,7 +66,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { DonationStrips } from '@/components/market/donation-strips';
 import { CategoryFacets } from '@/components/market/category-facets';
-import { curatedCategoryOf, CURATED_ORDER, isIntimateOrAdult } from '@/lib/market/curated-categories';
+import { curatedCategoryOf, CURATED_ORDER, isIntimateOrAdult, categoryQueryTokens } from '@/lib/market/curated-categories';
 import { useRouter } from 'next/navigation';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { cn } from '@/lib/utils';
@@ -76,6 +76,7 @@ import {
   collection,
   limit,
   query,
+  where,
   orderBy,
   startAt,
   getCountFromServer,
@@ -224,17 +225,19 @@ export default function DiscoverPage() {
       });
   }, [db]);
 
-  // Katalogun GERÇEK toplam MARKA/mağaza sayısı (arama barında; 156 gibi filtreli
-  // liste yerine brands koleksiyonunun tam sayısı).
+  // Arama barındaki toplam MARKA sayısı = /market/brands/all ile PARALEL (aynı kaynak:
+  // /api/market/brands-all ürün markaları listesi). Böylece iki sayı birbirini tutar.
   const [totalBrandCount, setTotalBrandCount] = useState<number | null>(null);
   useEffect(() => {
-    if (!db) return;
-    getCountFromServer(collection(db, COLLECTIONS.brands))
-      .then((snap) => setTotalBrandCount(snap.data().count))
+    fetch('/api/market/brands-all')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { brands?: unknown[] } | null) => {
+        if (d && Array.isArray(d.brands)) setTotalBrandCount(d.brands.length);
+      })
       .catch(() => {
         /* sessiz */
       });
-  }, [db]);
+  }, []);
 
   const productsQuery = useMemoFirebase(
     () =>
@@ -1055,19 +1058,15 @@ export default function DiscoverPage() {
                 <BrandStrip title="Mağazalar" items={brandStripItems} band />
                 {/* Mağazalar altı: kürasyonlu kategori satırları — SABİT sıra (CURATED_ORDER),
                     her biri 21 ürün + kaydırma + Tümü → kategori detay sayfası. */}
-                {CURATED_ORDER.map((name) => {
-                  const items = curatedByName.get(name) || [];
-                  return items.length >= 6 ? (
-                    <ProductStrip
-                      key={name}
-                      title={name}
-                      icon={Gift}
-                      items={items.slice(0, 21)}
-                      resolveRate={resolveProductRate}
-                      onSeeAll={() => router.push(`/market/kategori/${encodeURIComponent(name)}`)}
-                    />
-                  ) : null;
-                })}
+                {CURATED_ORDER.map((name) => (
+                  <CuratedStrip
+                    key={name}
+                    name={name}
+                    seedItems={curatedByName.get(name) || []}
+                    resolveRate={resolveProductRate}
+                    onSeeAll={() => router.push(`/market/kategori/${encodeURIComponent(name)}`)}
+                  />
+                ))}
                 <ProductStrip
                   title="Öne Çıkanlar"
                   icon={Sparkles}
@@ -1143,6 +1142,50 @@ export default function DiscoverPage() {
         )}
       </main>
     </div>
+  );
+}
+
+/**
+ * Kürasyon kategori şeridi — kendi Firestore sorgusuyla besleniyor.
+ * Ana sayfanın 120 rastgele ürünü niş kategorileri (Tur, Otel, İnşaat…) 6'ya
+ * ulaştıramaz; bu bileşen o kategorinin token'larıyla (searchTokens
+ * array-contains-any) ürünleri çeker, kürasyon kuralıyla kesinleştirir ve ≥6
+ * varsa şeridi gösterir. seedItems = 120 rastgeleden gelen ön yükleme (ilk boya).
+ */
+function CuratedStrip({
+  name,
+  seedItems,
+  resolveRate,
+  onSeeAll,
+}: {
+  name: string;
+  seedItems: CanonicalProduct[];
+  resolveRate: (p: CanonicalProduct) => number;
+  onSeeAll?: () => void;
+}) {
+  const db = useFirestore();
+  const tokens = useMemo(() => categoryQueryTokens(name).slice(0, 10), [name]);
+  const q = useMemoFirebase(
+    () =>
+      db && tokens.length
+        ? query(collection(db, COLLECTIONS.products), where('searchTokens', 'array-contains-any', tokens), limit(80))
+        : null,
+    [db, tokens],
+  );
+  const { data: raw } = useCollection<CanonicalProduct>(q);
+  const items = useMemo(() => {
+    const map = new Map<string, CanonicalProduct>();
+    for (const p of [...seedItems, ...(raw || [])]) {
+      if (isIntimateOrAdult(p.category, p.title)) continue;
+      if (curatedCategoryOf(p.category, p.title, p.brandName) !== name) continue;
+      const id = (p as { id?: string }).id || p.productUrl || p.title;
+      if (id && !map.has(id)) map.set(id, p);
+    }
+    return Array.from(map.values()).slice(0, 21);
+  }, [seedItems, raw, name]);
+  if (items.length < 6) return null;
+  return (
+    <ProductStrip title={name} icon={Gift} items={items} resolveRate={resolveRate} onSeeAll={onSeeAll} />
   );
 }
 

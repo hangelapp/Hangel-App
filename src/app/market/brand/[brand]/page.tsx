@@ -17,6 +17,8 @@ import { ArrowLeft, Tag, Store as StoreIcon, ChevronRight, SlidersHorizontal, Ar
 import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { DonationStrips } from '@/components/market/donation-strips';
+import { ProductCategoryStrips } from '@/components/market/product-category-strips';
+import { isFalseBrandMatch } from '@/lib/market/brand-extract';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -112,8 +114,13 @@ export default function BrandProfilePage() {
   }, [products]);
 
   const isDeal = (p: CanonicalProduct) => typeof p.salePrice === 'number' && p.salePrice > 0 && p.salePrice < p.price;
+  // Marka yanlış eşleşmesini ele (ör. Apple: "apple cider"/"green apple" meyve ürünleri).
+  const cleanProducts = useMemo(
+    () => (products ?? []).filter((p) => !isFalseBrandMatch(brandName, p.title || '')),
+    [products, brandName],
+  );
   const shown = useMemo(() => {
-    let list = [...(products ?? [])];
+    let list = [...cleanProducts];
     if (activeCat !== 'Tümü') list = list.filter((p) => p.category === activeCat);
     if (inStockOnly) list = list.filter((p) => { const a = (p.availability || '').toLowerCase(); return !a || a.includes('stock') || a.includes('stok'); });
     if (dealsOnly) list = list.filter(isDeal);
@@ -239,9 +246,12 @@ export default function BrandProfilePage() {
 
       {/* Ürün grid */}
       <main className="w-full max-w-full overflow-x-hidden p-4 pb-32">
-        {/* Bağış şeritleri — filtre yokken markanın tüm ürünlerinden (Yüzdeyle + Tutarla) */}
-        {!isLoading && activeCat === 'Tümü' && activeFilterCount === 0 && products && products.length >= 3 && (
-          <DonationStrips products={products} className="mb-6" />
+        {/* Bağış şeritleri + KATEGORİ şeritleri (Telefon/Bilgisayar/Tablet…) — filtre yokken */}
+        {!isLoading && activeCat === 'Tümü' && activeFilterCount === 0 && cleanProducts.length >= 3 && (
+          <>
+            <DonationStrips products={cleanProducts} className="mb-6" />
+            <ProductCategoryStrips products={cleanProducts} className="mb-6" />
+          </>
         )}
         {isLoading && !products?.length ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
