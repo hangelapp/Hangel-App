@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { CanonicalProduct } from '@/lib/feed/types';
+import { donationAmountTRY } from '@/lib/market/donation-value';
 
 type SortKey = 'default' | 'donation' | 'donationAmount' | 'priceAsc' | 'priceDesc' | 'discount';
 
@@ -65,7 +66,7 @@ export function MarketListing({
     if (dealsOnly) list = list.filter(isDeal);
     switch (sortKey) {
       case 'donation': list.sort((a, b) => rate(b) - rate(a)); break;
-      case 'donationAmount': list.sort((a, b) => (rate(b) / 100) * effPrice(b) - (rate(a) / 100) * effPrice(a)); break;
+      case 'donationAmount': list.sort((a, b) => donationAmountTRY(b, rate(b)) - donationAmountTRY(a, rate(a))); break;
       case 'discount': list.sort((a, b) => discountPct(b) - discountPct(a)); break;
       case 'priceAsc': list.sort((a, b) => effPrice(a) - effPrice(b)); break;
       case 'priceDesc': list.sort((a, b) => effPrice(b) - effPrice(a)); break;

@@ -12,10 +12,7 @@
 import React from 'react';
 import { ProductCard } from '@/components/market/product-card';
 import type { CanonicalProduct } from '@/lib/feed/types';
-
-function effectivePrice(p: CanonicalProduct): number {
-  return typeof p.salePrice === 'number' && p.salePrice > 0 ? p.salePrice : p.price;
-}
+import { donationAmountTRY } from '@/lib/market/donation-value';
 
 function Strip({ title, items }: { title: string; items: CanonicalProduct[] }) {
   return (
@@ -53,7 +50,7 @@ export function DonationStrips({
     .map((x) => x.p);
 
   const byAmt = products
-    .map((p) => ({ p, v: (rate(p) / 100) * effectivePrice(p) }))
+    .map((p) => ({ p, v: donationAmountTRY(p, rate(p)) }))
     .filter((x) => x.v > 0)
     .sort((a, b) => b.v - a.v)
     .slice(0, limit)

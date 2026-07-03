@@ -67,6 +67,7 @@ import { ProductCard } from '@/components/market/product-card';
 import { DonationStrips } from '@/components/market/donation-strips';
 import { CategoryFacets } from '@/components/market/category-facets';
 import { curatedCategoryOf, CURATED_ORDER, isIntimateOrAdult, categoryQueryTokens } from '@/lib/market/curated-categories';
+import { donationAmountTRY } from '@/lib/market/donation-value';
 import { useRouter } from 'next/navigation';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { cn } from '@/lib/utils';
@@ -528,9 +529,10 @@ export default function DiscoverPage() {
     [safeProducts, brandRate],
   );
 
-  // En Çok Tutarla Bağış Yapanlar: en yüksek bağış TUTARI (₺ = oran × fiyat) sınıfı, rotasyonlu.
+  // En Çok Tutarla Bağış Yapanlar: mutlak bağış TUTARI ₺ (para birimleri ₺'ye çevrilir),
+  // yüzdeye göre değil GERÇEK değere göre; en yüksek sınıf, o sınıf içinde rotasyonlu.
   const topDonationAmountStrip = useMemo(
-    () => topRotate(safeProducts, (p) => (resolveProductRate(p) / 100) * effectivePrice(p)),
+    () => topRotate(safeProducts, (p) => donationAmountTRY(p, resolveProductRate(p))),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [safeProducts, brandRate],
   );
