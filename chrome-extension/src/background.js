@@ -84,6 +84,26 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     })();
     return true; // async response
   }
+  // Google arama sayfasından: markayı YENİ SEKMEDE aç (arama sayfası kalsın).
+  if (msg?.type === 'OPEN_AFFILIATE_NEWTAB' && typeof msg.brandId === 'string') {
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/extension/click`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brandId: msg.brandId }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.affiliateUrl) await chrome.tabs.create({ url: data.affiliateUrl });
+        sendResponse({ ok: true, brandName: data.brandName, donationRate: data.donationRate });
+      } catch (err) {
+        console.error('[hangel] google affiliate open failed:', err);
+        sendResponse({ ok: false, error: String(err) });
+      }
+    })();
+    return true;
+  }
   if (msg?.type === 'GET_BRANDS') {
     chrome.storage.local.get(BRANDS_STORAGE_KEY).then((data) => {
       sendResponse({ brands: data[BRANDS_STORAGE_KEY]?.brands || [] });

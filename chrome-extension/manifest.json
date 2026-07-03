@@ -3,7 +3,7 @@
   "name": "hangel — Alışverişin Bağışa Dönüşsün",
   "short_name": "hangel",
   "description": "hangel kayıtlı markalarda otomatik hatırlatıcı: 'Yapsın' de, komisyon seçtiğin STK'lara bağış olarak gitsin.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "default_locale": "tr",
   "homepage_url": "https://hangel.org",
   "author": "hangel Uluslararası Sosyal Fayda Derneği",
@@ -318,6 +318,19 @@
         "src/content.css"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.google.com/*",
+        "https://www.google.com.tr/*"
+      ],
+      "js": [
+        "src/google.js"
+      ],
+      "css": [
+        "src/content.css"
+      ],
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
@@ -461,7 +474,9 @@
         "https://*.wrangler.com.tr/*",
         "https://*.www2.hm.com/*",
         "https://*.yargici.com/*",
-        "https://*.zwilling.com/*"
+        "https://*.zwilling.com/*",
+        "https://www.google.com/*",
+        "https://www.google.com.tr/*"
       ]
     }
   ]
