@@ -83,6 +83,7 @@ import { useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
 import { OnboardingTour } from '@/components/onboarding/onboarding-tour';
 import { useOnboardingTour } from '@/components/onboarding/use-onboarding-tour';
+import { RewardLiveProvider } from '@/components/rewards/reward-live-provider';
 
 const group1Items: SideNavItem[] = [
   { href: '/timeline', label: 'nav.timeline', icon: 'layout-grid' },
@@ -738,6 +739,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* İlk-açılış rehberli karşılama turu — yalnız bir kez gösterilir. */}
           <OnboardingTour open={showOnboardingTour} onComplete={completeOnboardingTour} />
+
+          {/* Ödül/Çekiliş/Quiz — global canlı sinyaller: kazanınca konfeti, canlı soruda tam ekran. */}
+          <RewardLiveProvider />
         </div>
     );
 }

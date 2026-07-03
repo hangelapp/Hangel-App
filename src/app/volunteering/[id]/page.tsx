@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, CalendarPlus, MapPin, Award, Loader2, Users, UserC
 import { cn } from '@/lib/utils';
 import { openExternalUrl } from '@/lib/capacitor';
 import { DualCountdown } from '@/components/events/event-countdown';
+import { RewardBanner } from '@/components/rewards/reward-banner';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { DistanceBadge } from '@/components/shared/distance-badge';
@@ -629,6 +630,7 @@ export default function VolunteeringDetailPage() {
                         <p className="text-lg leading-relaxed text-foreground/85 whitespace-pre-line">
                             {opportunity.description}
                         </p>
+                        <RewardBanner kind="volunteering" id={id} />
                     </section>
 
                     {/* Etki metrikleri — sade, kenarlıksız, ferah ızgara */}

@@ -8,6 +8,7 @@ import { EventCountdown } from '@/components/events/event-countdown';
 import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
 import { LiveEventSection } from '@/components/events/live-event-section';
 import { EventEvaluateButton } from '@/components/events/event-evaluate-button';
+import { RewardBanner } from '@/components/rewards/reward-banner';
 import { openExternalUrl } from '@/lib/capacitor';
 import { ToastAction } from '@/components/ui/toast';
 import { Loader2 } from 'lucide-react';
@@ -688,6 +689,8 @@ export default function EventDetailPage() {
                                 <p className="text-foreground/85 leading-relaxed font-medium">{event.description}</p>
                             </CardContent>
                         </Card>
+
+                        <RewardBanner kind="event" id={event.id} />
 
                         {contributors.length > 0 && (
                         <Card className="glass-surface rounded-3xl border-white/40 shadow-sm">

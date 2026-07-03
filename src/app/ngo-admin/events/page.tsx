@@ -36,6 +36,7 @@ import { VenueManager } from './_components/venue-manager';
 import { EventAttendees } from '@/components/events/event-attendees';
 import { EventCheckinQR } from '@/components/events/event-checkin-qr';
 import { EventCompleteButton } from '@/components/events/event-complete-button';
+import { RewardManager } from '@/components/rewards/reward-manager';
 import { EventBadgeCards, EventCertificates } from '@/components/events/event-bulk-docs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -652,6 +653,7 @@ export default function EventManagementPage() {
                                                     <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)"><Megaphone className="h-4 w-4 mr-1.5" /> Google'da Ücretsiz Tanıt</a>
                                                 </Button>
                                                 <EventCheckinQR eventId={event.id} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
+                                                <RewardManager kind="event" id={event.id} />
                                                 <EventCompleteButton eventId={event.id} />
                                                 <EventAttendees eventId={event.id} />
                                                 <EventBadgeCards eventId={event.id} eventName={event.name || ''} ngoName={activeEntity?.data.name || ''} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />

@@ -281,6 +281,18 @@ service cloud.firestore {
       }
     }
 
+    // FEAT-REWARD — Ödül/Çekiliş/Quiz PUBLIC banner özeti (doğru cevap İÇERMEZ).
+    // Tam yapılandırma + sorular + doğru cevaplar `rewardConfigs` (kural yok →
+    // default-deny; yalnız Admin SDK erişir). Yazımlar API (Admin SDK) üzerinden.
+    match /eventRewards/{key} {
+      allow read, list: if true;
+      allow write: if false;
+      match /winners/{wid} {
+        allow read, list: if true;   // "Kazananlar" herkese görünür (ad + ödül)
+        allow write: if false;
+      }
+    }
+
     // FEAT-QR-CARD-ACTIVATION — kullanıcı kendi başvuru kaydını oluşturur ve görür;
     // değerlendirmeyi super-admin yapar (status alanını günceller).
     match /qrCardActivations/{actId} {
