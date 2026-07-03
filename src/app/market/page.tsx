@@ -796,7 +796,7 @@ export default function DiscoverPage() {
             ? 'Aranıyor…'
             : hasFilters
               ? `${filtered.length.toLocaleString('tr-TR')} ürün listeleniyor`
-              : `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün`}
+              : `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün · ${rankedBrands.length.toLocaleString('tr-TR')} marka`}
         </p>
 
         {/* Hızlı süzgüler — YALNIZ arama yapıldığında, sonuçların üzerinde görünür
