@@ -277,6 +277,17 @@ export async function POST(
     },
   });
 
+  // 10) Gönüllünün cihazında değerlendir popart'ı açılsın (yorum + puan).
+  await db.collection(COLLECTIONS.users).doc(userId).collection('evalPrompt').doc('current').set({
+    active: true,
+    kind: 'volunteering',
+    parentId: volunteeringId,
+    title: oppTitle,
+    ngoName,
+    ngoId,
+    createdAt: FieldValue.serverTimestamp(),
+  }).catch(() => undefined);
+
   return NextResponse.json({
     ok: true,
     completionId,

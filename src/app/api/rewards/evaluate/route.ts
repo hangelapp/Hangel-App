@@ -28,12 +28,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Giriş gerekli.' }, { status: 401 });
   }
 
-  let body: { eventId?: string; answers?: number[]; comment?: string; speakerRatings?: Record<string, number> };
+  let body: { eventId?: string; kind?: string; id?: string; answers?: number[]; comment?: string; speakerRatings?: Record<string, number> };
   try {
     body = (await req.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: 'Geçersiz JSON.' }, { status: 400 });
   }
+
+  // Gönüllülük değerlendirmesi (yıldız + yorum) → volunteering/{id}/evaluations/{uid}.
+  if (body.kind === 'volunteering') {
+    const volId = String(body.id || '');
+    if (!volId) return NextResponse.json({ error: 'id gerekli.' }, { status: 400 });
+    const vAnswers = Array.isArray(body.answers) ? body.answers.map((n) => Math.max(0, Math.min(5, Math.round(Number(n) || 0)))) : [];
+    const vRated = vAnswers.filter((a) => a >= 1);
+    if (vRated.length === 0) return NextResponse.json({ error: 'En az bir soruyu puanla.' }, { status: 400 });
+    const vComment = String(body.comment || '').trim().slice(0, 1000);
+    const db = getAdminFirestore();
+    const name = await fetchName(uid);
+    const avg = Math.round((vRated.reduce((a, b) => a + b, 0) / vRated.length) * 10) / 10;
+    await db.collection(COLLECTIONS.volunteering).doc(volId).collection('evaluations').doc(uid)
+      .set({ uid, name, answers: vAnswers, rating: avg, comment: vComment, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    await db.collection(COLLECTIONS.users).doc(uid).collection('evalPrompt').doc('current').set({ active: false }, { merge: true }).catch(() => undefined);
+    return NextResponse.json({ ok: true, awarded: false });
+  }
+
   const eventId = String(body.eventId || '');
   if (!eventId) return NextResponse.json({ error: 'eventId gerekli.' }, { status: 400 });
 

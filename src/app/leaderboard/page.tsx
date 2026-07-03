@@ -17,8 +17,8 @@
  * - Sezon ödülleri info kartı
  */
 
-import { useMemo, useState } from 'react';
-import { collection, doc, limit, orderBy, query } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
+import { collection, doc, getCountFromServer, limit, orderBy, query } from 'firebase/firestore';
 import { Award, Globe, Handshake, Heart, MapPin, School, Sparkles, Star } from 'lucide-react';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -53,6 +53,8 @@ const MAX_LIST = 100;
 // kendi doc'u ayrıca alınıp birleştirilir → top 100 dışındaysa bile "senin sıran"
 // kartı doğru çalışır.
 const LEADERBOARD_FETCH_LIMIT = 100;
+// Liderlik tablosu, topluluk bu üye sayısına ulaşınca açılır; altında gizli kalır.
+const LEADERBOARD_MIN_USERS = 1000;
 
 const METRICS: ReadonlyArray<{
   key: MetricKey;
@@ -70,9 +72,10 @@ const METRICS: ReadonlyArray<{
   { key: 'totalImpactValue', labelKey: 'tabImpactValue', unitKey: 'unitCurrency', icon: Sparkles },
 ] as const;
 
+// "Ülkemde" (country) kaldırıldı: kullanıcıda ülke alanı yok, Global ile birebir
+// aynı listeyi gösteriyordu (yanıltıcı). Şehir/Okul gerçek filtre uygular.
 const SCOPES: ReadonlyArray<{ key: Scope; labelKey: string; icon: typeof Globe }> = [
   { key: 'global', labelKey: 'scopeGlobal', icon: Globe },
-  { key: 'country', labelKey: 'scopeCountry', icon: MapPin },
   { key: 'city', labelKey: 'scopeCity', icon: MapPin },
   { key: 'school', labelKey: 'scopeSchool', icon: School },
 ] as const;
@@ -196,7 +199,7 @@ export default function LeaderboardPage() {
   const db = useFirestore();
   const { t } = useTranslation();
 
-  const [scope, setScope] = useState<Scope>('country');
+  const [scope, setScope] = useState<Scope>('global');
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
   const [metric, setMetric] = useState<MetricKey>('totalPoints');
 
@@ -224,13 +227,47 @@ export default function LeaderboardPage() {
     return [...topUsers, myUser];
   }, [topUsers, myUser]);
 
+  // GATE: liderlik tablosu topluluk 1000 üyeye ulaşınca açılır; altında gizli kalır.
+  const [userCount, setUserCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!db) return;
+    let active = true;
+    getCountFromServer(collection(db, COLLECTIONS.users))
+      .then((snap) => { if (active) setUserCount(snap.data().count); })
+      .catch(() => { /* sayım best-effort; gate isLoading ile beklenir */ });
+    return () => { active = false; };
+  }, [db]);
+
   const activeMetric = METRICS.find((m) => m.key === metric) ?? METRICS[0];
 
-  if (isLoading) {
+  if (isLoading || userCount === null) {
     return (
       <div className="mx-auto w-full max-w-3xl space-y-5 p-4 pb-32 sm:p-6">
         <LeaderboardHero />
         <LeaderboardSkeleton />
+      </div>
+    );
+  }
+
+  if (userCount < LEADERBOARD_MIN_USERS) {
+    return (
+      <div className="mx-auto w-full max-w-3xl space-y-5 p-4 pb-32 sm:p-6">
+        <LeaderboardHero />
+        <div className="rounded-3xl border border-border/60 bg-card p-8 text-center space-y-4 shadow-sm">
+          <span className="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10">
+            <Sparkles className="h-8 w-8 text-primary" />
+          </span>
+          <h2 className="text-xl font-bold">Liderlik Tablosu yakında açılıyor</h2>
+          <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+            Arkadaşlarını davet et, açıldığında ilk sıralarda yerini al!
+          </p>
+          <div className="mx-auto max-w-xs space-y-1.5 pt-1">
+            <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, (userCount / LEADERBOARD_MIN_USERS) * 100)}%` }} />
+            </div>
+            <p className="text-[12px] font-semibold tabular-nums text-muted-foreground">{userCount.toLocaleString('tr-TR')} / 1.000 üye</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -291,7 +328,7 @@ export default function LeaderboardPage() {
           <TabsContent key={m.key} value={m.key} className="mt-4 space-y-4">
             {/* Scope (kapsam) */}
             <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 rounded-2xl bg-muted/60">
+              <TabsList className="grid w-full grid-cols-3 rounded-2xl bg-muted/60">
                 {SCOPES.map((s) => {
                   const Icon = s.icon;
                   return (

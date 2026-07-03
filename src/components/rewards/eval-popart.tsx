@@ -1,12 +1,13 @@
 'use client';
 
 /**
- * EvalPopart — etkinlik "Tamamla"nınca katılımcının cihazında açılan değerlendirme.
- * 5 standart soru (yıldız) + yorum + konuşmacı/sanatçı puanlama. Gönderince +20 puan
- * + konfeti. evalPrompt sinyalinden beslenir; gönderim /api/rewards/evaluate'e gider.
+ * EvalPopart — "Tamamla"nınca katılımcının/gönüllünün cihazında açılan değerlendirme.
+ *   - Etkinlik: 5 soru (yıldız) + yorum + konuşmacı/sanatçı puanlama → +20 puan.
+ *   - Gönüllülük: kurum/görev deneyimi soruları + yorum (görüş kuruma iletilir).
+ * evalPrompt sinyalinden beslenir; gönderim /api/rewards/evaluate'e gider.
  */
 import { useState } from 'react';
-import { Loader2, Star, X, PartyPopper } from 'lucide-react';
+import { Loader2, Star, X, PartyPopper, HandHeart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useUser } from '@/firebase';
@@ -19,15 +20,22 @@ export type EvalSignal = {
   kind?: 'event' | 'volunteering';
   parentId?: string;
   title?: string;
+  ngoName?: string;
   contributors?: EvalContributor[];
 };
 
-const QUESTIONS = [
+const EVENT_QUESTIONS = [
   'Etkinliği genel olarak nasıl buldun?',
   'Organizasyon ve akış nasıldı?',
   'İçerik ne kadar faydalıydı?',
   'Mekân / erişim (veya online akış) nasıldı?',
   'Tekrar katılır / tavsiye eder misin?',
+];
+const VOL_QUESTIONS = [
+  'Gönüllülük deneyimini genel olarak nasıl buldun?',
+  'Kurumun organizasyonu ve iletişimi nasıldı?',
+  'Görev tanımı ve yönlendirme yeterli miydi?',
+  'Tekrar bu kurumla gönüllülük yapar mısın?',
 ];
 
 function Stars({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -45,9 +53,12 @@ function Stars({ value, onChange }: { value: number; onChange: (v: number) => vo
 export function EvalPopart({ signal, onDismiss }: { signal: EvalSignal; onDismiss: () => void }) {
   const { user: authUser } = useUser();
   const { toast } = useToast();
+  const isVol = signal.kind === 'volunteering';
+  const QUESTIONS = isVol ? VOL_QUESTIONS : EVENT_QUESTIONS;
+
   const [answers, setAnswers] = useState<number[]>(new Array(QUESTIONS.length).fill(0));
   const [comment, setComment] = useState('');
-  const contributors = signal.contributors || [];
+  const contributors = isVol ? [] : signal.contributors || [];
   const [speaker, setSpeaker] = useState<Record<number, number>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -59,19 +70,18 @@ export function EvalPopart({ signal, onDismiss }: { signal: EvalSignal; onDismis
     setSubmitting(true);
     try {
       const token = await authUser.getIdToken();
+      const body = isVol
+        ? { kind: 'volunteering', id: signal.parentId, answers, comment }
+        : { eventId: signal.parentId, answers, comment, speakerRatings: Object.fromEntries(Object.entries(speaker).filter(([, v]) => v >= 1)) };
       const res = await fetch('/api/rewards/evaluate', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          eventId: signal.parentId,
-          answers,
-          comment,
-          speakerRatings: Object.fromEntries(Object.entries(speaker).filter(([, v]) => v >= 1)),
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Gönderilemedi.');
-      void import('@/lib/celebrate').then((m) => m.celebrate({ title: data.awarded ? '+20 puan! 🎉' : 'Teşekkürler! 🧡', message: 'Değerlendirmen alındı.' })).catch(() => undefined);
+      const celebrateTitle = data.awarded ? '+20 puan! 🎉' : 'Teşekkürler! 🧡';
+      void import('@/lib/celebrate').then((m) => m.celebrate({ title: celebrateTitle, message: 'Değerlendirmen alındı.' })).catch(() => undefined);
       onDismiss();
     } catch (e) {
       toast({ variant: 'destructive', title: 'Gönderilemedi', description: e instanceof Error ? e.message : '' });
@@ -85,13 +95,13 @@ export function EvalPopart({ signal, onDismiss }: { signal: EvalSignal; onDismis
       <div className="w-full sm:max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-background p-5 shadow-2xl">
         <div className="flex items-start justify-between mb-1">
           <div>
-            <h2 className="text-lg font-bold">Etkinliği değerlendir ⭐</h2>
-            <p className="text-xs text-muted-foreground">{signal.title}</p>
+            <h2 className="text-lg font-bold">{isVol ? 'Gönüllülüğünü değerlendir ⭐' : 'Etkinliği değerlendir ⭐'}</h2>
+            <p className="text-xs text-muted-foreground">{signal.title}{isVol && signal.ngoName ? ` · ${signal.ngoName}` : ''}</p>
           </div>
           <button onClick={onDismiss} aria-label="Kapat" className="rounded-full p-1.5 hover:bg-muted"><X className="h-4 w-4" /></button>
         </div>
         <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-300">
-          <PartyPopper className="h-3.5 w-3.5" /> Değerlendir, +20 puan kazan
+          {isVol ? (<><HandHeart className="h-3.5 w-3.5" /> Görüşün kuruma iletilir</>) : (<><PartyPopper className="h-3.5 w-3.5" /> Değerlendir, +20 puan kazan</>)}
         </div>
 
         <div className="space-y-4">
@@ -120,7 +130,7 @@ export function EvalPopart({ signal, onDismiss }: { signal: EvalSignal; onDismis
           )}
 
           <Button className="w-full" onClick={submit} disabled={submitting || !answeredAny}>
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Gönder ve +20 Puan Kazan
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} {isVol ? 'Değerlendirmeyi Gönder' : 'Gönder ve +20 Puan Kazan'}
           </Button>
         </div>
       </div>
