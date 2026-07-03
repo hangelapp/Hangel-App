@@ -22,7 +22,8 @@ import { ingestProducts, type FeedSourceKind } from '@/lib/feed/registry';
 import { searchTokensFor } from '@/lib/feed/search';
 
 export const runtime = 'nodejs';
-export const maxDuration = 120;
+// Tam katalog çekimi (ör. Teknosa ~11k ürün, ~28MB XML) 120s'i aşabilir.
+export const maxDuration = 300;
 
 const PRODUCTS = 'products';
 

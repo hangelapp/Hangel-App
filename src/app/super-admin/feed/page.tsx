@@ -75,7 +75,7 @@ export default function FeedAdminPage() {
       const res = await authedFetch({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feedId: f.feedId, offerId: f.offerId, name: f.name, type: f.type, limit: 500 }),
+        body: JSON.stringify({ feedId: f.feedId, offerId: f.offerId, name: f.name, type: f.type, limit: 20000 }),
       });
       const payload = await res.json();
       if (!res.ok) throw new Error(payload?.message || `HTTP ${res.status}`);
@@ -103,7 +103,7 @@ export default function FeedAdminPage() {
           const res = await authedFetch({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ feedId: f.feedId, offerId: f.offerId, name: f.name, type: f.type, limit: 500 }),
+            body: JSON.stringify({ feedId: f.feedId, offerId: f.offerId, name: f.name, type: f.type, limit: 20000 }),
           });
           const payload = await res.json();
           if (res.ok) { okCount += 1; total += Number(payload.ingested || 0); }
