@@ -18,7 +18,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { collection, doc, getCountFromServer, limit, orderBy, query } from 'firebase/firestore';
+import { collection, doc, limit, orderBy, query } from 'firebase/firestore';
 import { Award, Globe, Handshake, Heart, MapPin, School, Sparkles, Star } from 'lucide-react';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -224,49 +224,13 @@ export default function LeaderboardPage() {
     return [...topUsers, myUser];
   }, [topUsers, myUser]);
 
-  // GATE: liderlik tablosu 1000 üyeye ulaşınca OTOMATİK açılır; altında gizli kalır.
-  // Toplam üye sayısı artık tüm koleksiyonu indirmeden getCountFromServer ile sayılır.
-  const [userCount, setUserCount] = useState<number | null>(null);
-  useEffect(() => {
-    if (!db) return;
-    let active = true;
-    getCountFromServer(collection(db, COLLECTIONS.users))
-      .then((snap) => { if (active) setUserCount(snap.data().count); })
-      .catch(() => { /* sayım best-effort; gate aşağıdaki isLoading ile beklenir */ });
-    return () => { active = false; };
-  }, [db]);
-
   const activeMetric = METRICS.find((m) => m.key === metric) ?? METRICS[0];
 
-  // Gate kararı için sayım çözülmesini bekle (henüz null ise yükleme durumunda kal).
-  if (isLoading || userCount === null) {
+  if (isLoading) {
     return (
       <div className="mx-auto w-full max-w-3xl space-y-5 p-4 pb-32 sm:p-6">
         <LeaderboardHero />
         <LeaderboardSkeleton />
-      </div>
-    );
-  }
-
-  if (userCount < LEADERBOARD_MIN_USERS) {
-    return (
-      <div className="mx-auto w-full max-w-3xl space-y-5 p-4 pb-32 sm:p-6">
-        <LeaderboardHero />
-        <div className="rounded-3xl border border-border/60 bg-card p-8 text-center space-y-4 shadow-sm">
-          <span className="inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10">
-            <Sparkles className="h-8 w-8 text-primary" />
-          </span>
-          <h2 className="text-xl font-bold">Liderlik Tablosu yakında açılıyor</h2>
-          <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
-            Liderlik tablosu, hangel topluluğu <span className="font-semibold text-foreground">1.000 üyeye</span> ulaştığında otomatik olarak açılacak. Arkadaşlarını davet et, açıldığında ilk sıralarda yerini al!
-          </p>
-          <div className="mx-auto max-w-xs space-y-1.5 pt-1">
-            <div className="h-2.5 overflow-hidden rounded-full bg-muted">
-              <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, (userCount / LEADERBOARD_MIN_USERS) * 100)}%` }} />
-            </div>
-            <p className="text-[12px] font-semibold tabular-nums text-muted-foreground">{userCount.toLocaleString('tr-TR')} / 1.000 üye</p>
-          </div>
-        </div>
       </div>
     );
   }

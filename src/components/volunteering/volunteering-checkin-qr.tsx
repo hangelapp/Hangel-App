@@ -1,19 +1,20 @@
 'use client';
 
 /**
- * VolunteeringCheckinQR — gönüllülük yönetiminde "Yoklama QR" butonu.
+ * VolunteeringCheckinQR — gönüllülük yönetiminde "Kayıt QR" + "Check-in QR"
+ * (etkinlik yönetimindeki EventCheckinQR ile aynı prensip).
  *
- * STK yöneticisi QR'ı kapıda gösterir (tablet/basılı); onaylı gönüllü hangel app
- * ile okutur → o ilana check-in (yoklama) olur. Dialog canlı listeyi gösterir:
- * gelenler YEŞİL, bekleyenler gri. Veri: GET /api/volunteering/[id]/checkins.
+ *  - Kayıt QR   → QR /volunteering/{id} (public ilan). Gönüllü okutur, başvurur.
+ *  - Check-in QR→ QR /v/{id}/checkin (yoklama). Onaylı gönüllü okutur, anında
+ *                 yoklamaya girer. Dialog canlı listeyi gösterir: gelenler YEŞİL.
  *
- * Tarama hedefi: /v/{id}/checkin
+ * Yoklama verisi: GET /api/volunteering/[id]/checkins.
  */
 
 import React, { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ScanLine, Loader2, RefreshCw, CheckCircle2, Clock } from 'lucide-react';
+import { QrCode, ScanLine, Loader2, RefreshCw, CheckCircle2, Clock } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { LogoQr } from '@/components/shared/logo-qr';
@@ -29,17 +30,17 @@ interface CheckinsResponse {
   people: Person[];
 }
 
+type Mode = 'kayit' | 'checkin';
+
 export function VolunteeringCheckinQR({ oppId, logoUrl }: { oppId: string; logoUrl?: string | null }) {
   const { user } = useUser();
   const { toast } = useToast();
-  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<Mode | null>(null);
   const [data, setData] = useState<CheckinsResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const scanUrl = (() => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
-    return `${origin}/v/${oppId}/checkin`;
-  })();
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
+  const scanUrl = (m: Mode) => (m === 'kayit' ? `${origin}/volunteering/${oppId}` : `${origin}/v/${oppId}/checkin`);
 
   const loadList = useCallback(async () => {
     if (!user) { toast({ variant: 'destructive', title: 'Giriş gerekli' }); return; }
@@ -57,66 +58,83 @@ export function VolunteeringCheckinQR({ oppId, logoUrl }: { oppId: string; logoU
     }
   }, [oppId, user, toast]);
 
-  const onOpen = useCallback(() => { setOpen(true); setData(null); void loadList(); }, [loadList]);
+  const open = useCallback((m: Mode) => {
+    setMode(m);
+    setData(null);
+    if (m === 'checkin') void loadList(); // kayıt modunda listeye gerek yok
+  }, [loadList]);
 
   const people = data?.people ?? [];
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={onOpen}><ScanLine className="mr-1.5 h-4 w-4" /> Yoklama QR</Button>
+      <Button variant="outline" size="sm" onClick={() => open('kayit')}><QrCode className="mr-1.5 h-4 w-4" /> Kayıt QR</Button>
+      <Button variant="outline" size="sm" onClick={() => open('checkin')}><ScanLine className="mr-1.5 h-4 w-4" /> Check-in QR</Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={mode !== null} onOpenChange={(o) => { if (!o) setMode(null); }}>
         <DialogContent className="sm:max-w-md rounded-2xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <ScanLine className="h-5 w-5 text-primary" /> Yoklama QR
+              {mode === 'kayit' ? <QrCode className="h-5 w-5 text-primary" /> : <ScanLine className="h-5 w-5 text-primary" />}
+              {mode === 'kayit' ? 'Kayıt QR' : 'Check-in QR'}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Kapıda göster — onaylı gönüllü hangel app ile okutur, anında yoklamaya girer.
+              {mode === 'kayit'
+                ? 'Kapıda / afişte göster — gönüllü hangel app ile okutur, ilana başvurur.'
+                : 'Kapıda göster — onaylı gönüllü hangel app ile okutur, anında yoklamaya girer.'}
             </DialogDescription>
           </DialogHeader>
 
           {/* Büyük QR */}
           <div className="flex flex-col items-center gap-2">
             <div className="rounded-2xl border bg-white p-2 shadow-sm">
-              <LogoQr value={scanUrl} logoUrl={logoUrl} size={216} className="rounded-lg" />
+              <LogoQr value={scanUrl(mode ?? 'checkin')} logoUrl={logoUrl} size={216} className="rounded-lg" />
             </div>
-            <p className="break-all text-center text-xs text-muted-foreground">{scanUrl}</p>
+            <p className="break-all text-center text-xs text-muted-foreground">{scanUrl(mode ?? 'checkin')}</p>
           </div>
 
-          {/* Sayaç + yenile */}
-          <div className="flex items-center justify-between border-t pt-3">
-            <p className="text-sm font-semibold">
-              Yoklama: <span className="text-emerald-600">{data?.checkedInCount ?? 0}</span> / {data?.approvedCount ?? 0} onaylı gönüllü
+          {/* Check-in modunda canlı yoklama listesi */}
+          {mode === 'checkin' && (
+            <>
+              <div className="flex items-center justify-between border-t pt-3">
+                <p className="text-sm font-semibold">
+                  Yoklama: <span className="text-emerald-600">{data?.checkedInCount ?? 0}</span> / {data?.approvedCount ?? 0} onaylı gönüllü
+                </p>
+                <Button variant="ghost" size="sm" onClick={loadList} disabled={loading}>
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                </Button>
+              </div>
+              <div className="max-h-64 space-y-1.5 overflow-y-auto">
+                {loading && !data ? (
+                  <div className="flex items-center justify-center py-8 text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Yükleniyor…</div>
+                ) : people.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">Henüz onaylı gönüllü yok.</p>
+                ) : (
+                  people.map((p) => {
+                    const green = p.checkedIn;
+                    return (
+                      <div key={p.uid} className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2 ${green ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30' : 'border-border'}`}>
+                        <div className="min-w-0">
+                          <p className={`break-words text-sm font-semibold ${green ? 'text-emerald-700 dark:text-emerald-400' : ''}`}>{p.name}</p>
+                          {p.email && <p className="truncate text-xs text-muted-foreground">{p.email}</p>}
+                        </div>
+                        {p.checkedIn
+                          ? <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-emerald-600"><CheckCircle2 className="h-4 w-4" /> Geldi</span>
+                          : <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-muted-foreground"><Clock className="h-3.5 w-3.5" /> Bekliyor</span>}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </>
+          )}
+
+          {mode === 'kayit' && (
+            <p className="border-t pt-3 text-center text-xs text-muted-foreground">
+              Bu QR ilanın public sayfasını açar; gönüllü oradan başvurur. Başvurular
+              &ldquo;Başvurular&rdquo; sekmesinde onayına düşer.
             </p>
-            <Button variant="ghost" size="sm" onClick={loadList} disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            </Button>
-          </div>
-
-          {/* Liste */}
-          <div className="max-h-64 space-y-1.5 overflow-y-auto">
-            {loading && !data ? (
-              <div className="flex items-center justify-center py-8 text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Yükleniyor…</div>
-            ) : people.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">Henüz onaylı gönüllü yok.</p>
-            ) : (
-              people.map((p) => {
-                const green = p.checkedIn;
-                return (
-                  <div key={p.uid} className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2 ${green ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30' : 'border-border'}`}>
-                    <div className="min-w-0">
-                      <p className={`break-words text-sm font-semibold ${green ? 'text-emerald-700 dark:text-emerald-400' : ''}`}>{p.name}</p>
-                      {p.email && <p className="truncate text-xs text-muted-foreground">{p.email}</p>}
-                    </div>
-                    {p.checkedIn
-                      ? <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-emerald-600"><CheckCircle2 className="h-4 w-4" /> Geldi</span>
-                      : <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-muted-foreground"><Clock className="h-3.5 w-3.5" /> Bekliyor</span>}
-                  </div>
-                );
-              })
-            )}
-          </div>
+          )}
         </DialogContent>
       </Dialog>
     </>

@@ -30,7 +30,7 @@ import {
   deleteDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { Loader2, PlusCircle, Pencil, Trash2, CheckCircle2, Users, Award, Eye } from 'lucide-react';
+import { Loader2, PlusCircle, Pencil, Trash2, CheckCircle2, Users, Award, Eye, Megaphone } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -393,6 +393,9 @@ function ListingsTab({
                 <Button variant="outline" size="sm" onClick={() => openEdit(opp)}>
                   <Pencil className="h-3.5 w-3.5 mr-1.5" />
                   {t('ngo_admin_volunteering.listings.editBtn')}
+                </Button>
+                <Button asChild variant="outline" size="sm" className="border-blue-500/30 text-blue-600 hover:bg-blue-500/10 hover:text-blue-700">
+                  <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)"><Megaphone className="h-3.5 w-3.5 mr-1.5" /> Google'da Ücretsiz Tanıt</a>
                 </Button>
                 <VolunteeringCheckinQR oppId={opp.id} logoUrl={ngoLogoUrl} />
                 <RewardManager kind="volunteering" id={opp.id} />

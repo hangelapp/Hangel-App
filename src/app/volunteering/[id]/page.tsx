@@ -841,6 +841,21 @@ export default function VolunteeringDetailPage() {
                                 <span className="text-[11px] text-center leading-tight break-words">Değerlendir</span>
                             </Button>
                         )}
+                        {approvedCompletion && (
+                            <Button
+                                asChild
+                                size="lg"
+                                variant="secondary"
+                                className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0"
+                                aria-label="Sertifikan"
+                                title="Sertifikan"
+                            >
+                                <Link href="/my-badges">
+                                    <Award className="h-5 w-5 shrink-0" />
+                                    <span className="text-[11px] text-center leading-tight break-words">Sertifika</span>
+                                </Link>
+                            </Button>
+                        )}
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button size="lg" className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0 col-span-1">

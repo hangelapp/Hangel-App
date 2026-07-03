@@ -4,8 +4,9 @@ import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Download, FileText, Megaphone, Globe } from 'lucide-react';
+import { Loader2, Download, FileText, Megaphone, Globe, Eye, Share2 } from 'lucide-react';
 import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -29,7 +30,33 @@ function formatBytes(bytes?: number): string {
 
 export default function OrgMarketingKitPage() {
   const db = useFirestore();
+  const { toast } = useToast();
   const { kind, isLoading: entityLoading } = useActiveEntity();
+
+  // Paylaş — dosyayı native paylaşım sayfasıyla gönder; desteklenmezse bağlantıyı kopyala.
+  const shareAsset = async (a: MarketingAsset) => {
+    const url = typeof window !== 'undefined' ? new URL(a.fileUrl, window.location.origin).toString() : a.fileUrl;
+    const nav = navigator as Navigator & { share?: (d: unknown) => Promise<void>; canShare?: (d: { files: File[] }) => boolean };
+    try {
+      if (nav.share) {
+        try {
+          const resp = await fetch(url);
+          const blob = await resp.blob();
+          const file = new File([blob], a.fileName, { type: a.contentType || blob.type });
+          if (nav.canShare && nav.canShare({ files: [file] })) {
+            await nav.share({ files: [file], title: a.title });
+            return;
+          }
+        } catch { /* dosya paylaşımı olmadı → link paylaş */ }
+        await nav.share({ title: a.title, text: a.title, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast({ title: 'Bağlantı kopyalandı', description: 'Paylaşım desteklenmiyor; bağlantı panoya kopyalandı.' });
+    } catch {
+      /* kullanıcı iptal etti */
+    }
+  };
 
   // Yalnız yayında olanları çek (rules: where('status','==','yayinda') gerekli).
   // Hedef kitle filtresi client tarafında (targetKinds çoklu olabildiği için).
@@ -121,11 +148,19 @@ export default function OrgMarketingKitPage() {
                         <p className="text-[10px] text-muted-foreground mt-auto truncate">
                           {a.fileName}{a.fileSize ? ` · ${formatBytes(a.fileSize)}` : ''}
                         </p>
-                        <Button asChild className="rounded-xl font-bold w-full mt-1">
-                          <a href={a.fileUrl} download={a.fileName} target="_blank" rel="noopener noreferrer">
-                            <Download className="mr-2 h-4 w-4" /> İndir
-                          </a>
-                        </Button>
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <Button asChild className="rounded-xl font-bold flex-1">
+                            <a href={a.fileUrl} download={a.fileName}>
+                              <Download className="mr-2 h-4 w-4" /> İndir
+                            </a>
+                          </Button>
+                          <Button asChild variant="outline" size="icon" className="rounded-xl shrink-0" title="Önizle" aria-label="Önizle">
+                            <a href={a.fileUrl} target="_blank" rel="noopener noreferrer"><Eye className="h-4 w-4" /></a>
+                          </Button>
+                          <Button variant="outline" size="icon" className="rounded-xl shrink-0" title="Paylaş" aria-label="Paylaş" onClick={() => shareAsset(a)}>
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   );

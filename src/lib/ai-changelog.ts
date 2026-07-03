@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-03";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "3c46ccd8",
+    "date": "2026-07-03",
+    "subject": "feat(market): Mağazalar bölümü narçiçeği bant içinde — kutucuklar bandın içinde kayar"
+  },
+  {
     "hash": "c085a0ac",
     "date": "2026-07-03",
     "subject": "feat(tanıtım+qr): STK tanıtım araçlarına yerleşik materyaller + QR merkez logoya narçiçeği çerçeve"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "a20f6afe",
     "date": "2026-07-02",
     "subject": "feat(events): kartlara 'Google'da Ücretsiz Tanıt' butonu → Reklam Yönetimi (Google tab)"
-  },
-  {
-    "hash": "0d894e91",
-    "date": "2026-07-02",
-    "subject": "feat(ngo-admin): etkinlik & gönüllülük kartlarına İncele ikonu (sağ üst → public sayfa yeni sekme)"
   }
 ];
