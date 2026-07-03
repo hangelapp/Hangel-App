@@ -64,6 +64,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
+import { DonationStrips } from '@/components/market/donation-strips';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -1047,6 +1048,11 @@ export default function DiscoverPage() {
 
             {/* ── 6. "Tüm Ürünler" ana grid ── */}
             <section ref={allProductsRef} className="px-4 pt-6 scroll-mt-4">
+              {/* Kategori/filtre görünümünde de bağış şeritleri (Yüzdeyle + Tutarla),
+                  o sonuç kümesine göre. Az sonuçta gösterme (grid'le mükerrer olmasın). */}
+              {hasFilters && filtered.length >= 8 && (
+                <DonationStrips products={filtered} resolveRate={resolveProductRate} className="mb-6" />
+              )}
               <div className="mb-3 flex items-center justify-between gap-2">
                 <h2 className="text-base font-black text-foreground">
                   {hasFilters ? 'Sonuçlar' : 'Tüm Ürünler'}

@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-07-03";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "342582e7",
+    "date": "2026-07-03",
+    "subject": "feat(market): bağış şeritlerini ikiye ayır — Yüzdeyle + Tutarla"
+  },
+  {
+    "hash": "dd8e8079",
+    "date": "2026-07-03",
+    "subject": "feat(feed): kendi importer'ımız — Shopify + T-Soft mağaza feed'leri (Faz 1)"
+  },
+  {
+    "hash": "62451207",
+    "date": "2026-07-03",
+    "subject": "chore(passkey): giriş+ayarlar butonlarını geçici kaldır (native webcredentials derlemesi bekleniyor)"
+  },
+  {
     "hash": "e1744d88",
     "date": "2026-07-03",
     "subject": "feat(tanıtım): kuruma özel materyal üretici (logo + profil QR + sosyal alana göre söylem)"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "e6dcbcd9",
     "date": "2026-07-03",
     "subject": "feat(donations): Etki Kartı (paylaşılabilir görsel) + 'bağışının yolculuğu' zaman çizelgesi"
-  },
-  {
-    "hash": "0a0f96b0",
-    "date": "2026-07-03",
-    "subject": "fix(ios): passkey için webcredentials associated-domain — native app'te Face ID açılmıyordu"
-  },
-  {
-    "hash": "24033053",
-    "date": "2026-07-03",
-    "subject": "feat(ngo-admin): tek menü + performans özeti tek satır + profil önizle + QR logo proxy"
-  },
-  {
-    "hash": "9ec0d1a4",
-    "date": "2026-07-02",
-    "subject": "feat(volunteering): Düzenle formuna Sosyal Alan + Katılım Şekli + Süre/Bağlılık + Açık Adres"
   }
 ];

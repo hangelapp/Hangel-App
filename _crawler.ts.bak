@@ -17,38 +17,32 @@ const MAXP = Number(process.env.MAXP||'20000');
 
 function strip(o:any):any{ if(Array.isArray(o))return o.map(strip); if(o&&typeof o==='object'){const r:any={};for(const[k,v]of Object.entries(o))if(v!==undefined)r[k]=strip(v);return r;} return o; }
 async function get(u:string,t=15000):Promise<string>{ try{const r=await fetch(u,{redirect:'follow',signal:AbortSignal.timeout(t),headers:{'User-Agent':'Mozilla/5.0 (compatible; hangel-crawler)'}}); return r.ok?await r.text():'';}catch{return '';} }
-const locs=(x:string)=> (x.match(/<loc>\s*(?:<!\[CDATA\[)?\s*([^<\]]+?)\s*(?:\]\]>)?\s*<\/loc>/gi)||[]).map(m=>m.replace(/<\/?loc>|<!\[CDATA\[|\]\]>/gi,'').trim());
+const locs=(x:string)=> (x.match(/<loc>\s*([^<]+?)\s*<\/loc>/gi)||[]).map(m=>m.replace(/<\/?loc>/gi,'').trim());
 const isProd=(u:string)=>/\/(product|urun|p)\/|\/p-|-p-\d|\/pd\/|\/urun-/i.test(u);
-const isXmlSitemap=(u:string)=>/\.xml($|\?)/i.test(u)||/sitemap/i.test(u.replace(/^https?:\/\/[^/]+/,''));
 
-// Çok seviyeli sitemap ağacını gez (urlset/sitemapindex farketmez). İçindeki .xml/sitemap
-// loc'ları alt-sitemap kabul edip kuyruğa atar; non-xml loc'ları ürün adayı sayar.
-async function harvest(roots:string[]):Promise<string[]>{
-  const seen=new Set<string>(); const out=new Set<string>(); const queue=[...new Set(roots)]; let fetched=0;
-  const skip=/blog|category|kategori|\/page|sayfa|\/brand|\bmarka|content|\/store|magaza|combination|image_sitemap|images?_sitemap/i;
-  while(queue.length && out.size<MAXP && fetched<500){
-    const u=queue.shift()!; if(seen.has(u))continue; seen.add(u); fetched++;
-    const xml=await get(u); if(!xml)continue;
-    for(const l of locs(xml)){
-      if(isXmlSitemap(l)){ if(!seen.has(l)&&!skip.test(l)) queue.push(l); }
-      else out.add(l);
-    }
-  }
-  return [...out];
-}
 async function productUrls(domain:string):Promise<string[]>{
-  // robots.txt'teki Sitemap: satırları (standart-dışı yollar) + yaygın adaylar
-  const robots=await get(`https://www.${domain}/robots.txt`)|| await get(`https://${domain}/robots.txt`);
+  // robots.txt'teki Sitemap: satırlarını da dene (COMER vb. standart-dışı yollar)
+  const robots=await get(`https://${domain}/robots.txt`)|| await get(`https://www.${domain}/robots.txt`);
   const robSm=(robots.match(/^\s*Sitemap:\s*(\S+)/gim)||[]).map(l=>l.replace(/^\s*Sitemap:\s*/i,'').trim());
-  const roots=[...robSm,
-    `https://www.${domain}/sitemap.xml`, `https://${domain}/sitemap.xml`,
-    `https://www.${domain}/sitemap_index.xml`, `https://www.${domain}/sitemap-index.xml`];
-  const all=await harvest(roots);
-  if(!all.length) return [];
-  const pr=all.filter(isProd);
-  // isProd yalnızca anlamlı bir oran eşleşince güvenilir; aksi halde tüm urlset'i kullan.
-  const useAll=pr.length<Math.max(5,all.length*0.2);
-  return [...new Set(useAll?all:pr)];
+  const paths=[...robSm,`https://${domain}/sitemap.xml`,`https://${domain}/sitemap_index.xml`,`https://${domain}/sitemap-index.xml`];
+  for(const p of paths){
+    const isUrl=/^https?:\/\//i.test(p);
+    const xml=isUrl?await get(p):(await get(`https://${domain}${p}`)|| await get(`https://www.${domain}${p}`));
+    if(!xml)continue;
+    if(/<sitemapindex/i.test(xml)){
+      const kids=locs(xml);
+      // blog/kategori/sayfa sitemap'lerini ele; kalan hepsinden URL topla (ürün-adlı
+      // olmasa da). JSON-LD çıkarımı ürün olmayanları zaten atlar.
+      const skip=/blog|category|kategori|page|sayfa|brand|marka|content|store|magaza|combination/i;
+      const prodKids=kids.filter(u=>/product|urun|catalog/i.test(u));
+      const use=(prodKids.length?prodKids:kids.filter(u=>!skip.test(u)));
+      const all:string[]=[];
+      for(const k of use){ if(all.length>MAXP)break; const cx=await get(k); all.push(...locs(cx)); }
+      return [...new Set(all)];
+    }
+    const ls=locs(xml); const pr=ls.filter(isProd); return [...new Set(pr.length?pr:ls)];
+  }
+  return [];
 }
 function extract(html:string){
   const blocks=[...html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);

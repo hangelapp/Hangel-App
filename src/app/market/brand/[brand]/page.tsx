@@ -16,6 +16,7 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, Tag, Store as StoreIcon, ChevronRight, SlidersHorizontal, ArrowDownUp, Check } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
+import { DonationStrips } from '@/components/market/donation-strips';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -238,6 +239,10 @@ export default function BrandProfilePage() {
 
       {/* Ürün grid */}
       <main className="w-full max-w-full overflow-x-hidden p-4 pb-32">
+        {/* Bağış şeritleri — filtre yokken markanın tüm ürünlerinden (Yüzdeyle + Tutarla) */}
+        {!isLoading && activeCat === 'Tümü' && activeFilterCount === 0 && products && products.length >= 3 && (
+          <DonationStrips products={products} className="mb-6" />
+        )}
         {isLoading && !products?.length ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {[...Array(8)].map((_, i) => <div key={i} className="aspect-[3/4] w-full animate-pulse rounded-2xl bg-muted" />)}
