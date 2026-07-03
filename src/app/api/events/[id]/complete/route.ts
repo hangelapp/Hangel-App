@@ -170,5 +170,23 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   await eventRef.update({ completedAt: FieldValue.serverTimestamp(), completedBy: uid, completed: true, certActivityNo: activityNo, certPersonSeq: personSeq }).catch(() => undefined);
 
+  // Değerlendirme popart'ı — katılımcıların cihazında açılır (5 soru + konuşmacı puanlama, +20 puan).
+  const contributors = Array.isArray((ev as { contributors?: Array<{ name?: string; title?: string; role?: string }> }).contributors)
+    ? ((ev as { contributors?: Array<{ name?: string; title?: string; role?: string }> }).contributors || [])
+        .map((c) => ({ name: String(c.name || ''), title: String(c.title || ''), role: String(c.role || '') }))
+        .filter((c) => c.name)
+    : [];
+  const uidArr = Array.from(uids);
+  for (let i = 0; i < uidArr.length; i += 400) {
+    const batch = db.batch();
+    for (const u of uidArr.slice(i, i + 400)) {
+      batch.set(db.collection(COLLECTIONS.users).doc(u).collection('evalPrompt').doc('current'), {
+        active: true, kind: 'event', parentId: eventId, title: eventName, contributors,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit().catch(() => undefined);
+  }
+
   return NextResponse.json({ ok: true, total: uids.size, newlyCertified, alreadyDone });
 }

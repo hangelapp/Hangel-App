@@ -12,6 +12,7 @@ import { collection, doc, limit, orderBy, query } from 'firebase/firestore';
 import { useUser, useFirestore, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { QuizOverlay, type QuizSignal } from './quiz-overlay';
+import { EvalPopart, type EvalSignal } from './eval-popart';
 
 type CelebrationDoc = {
   id: string;
@@ -68,10 +69,22 @@ export function RewardLiveProvider() {
     !!signal.questionId &&
     signal.questionId !== dismissedQid;
 
+  // Değerlendirme popart sinyali (Tamamla sonrası).
+  const evalRef = useMemoFirebase(
+    () => (db && authUser ? doc(db, COLLECTIONS.users, authUser.uid, 'evalPrompt', 'current') : null),
+    [db, authUser?.uid],
+  );
+  const { data: evalSignal } = useDoc<EvalSignal>(evalRef);
+  const [dismissedEval, setDismissedEval] = useState<string | null>(null);
+  const showEval = !!evalSignal && !!evalSignal.active && !!evalSignal.parentId && evalSignal.parentId !== dismissedEval && !showQuiz;
+
   return (
     <>
       {showQuiz && signal && (
         <QuizOverlay signal={signal} onDismiss={() => setDismissedQid(signal.questionId ?? null)} />
+      )}
+      {showEval && evalSignal && (
+        <EvalPopart signal={evalSignal} onDismiss={() => setDismissedEval(evalSignal.parentId ?? null)} />
       )}
     </>
   );
