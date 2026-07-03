@@ -512,16 +512,6 @@ export default function LoginPage() {
             href2: "/emergency/about"
         },
         {
-            title: t('landing.features.market.title'),
-            description: t('landing.features.market.description'),
-            href: "/market",
-            imageUrl: "https://picsum.photos/seed/hangel-market/1080/1080",
-            imageHint: "minimal product grid with coral donation badge",
-            linkText: t('landing.features.market.linkText'),
-            linkText2: t('landing.features.library.linkText'),
-            href2: "/library"
-        },
-        {
             title: t('landing.discovery.public.title'),
             description: t('landing.discovery.public.description'),
             href: "/corporate",

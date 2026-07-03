@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-07-03";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "015c2981",
+    "date": "2026-07-03",
+    "subject": "feat(brand): gerçek vektör logo dosyaları (public/brand) + logo-usage & press indirmeleri gerçek dosyalara"
+  },
+  {
+    "hash": "b088ab64",
+    "date": "2026-07-03",
+    "subject": "feat(rewards): Faz 1 — Ödül & Çekiliş (etkinlik + gönüllülük)"
+  },
+  {
     "hash": "05dbe2d9",
     "date": "2026-07-03",
     "subject": "feat(volunteering): Yoklama/Check-in QR altyapısı"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "a35d65a1",
     "date": "2026-07-02",
     "subject": "feat(events): Yaka Kartları & Sertifikalar — uygulama-içi glass A4 önizleme + kişi seçimi (1/tümü)"
-  },
-  {
-    "hash": "69c1cdd5",
-    "date": "2026-07-02",
-    "subject": "feat(login): Apple tarzı 2. cihaz girişi (QR/Kod geçişi) + giriş konfetisi"
-  },
-  {
-    "hash": "da80d465",
-    "date": "2026-07-02",
-    "subject": "feat(market): brands/all tek akış (ünlüler üstte, az bilinenler altta) + 400+ marka"
   }
 ];
