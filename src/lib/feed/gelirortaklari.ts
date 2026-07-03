@@ -96,7 +96,10 @@ export async function fetchGelirOrtaklariProducts(
       feedId: feed.feedId,
       offerId: feed.offerId,
       brandId: opts.brandId ?? null,
-      brandName: tag(b, 'brand') || feed.name,
+      // MAĞAZA (satıcı) = advertiser/feed adı (MediaMarkt, Trendyol...). Ürünün <brand>
+      // etiketi MAĞAZA DEĞİL ürün MARKASIDIR → productBrand'e gider (Marka≠Mağaza).
+      brandName: feed.name,
+      productBrand: tag(b, 'brand') || null,
       externalId,
       title,
       description: tag(b, 'description'),

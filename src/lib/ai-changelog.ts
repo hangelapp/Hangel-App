@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-03";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "58d01910",
+    "date": "2026-07-03",
+    "subject": "feat(market): bağış şeritlerini (Yüzdeyle+Tutarla) marka profili + kategori görünümüne ekle"
+  },
+  {
     "hash": "342582e7",
     "date": "2026-07-03",
     "subject": "feat(market): bağış şeritlerini ikiye ayır — Yüzdeyle + Tutarla"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "0cffa595",
     "date": "2026-07-03",
     "subject": "fix(events): katılım sertifikası alt koleksiyona yazılmıyordu → profilde görünmüyordu"
-  },
-  {
-    "hash": "e6dcbcd9",
-    "date": "2026-07-03",
-    "subject": "feat(donations): Etki Kartı (paylaşılabilir görsel) + 'bağışının yolculuğu' zaman çizelgesi"
   }
 ];

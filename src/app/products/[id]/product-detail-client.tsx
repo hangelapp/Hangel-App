@@ -512,7 +512,7 @@ export function ProductDetailClient({ id }: { id: string }) {
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   Satıcı Mağaza
                 </p>
-                <p className="truncate text-sm font-black text-foreground">{product.brandName}</p>
+                <p className="truncate text-sm font-black text-foreground">{brand?.name || product.brandName}</p>
               </div>
               <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             </Link>

@@ -128,8 +128,9 @@ export async function POST(req: NextRequest) {
       const slice = products.slice(i, i + 450);
       const batch = fs.batch();
       for (const p of slice) {
-        // Ürün MARKASI (Nike/Apple) — başlıktan/mağaza adından çıkar (Marka≠Mağaza).
-        const pb = extractProductBrand(p.title || '', p.brandName || '');
+        // Ürün MARKASI (Nike/Apple) — feed <brand> etiketi varsa onu tercih et
+        // (multi-marka mağazalarda MediaMarkt≠Apple), yoksa başlıktan çıkar (Marka≠Mağaza).
+        const pb = (p.productBrand || '').trim() || extractProductBrand(p.title || '', p.brandName || '');
         // Arama için token'la (başlık+marka+kategori) — array-contains-any sorgusu.
         const withTokens = {
           ...p,

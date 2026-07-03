@@ -40,7 +40,8 @@ async function productUrls(domain:string):Promise<string[]>{
   // robots.txt'teki Sitemap: satırları (standart-dışı yollar) + yaygın adaylar
   const robots=await get(`https://www.${domain}/robots.txt`)|| await get(`https://${domain}/robots.txt`);
   const robSm=(robots.match(/^\s*Sitemap:\s*(\S+)/gim)||[]).map(l=>l.replace(/^\s*Sitemap:\s*/i,'').trim());
-  const roots=[...robSm,
+  const seed=(process.env.SEED_SITEMAP||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const roots=[...seed,...robSm,
     `https://www.${domain}/sitemap.xml`, `https://${domain}/sitemap.xml`,
     `https://www.${domain}/sitemap_index.xml`, `https://www.${domain}/sitemap-index.xml`];
   const all=await harvest(roots);
@@ -84,8 +85,8 @@ async function crawlStore(st:{key:string,name:string,domain:string}){
   const pref=st.key.split('-')[0]; const feedId=st.key.split('-')[1]; const dr=await db.collection('brands').doc(st.key).get().then(d=>Number(d.data()?.donationRate)||3).catch(()=>3);
   let ok=0; const products:any[]=[];
   await pool(urls,CONC,async(u)=>{ const html=await get(u,15000); if(!html)return; const e=extract(html); if(!e)return;
-    ok++; const ext=String(e.sku||hash(u));
-    products.push({ id:`crawl-${st.key}-${ext}`, source:'crawl', feedId, offerId:'', brandId:st.key, brandName:st.name, externalId:ext,
+    ok++; const ext=String(e.sku||hash(u)); const docId=`crawl-${st.key}-${ext}`.replace(/[/\\.#$\[\]]/g,'-');
+    products.push({ id:docId, source:'crawl', feedId, offerId:'', brandId:st.key, brandName:st.name, externalId:ext,
       title:e.name, price:e.price, salePrice:null, currency:e.cur||'TRY', imageLink:e.img, productUrl:u, availability:e.avail, donationRate:dr, random:Math.random(), updatedAt:Date.now() });
   });
   if(!products.length){ console.log(`  ${st.name}: ${urls.length} URL ama 0 parse → atla (eski silinmez)`); return; }
