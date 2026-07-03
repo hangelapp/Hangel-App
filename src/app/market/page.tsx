@@ -224,6 +224,18 @@ export default function DiscoverPage() {
       });
   }, [db]);
 
+  // Katalogun GERÇEK toplam MARKA/mağaza sayısı (arama barında; 156 gibi filtreli
+  // liste yerine brands koleksiyonunun tam sayısı).
+  const [totalBrandCount, setTotalBrandCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!db) return;
+    getCountFromServer(collection(db, COLLECTIONS.brands))
+      .then((snap) => setTotalBrandCount(snap.data().count))
+      .catch(() => {
+        /* sessiz */
+      });
+  }, [db]);
+
   const productsQuery = useMemoFirebase(
     () =>
       query(
@@ -705,7 +717,7 @@ export default function DiscoverPage() {
               enterKeyHint="search"
               placeholder={
                 rankedBrands.length > 0
-                  ? `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün veya ${rankedBrands.length.toLocaleString('tr-TR')} markada ara`
+                  ? `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün veya ${(totalBrandCount ?? rankedBrands.length).toLocaleString('tr-TR')} markada ara`
                   : 'Ürün veya marka ara'
               }
               className="h-12 rounded-full border border-border bg-background pl-12 pr-10 text-base shadow-sm focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
@@ -796,7 +808,7 @@ export default function DiscoverPage() {
             ? 'Aranıyor…'
             : hasFilters
               ? `${filtered.length.toLocaleString('tr-TR')} ürün listeleniyor`
-              : `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün · ${rankedBrands.length.toLocaleString('tr-TR')} marka`}
+              : `${(totalCount ?? products?.length ?? 0).toLocaleString('tr-TR')} ürün · ${(totalBrandCount ?? rankedBrands.length).toLocaleString('tr-TR')} marka`}
         </p>
 
         {/* Hızlı süzgüler — YALNIZ arama yapıldığında, sonuçların üzerinde görünür
