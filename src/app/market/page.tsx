@@ -66,7 +66,8 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { DonationStrips } from '@/components/market/donation-strips';
 import { CategoryFacets } from '@/components/market/category-facets';
-import { curatedCategoryOf } from '@/lib/market/curated-categories';
+import { curatedCategoryOf, CURATED_ORDER, isIntimateOrAdult } from '@/lib/market/curated-categories';
+import { useRouter } from 'next/navigation';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -192,6 +193,7 @@ function iconForCategory(name: string): React.ComponentType<{ className?: string
 
 export default function DiscoverPage() {
   const db = useFirestore();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [sortBy, setSortBy] = useState<SortOption>('recommended');
@@ -498,47 +500,46 @@ export default function DiscoverPage() {
   ];
 
   // ── Vitrin şeritleri — hepsi ÇEKİLEN ürünlerden client-side türetilir ──
+  // Ana sayfa vitrininde iç giyim / +18 / yetişkin içerik GÖSTERİLMEZ (detayda kalır).
+  const safeProducts = useMemo(
+    () => (products || []).filter((p) => !isIntimateOrAdult(p.category, p.title)),
+    [products],
+  );
 
   // En Çok Yüzdeyle Bağış Yapanlar: en yüksek bağış ORANI (%) sınıfı, sınıf içinde rotasyon.
   const topDonationStrip = useMemo(
-    () => topRotate(products || [], (p) => resolveProductRate(p)),
+    () => topRotate(safeProducts, (p) => resolveProductRate(p)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [products, brandRate],
+    [safeProducts, brandRate],
   );
 
   // En Çok Tutarla Bağış Yapanlar: en yüksek bağış TUTARI (₺ = oran × fiyat) sınıfı, rotasyonlu.
   const topDonationAmountStrip = useMemo(
-    () => topRotate(products || [], (p) => (resolveProductRate(p) / 100) * effectivePrice(p)),
+    () => topRotate(safeProducts, (p) => (resolveProductRate(p) / 100) * effectivePrice(p)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [products, brandRate],
+    [safeProducts, brandRate],
   );
 
   // İndirimdekiler: en yüksek İNDİRİM (%) sınıfı, sınıf içinde rotasyon.
-  const dealsStrip = useMemo(() => topRotate(products || [], (p) => discountPct(p)), [products]);
+  const dealsStrip = useMemo(() => topRotate(safeProducts, (p) => discountPct(p)), [safeProducts]);
 
-  // Mağazalar altı: kürasyonlu kategori satırları (Ayakkabı, Elektronik, Kadın…),
-  // ürün sayısına göre çoktan aza. Ürünü çok olan kategoriler öne çıkar.
-  const curatedStrips = useMemo(() => {
+  // Mağazalar altı: kürasyonlu kategori satırları. GÖSTERİM sırası CURATED_ORDER (sabit).
+  const curatedByName = useMemo(() => {
     const groups = new Map<string, CanonicalProduct[]>();
-    for (const p of products || []) {
+    for (const p of safeProducts) {
       const c = curatedCategoryOf(p.category, p.title);
       if (!c) continue;
       if (!groups.has(c)) groups.set(c, []);
       groups.get(c)!.push(p);
     }
-    return Array.from(groups.entries())
-      .map(([name, items]) => ({ name, items }))
-      .filter((g) => g.items.length >= 6)
-      .sort((a, b) => b.items.length - a.items.length);
-  }, [products]);
+    return groups;
+  }, [safeProducts]);
 
-  // Öne Çıkanlar / Sana Özel: rastgele başlangıç sırasından bir dilim.
-  // `random` sırası zaten karışık geldiği için ortadan bir dilim alıyoruz.
+  // Öne Çıkanlar / Sana Özel: rastgele başlangıç sırasından bir dilim (güvenli ürünler).
   const featuredStrip = useMemo(() => {
-    const list = products || [];
-    const start = Math.min(20, Math.max(0, list.length - 21));
-    return list.slice(start, start + 21);
-  }, [products]);
+    const start = Math.min(20, Math.max(0, safeProducts.length - 21));
+    return safeProducts.slice(start, start + 21);
+  }, [safeProducts]);
 
   // Kategori ürün şeritleri (filtre yokken gösterilir) — En Çok Bağış/İndirim/
   // Öne Çıkanlar'dan sonra her kategori ayrı satır olur. Render ≥3 ürünlü olanları
@@ -1040,17 +1041,21 @@ export default function DiscoverPage() {
                     NOT: bunlar MAĞAZA (Media Markt, Sportive...); ürün MARKALARI (Nike, Apple)
                     "Tüm Markalar" butonunda (/market/brands/all). */}
                 <BrandStrip title="Mağazalar" items={brandStripItems} band />
-                {/* Mağazalar altı: kürasyonlu kategori satırları, ürün sayısına göre sıralı */}
-                {curatedStrips.map((strip) => (
-                  <ProductStrip
-                    key={strip.name}
-                    title={strip.name}
-                    icon={Gift}
-                    items={strip.items.slice(0, 21)}
-                    resolveRate={resolveProductRate}
-                    onSeeAll={scrollToAll}
-                  />
-                ))}
+                {/* Mağazalar altı: kürasyonlu kategori satırları — SABİT sıra (CURATED_ORDER),
+                    her biri 21 ürün + kaydırma + Tümü → kategori detay sayfası. */}
+                {CURATED_ORDER.map((name) => {
+                  const items = curatedByName.get(name) || [];
+                  return items.length >= 6 ? (
+                    <ProductStrip
+                      key={name}
+                      title={name}
+                      icon={Gift}
+                      items={items.slice(0, 21)}
+                      resolveRate={resolveProductRate}
+                      onSeeAll={() => router.push(`/market/kategori/${encodeURIComponent(name)}`)}
+                    />
+                  ) : null;
+                })}
                 <ProductStrip
                   title="Öne Çıkanlar"
                   icon={Sparkles}
