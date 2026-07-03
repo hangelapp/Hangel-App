@@ -16,7 +16,6 @@ import { signOut } from 'firebase/auth';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { getSessionId } from '@/lib/session-tracker';
-import { PasskeyCard } from '@/components/settings/passkey-card';
 
 interface SessionDoc {
     id: string;
@@ -247,8 +246,8 @@ export default function PrivacySettingsPage() {
                 </CardContent>
             </Card>
 
-            {/* Passkey (Face ID / Touch ID) — desteklenmeyen cihazda görünmez. */}
-            <PasskeyCard />
+            {/* Passkey kartı: native derlemeye webcredentials entitlement girene kadar
+                kaldırıldı (arka uç + bileşen hazır, tek satırla geri açılır). */}
 
             <Card>
                 <CardHeader>

@@ -23,7 +23,6 @@ import { getLanguageFromPhoneCode } from '@/lib/phone-locale';
 import { reportNonFatalError } from '@/lib/telemetry';
 import { trackOnboardingStep } from '@/lib/onboarding-analytics';
 import { celebrate } from '@/lib/celebrate';
-import { PasskeyLoginButton } from './PasskeyLoginButton';
 
 // IndividualForm — extracted verbatim from login/selection/page.tsx (P2-6c).
 // IMPORTANT: auth/Firestore flow MUST stay identical. Do not refactor logic.
@@ -825,10 +824,8 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     </Button>
                 </form>
 
-                {/* Passkey (Face ID) ile hızlı giriş — desteklenen cihazlarda görünür */}
-                <div className="pt-3">
-                    <PasskeyLoginButton />
-                </div>
+                {/* Passkey (Face ID) girişi — native app'e webcredentials entitlement'lı
+                    yeni derleme alınınca geri açılacak (buton kaldırıldı, arka uç hazır). */}
 
                 {/* Zaten üyeyim → telefonla bu cihazda giriş SAYFASI (popup değil, /login/qr) */}
                 <div className="pt-1 text-center">
