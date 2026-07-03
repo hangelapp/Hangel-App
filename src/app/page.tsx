@@ -385,8 +385,16 @@ export default function LoginPage() {
             try {
                 const response = await fetch('/api/offers');
                 const brands = await response.json();
-                setTotalBrandCount(brands.length);
                 setApiBrands(brands.slice(0, 21));
+                // Marka sayısı = market arama barı + /market/brands/all ile PARALEL
+                // (ürün markaları, ~4578). Kartlar offers'tan, SAYI brands-all'dan.
+                try {
+                    const baRes = await fetch('/api/market/brands-all');
+                    const ba = await baRes.json();
+                    setTotalBrandCount(Array.isArray(ba?.brands) ? ba.brands.length : brands.length);
+                } catch {
+                    setTotalBrandCount(brands.length);
+                }
             } catch (error) {
                 console.error('Error fetching brands:', error);
             }
