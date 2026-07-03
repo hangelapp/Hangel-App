@@ -66,6 +66,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { DonationStrips } from '@/components/market/donation-strips';
 import { CategoryFacets } from '@/components/market/category-facets';
+import { curatedCategoryOf } from '@/lib/market/curated-categories';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -144,6 +145,23 @@ function realCategoryOf(p: CanonicalProduct): string {
 // Yatay kaydırma şeritleri için yinelenen "scrollbar gizli" sınıf.
 const NO_SCROLLBAR =
   '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+
+// "En yüksek sınıf ama o sınıf içinde rotasyon": metriğe göre sırala, EN YÜKSEK
+// metrikli havuzu (count×3) al, KARIŞTIR, count döndür. Böylece hep en yüksek
+// %/tutar/indirim sınıfı görünür ama her girişte o sınıftan farklı ürünler gelir
+// (kullanıcı: "her girişte random olmasın; ama o %'lik sınıfta random değişsin").
+function topRotate<T>(items: T[], metric: (x: T) => number, count = 21): T[] {
+  const scored = items
+    .map((x) => ({ x, m: metric(x) }))
+    .filter((s) => s.m > 0)
+    .sort((a, b) => b.m - a.m);
+  const pool = scored.slice(0, Math.max(count, count * 3)).map((s) => s.x);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, count);
+}
 
 // Reklam banner'ı yapılacak SABİT markalar (sırayla). Katalogda + çalışan
 // affiliate linki olanlar banner olur; onaysız/linksiz olan (ör. Samsung onay
@@ -481,34 +499,37 @@ export default function DiscoverPage() {
 
   // ── Vitrin şeritleri — hepsi ÇEKİLEN ürünlerden client-side türetilir ──
 
-  // En Çok Yüzdeyle Bağış Yapanlar: çözülen bağış ORANI (%) yüksek → düşük.
-  const topDonationStrip = useMemo(() => {
-    return (products || [])
-      .map((p) => ({ p, r: resolveProductRate(p) }))
-      .sort((a, b) => b.r - a.r)
-      .slice(0, 21)
-      .map((x) => x.p);
+  // En Çok Yüzdeyle Bağış Yapanlar: en yüksek bağış ORANI (%) sınıfı, sınıf içinde rotasyon.
+  const topDonationStrip = useMemo(
+    () => topRotate(products || [], (p) => resolveProductRate(p)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, brandRate]);
+    [products, brandRate],
+  );
 
-  // En Çok Tutarla Bağış Yapanlar: mutlak bağış TUTARI (₺) = oran × geçerli fiyat,
-  // yüksek → düşük. Pahalı + oranı iyi ürünler öne çıkar (kuruşça en çok bağış).
-  const topDonationAmountStrip = useMemo(() => {
-    return (products || [])
-      .map((p) => ({ p, amt: (resolveProductRate(p) / 100) * effectivePrice(p) }))
-      .filter((x) => x.amt > 0)
-      .sort((a, b) => b.amt - a.amt)
-      .slice(0, 21)
-      .map((x) => x.p);
+  // En Çok Tutarla Bağış Yapanlar: en yüksek bağış TUTARI (₺ = oran × fiyat) sınıfı, rotasyonlu.
+  const topDonationAmountStrip = useMemo(
+    () => topRotate(products || [], (p) => (resolveProductRate(p) / 100) * effectivePrice(p)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, brandRate]);
+    [products, brandRate],
+  );
 
-  // İndirimdekiler: salePrice < price, indirim yüzdesi yüksek → düşük.
-  const dealsStrip = useMemo(() => {
-    return (products || [])
-      .filter((p) => discountPct(p) > 0)
-      .sort((a, b) => discountPct(b) - discountPct(a))
-      .slice(0, 21);
+  // İndirimdekiler: en yüksek İNDİRİM (%) sınıfı, sınıf içinde rotasyon.
+  const dealsStrip = useMemo(() => topRotate(products || [], (p) => discountPct(p)), [products]);
+
+  // Mağazalar altı: kürasyonlu kategori satırları (Ayakkabı, Elektronik, Kadın…),
+  // ürün sayısına göre çoktan aza. Ürünü çok olan kategoriler öne çıkar.
+  const curatedStrips = useMemo(() => {
+    const groups = new Map<string, CanonicalProduct[]>();
+    for (const p of products || []) {
+      const c = curatedCategoryOf(p.category, p.title);
+      if (!c) continue;
+      if (!groups.has(c)) groups.set(c, []);
+      groups.get(c)!.push(p);
+    }
+    return Array.from(groups.entries())
+      .map(([name, items]) => ({ name, items }))
+      .filter((g) => g.items.length >= 6)
+      .sort((a, b) => b.items.length - a.items.length);
   }, [products]);
 
   // Öne Çıkanlar / Sana Özel: rastgele başlangıç sırasından bir dilim.
@@ -1019,6 +1040,17 @@ export default function DiscoverPage() {
                     NOT: bunlar MAĞAZA (Media Markt, Sportive...); ürün MARKALARI (Nike, Apple)
                     "Tüm Markalar" butonunda (/market/brands/all). */}
                 <BrandStrip title="Mağazalar" items={brandStripItems} band />
+                {/* Mağazalar altı: kürasyonlu kategori satırları, ürün sayısına göre sıralı */}
+                {curatedStrips.map((strip) => (
+                  <ProductStrip
+                    key={strip.name}
+                    title={strip.name}
+                    icon={Gift}
+                    items={strip.items.slice(0, 21)}
+                    resolveRate={resolveProductRate}
+                    onSeeAll={scrollToAll}
+                  />
+                ))}
                 <ProductStrip
                   title="Öne Çıkanlar"
                   icon={Sparkles}
