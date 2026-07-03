@@ -11,8 +11,9 @@
 import type { CanonicalProduct, ProductFeed } from './types';
 import { listGelirOrtaklariFeeds, fetchGelirOrtaklariProducts } from './gelirortaklari';
 import { fetchGenericGoogleMerchantProducts } from './generic';
+import { fetchShopifyProducts } from './shopify';
 
-export type FeedSourceKind = 'gelirortaklari' | 'generic';
+export type FeedSourceKind = 'gelirortaklari' | 'generic' | 'shopify';
 
 export interface IngestParams {
   kind: FeedSourceKind;
@@ -30,6 +31,18 @@ export interface IngestParams {
 }
 
 export async function ingestProducts(params: IngestParams): Promise<CanonicalProduct[]> {
+  if (params.kind === 'shopify') {
+    if (!params.feedUrl) throw new Error('shopify kaynak için feedUrl (mağaza URL) zorunlu.');
+    return fetchShopifyProducts({
+      feedUrl: params.feedUrl,
+      brandId: params.brandId ?? null,
+      brandName: params.brandName || 'Marka',
+      source: params.source,
+      donationRate: params.donationRate,
+      limit: params.limit,
+    });
+  }
+
   if (params.kind === 'generic') {
     if (!params.feedUrl) throw new Error('generic kaynak için feedUrl zorunlu.');
     return fetchGenericGoogleMerchantProducts({

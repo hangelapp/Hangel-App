@@ -81,16 +81,18 @@ export async function POST(req: NextRequest) {
     | { source?: string; feedId?: string; offerId?: string; feedUrl?: string; name?: string; type?: string; brandId?: string; limit?: number; donationRate?: number }
     | null;
 
-  const kind: FeedSourceKind = body?.source === 'generic' ? 'generic' : 'gelirortaklari';
+  const kind: FeedSourceKind = body?.source === 'generic' ? 'generic'
+    : body?.source === 'shopify' ? 'shopify'
+    : 'gelirortaklari';
   const limit = typeof body?.limit === 'number' ? body.limit : 300;
   const donationRate = typeof body?.donationRate === 'number' ? body.donationRate : undefined;
   const brandId = typeof body?.brandId === 'string' ? body.brandId : null;
   const brandName = typeof body?.name === 'string' && body.name ? body.name : 'Marka';
 
-  if (kind === 'generic') {
+  if (kind === 'generic' || kind === 'shopify') {
     const feedUrl = typeof body?.feedUrl === 'string' ? body.feedUrl.trim() : '';
     if (!feedUrl) {
-      return NextResponse.json({ errorCode: 'INVALID_BODY', message: 'generic kaynak için feedUrl zorunlu.' }, { status: 400 });
+      return NextResponse.json({ errorCode: 'INVALID_BODY', message: `${kind} kaynak için feedUrl zorunlu.` }, { status: 400 });
     }
   } else {
     const feedId = typeof body?.feedId === 'string' ? body.feedId : '';
@@ -111,7 +113,9 @@ export async function POST(req: NextRequest) {
       offerId: typeof body?.offerId === 'string' ? body.offerId : undefined,
       type: typeof body?.type === 'string' ? body.type : undefined,
       feedUrl: typeof body?.feedUrl === 'string' ? body.feedUrl : undefined,
-      source: kind === 'generic' ? 'generic' : undefined,
+      // Yeniden çekilen mağaza ürünleri store kimliğini brandId'den taşır
+      // (marka/mağaza gruplaması brandId ile yapılır). source alanı feed tipini belirtir.
+      source: (kind === 'generic' || kind === 'shopify') ? kind : undefined,
     });
     if (products.length === 0) {
       return NextResponse.json({ ok: true, ingested: 0, message: 'Feed boş veya ürün parse edilemedi.' });

@@ -19,6 +19,7 @@ import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebas
 import { collection, doc, setDoc, writeBatch, query, orderBy, limit, documentId } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { LISTING_MODE_LABELS, DEFAULT_LISTING_MODE, type ListingMode, type ProductFeed } from '@/lib/feed/types';
+import { KNOWN_STORE_FEEDS } from '@/lib/feed/known-feeds';
 
 interface BrandRow {
   id: string;
@@ -144,6 +145,32 @@ export default function FeedAdminPage() {
     }
   };
 
+  // Kendi importer'ımız: mağazaların KENDİ herkese açık feed'lerinden (Shopify
+  // /products.json + T-Soft googleshopping.com.php) tam katalog çeker. brandId ile
+  // yazılır → marka/mağaza + affiliate deep-link doğru çalışır.
+  const syncKnownFeeds = async () => {
+    setBulkBusy(true);
+    let ok = 0; let total = 0;
+    try {
+      for (const f of KNOWN_STORE_FEEDS) {
+        setIngesting(f.brandId);
+        try {
+          const res = await authedFetch({
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ source: f.kind, feedUrl: f.feedUrl, name: f.name, brandId: f.brandId, donationRate: f.donationRate, limit: 20000 }),
+          });
+          const payload = await res.json();
+          if (res.ok) { ok += 1; total += Number(payload.ingested || 0); }
+        } catch { /* bu feed atlandı, devam */ }
+      }
+      toast({ title: 'Bilinen feed senkronu bitti', description: `${ok}/${KNOWN_STORE_FEEDS.length} mağaza · ${total} ürün çekildi.` });
+    } finally {
+      setIngesting(null);
+      setBulkBusy(false);
+    }
+  };
+
   const setBrandMode = async (brandId: string, mode: ListingMode) => {
     setSavingMode(brandId);
     try {
@@ -212,6 +239,10 @@ export default function FeedAdminPage() {
                   Tümünü İçe Aktar ({feeds.length})
                 </Button>
               )}
+              <Button onClick={syncKnownFeeds} disabled={bulkBusy} variant="secondary" className="rounded-xl font-bold">
+                {bulkBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                Mağaza Feed&apos;lerini Çek ({KNOWN_STORE_FEEDS.length})
+              </Button>
             </div>
           </div>
         </CardHeader>
