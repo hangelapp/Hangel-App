@@ -35,7 +35,7 @@ export default function CategoryPage() {
 
   // Token sorgusu geniş; kürasyon kuralıyla kesinleştir (o kategoriye ait olanlar).
   const products = useMemo(
-    () => (raw || []).filter((p) => curatedCategoryOf(p.category, p.title) === cat),
+    () => (raw || []).filter((p) => curatedCategoryOf(p.category, p.title, p.brandName) === cat),
     [raw, cat],
   );
 

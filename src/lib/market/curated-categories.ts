@@ -19,19 +19,26 @@ export const CURATED_CATEGORIES: { name: string; kw: string[] }[] = [
   { name: 'Gıda', kw: ['gıda', 'çikolata', 'kahve', ' çay ', 'atıştırmalık', 'bakliyat', 'zeytin', ' bal ', 'kuruyemiş', 'içecek', 'kahvaltılık'] },
   { name: 'Aksesuar', kw: ['aksesuar', 'çanta', 'cüzdan', 'kemer', 'şapka', ' saat', 'gözlük', 'takı', 'kolye', 'yüzük', 'bileklik', 'küpe', 'atkı', 'eldiven'] },
   { name: 'İnşaat', kw: ['inşaat', 'hırdavat', 'yapı market', ' boya', 'matkap', 'vida', 'el aleti', 'bahçe', 'nalbur', 'tesisat'] },
-  { name: 'Otel', kw: ['otel', 'konaklama', 'tatil', 'rezervasyon', 'pansiyon', 'resort'] },
+  { name: 'Otel', kw: ['otel', 'hotel', 'konaklama', 'tatil', 'rezervasyon', 'pansiyon', 'resort', ' gece', 'her şey dahil', 'herşey dahil', 'ultra all', 'all inclusive', 'termal', 'tatil köyü', 'balayı', 'erken rezervasyon', 'apart otel', 'butik otel', 'bungalov', 'yaz tatil', 'kış tatil', 'kayak otel', 'kişi konakla'] },
   { name: 'Kadın Giyim', kw: ['kadın', 'kadin', ' women', 'elbise', 'etek', 'bluz', 'tayt', 'tunik', 'kadın giyim'] },
   { name: 'Erkek Giyim', kw: ['erkek', ' men ', 'gömlek', 'kravat', 'erkek giyim', 'takım elbise'] },
 ];
 
 // Kullanıcının istediği SABİT gösterim sırası (Mağazalar altında yukarıdan aşağı).
+// Otel üst sıralara (4.) alındı.
 export const CURATED_ORDER: string[] = [
-  'İnşaat', 'Kadın Giyim', 'Erkek Giyim', 'Ayakkabı', 'Elektronik', 'Gıda', 'Otel',
+  'İnşaat', 'Kadın Giyim', 'Erkek Giyim', 'Otel', 'Ayakkabı', 'Elektronik', 'Gıda',
   'Beyaz Eşya', 'Kozmetik', 'Ev Tekstili', 'Zücaciye', 'Mobilya & Dekorasyon',
   'Anne & Bebek', 'Spor', 'Kitap & Kırtasiye', 'Aksesuar',
 ];
 
-export function curatedCategoryOf(category?: string | null, title?: string): string | null {
+// Seyahat/konaklama mağazaları — ürünleri başlıkta "otel/tatil" geçmese de Otel'e düşer.
+const TRAVEL_STORES = ['tatilbudur', 'tatil budur', 'jolly', 'ets tur', 'etstur', 'setur', 'odamax', 'otelz', 'tatilsepeti', 'touristica', 'coral travel', 'anextour', 'sabahtatil', 'tatil', 'hotels', 'booking'];
+
+export function curatedCategoryOf(category?: string | null, title?: string, store?: string | null): string | null {
+  // Seyahat mağazasından geldiyse (TatilBudur…) → başlık ne olursa olsun Otel.
+  const s = (store || '').toLocaleLowerCase('tr');
+  if (s && TRAVEL_STORES.some((t) => s.includes(t))) return 'Otel';
   const hay = ` ${(category || '').toLocaleLowerCase('tr')} ${(title || '').toLocaleLowerCase('tr')} `;
   for (const c of CURATED_CATEGORIES) {
     if (c.kw.some((k) => hay.includes(k))) return c.name;
@@ -42,13 +49,19 @@ export function curatedCategoryOf(category?: string | null, title?: string): str
 // Kategori detay sayfası sorgusu için TEK KELİME token'lar (searchTokens
 // array-contains-any; Firestore ≤30 değer). kw ifadelerinden ≥3 harfli sözcükler.
 export function categoryQueryTokens(name: string): string[] {
-  const cat = CURATED_CATEGORIES.find((c) => c.name === name);
-  if (!cat) return [];
   const set = new Set<string>();
-  for (const k of cat.kw) {
-    for (const w of k.trim().split(/\s+/)) {
-      const t = w.trim();
-      if (t.length >= 3) set.add(t);
+  // Otel: seyahat mağaza adları ÖNCE (searchTokens brandName'i içerdiği için
+  // TatilBudur ürünleri başlıkta "otel" geçmese de token sorgusuyla gelir).
+  if (name === 'Otel') {
+    for (const t of ['tatilbudur', 'jolly', 'etstur', 'setur', 'odamax', 'otelz', 'touristica', 'anextour', 'otel', 'hotel', 'tatil', 'konaklama', 'resort']) set.add(t);
+  }
+  const cat = CURATED_CATEGORIES.find((c) => c.name === name);
+  if (cat) {
+    for (const k of cat.kw) {
+      for (const w of k.trim().split(/\s+/)) {
+        const t = w.trim();
+        if (t.length >= 3) set.add(t);
+      }
     }
   }
   return Array.from(set).slice(0, 30);

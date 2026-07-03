@@ -527,7 +527,7 @@ export default function DiscoverPage() {
   const curatedByName = useMemo(() => {
     const groups = new Map<string, CanonicalProduct[]>();
     for (const p of safeProducts) {
-      const c = curatedCategoryOf(p.category, p.title);
+      const c = curatedCategoryOf(p.category, p.title, p.brandName);
       if (!c) continue;
       if (!groups.has(c)) groups.set(c, []);
       groups.get(c)!.push(p);
