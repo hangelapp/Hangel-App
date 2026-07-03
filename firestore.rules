@@ -293,6 +293,13 @@ service cloud.firestore {
       }
     }
 
+    // FEAT-EXAM — Sınav PUBLIC banner özeti (doğru cevap İÇERMEZ). Sorular + doğru
+    // cevaplar + sonuçlar `examConfigs` (kural yok → default-deny; yalnız Admin SDK).
+    match /eventExams/{key} {
+      allow read, list: if true;
+      allow write: if false;
+    }
+
     // FEAT-QR-CARD-ACTIVATION — kullanıcı kendi başvuru kaydını oluşturur ve görür;
     // değerlendirmeyi super-admin yapar (status alanını günceller).
     match /qrCardActivations/{actId} {

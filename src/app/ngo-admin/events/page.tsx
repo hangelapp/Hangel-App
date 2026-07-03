@@ -37,6 +37,7 @@ import { EventAttendees } from '@/components/events/event-attendees';
 import { EventCheckinQR } from '@/components/events/event-checkin-qr';
 import { EventCompleteButton } from '@/components/events/event-complete-button';
 import { RewardManager } from '@/components/rewards/reward-manager';
+import { ExamManager } from '@/components/exam/exam-manager';
 import { EventBadgeCards, EventCertificates } from '@/components/events/event-bulk-docs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -654,6 +655,7 @@ export default function EventManagementPage() {
                                                 </Button>
                                                 <EventCheckinQR eventId={event.id} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
                                                 <RewardManager kind="event" id={event.id} />
+                                                <ExamManager id={event.id} />
                                                 <EventCompleteButton eventId={event.id} />
                                                 <EventAttendees eventId={event.id} />
                                                 <EventBadgeCards eventId={event.id} eventName={event.name || ''} ngoName={activeEntity?.data.name || ''} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />

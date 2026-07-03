@@ -96,6 +96,31 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const eventYear = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
   const certCountry = '90'; // TR (ileride etkinlik ülkesinden)
 
+  // SINAV KAPISI: etkinlikte zorunlu sınav varsa "Tamamla" toplu sertifika VERMEZ;
+  // sınavı açar + katılımcıları sınava çağırır. Sertifika yalnız sınavı geçene verilir
+  // (/api/exam/submit). Konfeti/değerlendirme popart'ı da sınav sonrasına bırakılır.
+  const examSnap = await db.collection('examConfigs').doc(`event_${eventId}`).get();
+  const exam = examSnap.exists ? (examSnap.data() as { enabled?: boolean; requiredForCert?: boolean; questions?: unknown[] }) : null;
+  const examGating = !!(exam?.enabled && exam?.requiredForCert && Array.isArray(exam.questions) && exam.questions.length > 0);
+  if (examGating) {
+    await db.collection('examConfigs').doc(`event_${eventId}`).set({ open: true, openedAt: Date.now() }, { merge: true });
+    await Promise.allSettled(
+      Array.from(uids).map((targetUid) =>
+        notifyUser({
+          userId: targetUid,
+          type: 'event_reminder',
+          title: 'Sınav açıldı — sertifikan için sınava gir 📝',
+          body: `${eventName} sertifikası için kısa bir sınavı geçmen gerekiyor. Sınava girmek için dokun 👉`,
+          link: `/events/${eventId}`,
+          data: { eventId, kind: 'exam-open' },
+          sender: { id: ngoId, name: ngoName, avatarUrl: eventLogo },
+        }),
+      ),
+    );
+    await eventRef.update({ completedAt: FieldValue.serverTimestamp(), completedBy: uid, completed: true, examGated: true }).catch(() => undefined);
+    return NextResponse.json({ ok: true, examOpened: true, total: uids.size });
+  }
+
   // Faaliyet no — yıl bazında sıralı; etkinliğe bir kez atanır (ilk tamamlamada).
   let activityNo = (ev as { certActivityNo?: number }).certActivityNo ?? 0;
   if (!(activityNo >= 1)) activityNo = await nextSeq(db, `cert-act-event-${eventYear}`, 1);

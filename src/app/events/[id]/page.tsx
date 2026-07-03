@@ -9,6 +9,7 @@ import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
 import { LiveEventSection } from '@/components/events/live-event-section';
 import { EventEvaluateButton } from '@/components/events/event-evaluate-button';
 import { RewardBanner } from '@/components/rewards/reward-banner';
+import { ExamEntry } from '@/components/exam/exam-entry';
 import { openExternalUrl } from '@/lib/capacitor';
 import { ToastAction } from '@/components/ui/toast';
 import { Loader2 } from 'lucide-react';
@@ -691,6 +692,7 @@ export default function EventDetailPage() {
                         </Card>
 
                         <RewardBanner kind="event" id={event.id} />
+                        <ExamEntry eventId={event.id} />
 
                         {contributors.length > 0 && (
                         <Card className="glass-surface rounded-3xl border-white/40 shadow-sm">
