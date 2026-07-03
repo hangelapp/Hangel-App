@@ -70,7 +70,7 @@ export async function fetchGelirOrtaklariProducts(
   feed: ProductFeed,
   opts: { limit?: number; brandId?: string | null; donationRate?: number } = {},
 ): Promise<CanonicalProduct[]> {
-  const limit = Math.max(1, Math.min(opts.limit ?? 300, 2000));
+  const limit = Math.max(1, Math.min(opts.limit ?? 300, 20000));
   const url = `${BASE}/product?affId=${AFF_ID}&offerId=${encodeURIComponent(feed.offerId)}&feedId=${encodeURIComponent(feed.feedId)}`;
   const res = await fetch(url, { headers: { 'x-api-key': API_KEY }, redirect: 'follow', cache: 'no-store' });
   if (!res.ok) throw new Error(`product feed HTTP ${res.status}`);

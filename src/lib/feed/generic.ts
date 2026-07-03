@@ -18,7 +18,9 @@ import type { CanonicalProduct } from './types';
 
 const DEFAULT_SOURCE = 'generic';
 const DEFAULT_LIMIT = 500;
-const MAX_LIMIT = 2000;
+// Tam katalog çekimi için tavan yükseltildi (önceden 2000 → mağazalar kırpılıyordu).
+// Gerçek feed'ler tipik olarak < 20k ürün; parser yine feed bitince/limit'te durur.
+const MAX_LIMIT = 20000;
 
 // "159990.00 TRY" → { amount: 159990, currency: 'TRY' }
 function parsePrice(raw: string): { amount: number; currency: string } {
