@@ -60,10 +60,16 @@ const FAMOUS_NAMES = [
 ];
 const FAMOUS_KEYS = new Set(FAMOUS_NAMES.map((n) => normBrandKey(n)));
 
-// Market'ten ELLE gizlenen markalar/mağazalar — affiliate onayımız olmayanlar.
-// (Ürün feed'i affiliate onayından bağımsız olduğu için burada da gizlemek gerekir.)
-// A101: Publicis GO "Loyalty" segmenti için onaylı DEĞİL → geçici gizlendi.
-const HIDDEN_BRAND_KEYS = new Set([normBrandKey('A101')]);
+// Market'ten ELLE gizlenen MAĞAZALAR — affiliate onayı olmayan (reddedilmiş/beklemede)
+// KENDİ ürününü satan mağaza/marketplace/servisler. Ürün markaları (Samsung, Penti,
+// Pierre Cardin… onaylı mağazalarda satılır) BURAYA EKLENMEZ — bağış üretmeye devam eder.
+// Onay gelince ilgili satırı sil.
+const HIDDEN_BRAND_KEYS = new Set(
+  [
+    'A101', 'IKEA', 'Altınbaş', 'Etstur', 'Bilet.com', 'İlaçsız Yaşam', // reddedilmiş mağazalar
+    'Getir', 'Getir Büyük', 'Pazarama', 'Tatilbudur', 'MinyCenter', 'Yalıspor', // onay beklemede mağazalar
+  ].map((n) => normBrandKey(n)),
+);
 
 const getCachedAllBrands = unstable_cache(
   async (): Promise<AllBrand[]> => {
@@ -175,7 +181,7 @@ const getCachedAllBrands = unstable_cache(
     brands.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
     return brands;
   },
-  ['market-brands-all-v8-a101hidden'],
+  ['market-brands-all-v9-storeshidden'],
   { revalidate: CACHE_TTL_SECONDS },
 );
 
@@ -184,6 +190,9 @@ const getCachedAllBrands = unstable_cache(
 // zaten taramayı 1s'te bir ile sınırlar). Ürünler yalnız ingest'te değiştiği için
 // 6s tazelik dengesi uygun; yeni çekilen ürünler en geç 6s içinde listeye yansır.
 const AGG_DOC_FRESH_MS = 6 * 3600 * 1000;
+// Şema sürümü: gizli-marka listesi değişince bunu artır → eski kalıcı doc bayat
+// sayılır ve filtreyle yeniden hesaplanır (yoksa 6 saat eski liste servis edilir).
+const AGG_SCHEMA = 2;
 
 const cacheHeaders = {
   'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,
@@ -197,9 +206,9 @@ export async function GET() {
   try {
     const snap = await ref.get();
     if (snap.exists) {
-      const data = snap.data() as { brands?: AllBrand[]; updatedAt?: number };
+      const data = snap.data() as { brands?: AllBrand[]; updatedAt?: number; schema?: number };
       const fresh = typeof data.updatedAt === 'number' && Date.now() - data.updatedAt < AGG_DOC_FRESH_MS;
-      if (Array.isArray(data.brands) && data.brands.length > 0 && fresh) {
+      if (Array.isArray(data.brands) && data.brands.length > 0 && fresh && data.schema === AGG_SCHEMA) {
         return NextResponse.json(
           { version: 7, count: data.brands.length, brands: data.brands },
           { headers: cacheHeaders },
@@ -213,7 +222,7 @@ export async function GET() {
   // 2) YAVAŞ YOL — hesapla (unstable_cache 1s ile sınırlı) + doc'a yaz (fire-and-forget).
   try {
     const brands = await getCachedAllBrands();
-    ref.set({ brands, updatedAt: Date.now() }).catch(() => { /* yazım opsiyonel */ });
+    ref.set({ brands, updatedAt: Date.now(), schema: AGG_SCHEMA }).catch(() => { /* yazım opsiyonel */ });
     return NextResponse.json(
       { version: 7, count: brands.length, brands },
       { headers: cacheHeaders },
