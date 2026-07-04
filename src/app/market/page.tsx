@@ -73,6 +73,7 @@ import { curatedCategoryOf, CURATED_ORDER, isIntimateOrAdult, categoryQueryToken
 import { donationAmountTRY } from '@/lib/market/donation-value';
 import { useRouter } from 'next/navigation';
 import { BrandLogo } from '@/components/market/brand-logo';
+import { SearchSuggestions } from '@/components/market/search-suggestions';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -201,6 +202,7 @@ export default function DiscoverPage() {
   const homeAds = useMarketAds('home'); // Şerit arası reklam banner'ları (her 5 satırda bir)
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [sortBy, setSortBy] = useState<SortOption>('recommended');
   const [onlyDiscounted, setOnlyDiscounted] = useState(false); // "İndirimli" hızlı süzgü
@@ -742,6 +744,8 @@ export default function DiscoverPage() {
               className="h-12 rounded-full border border-border bg-background pl-12 pr-10 text-base shadow-sm focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
             />
             {searchTerm && (
               <button
@@ -752,6 +756,23 @@ export default function DiscoverPage() {
               >
                 <X className="h-4 w-4" />
               </button>
+            )}
+            {searchFocused && searchTerm.trim().length >= 2 && (
+              <SearchSuggestions
+                query={searchTerm}
+                brands={rankedBrands}
+                products={products || []}
+                onPick={(kind, value, href) => {
+                  if (kind === 'brand' && href) {
+                    router.push(href);
+                  } else if (kind === 'category') {
+                    router.push(`/market/kategori/${encodeURIComponent(value)}`);
+                  } else {
+                    setSearchTerm(value);
+                  }
+                  setSearchFocused(false);
+                }}
+              />
             )}
           </div>
 

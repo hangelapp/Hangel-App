@@ -334,6 +334,7 @@ export default function BrandProfilePage() {
           <ProductGridWithAds
             items={shown}
             adPlacement="brand"
+            adContext={{ brand: key }}
             className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
             renderCard={(p) => <ProductCard key={p.id} product={p} donationRate={Number(p.donationRate) || avgRate} />}
           />

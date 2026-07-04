@@ -20,15 +20,18 @@ export function ProductGridWithAds({
   items,
   renderCard,
   adPlacement,
+  adContext,
   className,
 }: {
   items: CanonicalProduct[];
   /** Tek bir ürün kartını render eder (key={p.id} vermeli). */
   renderCard: (p: CanonicalProduct, index: number) => React.ReactNode;
   adPlacement: AdPlacement;
+  /** Kategori/marka-hedefli reklam filtresi için bağlam. */
+  adContext?: { category?: string | null; brand?: string | null };
   className: string;
 }) {
-  const ads = useMarketAds(adPlacement);
+  const ads = useMarketAds(adPlacement, adContext);
   return (
     <div className={className}>
       {items.map((p, i) => {

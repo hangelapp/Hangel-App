@@ -292,10 +292,14 @@ export function ProductDetailClient({ id }: { id: string }) {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-3xl">
-        {/* 2. Büyük ürün görseli — swipe galeri + nokta göstergesi */}
-        <div className="relative bg-white">
-          <div className="relative aspect-[1/1.2] w-full">
+      <div className="mx-auto w-full max-w-3xl lg:max-w-6xl">
+        {/* Masaüstü 2-kolon (Trendyol): SOL görsel galerisi · SAĞ satın alma bilgisi.
+            Mobilde (default) tek kolon, üst üste — mevcut görünüm korunur. */}
+        <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
+        {/* SOL kolon — 2. Büyük ürün görseli — swipe galeri + nokta göstergesi.
+            Masaüstünde scroll ederken görünür kalır (sticky). */}
+        <div className="relative bg-white lg:sticky lg:top-4 lg:self-start lg:rounded-2xl lg:border lg:overflow-hidden">
+          <div className="relative aspect-[1/1.2] w-full lg:aspect-square lg:max-h-[70vh]">
             {images.length > 1 ? (
               <div
                 className="flex h-full w-full snap-x snap-mandatory overflow-x-auto"
@@ -390,6 +394,8 @@ export function ProductDetailClient({ id }: { id: string }) {
           )}
         </div>
 
+        {/* SAĞ kolon — satın alma bilgisi (breadcrumb, marka, başlık, fiyat,
+            CTA/bağış, satıcı, diğer satıcılar, ürün künyesi). */}
         <div className="space-y-4 p-4">
           {/* Breadcrumb — Market › kategori › ürün */}
           <nav className="flex items-center gap-1 overflow-x-auto text-[11px] text-muted-foreground">
@@ -540,19 +546,6 @@ export function ProductDetailClient({ id }: { id: string }) {
           {/* 7b. Diğer satıcılar — aynı ürünü (GTIN/MPN) satan mağazalar, bağış oranıyla */}
           <ProductOtherSellers product={product} />
 
-          {/* 7c. Birlikte Alınanlar — aynı mağazadan tamamlayıcı ürünler (tek teslimat) */}
-          <ProductBoughtTogether product={product} />
-
-          {/* 8. Ürün açıklaması */}
-          {product.description && (
-            <div className="space-y-2 rounded-2xl border bg-card p-4">
-              <h2 className="text-sm font-black uppercase tracking-wide text-foreground">Ürün Açıklaması</h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">
-                {product.description}
-              </p>
-            </div>
-          )}
-
           {/* 8b. Ürün künyesi / özellikler */}
           {(product.gtin || product.mpn || product.category) && (
             <div className="rounded-2xl border bg-card p-4">
@@ -580,6 +573,27 @@ export function ProductDetailClient({ id }: { id: string }) {
             </div>
           )}
         </div>
+        {/* /SAĞ kolon — masaüstü 2-kolon grid burada kapanır */}
+        </div>
+
+        {/* Aşağıdaki bölümler masaüstünde grid'in ALTINDA tam genişlik (Trendyol). */}
+
+        {/* 7c. Birlikte Alınanlar — aynı mağazadan tamamlayıcı ürünler (tek teslimat) */}
+        <div className="p-4 pt-0 lg:pt-4">
+          <ProductBoughtTogether product={product} />
+        </div>
+
+        {/* 8. Ürün açıklaması */}
+        {product.description && (
+          <div className="px-4 pb-4">
+            <div className="space-y-2 rounded-2xl border bg-card p-4">
+              <h2 className="text-sm font-black uppercase tracking-wide text-foreground">Ürün Açıklaması</h2>
+              <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">
+                {product.description}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* 9. Benzer Ürünler — yatay şerit (aynı kategori) */}
         {similarProducts.length > 0 && (
@@ -602,7 +616,7 @@ export function ProductDetailClient({ id }: { id: string }) {
         className="fixed bottom-0 left-0 right-0 z-30 border-t bg-background/95 px-4 py-3 backdrop-blur-lg"
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
       >
-        <div className="mx-auto flex w-full max-w-3xl items-center gap-3">
+        <div className="mx-auto flex w-full max-w-3xl items-center gap-3 lg:max-w-6xl">
           <div className="hidden shrink-0 sm:block">
             <p className="text-[11px] text-muted-foreground">Fiyat</p>
             <p className="text-lg font-black text-foreground">{formatPrice(effectivePrice, product.currency)}</p>
@@ -623,7 +637,7 @@ export function ProductDetailClient({ id }: { id: string }) {
             )}
           </Button>
         </div>
-        <p className="mx-auto mt-1.5 max-w-3xl text-center text-[10px] text-muted-foreground">
+        <p className="mx-auto mt-1.5 max-w-3xl text-center text-[10px] text-muted-foreground lg:max-w-6xl">
           Markanın resmi sitesine güvenli yönlendirilirsin · alışverişin bir kısmı bağışa döner
         </p>
       </div>

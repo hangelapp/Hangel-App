@@ -8,6 +8,7 @@ import {
   type MarketAdBanner,
   type AdPlacement,
   bannersForPlacement,
+  bannerMatchesContext,
   SEED_MARKET_ADS,
 } from '@/lib/market/ad-banners';
 
@@ -20,7 +21,10 @@ import {
  *   yaparak banner'ların Firestore seed'inden önce de görünmesini sağlar.
  * - db yoksa / yüklenirken güvenli biçimde boş dizi döner.
  */
-export function useMarketAds(placement: AdPlacement): MarketAdBanner[] {
+export function useMarketAds(
+  placement: AdPlacement,
+  ctx?: { category?: string | null; brand?: string | null },
+): MarketAdBanner[] {
   const db = useFirestore();
 
   const adsQuery = useMemoFirebase(
@@ -34,6 +38,10 @@ export function useMarketAds(placement: AdPlacement): MarketAdBanner[] {
   // Date.now() çağırmamak için lazy state — reklam tarih aralığı ms hassasiyeti gerektirmez).
   const [now] = useState(() => Date.now());
 
+  // useMemo deps'ini kararlı tutmak için bağlamı ilkellere ayır.
+  const ctxCategory = ctx?.category ?? null;
+  const ctxBrand = ctx?.brand ?? null;
+
   return useMemo(() => {
     // Yükleniyor ya da db yok → boş.
     if (isLoading) return [];
@@ -42,6 +50,8 @@ export function useMarketAds(placement: AdPlacement): MarketAdBanner[] {
     const source: MarketAdBanner[] =
       data && data.length > 0 ? data : SEED_MARKET_ADS;
 
-    return bannersForPlacement(source, placement, now);
-  }, [data, isLoading, placement, now]);
+    return bannersForPlacement(source, placement, now).filter((b) =>
+      bannerMatchesContext(b, { category: ctxCategory, brand: ctxBrand }),
+    );
+  }, [data, isLoading, placement, now, ctxCategory, ctxBrand]);
 }

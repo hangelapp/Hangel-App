@@ -68,6 +68,26 @@ export interface MarketAdBanner {
   impressionCount?: number;
   createdAt?: number;
   updatedAt?: number;
+  /** Yalnız bu kürasyon kategorilerinde göster (boş/undefined = tüm kategoriler). Kategori-hedefli. */
+  targetCategories?: string[];
+  /** Yalnız bu marka anahtarlarında göster (boş/undefined = tüm markalar). Marka-hedefli. */
+  targetBrands?: string[];
+}
+
+/** Reklamın verilen bağlama (kategori/marka) uyup uymadığı. Hedef listesi boşsa herkese uyar. */
+export function bannerMatchesContext(
+  b: MarketAdBanner,
+  ctx?: { category?: string | null; brand?: string | null },
+): boolean {
+  const cat = (ctx?.category || '').trim();
+  const brand = (ctx?.brand || '').trim().toLowerCase();
+  if (b.targetCategories && b.targetCategories.length > 0) {
+    if (!cat || !b.targetCategories.some((c) => c.trim().toLowerCase() === cat.toLowerCase())) return false;
+  }
+  if (b.targetBrands && b.targetBrands.length > 0) {
+    if (!brand || !b.targetBrands.some((x) => x.trim().toLowerCase() === brand)) return false;
+  }
+  return true;
 }
 
 /** Şeritler/grid arası: kaç satırda bir reklam girer. */

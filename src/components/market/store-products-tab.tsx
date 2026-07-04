@@ -47,7 +47,7 @@ export function StoreProductsTab({ storeName, storeRate }: { storeName: string; 
     <div className="space-y-6">
       {/* Mağazanın kendi ürünlerinden kategori şeritleri (Telefon, Bilgisayar, Tablet…) */}
       <ProductCategoryStrips products={products} resolveRate={resolveRate} minItems={6} />
-      <MarketListing products={products} resolveRate={resolveRate} adPlacement="store" />
+      <MarketListing products={products} resolveRate={resolveRate} adPlacement="store" adContext={{ brand: storeName }} />
     </div>
   );
 }

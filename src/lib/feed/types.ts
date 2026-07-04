@@ -58,5 +58,7 @@ export interface CanonicalProduct {
   searchTokens?: string[];// arama token'ları (başlık+marka+kategori) — array-contains-any
   sellerCount?: number;   // aynı ürünü (GTIN/MPN) satan farklı MAĞAZA sayısı — toplu iş stamp'ler
   sellerBestRate?: number;// bu ürünü satan mağazalar arasındaki EN YÜKSEK bağış oranı (%)
+  priceHistory?: { p: number; t: number }[]; // son ~30 fiyat noktası (ingest'te eklenir) — {p: fiyat, t: epoch ms}
+  lowest30d?: number;     // son 30 gündeki EN DÜŞÜK fiyat (ingest hesaplar) — "30 günün en düşüğü" rozeti
   updatedAt: number;      // epoch ms (ingest zamanı)
 }
