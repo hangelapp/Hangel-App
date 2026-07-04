@@ -23,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { ProductOtherSellers } from '@/components/market/product-other-sellers';
+import { ProductBoughtTogether } from '@/components/market/product-bought-together';
 import { ProductCard } from '@/components/market/product-card';
 import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -190,10 +191,18 @@ export function ProductDetailClient({ id }: { id: string }) {
     [db, product?.category]
   );
   const { data: similarRaw } = useCollection<CanonicalProduct>(similarQuery);
-  const similarProducts = useMemo(
-    () => (similarRaw || []).filter((p) => p.id !== id).slice(0, 10),
-    [similarRaw, id]
-  );
+  const similarProducts = useMemo(() => {
+    const list = (similarRaw || []).filter((p) => p.id !== id);
+    // Aynı ürün markası (productBrandKey) daha alakalı → öne al.
+    const key = product?.productBrandKey;
+    if (key) {
+      list.sort(
+        (a, b) =>
+          (b.productBrandKey === key ? 1 : 0) - (a.productBrandKey === key ? 1 : 0)
+      );
+    }
+    return list.slice(0, 10);
+  }, [similarRaw, id, product?.productBrandKey]);
 
   if (isLoading) {
     return (
@@ -522,6 +531,9 @@ export function ProductDetailClient({ id }: { id: string }) {
           {/* 7b. Diğer satıcılar — aynı ürünü (GTIN/MPN) satan mağazalar, bağış oranıyla */}
           <ProductOtherSellers product={product} />
 
+          {/* 7c. Birlikte Alınanlar — aynı mağazadan tamamlayıcı ürünler (tek teslimat) */}
+          <ProductBoughtTogether product={product} />
+
           {/* 8. Ürün açıklaması */}
           {product.description && (
             <div className="space-y-2 rounded-2xl border bg-card p-4">
@@ -567,7 +579,8 @@ export function ProductDetailClient({ id }: { id: string }) {
             <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
               {similarProducts.map((p) => (
                 <div key={p.id} className="w-36 shrink-0">
-                  <ProductCard product={p} donationRate={donationRate} />
+                  {/* Her benzer ürün KENDİ oranını çözsün — mevcut ürünün oranı yanıltıcı. */}
+                  <ProductCard product={p} />
                 </div>
               ))}
             </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ImageOff, HeartHandshake, Heart } from 'lucide-react';
+import { ImageOff, HeartHandshake, Heart, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CanonicalProduct } from '@/lib/feed/types';
 
@@ -88,6 +88,17 @@ export function ProductCard({
         <p className="line-clamp-2 min-h-[1.9rem] text-[11px] leading-tight text-muted-foreground">
           {product.title}
         </p>
+
+        {/* Diğer satıcı rozeti — aynı ürünü satan birden çok mağaza varsa (tıklama teşviki) */}
+        {typeof product.sellerCount === 'number' && product.sellerCount > 1 && (
+          <span className="mt-0.5 inline-flex w-fit items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+            <Store className="h-2.5 w-2.5" aria-hidden="true" />
+            {product.sellerCount} satıcı
+            {typeof product.sellerBestRate === 'number' && product.sellerBestRate > 0
+              ? ` · en iyi %${product.sellerBestRate}`
+              : ''}
+          </span>
+        )}
 
         {/* Fiyat satırı — Trendyol tarzı */}
         <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">

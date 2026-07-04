@@ -265,7 +265,7 @@ export default function BrandProfilePage() {
             items={shown}
             adPlacement="brand"
             className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4"
-            renderCard={(p) => <ProductCard key={p.id} product={p} />}
+            renderCard={(p) => <ProductCard key={p.id} product={p} donationRate={Number(p.donationRate) || avgRate} />}
           />
         )}
       </main>
