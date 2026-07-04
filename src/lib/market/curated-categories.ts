@@ -19,7 +19,9 @@ export const CURATED_CATEGORIES: { name: string; kw: string[] }[] = [
   { name: 'Gıda', kw: ['gıda', 'çikolata', 'kahve', ' çay ', 'atıştırmalık', 'bakliyat', 'zeytin', ' bal ', 'kuruyemiş', 'içecek', 'kahvaltılık'] },
   { name: 'Aksesuar', kw: ['aksesuar', 'çanta', 'cüzdan', 'kemer', 'şapka', ' saat', 'gözlük', 'takı', 'kolye', 'yüzük', 'bileklik', 'küpe', 'atkı', 'eldiven'] },
   { name: 'İnşaat', kw: ['inşaat', 'hırdavat', 'yapı market', ' boya', 'matkap', 'vida', 'el aleti', 'bahçe', 'nalbur', 'tesisat'] },
-  { name: 'Otel', kw: ['otel', 'hotel', 'konaklama', 'tatil', 'rezervasyon', 'pansiyon', 'resort', ' gece', 'her şey dahil', 'herşey dahil', 'ultra all', 'all inclusive', 'termal', 'tatil köyü', 'balayı', 'erken rezervasyon', 'apart otel', 'butik otel', 'bungalov', 'yaz tatil', 'kış tatil', 'kayak otel', 'kişi konakla'] },
+  // NOT: 'Otel' burada YOK — SADECE mağaza kapılı (TRAVEL_STORES). Başlık anahtar
+  // kelimeleri (hotel/resort/tatil) giyim ürünlerini (Boyner "…Resort…", Puma
+  // "…Hotel… Tişört") yanlış yakaladığı için başlıktan Otel ataması yapılmaz.
   { name: 'Kadın Giyim', kw: ['kadın', 'kadin', ' women', 'elbise', 'etek', 'bluz', 'tayt', 'tunik', 'kadın giyim'] },
   { name: 'Erkek Giyim', kw: ['erkek', ' men ', 'gömlek', 'kravat', 'erkek giyim', 'takım elbise'] },
 ];

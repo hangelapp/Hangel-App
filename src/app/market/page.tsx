@@ -450,6 +450,15 @@ export default function DiscoverPage() {
 
     // Arama yokken: yüklenen vitrin + kategori filtresi + seçili sıralama.
     let list = [...(products || [])];
+    // Ana sayfa vitrini (filtre YOKKEN) görselsiz ürünleri gizler; kategori/sıralama/
+    // indirim filtresi aktifken gizlenmez (yalnız home showcase için).
+    const isHomeBrowse =
+      activeCategory === 'Tümü' && sortBy === 'recommended' && !onlyDiscounted;
+    if (isHomeBrowse) {
+      list = list.filter(
+        (p) => typeof p.imageLink === 'string' && p.imageLink.trim().length > 0,
+      );
+    }
     if (activeCategory !== 'Tümü') {
       list = list.filter((p) => groupOf(p) === activeCategory);
     }
@@ -519,10 +528,15 @@ export default function DiscoverPage() {
     },
   ];
 
+  // Ürünün gösterilebilir görseli var mı? (ana sayfa vitrini için zorunlu)
+  const hasImage = (p: CanonicalProduct) =>
+    typeof p.imageLink === 'string' && p.imageLink.trim().length > 0;
+
   // ── Vitrin şeritleri — hepsi ÇEKİLEN ürünlerden client-side türetilir ──
   // Ana sayfa vitrininde iç giyim / +18 / yetişkin içerik GÖSTERİLMEZ (detayda kalır).
+  // Ayrıca vitrinde görselsiz ürün GÖSTERİLMEZ (tüm şeritler görselli ürünlerle beslenir).
   const safeProducts = useMemo(
-    () => (products || []).filter((p) => !isIntimateOrAdult(p.category, p.title)),
+    () => (products || []).filter((p) => !isIntimateOrAdult(p.category, p.title) && hasImage(p)),
     [products],
   );
 
@@ -1151,7 +1165,7 @@ export default function DiscoverPage() {
                   action={{ label: 'Filtreleri temizle', onClick: resetFilters }}
                 />
               ) : (
-                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                   {filtered.map((product) => (
                     <ProductCard
                       key={product.id}

@@ -7,7 +7,8 @@
  */
 
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { PackageX } from 'lucide-react';
+import { EmptyState } from '@/components/shared/empty-state';
 import { MarketListing } from '@/components/market/market-listing';
 import { ProductCategoryStrips } from '@/components/market/product-category-strips';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -24,10 +25,17 @@ export function StoreProductsTab({ storeName, storeRate }: { storeName: string; 
   const { data: products, isLoading } = useCollection<CanonicalProduct>(q);
 
   if (isLoading && !products?.length) {
-    return <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+    // Marka/kategori sayfalarıyla tutarlı skeleton grid.
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        {[...Array(12)].map((_, i) => (
+          <div key={i} className="aspect-[3/4] w-full animate-pulse rounded-2xl bg-muted" />
+        ))}
+      </div>
+    );
   }
   if (!products?.length) {
-    return <p className="py-16 text-center text-sm text-muted-foreground">Bu mağazanın ürünleri şu an listede yok.</p>;
+    return <EmptyState icon={PackageX} title="Ürün bulunamadı" description="Bu mağazanın ürünleri şu an listede yok." />;
   }
 
   // Mağaza bağış oranı varsa: ürünün kendi oranı yoksa mağaza oranına düş.
