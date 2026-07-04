@@ -194,6 +194,12 @@ const AGG_DOC_FRESH_MS = 6 * 3600 * 1000;
 // sayılır ve filtreyle yeniden hesaplanır (yoksa 6 saat eski liste servis edilir).
 const AGG_SCHEMA = 2;
 
+// SERVİS anında da gizli markaları çıkar — kalıcı doc/cache eski liste içerse bile
+// gizlenenler ASLA yanıta girmez (hem anahtar hem ada göre; bulletproof).
+function filterHidden(bs: AllBrand[]): AllBrand[] {
+  return bs.filter((b) => !HIDDEN_BRAND_KEYS.has(b.id) && !HIDDEN_BRAND_KEYS.has(normBrandKey(b.name)));
+}
+
 const cacheHeaders = {
   'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,
 };
@@ -208,9 +214,10 @@ export async function GET() {
     if (snap.exists) {
       const data = snap.data() as { brands?: AllBrand[]; updatedAt?: number; schema?: number };
       const fresh = typeof data.updatedAt === 'number' && Date.now() - data.updatedAt < AGG_DOC_FRESH_MS;
-      if (Array.isArray(data.brands) && data.brands.length > 0 && fresh && data.schema === AGG_SCHEMA) {
+      if (Array.isArray(data.brands) && data.brands.length > 0 && fresh) {
+        const visible = filterHidden(data.brands);
         return NextResponse.json(
-          { version: 7, count: data.brands.length, brands: data.brands },
+          { version: 9, count: visible.length, brands: visible },
           { headers: cacheHeaders },
         );
       }
@@ -224,7 +231,7 @@ export async function GET() {
     const brands = await getCachedAllBrands();
     ref.set({ brands, updatedAt: Date.now(), schema: AGG_SCHEMA }).catch(() => { /* yazım opsiyonel */ });
     return NextResponse.json(
-      { version: 7, count: brands.length, brands },
+      { version: 9, count: filterHidden(brands).length, brands: filterHidden(brands) },
       { headers: cacheHeaders },
     );
   } catch (err) {
