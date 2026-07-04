@@ -54,7 +54,7 @@ export default function CategoryPage() {
         ) : products.length === 0 ? (
           <EmptyState icon={PackageX} title="Ürün bulunamadı" description={`“${cat}” kategorisinde şu an listede ürün yok.`} />
         ) : (
-          <MarketListing products={products} />
+          <MarketListing products={products} adPlacement="category" />
         )}
       </main>
     </div>

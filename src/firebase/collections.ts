@@ -149,6 +149,15 @@ export const COLLECTIONS = {
   // 'Aktif'|'Pasif', createdAt, updatedAt }.
   siteAds: 'siteAds',
 
+  // Market Reklam Alanı banner'ları (super-admin/market-ads). Ürün şeritleri/grid
+  // arasına "her 5 satırda bir" giren reklamlar. Public read (aktif banner
+  // kullanıcıya görünür), super-admin write. clickCount/impressionCount Admin SDK
+  // (/api/ads/click, /api/ads/impression) ile FieldValue.increment edilir.
+  // Doc: { name, eyebrow, title, subtitle, ctaText, linkUrl, design{}, placements[],
+  // rowSlot, order, active, startAt?, endAt?, clickCount, impressionCount,
+  // createdAt, updatedAt }.
+  marketAdBanners: 'marketAdBanners',
+
   // Yardım Merkezi (super-admin/help) soru-cevap geri bildirimi. Admin
   // "Beğendim/Beğenmedim" → kayıt. Super-admin write (global allPaths kapsar).
   // Doc: { section, question, helpful: boolean, adminUid?, createdAt }.

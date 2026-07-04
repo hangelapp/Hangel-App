@@ -19,6 +19,7 @@ import { collection, where, query, limit } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import { ProductCategoryStrips } from '@/components/market/product-category-strips';
+import { ProductGridWithAds } from '@/components/market/product-grid-ads';
 import { isFalseBrandMatch } from '@/lib/market/brand-extract';
 
 // Apple ürünlerinde markaya özgü oran yok → platform varsayılanı (discover ile aynı).
@@ -115,15 +116,18 @@ export default function AppleProductsPage() {
             <EmptyState icon={Apple} title="Apple ürünü bulunamadı" description="Yakında burada olacaklar." />
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2.5 px-4 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
-            {displayed.map((p) => (
+          <ProductGridWithAds
+            items={displayed}
+            adPlacement="brand"
+            className="grid grid-cols-2 gap-2.5 px-4 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5"
+            renderCard={(p) => (
               <ProductCard
                 key={p.id}
                 product={p}
                 donationRate={typeof p.donationRate === 'number' && p.donationRate > 0 ? p.donationRate : APPLE_RATE}
               />
-            ))}
-          </div>
+            )}
+          />
         )}
       </main>
     </div>

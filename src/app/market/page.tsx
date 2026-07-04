@@ -66,6 +66,9 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { DonationStrips } from '@/components/market/donation-strips';
 import { CategoryFacets } from '@/components/market/category-facets';
+import { AdBannerCard } from '@/components/market/ad-banner';
+import { useMarketAds } from '@/hooks/use-market-ads';
+import { planAdInsertions } from '@/lib/market/ad-banners';
 import { curatedCategoryOf, CURATED_ORDER, isIntimateOrAdult, categoryQueryTokens } from '@/lib/market/curated-categories';
 import { donationAmountTRY } from '@/lib/market/donation-value';
 import { useRouter } from 'next/navigation';
@@ -195,6 +198,7 @@ function iconForCategory(name: string): React.ComponentType<{ className?: string
 
 export default function DiscoverPage() {
   const db = useFirestore();
+  const homeAds = useMarketAds('home'); // Şerit arası reklam banner'ları (her 5 satırda bir)
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('Tümü');
@@ -1028,62 +1032,84 @@ export default function DiscoverPage() {
                   </section>
                 )}
 
-                {/* ── 5. Yatay ürün şeritleri ── */}
-                <ProductStrip
-                  title="En Çok Yüzdeyle Bağış Yapanlar"
-                  emoji="🧡"
-                  items={topDonationStrip}
-                  resolveRate={resolveProductRate}
-                  onSeeAll={() => setSortBy('donationDesc')}
-                />
-                <ProductStrip
-                  title="En Çok Tutarla Bağış Yapanlar"
-                  emoji="💰"
-                  items={topDonationAmountStrip}
-                  resolveRate={resolveProductRate}
-                  onSeeAll={scrollToAll}
-                />
-                <ProductStrip
-                  title="İndirimdekiler"
-                  icon={Tag}
-                  items={dealsStrip}
-                  resolveRate={resolveProductRate}
-                  onSeeAll={scrollToAll}
-                />
-                {/* Mağaza kartları şeridi (3 ajanstan gelen satıcılar) — Öne Çıkanlar'ın ÜZERİNDE.
-                    NOT: bunlar MAĞAZA (Media Markt, Sportive...); ürün MARKALARI (Nike, Apple)
-                    "Tüm Markalar" butonunda (/market/brands/all). */}
-                <BrandStrip title="Mağazalar" items={brandStripItems} band />
-                {/* Mağazalar altı: kürasyonlu kategori satırları — SABİT sıra (CURATED_ORDER),
-                    her biri 21 ürün + kaydırma + Tümü → kategori detay sayfası. */}
-                {CURATED_ORDER.map((name) => (
-                  <CuratedStrip
-                    key={name}
-                    name={name}
-                    seedItems={curatedByName.get(name) || []}
-                    resolveRate={resolveProductRate}
-                    onSeeAll={() => router.push(`/market/kategori/${encodeURIComponent(name)}`)}
-                  />
-                ))}
-                <ProductStrip
-                  title="Öne Çıkanlar"
-                  icon={Sparkles}
-                  items={featuredStrip}
-                  resolveRate={resolveProductRate}
-                  onSeeAll={scrollToAll}
-                />
-                {categoryStrips.map((strip) =>
-                  strip.items.length >= 3 ? (
+                {/* ── 5. Yatay ürün şeritleri + her 5 satırda bir reklam banner'ı ── */}
+                {(() => {
+                  // Şeritleri tek bir sıralı diziye topla; sonra planAdInsertions ile
+                  // aralarına (rowSlot: 5/10/15/20/25) reklam banner'larını serpiştir.
+                  const rows: React.ReactNode[] = [
                     <ProductStrip
-                      key={strip.name}
-                      title={strip.name}
-                      icon={Gift}
-                      items={strip.items}
+                      key="strip-pct"
+                      title="En Çok Yüzdeyle Bağış Yapanlar"
+                      emoji="🧡"
+                      items={topDonationStrip}
                       resolveRate={resolveProductRate}
-                      onSeeAll={() => setActiveCategory(strip.name)}
-                    />
-                  ) : null,
-                )}
+                      onSeeAll={() => setSortBy('donationDesc')}
+                    />,
+                    <ProductStrip
+                      key="strip-amt"
+                      title="En Çok Tutarla Bağış Yapanlar"
+                      emoji="💰"
+                      items={topDonationAmountStrip}
+                      resolveRate={resolveProductRate}
+                      onSeeAll={scrollToAll}
+                    />,
+                    <ProductStrip
+                      key="strip-deals"
+                      title="İndirimdekiler"
+                      icon={Tag}
+                      items={dealsStrip}
+                      resolveRate={resolveProductRate}
+                      onSeeAll={scrollToAll}
+                    />,
+                    // Mağaza kartları şeridi (3 ajanstan gelen satıcılar).
+                    <BrandStrip key="strip-stores" title="Mağazalar" items={brandStripItems} band />,
+                    // Mağazalar altı: kürasyonlu kategori satırları — SABİT sıra (CURATED_ORDER).
+                    ...CURATED_ORDER.map((name) => (
+                      <CuratedStrip
+                        key={`cur-${name}`}
+                        name={name}
+                        seedItems={curatedByName.get(name) || []}
+                        resolveRate={resolveProductRate}
+                        onSeeAll={() => router.push(`/market/kategori/${encodeURIComponent(name)}`)}
+                      />
+                    )),
+                    <ProductStrip
+                      key="strip-featured"
+                      title="Öne Çıkanlar"
+                      icon={Sparkles}
+                      items={featuredStrip}
+                      resolveRate={resolveProductRate}
+                      onSeeAll={scrollToAll}
+                    />,
+                    ...categoryStrips
+                      .filter((strip) => strip.items.length >= 3)
+                      .map((strip) => (
+                        <ProductStrip
+                          key={`cat-${strip.name}`}
+                          title={strip.name}
+                          icon={Gift}
+                          items={strip.items}
+                          resolveRate={resolveProductRate}
+                          onSeeAll={() => setActiveCategory(strip.name)}
+                        />
+                      )),
+                  ];
+                  const insertions = planAdInsertions(homeAds, rows.length);
+                  const out: React.ReactNode[] = [];
+                  rows.forEach((row, i) => {
+                    out.push(row);
+                    for (const ins of insertions) {
+                      if (ins.afterIndex === i) {
+                        out.push(
+                          <div key={`ad-${ins.banner.id}`} className="w-full max-w-full px-4 pt-6">
+                            <AdBannerCard banner={ins.banner} />
+                          </div>,
+                        );
+                      }
+                    }
+                  });
+                  return out;
+                })()}
               </>
             )}
 

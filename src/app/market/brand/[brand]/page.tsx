@@ -18,6 +18,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { DonationStrips } from '@/components/market/donation-strips';
 import { ProductCategoryStrips } from '@/components/market/product-category-strips';
+import { ProductGridWithAds } from '@/components/market/product-grid-ads';
 import { isFalseBrandMatch } from '@/lib/market/brand-extract';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { Button } from '@/components/ui/button';
@@ -260,9 +261,12 @@ export default function BrandProfilePage() {
         ) : !shown.length ? (
           <EmptyState icon={Tag} title="Ürün bulunamadı" description={activeCat !== 'Tümü' || activeFilterCount > 0 ? 'Seçili filtrelere uygun ürün yok.' : 'Bu markaya ait ürün şu an listede yok.'} />
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {shown.map((p) => <ProductCard key={p.id} product={p} />)}
-          </div>
+          <ProductGridWithAds
+            items={shown}
+            adPlacement="brand"
+            className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4"
+            renderCard={(p) => <ProductCard key={p.id} product={p} />}
+          />
         )}
       </main>
     </div>

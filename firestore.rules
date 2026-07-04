@@ -463,6 +463,14 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin();
     }
 
+    // Market Reklam Alanı banner'ları. Public read (kullanıcıya görünür);
+    // yalnızca super-admin yazar. clickCount/impressionCount artışı Admin SDK
+    // (/api/ads/*) ile yapılır — kurallar Admin SDK'yı baypas eder.
+    match /marketAdBanners/{adId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
     // Süper-admin kişisel panel ayarları — yalnızca super-admin kendi doc'unu okur/yazar.
     // Path: superAdminSettings/{adminUid}. Bildirim tercihleri (notifications.*),
     // gelecekteki başka kişisel ayarlar burada toplanır.

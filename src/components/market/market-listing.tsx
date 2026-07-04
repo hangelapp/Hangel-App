@@ -18,6 +18,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { cn } from '@/lib/utils';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import { donationAmountTRY } from '@/lib/market/donation-value';
+import { AdBannerCard } from '@/components/market/ad-banner';
+import { useMarketAds } from '@/hooks/use-market-ads';
+import type { AdPlacement } from '@/lib/market/ad-banners';
+
+// Grid'de yaklaşık sütun sayısı (xl). rowSlot × bu = banner'ın gireceği ürün indeksi.
+const GRID_COLS = 5;
+const AD_SPAN = 'col-span-2 sm:col-span-3 md:col-span-4 xl:col-span-5';
 
 type SortKey = 'default' | 'donation' | 'donationAmount' | 'priceAsc' | 'priceDesc' | 'discount';
 
@@ -40,13 +47,17 @@ export function MarketListing({
   resolveRate,
   showStrips = true,
   initialPageSize = 24,
+  adPlacement,
 }: {
   products: CanonicalProduct[];
   resolveRate?: (p: CanonicalProduct) => number;
   showStrips?: boolean;
   initialPageSize?: number;
+  /** Verilirse grid'e her 5 satırda bir (rowSlot×5. üründen sonra) reklam banner'ı girer. */
+  adPlacement?: AdPlacement;
 }) {
   const rate = resolveRate || ((p: CanonicalProduct) => Number(p.donationRate) || 0);
+  const ads = useMarketAds(adPlacement ?? 'home');
   const [activeCat, setActiveCat] = useState('Tümü');
   const [sortKey, setSortKey] = useState<SortKey>('default');
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -131,7 +142,23 @@ export function MarketListing({
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
-            {visible.map((p) => <ProductCard key={p.id} product={p} donationRate={resolveRate ? resolveRate(p) : undefined} />)}
+            {visible.map((p, i) => {
+              const card = <ProductCard key={p.id} product={p} donationRate={resolveRate ? resolveRate(p) : undefined} />;
+              // Reklam: rowSlot×5. üründen sonra tam-genişlik banner (yalnız adPlacement verildiyse).
+              if (!adPlacement) return card;
+              const slotAds = ads.filter((b) => b.rowSlot * GRID_COLS - 1 === i);
+              if (slotAds.length === 0) return card;
+              return (
+                <React.Fragment key={p.id}>
+                  {card}
+                  {slotAds.map((b) => (
+                    <div key={`ad-${b.id}`} className={AD_SPAN}>
+                      <AdBannerCard banner={b} />
+                    </div>
+                  ))}
+                </React.Fragment>
+              );
+            })}
           </div>
           {shown.length > visible.length && (
             <div className="flex justify-center pt-2">
