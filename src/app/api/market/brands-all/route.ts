@@ -60,6 +60,11 @@ const FAMOUS_NAMES = [
 ];
 const FAMOUS_KEYS = new Set(FAMOUS_NAMES.map((n) => normBrandKey(n)));
 
+// Market'ten ELLE gizlenen markalar/mağazalar — affiliate onayımız olmayanlar.
+// (Ürün feed'i affiliate onayından bağımsız olduğu için burada da gizlemek gerekir.)
+// A101: Publicis GO "Loyalty" segmenti için onaylı DEĞİL → geçici gizlendi.
+const HIDDEN_BRAND_KEYS = new Set([normBrandKey('A101')]);
+
 const getCachedAllBrands = unstable_cache(
   async (): Promise<AllBrand[]> => {
     const db = getAdminFirestore();
@@ -84,6 +89,7 @@ const getCachedAllBrands = unstable_cache(
       const raw = (d.productBrand || d.brandName || '').trim();
       const key = ((d.productBrandKey || '').trim() || normBrandKey(raw));
       if (!raw || !key) continue;
+      if (HIDDEN_BRAND_KEYS.has(key)) continue; // elle gizlenen marka/mağaza (ör. A101)
       const rate = Number(d.donationRate);
       const hasRate = Number.isFinite(rate) && rate > 0;
       const cur = map.get(key) ?? { variants: new Map<string, number>(), sum: 0, count: 0 };
