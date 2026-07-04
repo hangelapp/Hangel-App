@@ -50,6 +50,9 @@ export default function FavorilerPage() {
           </Button>
           <h1 className="text-xl font-black">Favorilerim</h1>
         </div>
+        <p className="mt-1 pl-12 text-xs text-muted-foreground">
+          🔔 Favorilerinin fiyatı düşünce sana haber veririz.
+        </p>
       </div>
 
       <main className="flex-1 overflow-y-auto p-4 pb-32">

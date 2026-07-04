@@ -61,11 +61,20 @@ export const metadata: Metadata = {
     title: 'hangel — Toplumsal Etki Platformu',
     description:
       'STK\'lar, gönüllüler, öğrenci kulüpleri ve markalar için tek platform.',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'hangel — Toplumsal Etki Platformu',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'hangel — Toplumsal Etki Platformu',
     description: 'STK, gönüllülük ve sosyal etki için tek platform.',
+    images: ['/opengraph-image.png'],
   },
   robots: {
     index: true,

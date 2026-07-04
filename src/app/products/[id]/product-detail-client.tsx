@@ -23,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { ProductOtherSellers } from '@/components/market/product-other-sellers';
+import { DonationImpact } from '@/components/market/donation-impact';
 import { ProductBoughtTogether } from '@/components/market/product-bought-together';
 import { ProductCard } from '@/components/market/product-card';
 import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
@@ -541,6 +542,12 @@ export function ProductDetailClient({ id }: { id: string }) {
               </div>
               <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             </Link>
+          )}
+
+          {/* 7a. BAĞIŞ ETKİSİ — kullanıcının seçtiği STK(ları) ve bu alışverişten
+              gidecek bağış tutarını (alıcı ekstra ödemez) isimleriyle vurgular. */}
+          {donationRate !== null && donationRate > 0 && (
+            <DonationImpact product={product} donationRate={donationRate} />
           )}
 
           {/* 7b. Diğer satıcılar — aynı ürünü (GTIN/MPN) satan mağazalar, bağış oranıyla */}

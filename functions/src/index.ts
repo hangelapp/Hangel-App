@@ -190,3 +190,10 @@ export { affiliateApprovalSync } from './affiliate-approval-sync';
 // sellerCount + sellerBestRate alanlarını batch ile yazar. Sunucuda çalışır,
 // yerel Firestore kotasını yakmaz. See ./seller-count-cron.ts
 export { stampSellerCountsDaily } from './seller-count-cron';
+
+// Fiyat düşüş uyarısı robotu — her gün 09:00 Europe/Istanbul. Tüm favorileri
+// (collectionGroup('favorites')) tarar, her favinin snapshot etkin fiyatını
+// ürünün güncel etkin fiyatıyla karşılaştırır ve anlamlı düşüşte (>= max(5₺,%3))
+// kullanıcıya notifications doc yazar (push'u onNotificationCreated gönderir) +
+// fav snapshot'ını güncelleyerek tekrar-uyarıyı önler. See ./price-drop-alerts.ts
+export { priceDropAlerts } from './price-drop-alerts';
