@@ -196,8 +196,19 @@ const AGG_SCHEMA = 2;
 
 // SERVİS anında da gizli markaları çıkar — kalıcı doc/cache eski liste içerse bile
 // gizlenenler ASLA yanıta girmez (hem anahtar hem ada göre; bulletproof).
-function filterHidden(bs: AllBrand[]): AllBrand[] {
-  return bs.filter((b) => !HIDDEN_BRAND_KEYS.has(b.id) && !HIDDEN_BRAND_KEYS.has(normBrandKey(b.name)));
+function filterHidden(bs: AllBrand[], hidden: Set<string>): AllBrand[] {
+  return bs.filter((b) => !hidden.has(b.id) && !hidden.has(normBrandKey(b.name)));
+}
+
+// Statik (elle) + dinamik (günlük cron: onaysız mağazalar) gizli anahtar birleşimi.
+async function resolveHiddenKeys(db: FirebaseFirestore.Firestore): Promise<Set<string>> {
+  const s = new Set<string>(HIDDEN_BRAND_KEYS);
+  try {
+    const snap = await db.collection('marketAggregates').doc('hiddenStores').get();
+    const keys = (snap.data() as { keys?: string[] } | undefined)?.keys;
+    if (Array.isArray(keys)) for (const k of keys) if (k) s.add(k);
+  } catch { /* opsiyonel — dinamik liste yoksa yalnız statik uygulanır */ }
+  return s;
 }
 
 const cacheHeaders = {
@@ -207,6 +218,7 @@ const cacheHeaders = {
 export async function GET() {
   const db = getAdminFirestore();
   const ref = db.collection('marketAggregates').doc('brandsAll');
+  const hidden = await resolveHiddenKeys(db); // statik + cron'dan gelen onaysız mağazalar
 
   // 1) HIZLI YOL — önceden hesaplanmış doküman (ürün taraması YOK).
   try {
@@ -215,7 +227,7 @@ export async function GET() {
       const data = snap.data() as { brands?: AllBrand[]; updatedAt?: number; schema?: number };
       const fresh = typeof data.updatedAt === 'number' && Date.now() - data.updatedAt < AGG_DOC_FRESH_MS;
       if (Array.isArray(data.brands) && data.brands.length > 0 && fresh) {
-        const visible = filterHidden(data.brands);
+        const visible = filterHidden(data.brands, hidden);
         return NextResponse.json(
           { version: 9, count: visible.length, brands: visible },
           { headers: cacheHeaders },
@@ -230,8 +242,9 @@ export async function GET() {
   try {
     const brands = await getCachedAllBrands();
     ref.set({ brands, updatedAt: Date.now(), schema: AGG_SCHEMA }).catch(() => { /* yazım opsiyonel */ });
+    const visible = filterHidden(brands, hidden);
     return NextResponse.json(
-      { version: 9, count: filterHidden(brands).length, brands: filterHidden(brands) },
+      { version: 9, count: visible.length, brands: visible },
       { headers: cacheHeaders },
     );
   } catch (err) {
