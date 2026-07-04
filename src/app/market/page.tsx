@@ -64,6 +64,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
+import { PersonalizedStrip } from '@/components/market/personalized-strip';
 import { DonationStrips } from '@/components/market/donation-strips';
 import { CategoryFacets } from '@/components/market/category-facets';
 import { AdBannerCard } from '@/components/market/ad-banner';
@@ -1072,6 +1073,13 @@ export default function DiscoverPage() {
                   // Şeritleri tek bir sıralı diziye topla; sonra planAdInsertions ile
                   // aralarına (rowSlot: 5/10/15/20/25) reklam banner'larını serpiştir.
                   const rows: React.ReactNode[] = [
+                    // 🎯 Sana Özel — favoriler + son gezilenlerden kişiselleştirme
+                    // (sinyal yoksa ya da <4 sonuçta null döner → satır çıkmaz).
+                    <PersonalizedStrip
+                      key="strip-personal"
+                      products={safeProducts}
+                      resolveRate={resolveProductRate}
+                    />,
                     <ProductStrip
                       key="strip-pct"
                       title="En Çok Yüzdeyle Bağış Yapanlar"

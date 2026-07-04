@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -26,6 +26,7 @@ import { ProductOtherSellers } from '@/components/market/product-other-sellers';
 import { DonationImpact } from '@/components/market/donation-impact';
 import { ProductBoughtTogether } from '@/components/market/product-bought-together';
 import { ProductCard } from '@/components/market/product-card';
+import { ShareButton } from '@/components/market/share-button';
 import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { doc, collection, addDoc, query, where, limit, serverTimestamp } from 'firebase/firestore';
@@ -36,6 +37,7 @@ import { goToAffiliate } from '@/lib/affiliate-go';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import type { Brand } from '@/lib/types';
 import { curatedCategoryOf } from '@/lib/market/curated-categories';
+import { recordView } from '@/lib/market/recently-viewed';
 
 function formatPrice(value: number, currency: string): string {
   const sym = currency === 'TRY' ? 'TL' : currency;
@@ -54,6 +56,19 @@ export function ProductDetailClient({ id }: { id: string }) {
     [db, id]
   );
   const { data: product, isLoading } = useDoc<CanonicalProduct>(productRef);
+
+  // "Son görüntülenenler" sinyali (kişiselleştirme için) — ürün yüklendiğinde
+  // hafif meta'yı localStorage'a yazar. Sunucu çağrısı yok, best-effort.
+  useEffect(() => {
+    if (product?.id) {
+      recordView({
+        id: product.id,
+        category: product.category,
+        productBrandKey: product.productBrandKey,
+        brandName: product.brandName,
+      });
+    }
+  }, [product?.id, product?.category, product?.productBrandKey, product?.brandName]);
 
   // MAĞAZA (satıcı) — ürünün geldiği 3-ajans offer'ı. `brandName` mağaza adıdır.
   // Mağaza doc id: brandId varsa o; yoksa source+feedId'den türetilir
@@ -643,6 +658,8 @@ export function ProductDetailClient({ id }: { id: string }) {
               </>
             )}
           </Button>
+          {/* Paylaş — bağış vurgulu viral paylaşım (CTA'nın yanında). */}
+          <ShareButton product={product} donationRate={donationRate || 0} />
         </div>
         <p className="mx-auto mt-1.5 max-w-3xl text-center text-[10px] text-muted-foreground lg:max-w-6xl">
           Markanın resmi sitesine güvenli yönlendirilirsin · alışverişin bir kısmı bağışa döner
