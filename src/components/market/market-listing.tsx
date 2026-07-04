@@ -50,6 +50,7 @@ export function MarketListing({
   showStrips = true,
   initialPageSize = 24,
   adPlacement,
+  adContext,
 }: {
   products: CanonicalProduct[];
   resolveRate?: (p: CanonicalProduct) => number;
@@ -57,9 +58,11 @@ export function MarketListing({
   initialPageSize?: number;
   /** Verilirse grid'e her 5 satırda bir (rowSlot×5. üründen sonra) reklam banner'ı girer. */
   adPlacement?: AdPlacement;
+  /** Kategori/marka-hedefli reklam filtresi için bağlam. */
+  adContext?: { category?: string | null; brand?: string | null };
 }) {
   const rate = resolveRate || ((p: CanonicalProduct) => Number(p.donationRate) || 0);
-  const ads = useMarketAds(adPlacement ?? 'home');
+  const ads = useMarketAds(adPlacement ?? 'home', adContext);
   const [activeCat, setActiveCat] = useState('Tümü');
   const [sortKey, setSortKey] = useState<SortKey>('default');
   const [inStockOnly, setInStockOnly] = useState(false);

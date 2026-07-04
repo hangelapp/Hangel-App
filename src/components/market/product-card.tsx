@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ImageOff, HeartHandshake, Heart, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CanonicalProduct } from '@/lib/feed/types';
+import { useFavorites } from '@/hooks/use-favorites';
 
 function formatPrice(value: number, currency: string): string {
   const sym = currency === 'TRY' ? 'TL' : currency;
@@ -34,18 +35,45 @@ export function ProductCard({
   const donationRate =
     typeof rawRate === 'number' && rawRate > 0 ? rawRate : null;
 
-  const [fav, setFav] = useState(false);
+  // Ürünün MARKASI (Nike/Apple/Samsung) — başlıktan çıkarılmış. Tıklanınca marka
+  // profiline (/market/brand/<key>) gider. Çıkarılamadıysa MAĞAZAya (satıcı) düşer.
+  const productBrand = (product.productBrand || '').trim();
+  const productBrandKey = (product.productBrandKey || '').trim();
+  const brandHref = productBrand && productBrandKey
+    ? `/market/brand/${encodeURIComponent(productBrandKey)}`
+    : product.brandId
+      ? `/market/${product.brandId}`
+      : null;
+  const brandLabel = productBrand || product.brandName;
+
+  const { isFavorite, toggle } = useFavorites();
+  const fav = isFavorite(product.id);
+
+  // Kırık/eksik görsel — hata olursa placeholder'a düş.
+  const [imgError, setImgError] = useState(false);
+  const showImage = !!product.imageLink && !imgError;
+
+  // "30 günün en düşüğü" — güncel efektif fiyat 30 günlük en düşüğe eşit/altındaysa
+  // ve gerçek bir fiyat geçmişi (>1 nokta) varsa göster. Veri gelene kadar gizli.
+  const effectivePrice = hasSale ? salePrice : product.price;
+  const isLowest30d =
+    typeof product.lowest30d === 'number' &&
+    product.lowest30d > 0 &&
+    effectivePrice <= product.lowest30d &&
+    Array.isArray(product.priceHistory) &&
+    product.priceHistory.length > 1;
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl bg-card transition-shadow hover:shadow-md">
       {/* Görsel */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-white">
-        {product.imageLink ? (
+        {showImage ? (
           <img
             src={product.imageLink}
             alt={product.title}
             loading="lazy"
             referrerPolicy="no-referrer"
+            onError={() => setImgError(true)}
             className="h-full w-full object-contain p-1 transition-transform duration-300 group-hover:scale-[1.04]"
           />
         ) : (
@@ -67,7 +95,7 @@ export function ProductCard({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            setFav((v) => !v);
+            toggle(product);
           }}
           aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
           className="absolute right-1.5 top-1.5 z-[2] flex h-7 w-7 items-center justify-center rounded-full bg-white/90 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white"
@@ -84,7 +112,20 @@ export function ProductCard({
 
       {/* Bilgi — Trendyol kompakt */}
       <div className="flex flex-1 flex-col gap-0.5 px-2 pb-2 pt-1.5">
-        <p className="break-words text-xs font-bold text-foreground">{product.brandName}</p>
+        {/* Ürünün markası (Nike/Apple/Samsung) — tıklanınca marka profiline gider;
+            marka çıkarılamadıysa satıcı mağazaya. Örtü-linkin ÜSTÜNDE (z-[2]) +
+            stopPropagation → kartın ürün-detayına gitmesini engellemeden çalışır. */}
+        {brandHref ? (
+          <Link
+            href={brandHref}
+            onClick={(e) => e.stopPropagation()}
+            className="relative z-[2] w-fit break-words text-xs font-bold text-foreground hover:text-primary hover:underline"
+          >
+            {brandLabel}
+          </Link>
+        ) : (
+          <p className="break-words text-xs font-bold text-foreground">{brandLabel}</p>
+        )}
         <p className="line-clamp-2 min-h-[1.9rem] text-[11px] leading-tight text-muted-foreground">
           {product.title}
         </p>
@@ -122,6 +163,13 @@ export function ProductCard({
             </span>
           )}
         </div>
+
+        {/* 30 günün en düşüğü — yalnızca ürün gerçekten 30 günlük dip fiyatındaysa */}
+        {isLowest30d && (
+          <span className="mt-0.5 inline-flex w-fit items-center rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+            30 günün en düşüğü
+          </span>
+        )}
       </div>
 
       {/* Tüm kartı tıklanır yapan örtü link (Trendyol: kart → ürün detayı) */}

@@ -35,13 +35,24 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await getAdminFirestore()
+    const docRef = getAdminFirestore()
       .collection(COLLECTIONS.marketAdBanners)
-      .doc(id)
-      .update({
-        clickCount: FieldValue.increment(1),
-        lastClickAt: FieldValue.serverTimestamp(),
-      });
+      .doc(id);
+    await docRef.update({
+      clickCount: FieldValue.increment(1),
+      lastClickAt: FieldValue.serverTimestamp(),
+    });
+    // Günlük kova (daily bucket) — YYYY-MM-DD alt-koleksiyon dokümanı. Best-effort;
+    // ayrı try ile ana sayaç güncellendikten sonra denenir, hatası yutulur.
+    try {
+      const day = new Date().toISOString().slice(0, 10);
+      await docRef
+        .collection('daily')
+        .doc(day)
+        .set({ clicks: FieldValue.increment(1) }, { merge: true });
+    } catch {
+      // Günlük kova yazımı başarısız — best-effort, sessizce geç.
+    }
   } catch {
     // Doc yoksa (update NOT_FOUND) ya da geçici hata — best-effort, sessizce geç.
   }

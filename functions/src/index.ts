@@ -184,3 +184,9 @@ export { messagingWorkerTick } from './messaging-worker';
 // elle eklenmiş Firestore brand kayıtlarını eşitler ve super-admin'lere rapor
 // bildirimi düşer. See ./affiliate-approval-sync.ts
 export { affiliateApprovalSync } from './affiliate-approval-sync';
+
+// Satıcı sayısı stamp robotu — her gün 04:00 Europe/Istanbul. Tüm ürünleri
+// (gtin→mpn anahtarıyla) gruplar ve çok satıcılı gruplardaki ürünlere
+// sellerCount + sellerBestRate alanlarını batch ile yazar. Sunucuda çalışır,
+// yerel Firestore kotasını yakmaz. See ./seller-count-cron.ts
+export { stampSellerCountsDaily } from './seller-count-cron';

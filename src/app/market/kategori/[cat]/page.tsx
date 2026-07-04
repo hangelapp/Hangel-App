@@ -88,7 +88,7 @@ export default function CategoryPage() {
                 <CategoryFacets products={products} />
               </div>
             )}
-            <MarketListing products={products} resolveRate={resolveRate} adPlacement="category" />
+            <MarketListing products={products} resolveRate={resolveRate} adPlacement="category" adContext={{ category: cat }} />
           </>
         )}
       </main>

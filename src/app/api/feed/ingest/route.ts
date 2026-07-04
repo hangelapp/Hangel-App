@@ -126,19 +126,77 @@ export async function POST(req: NextRequest) {
     let written = 0;
     for (let i = 0; i < products.length; i += 450) {
       const slice = products.slice(i, i + 450);
+
+      // --- FİYAT GEÇMİŞİ (priceHistory + lowest30d) ------------------------------
+      // Amaç: "30 günün en düşüğü" rozeti için her ürünün fiyat noktalarını zamanla
+      // biriktirmek. Rozet ancak ≥2 nokta oluşunca anlam kazanır; ilk ingest'te tek
+      // nokta yazılır ve rozet gizli kalır — veri zamanla (her feed çekiminde) birikir.
+      //
+      // Maliyet dengesi: mevcut yazma tamamen "blind set(merge)" idi (hiç okuma yok).
+      // Array'i read-modify-write etmek için var olan dokümanın priceHistory'sini
+      // okumak ŞART. Batch başına tek seferde (getAll) mevcut dokümanları çekiyoruz:
+      //   - ürün başına ekstra 1 READ maliyeti getirir (bulk ingest'te göz önünde
+      //     bulundurulmalı), ama transaction'a göre çok daha ucuz/hızlıdır ve batch
+      //     yazımını bloklamaz.
+      //   - okuma tüm batch için tek getAll çağrısıyla toplanır (N ayrı .get() değil).
+      //   - Yeni nokta SADECE fiyat son kayıttan değiştiyse VEYA son nokta 12 saatten
+      //     eskiyse eklenir (gürültü/dedupe). Dizi son 30 noktayla sınırlanır.
+      // Okuma hatası tüm ingest'i bozmamalı: try/catch ile sarılı; hata durumunda
+      // sadece güncel nokta yazılır.
+      const now = Date.now();
+      const THIRTY_DAYS_MS = 30 * 86_400_000;
+      const TWELVE_HOURS_MS = 12 * 3_600_000;
+      const refs = slice.map((p) => fs.collection(PRODUCTS).doc(p.id));
+      // Var olan dokümanların priceHistory'lerini id → geçmiş olarak indexle.
+      const existingHistory = new Map<string, { p: number; t: number }[]>();
+      try {
+        const snaps = await fs.getAll(...refs);
+        for (const snap of snaps) {
+          if (!snap.exists) continue;
+          const hist = snap.get('priceHistory');
+          if (Array.isArray(hist)) {
+            const clean = hist.filter(
+              (x): x is { p: number; t: number } =>
+                !!x && typeof x.p === 'number' && typeof x.t === 'number'
+            );
+            existingHistory.set(snap.id, clean);
+          }
+        }
+      } catch (histErr) {
+        // Okuma başarısız — geçmiş boş kalır, aşağıda her ürüne tek güncel nokta yazılır.
+        console.warn('priceHistory read failed (falling back to single point)', histErr);
+      }
+
       const batch = fs.batch();
-      for (const p of slice) {
+      for (let j = 0; j < slice.length; j++) {
+        const p = slice[j];
         // Ürün MARKASI (Nike/Apple) — feed <brand> etiketi varsa onu tercih et
         // (multi-marka mağazalarda MediaMarkt≠Apple), yoksa başlıktan çıkar (Marka≠Mağaza).
         const pb = (p.productBrand || '').trim() || extractProductBrand(p.title || '', p.brandName || '');
+
+        // Güncel efektif fiyat: indirimli fiyat (>0) varsa onu, yoksa ana fiyatı kullan.
+        const effectivePrice = (typeof p.salePrice === 'number' && p.salePrice > 0) ? p.salePrice : p.price;
+        const prior = existingHistory.get(p.id) ?? [];
+        const last = prior.length ? prior[prior.length - 1] : undefined;
+        // Yeni noktayı yalnızca fiyat değiştiyse ya da son kayıt 12 saatten eskiyse ekle.
+        const shouldAppend = !last || last.p !== effectivePrice || (now - last.t) >= TWELVE_HOURS_MS;
+        const nextHistory = (shouldAppend && typeof effectivePrice === 'number' && effectivePrice > 0)
+          ? [...prior, { p: effectivePrice, t: now }].slice(-30) // son 30 nokta ile sınırla
+          : prior.slice(-30);
+        // Son 30 gün içindeki noktalardan en düşük fiyat.
+        const recent = nextHistory.filter((x) => x.t >= now - THIRTY_DAYS_MS).map((x) => x.p);
+        const lowest30d = recent.length ? Math.min(...recent) : undefined;
+
         // Arama için token'la (başlık+marka+kategori) — array-contains-any sorgusu.
         const withTokens = {
           ...p,
           productBrand: pb,
           productBrandKey: pb ? normKey(pb) : null,
           searchTokens: searchTokensFor(p),
+          priceHistory: nextHistory,
+          lowest30d,
         };
-        batch.set(fs.collection(PRODUCTS).doc(p.id), stripUndefined(withTokens), { merge: true });
+        batch.set(refs[j], stripUndefined(withTokens), { merge: true });
       }
       await batch.commit();
       written += slice.length;

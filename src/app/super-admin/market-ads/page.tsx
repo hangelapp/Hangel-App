@@ -9,11 +9,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { PlusCircle, Loader2, MousePointerClick, Eye, Percent, Sparkles } from 'lucide-react';
+import { PlusCircle, Loader2, MousePointerClick, Eye, Percent, Sparkles, BarChart3, ChevronDown } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, addDoc, updateDoc, deleteDoc, setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { AD_PLACEMENTS, SEED_MARKET_ADS, type MarketAdBanner, type AdPlacement, type AdDesign } from '@/lib/market/ad-banners';
+import { AdStats } from '@/components/admin/ad-stats';
 
 type BannerDoc = MarketAdBanner;
 
@@ -111,6 +112,8 @@ const BannerForm = ({ banner, onSave, saving }: { banner: BannerDoc | null; onSa
     const [startAt, setStartAt] = useState<string>('');
     const [endAt, setEndAt] = useState<string>('');
     const [active, setActive] = useState<boolean>(true);
+    const [targetCategories, setTargetCategories] = useState<string>('');
+    const [targetBrands, setTargetBrands] = useState<string>('');
     const { toast } = useToast();
 
     useEffect(() => {
@@ -127,7 +130,15 @@ const BannerForm = ({ banner, onSave, saving }: { banner: BannerDoc | null; onSa
         setStartAt(msToDateInput(banner?.startAt));
         setEndAt(msToDateInput(banner?.endAt));
         setActive(banner?.active ?? true);
+        setTargetCategories((banner?.targetCategories || []).join(', '));
+        setTargetBrands((banner?.targetBrands || []).join(', '));
     }, [banner]);
+
+    /** "a, b ,c" → ['a','b','c'] (boş parçalar atılır). Hepsi boşsa undefined döner. */
+    const splitCsv = (v: string): string[] | undefined => {
+        const arr = v.split(',').map((s) => s.trim()).filter(Boolean);
+        return arr.length ? arr : undefined;
+    };
 
     const patchDesign = (patch: Partial<AdDesign>) => setDesign((d) => ({ ...d, ...patch }));
 
@@ -158,6 +169,8 @@ const BannerForm = ({ banner, onSave, saving }: { banner: BannerDoc | null; onSa
             active,
             startAt: dateInputToMs(startAt),
             endAt: dateInputToMs(endAt),
+            targetCategories: splitCsv(targetCategories),
+            targetBrands: splitCsv(targetBrands),
         });
     };
 
@@ -275,6 +288,30 @@ const BannerForm = ({ banner, onSave, saving }: { banner: BannerDoc | null; onSa
                 </div>
             </div>
 
+            {/* Hedefleme (opsiyonel) */}
+            <div className="rounded-lg border p-3 space-y-3">
+                <p className="text-sm font-semibold">Hedefleme (opsiyonel)</p>
+                <div className="space-y-2">
+                    <Label htmlFor="ad-targetcats">Hedef kategoriler (virgülle)</Label>
+                    <Input
+                        id="ad-targetcats"
+                        value={targetCategories}
+                        onChange={(e) => setTargetCategories(e.target.value)}
+                        placeholder="Otel, Uçak Bileti, Elektronik"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="ad-targetbrands">Hedef markalar (virgülle)</Label>
+                    <Input
+                        id="ad-targetbrands"
+                        value={targetBrands}
+                        onChange={(e) => setTargetBrands(e.target.value)}
+                        placeholder="apple, egaranti"
+                    />
+                </div>
+                <p className="text-xs text-muted-foreground">Boş bırakılırsa tüm sayfalarda görünür.</p>
+            </div>
+
             <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" className="h-4 w-4 rounded border-input" checked={active} onChange={(e) => setActive(e.target.checked)} />
                 Aktif (yayında)
@@ -303,6 +340,7 @@ export default function MarketAdsPage() {
     const [saving, setSaving] = useState(false);
     const [togglingId, setTogglingId] = useState<string | null>(null);
     const [seeding, setSeeding] = useState(false);
+    const [statsOpenId, setStatsOpenId] = useState<string | null>(null);
 
     const sortedBanners = [...(banners || [])].sort(
         (a, b) => (a.rowSlot ?? 0) - (b.rowSlot ?? 0) || (a.order ?? 0) - (b.order ?? 0),
@@ -428,9 +466,11 @@ export default function MarketAdsPage() {
                         const clicks = banner.clickCount ?? 0;
                         const impressions = banner.impressionCount ?? 0;
                         const ctr = impressions > 0 ? (clicks / impressions) * 100 : null;
+                        const statsOpen = statsOpenId === banner.id;
                         return (
                             <Card key={banner.id}>
-                                <CardContent className="flex flex-col gap-4 p-4 lg:flex-row">
+                                <CardContent className="p-4">
+                                  <div className="flex flex-col gap-4 lg:flex-row">
                                     <div className="w-full lg:w-72 lg:shrink-0">
                                         <BannerPreview
                                             design={banner.design}
@@ -463,6 +503,21 @@ export default function MarketAdsPage() {
                                                 );
                                             })}
                                         </div>
+                                        {((banner.targetCategories && banner.targetCategories.length > 0) ||
+                                          (banner.targetBrands && banner.targetBrands.length > 0)) && (
+                                            <div className="flex flex-wrap items-center gap-1.5">
+                                                {(banner.targetCategories || []).map((c) => (
+                                                    <span key={`cat-${c}`} className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">
+                                                        Kategori: {c}
+                                                    </span>
+                                                ))}
+                                                {(banner.targetBrands || []).map((br) => (
+                                                    <span key={`brand-${br}`} className="rounded-full bg-violet-100 px-2 py-0.5 text-xs text-violet-700">
+                                                        Marka: {br}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                         <div className="flex flex-wrap gap-4 pt-1">
                                             <div className="flex items-center gap-1.5 text-sm">
                                                 <MousePointerClick className="h-4 w-4 text-muted-foreground" />
@@ -482,6 +537,11 @@ export default function MarketAdsPage() {
                                         </div>
                                     </div>
                                     <div className="flex w-full flex-col gap-2 self-start md:w-auto md:flex-row lg:flex-col">
+                                        <Button size="sm" variant="outline" onClick={() => setStatsOpenId(statsOpen ? null : banner.id)}>
+                                            <BarChart3 className="mr-2 h-3.5 w-3.5" />
+                                            Detaylı istatistik
+                                            <ChevronDown className={cn('ml-1 h-3.5 w-3.5 transition-transform', statsOpen && 'rotate-180')} />
+                                        </Button>
                                         <Button size="sm" variant="outline" onClick={() => { setEditingBanner(banner); setIsFormOpen(true); }}>Düzenle</Button>
                                         <Button size="sm" variant="outline" disabled={togglingId === banner.id} onClick={() => handleToggleActive(banner)}>
                                             {togglingId === banner.id && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
@@ -503,6 +563,14 @@ export default function MarketAdsPage() {
                                             </AlertDialogContent>
                                         </AlertDialog>
                                     </div>
+                                  </div>
+                                  {statsOpen && (
+                                    <AdStats
+                                      bannerId={banner.id}
+                                      clickCount={clicks}
+                                      impressionCount={impressions}
+                                    />
+                                  )}
                                 </CardContent>
                             </Card>
                         );
