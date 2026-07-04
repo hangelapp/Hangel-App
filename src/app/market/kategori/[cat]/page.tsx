@@ -14,6 +14,7 @@ import { ArrowLeft, Loader2, PackageX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { MarketListing } from '@/components/market/market-listing';
+import { CategoryFacets } from '@/components/market/category-facets';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -54,7 +55,14 @@ export default function CategoryPage() {
         ) : products.length === 0 ? (
           <EmptyState icon={PackageX} title="Ürün bulunamadı" description={`“${cat}” kategorisinde şu an listede ürün yok.`} />
         ) : (
-          <MarketListing products={products} adPlacement="category" />
+          <>
+            {products.length >= 4 && (
+              <div className="mb-4">
+                <CategoryFacets products={products} />
+              </div>
+            )}
+            <MarketListing products={products} adPlacement="category" />
+          </>
         )}
       </main>
     </div>

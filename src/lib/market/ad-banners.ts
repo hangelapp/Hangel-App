@@ -128,7 +128,7 @@ export const SEED_MARKET_ADS: MarketAdBanner[] = [
     title: 'Gelir Modeli Oluşturma Konferansları',
     subtitle: 'STK’ler için sürdürülebilir gelir modelleri — ücretsiz katıl, kaydını yaptır.',
     ctaText: 'Yerini ayır',
-    linkUrl: '/etkinlikler',
+    linkUrl: '/events',
     design: {
       bg: 'linear-gradient(120deg, #ff4d6d 0%, #ff6b4a 55%, #ff8a3d 100%)',
       fg: '#ffffff',
@@ -174,7 +174,7 @@ export const SEED_MARKET_ADS: MarketAdBanner[] = [
     title: 'Ucuza Bilet',
     subtitle: 'Yüzlerce rotada en uygun uçuşlar — ara, karşılaştır, iyiliğe uç.',
     ctaText: 'Bilet bul',
-    linkUrl: '/market/kategori/Bilet',
+    linkUrl: '/market',
     design: {
       bg: 'linear-gradient(120deg, #0ea5e9 0%, #2563eb 60%, #1e40af 100%)',
       fg: '#ffffff',

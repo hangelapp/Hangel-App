@@ -22,9 +22,11 @@ import { AdBannerCard } from '@/components/market/ad-banner';
 import { useMarketAds } from '@/hooks/use-market-ads';
 import type { AdPlacement } from '@/lib/market/ad-banners';
 
-// Grid'de yaklaşık sütun sayısı (xl). rowSlot × bu = banner'ın gireceği ürün indeksi.
+// Grid'de YAKLAŞIK sütun sayısı — yalnız reklam satırı matematiği için (rowSlot × bu =
+// banner'ın gireceği ürün indeksi). Grid xl'de 6 sütuna çıktı; bu değer yaklaşık kalır.
 const GRID_COLS = 5;
-const AD_SPAN = 'col-span-2 sm:col-span-3 md:col-span-4 xl:col-span-5';
+// Reklam banner'ı her kırılımda TÜM sütunları kaplasın (xl'de 6 sütun).
+const AD_SPAN = 'col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-5 xl:col-span-6';
 
 type SortKey = 'default' | 'donation' | 'donationAmount' | 'priceAsc' | 'priceDesc' | 'discount';
 
@@ -141,7 +143,7 @@ export function MarketListing({
         <EmptyState icon={PackageX} title="Ürün bulunamadı" description="Seçili filtrelere uygun ürün yok." />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {visible.map((p, i) => {
               const card = <ProductCard key={p.id} product={p} donationRate={resolveRate ? resolveRate(p) : undefined} />;
               // Reklam: rowSlot×5. üründen sonra tam-genişlik banner (yalnız adPlacement verildiyse).
