@@ -20,6 +20,7 @@ import { DonationStrips } from '@/components/market/donation-strips';
 import { ProductCategoryStrips } from '@/components/market/product-category-strips';
 import { ProductGridWithAds } from '@/components/market/product-grid-ads';
 import { isFalseBrandMatch } from '@/lib/market/brand-extract';
+import { donationAmountTRY } from '@/lib/market/donation-value';
 import { realCategoryOf } from '@/lib/market/category-utils';
 import { BrandLogo } from '@/components/market/brand-logo';
 import { BrandCover } from '@/components/market/brand-cover';
@@ -131,7 +132,7 @@ export default function BrandProfilePage() {
   // ── Arama + Kategori ikon çipleri + Filtre/Sırala ──
   const [activeCat, setActiveCat] = useState<string>('Tümü');
   const [q, setQ] = useState('');
-  const [sortKey, setSortKey] = useState<'default' | 'donation' | 'priceAsc' | 'priceDesc' | 'discount'>('default');
+  const [sortKey, setSortKey] = useState<'default' | 'donation' | 'donationAmount' | 'priceAsc' | 'priceDesc' | 'discount'>('default');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [dealsOnly, setDealsOnly] = useState(false);
 
@@ -169,12 +170,13 @@ export default function BrandProfilePage() {
     const discount = (p: CanonicalProduct) => (isDeal(p) ? 1 - (p.salePrice as number) / p.price : 0);
     switch (sortKey) {
       case 'donation': list.sort((a, b) => (Number(b.donationRate) || 0) - (Number(a.donationRate) || 0)); break;
+      case 'donationAmount': list.sort((a, b) => donationAmountTRY(b, Number(b.donationRate) || avgRate) - donationAmountTRY(a, Number(a.donationRate) || avgRate)); break;
       case 'priceAsc': list.sort((a, b) => price(a) - price(b)); break;
       case 'priceDesc': list.sort((a, b) => price(b) - price(a)); break;
       case 'discount': list.sort((a, b) => discount(b) - discount(a)); break;
     }
     return list;
-  }, [cleanProducts, activeCat, q, inStockOnly, dealsOnly, sortKey]);
+  }, [cleanProducts, activeCat, q, inStockOnly, dealsOnly, sortKey, avgRate]);
   const activeFilterCount = (inStockOnly ? 1 : 0) + (dealsOnly ? 1 : 0);
 
   return (
@@ -278,7 +280,7 @@ export default function BrandProfilePage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Sırala</DropdownMenuLabel>
-                {([['default', 'Önerilen'], ['donation', 'Bağış (çok→az)'], ['discount', 'İndirim (çok→az)'], ['priceAsc', 'Fiyat (az→çok)'], ['priceDesc', 'Fiyat (çok→az)']] as const).map(([k, label]) => (
+                {([['default', 'Önerilen'], ['donation', 'Bağış oranı (çok→az)'], ['donationAmount', 'Bağış ₺ (çok→az)'], ['discount', 'İndirim (çok→az)'], ['priceAsc', 'Fiyat (az→çok)'], ['priceDesc', 'Fiyat (çok→az)']] as const).map(([k, label]) => (
                   <DropdownMenuItem key={k} onSelect={() => setSortKey(k)}>
                     {sortKey === k ? <Check className="mr-2 h-4 w-4" /> : <span className="mr-2 w-4" />} {label}
                   </DropdownMenuItem>

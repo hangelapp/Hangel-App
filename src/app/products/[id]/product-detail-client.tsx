@@ -34,6 +34,7 @@ import { openExternalUrl } from '@/lib/capacitor';
 import { goToAffiliate } from '@/lib/affiliate-go';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import type { Brand } from '@/lib/types';
+import { curatedCategoryOf } from '@/lib/market/curated-categories';
 
 function formatPrice(value: number, currency: string): string {
   const sym = currency === 'TRY' ? 'TL' : currency;
@@ -393,17 +394,25 @@ export function ProductDetailClient({ id }: { id: string }) {
           {/* Breadcrumb — Market › kategori › ürün */}
           <nav className="flex items-center gap-1 overflow-x-auto text-[11px] text-muted-foreground">
             <Link href="/market" className="shrink-0 hover:text-foreground">Market</Link>
-            {product.category && (
-              <>
-                <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
-                <Link
-                  href={`/market/products`}
-                  className="shrink-0 hover:text-foreground"
-                >
-                  {product.category}
-                </Link>
-              </>
-            )}
+            {product.category && (() => {
+              // Ham kategoriyi kürasyon kategorisine çevir → gerçek kategori sayfasına bağla.
+              const curated = curatedCategoryOf(product.category, product.title, product.brandName);
+              return (
+                <>
+                  <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
+                  {curated ? (
+                    <Link
+                      href={`/market/kategori/${encodeURIComponent(curated)}`}
+                      className="shrink-0 hover:text-foreground"
+                    >
+                      {product.category}
+                    </Link>
+                  ) : (
+                    <span className="shrink-0">{product.category}</span>
+                  )}
+                </>
+              );
+            })()}
             <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
             <span className="truncate text-foreground/70">{product.title}</span>
           </nav>
