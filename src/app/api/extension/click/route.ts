@@ -31,7 +31,7 @@ const getCachedBrandIndex = unstable_cache(
     }
     return map;
   },
-  ['extension-brand-index-v1'],
+  ['extension-brand-index-v2-a101hidden'],
   { revalidate: 3600 },
 );
 

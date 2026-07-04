@@ -76,7 +76,12 @@ export function isListableOffer(o: OfferApproval): boolean {
 
 // Nadir acil durumda bir markayı (kural onaylasa bile) elle gizlemek için id override.
 // Varsayılan boş; lead/install/CPC offer'ları kural zaten elediği için gerekmez.
-const MANUAL_FORCE_HIDE: Record<string, Set<string>> = {};
+// Manuel gizlenen offer'lar (ağ → offer ID'leri). Yayından geçici kaldırma için.
+const MANUAL_FORCE_HIDE: Record<string, Set<string>> = {
+  // A101 (GelirOrtaklari offer 6663) — Publicis GO kanal/"teşvik edici" onayı
+  // netleşene kadar GEÇİCİ olarak yayından kaldırıldı. Geri açmak: bu satırı sil.
+  gelirortaklari: new Set(['6663']),
+};
 
 // ── Generic HasOffers/Tune API ───────────────────────────────────────────────
 interface HasOffersConfig {
