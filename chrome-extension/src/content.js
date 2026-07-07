@@ -111,12 +111,25 @@
     }[c]));
   }
 
+  // Opsiyonel debug: localStorage.setItem('hangel_debug','1') ile aç
+  let debug = false;
+  try { debug = localStorage.getItem('hangel_debug') === '1'; } catch { /* iframe / sandbox */ }
+
   // Main flow
   chrome.storage.local.get([BRANDS_STORAGE_KEY, DISMISSAL_STORAGE_KEY]).then(({
     [BRANDS_STORAGE_KEY]: cache,
     [DISMISSAL_STORAGE_KEY]: dismissals,
   }) => {
     const brand = findMatchingBrand(cache?.brands, hostname);
+    if (debug) {
+      const brandCount = Array.isArray(cache?.brands) ? cache.brands.length : 0;
+      console.log('[hangel] domain check:', {
+        hostname,
+        brandCount,
+        matched: brand ? { id: brand.id, name: brand.name, domain: brand.domain } : null,
+        dismissed: brand ? isDismissed(dismissals, brand.id) : false,
+      });
+    }
     if (!brand) return;
     if (isDismissed(dismissals, brand.id)) return;
     injectToast(brand);

@@ -210,7 +210,7 @@ export default function SustainabilityPage() {
                         <Textarea
                             id="mission"
                             value={mission}
-                            onChange={(e) => setMission(e.target.value)}
+                            onChange={(e) => { markDirty(); setMission(e.target.value); }}
                             placeholder={t('ngo_admin_sustainability.missionPlaceholder')}
                             className="min-h-[100px]"
                         />
@@ -221,7 +221,7 @@ export default function SustainabilityPage() {
                             id="sustainability-email"
                             type="email"
                             value={contactEmail}
-                            onChange={(e) => setContactEmail(e.target.value)}
+                            onChange={(e) => { markDirty(); setContactEmail(e.target.value); }}
                             placeholder={t('ngo_admin_sustainability.contactEmailPlaceholder')}
                         />
                     </div>

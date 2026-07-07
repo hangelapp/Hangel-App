@@ -26,10 +26,32 @@ export const dynamic = 'force-dynamic';
 
 const CACHE_TTL_SECONDS = 3600;
 
+// HasOffers ajanslarında olmayıp, uzantıya manuel eklenen markalar. Extension
+// domain match sadece bu listeden gelene çalışır — build-extension-brand-domains
+// script'indeki EXTRA_DOMAINS ile senkron tutulmalı.
+const MANUAL_BRANDS = [
+  {
+    id: 'manual-gratis',
+    name: 'Gratis',
+    slug: 'gratis',
+    logoUrl: '',
+    donationRate: 0,
+    domain: 'gratis.com',
+  },
+  {
+    id: 'manual-gratis-tr',
+    name: 'Gratis',
+    slug: 'gratis',
+    logoUrl: '',
+    donationRate: 0,
+    domain: 'gratis.com.tr',
+  },
+];
+
 const getCached = unstable_cache(
   async () => {
     const all = await fetchAllAgencyOffers();
-    return all
+    const agency = all
       .filter((b) => !!b.targetDomain && b.targetDomain !== '')
       .map((b) => ({
         id: b.id,
@@ -39,8 +61,12 @@ const getCached = unstable_cache(
         donationRate: b.donationRate,
         domain: b.targetDomain,
       }));
+    // Ajanslarda zaten aynı domain varsa manuel eklemeyi es geç
+    const existingDomains = new Set(agency.map((b) => (b.domain ?? '').toLowerCase()));
+    const manual = MANUAL_BRANDS.filter((m) => !existingDomains.has(m.domain.toLowerCase()));
+    return [...agency, ...manual];
   },
-  ['extension-brands-v1'],
+  ['extension-brands-v2'],
   { revalidate: CACHE_TTL_SECONDS },
 );
 

@@ -10,41 +10,50 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Star, Loader2, UserCheck } from 'lucide-react';
+import Link from 'next/link';
+import { Star, Loader2, UserCheck, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { celebrate } from '@/lib/celebrate';
-import { eventStart, eventEnd } from '@/lib/event-time';
+import { eventStart, eventEnd, formatCountdown } from '@/lib/event-time';
 import type { EventContributor } from '@/lib/types';
 
 const HOUR = 3600_000;
 const PRELIVE_WINDOW = 2 * HOUR; // başlangıca bu kadar kala geri sayım görünür
 
-// Canlı etkinlik geri sayımı: saat:dakika:saniye (saat 24'ü aşabilir → 50:23:11).
+// Canlı etkinlik geri sayımı: gün · saat · dakika · saniye ("2 gün 4 sa 13 dk 09 sn").
 function fmtClock(ms: number): string {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+  return formatCountdown(ms);
 }
 
 interface LiveEventSectionProps {
   eventId: string;
-  event: { name: string; startDate: string; endDate?: string; completed?: boolean; contributors?: EventContributor[]; organizer?: string; organizerLogoUrl?: string };
+  event: {
+    name: string;
+    startDate: string;
+    endDate?: string;
+    completed?: boolean;
+    contributors?: EventContributor[];
+    organizer?: string;
+    organizerLogoUrl?: string;
+    slug?: string;
+  };
   isGoing: boolean;
   isManager?: boolean;
   authUser: { getIdToken: () => Promise<string> } | null;
+  /** Etkinlik gününün hava özeti — küçük badge olarak kart içinde gösterilir (fiziksel etkinlikte). */
+  weather?: { emoji: string; tempMax: number; tempMin: number; label: string } | null;
 }
 
 type LiveStats = { checkinCount: number; avgSpeakerRating: number; ratingCount: number };
 
-export function LiveEventSection({ eventId, event, isGoing, isManager, authUser }: LiveEventSectionProps) {
+export function LiveEventSection({ eventId, event, isGoing, isManager, authUser, weather }: LiveEventSectionProps) {
   const { toast } = useToast();
   const [now, setNow] = useState(0);
   const [myRatings, setMyRatings] = useState<Record<number, number>>({});
   const [ratingBusy, setRatingBusy] = useState<number | null>(null);
   const [stats, setStats] = useState<LiveStats | null>(null);
+  // Hava durumu badge'i varsayılan kapalı — ana içeriği bastırmasın; kullanıcı isterse detay açar.
+  const [weatherExpanded, setWeatherExpanded] = useState(false);
 
   useEffect(() => {
     setNow(Date.now());
@@ -118,23 +127,51 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
     } finally { setRatingBusy(null); }
   };
 
+  // Etkinlik hem öncesinde hem esnasında kart tıklanabilir → detay sayfasına gider.
+  // Slug varsa /events/[slug]'a bağla; yoksa tıklanabilir davranışı devre dışı bırak.
+  const HeaderWrap: React.FC<{ children: React.ReactNode }> = ({ children }) =>
+    event.slug ? (
+      <Link href={`/events/${event.slug}`} className="block -m-1 rounded-2xl p-1 transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label={`${event.name} etkinliğini aç`}>
+        {children}
+      </Link>
+    ) : (
+      <div>{children}</div>
+    );
+
   return (
     <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-      {/* Üst satır: düzenleyen kurum logosu/adı — canlı modda ekranda görünür */}
-      {(event.organizerLogoUrl || event.organizer) && (
-        <div className="mb-4 flex items-center gap-2.5">
+      <HeaderWrap>
+      {/* Üst satır: düzenleyen kurum logosu/adı + (varsa) hava badge — canlı modda ekranda görünür */}
+      {(event.organizerLogoUrl || event.organizer || weather) && (
+        <div className="mb-4 flex flex-wrap items-center gap-2.5">
           {event.organizerLogoUrl ? (
             <span className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-border bg-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={event.organizerLogoUrl} alt={event.organizer || 'Düzenleyen'} className="h-full w-full object-contain" />
             </span>
-          ) : (
+          ) : event.organizer ? (
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-black text-primary">
               {(event.organizer || '?').slice(0, 2).toLocaleUpperCase('tr')}
             </span>
-          )}
+          ) : null}
           {event.organizer && (
-            <span className="min-w-0 break-words text-xs font-bold uppercase tracking-wider text-muted-foreground">{event.organizer}</span>
+            <span className="min-w-0 flex-1 break-words text-xs font-bold uppercase tracking-wider text-muted-foreground">{event.organizer}</span>
+          )}
+          {weather && (
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setWeatherExpanded((v) => !v); }}
+              aria-expanded={weatherExpanded}
+              aria-label={`Hava durumu ${weather.tempMax}° ${weather.label}`}
+              className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-1 text-xs font-semibold tabular-nums text-foreground/80 transition hover:bg-muted"
+            >
+              <span aria-hidden className="text-sm leading-none">{weather.emoji}</span>
+              <span>{weather.tempMax}°</span>
+              {weatherExpanded && (
+                <span className="max-w-[120px] truncate text-[11px] font-medium text-muted-foreground">{weather.label} · {weather.tempMin}°</span>
+              )}
+              <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${weatherExpanded ? 'rotate-180' : ''}`} />
+            </button>
           )}
         </div>
       )}
@@ -143,7 +180,7 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
       {isLive ? (
         <div>
           <div className="flex items-end justify-between gap-3">
-            <span className="font-mono text-3xl sm:text-4xl font-black tabular-nums leading-none text-red-600">{fmtClock(endMs - now)}</span>
+            <span className="font-mono text-xl sm:text-2xl font-black tabular-nums leading-none text-red-600">{fmtClock(endMs - now)}</span>
             <span className="inline-flex items-center gap-2 pb-0.5">
               <span className="relative flex h-3 w-3">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
@@ -159,7 +196,7 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
       ) : (
         <div>
           <div className="flex items-end justify-between gap-3">
-            <span className="font-mono text-3xl sm:text-4xl font-black tabular-nums leading-none text-foreground">{fmtClock(startMs - now)}</span>
+            <span className="font-mono text-xl sm:text-2xl font-black tabular-nums leading-none text-foreground">{fmtClock(startMs - now)}</span>
             <span className="flex flex-col items-end pb-0.5 text-right">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Başlamasına</span>
               {startClock && <span className="text-xs font-semibold tabular-nums text-muted-foreground/80">başlangıç {startClock}</span>}
@@ -171,6 +208,7 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser 
           </div>
         </div>
       )}
+      </HeaderWrap>
 
       {/* Konuşmacılar — canlıda öne çıkar + "going" katılımcı 1-5 puan verir */}
       {isLive && contributors.length > 0 && (

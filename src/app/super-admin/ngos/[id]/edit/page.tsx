@@ -14,6 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 import { ArrowLeft, Loader2, Save, Upload, ImageIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';

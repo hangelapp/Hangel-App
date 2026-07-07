@@ -41,6 +41,7 @@ import { useRequireAuth } from '@/hooks/use-require-auth';
 import { startVolunteerTaskActivity } from '@/lib/native-live-activity';
 import { celebrate } from '@/lib/celebrate';
 import { socialImpactValueTRY, formatTRY, socialImpactExplanation } from '@/lib/social-impact';
+import { extractListingHours } from '@/lib/volunteer/listing-impact';
 import { DetailHero } from '@/components/detail/detail-hero';
 import { DetailStickyBar } from '@/components/detail/detail-body';
 
@@ -323,8 +324,9 @@ export default function VolunteeringDetailPage() {
     ? 'Online'
     : [oppLoc.district, oppLoc.city].filter(Boolean).join(', ') || undefined;
 
-  // Sosyal Etki Mali Değeri
-  const impactValueTRY = formatTRY(socialImpactValueTRY(opportunity.hours?.total ?? 0));
+  // Sosyal Etki Mali Değeri — saat fallback zinciri (estimatedHours → hours.total →
+  // varsayım) ile hesaplanır; aksi halde hours.total boş ilanlarda "0 ₺" görünüyordu.
+  const impactValueTRY = formatTRY(socialImpactValueTRY(extractListingHours(opp)));
 
   // Yaka kartı için kullanıcı bilgisi (events pattern)
   const cardUser = (userData || {

@@ -232,12 +232,22 @@ service cloud.firestore {
       }
     }
 
+    // ngoId = STK doküman id'si (auth.uid DEĞİL). Sahiplik projedeki standart
+    // pattern ile doğrulanır: users/{uid}.managedNgoId == ngoId. Eski kural
+    // `ngoId == request.auth.uid` idi ve STK doc id ile uid karıştığı için
+    // client-side güncellemeler (volunteerCount.approved, yayına/pasife alma)
+    // sessizce PERMISSION_DENIED alıyordu.
+    function ownsNgoListing(ngoId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == ngoId;
+    }
     match /volunteering/{oppId} {
       allow read, list: if true; // Public volunteering listings
-      // NGO admins can create listings owned by their own NGO (ngoId == auth uid)
-      allow create: if isSignedIn() && request.resource.data.ngoId == request.auth.uid;
-      // Owners can update/delete their own listings; super-admin has full access via global rule
-      allow update, delete: if isSignedIn() && resource.data.ngoId == request.auth.uid;
+      // NGO admins can create listings owned by their own managed NGO.
+      allow create: if isSuperAdmin() || ownsNgoListing(request.resource.data.ngoId);
+      // Owners update/delete their own listings; super-admin full access.
+      allow update, delete: if isSuperAdmin() || ownsNgoListing(resource.data.ngoId);
     }
 
     // Transparency: each NGO admin owns one doc with id == auth uid

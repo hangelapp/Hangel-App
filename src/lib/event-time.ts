@@ -68,3 +68,25 @@ export function formatCountdown(ms: number): string {
   if (d === 0) parts.push(`${String(s).padStart(2, '0')} sn`);
   return parts.join(' ');
 }
+
+/**
+ * ms farkını gün/saat/dakika/saniye bölümlerine ayırır — her bölüm ayrı bir
+ * "kutu" (unit box) olarak render edilebilsin diye. Negatifse tümü 0.
+ * `days` gün sayısını taşar (saat 0-23 aralığında kalır).
+ */
+export interface CountdownParts {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+export function countdownParts(ms: number): CountdownParts {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  return {
+    days: Math.floor(total / 86400),
+    hours: Math.floor((total % 86400) / 3600),
+    minutes: Math.floor((total % 3600) / 60),
+    seconds: total % 60,
+  };
+}

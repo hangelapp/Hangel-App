@@ -42,7 +42,7 @@ export async function POST(
     return NextResponse.json({ errorCode: 'INVALID_INPUT', error: 'applicationId yok' }, { status: 400 });
   }
 
-  const auth = await requireNgoAdminForRoute(req);
+  const auth = await requireNgoAdminForRoute(req, { allowSuperAdmin: true });
   if (auth.error) return auth.error;
   const actor = auth.actor;
 
@@ -97,6 +97,23 @@ export async function POST(
     reviewedBy: actor.uid,
     ...(ngoNote ? { ngoNote } : {}),
   });
+
+  // 1b) volunteerCount.approved bakımı — SERVER-SIDE (Admin SDK, rules'ı bypass eder).
+  // Eskiden client-side updateDoc ile yazılıyordu; `volunteering` update kuralı
+  // `ngoId == auth.uid` (STK doc id ≠ uid) olduğu için sessizce PERMISSION_DENIED
+  // alıyordu → sayaç bozuktu. Onaylı başvuru sayısını burada yeniden hesaplayıp yazıyoruz.
+  try {
+    const approvedSnap = await db
+      .collection(COLLECTIONS.applications)
+      .where('entityId', '==', oppId)
+      .where('status', '==', 'Onaylandı')
+      .get();
+    await db.collection(COLLECTIONS.volunteering).doc(oppId).update({
+      'volunteerCount.approved': approvedSnap.size,
+    });
+  } catch (countErr) {
+    console.warn('[volunteering/approve] volunteerCount.approved update failed', countErr);
+  }
 
   if (!userId) {
     // Başvuruyu yine de onayladık; bildirim yok — log

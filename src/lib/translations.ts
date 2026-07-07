@@ -110,7 +110,7 @@ export const translations: Record<Language, any> = {
     title: 'yok öyle yalnız başına mücadele etmek!',
     subtitle: 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.',
     nav: {
-      market: 'Markalar',
+      market: 'Market',
       ngos: 'STK\'lar',
       clubs: 'Öğrenci Kulüpleri',
       donations: 'Bağışlarım',
@@ -4701,7 +4701,7 @@ export const translations: Record<Language, any> = {
     title: "There's no such thing as struggling alone!",
     subtitle: 'We grow hope and work together for social problems.',
     nav: {
-      market: 'Brands',
+      market: 'Market',
       ngos: 'NGOs',
       clubs: 'Student Clubs',
       donations: 'My Donations',
@@ -8901,7 +8901,7 @@ export const translations: Record<Language, any> = {
     title: "Русский",
     subtitle: "",
     nav: {
-      market: 'Бренды',
+      market: 'Маркет',
       ngos: 'НКО',
       clubs: 'Студенческие клубы',
       donations: 'Мои пожертвования',
@@ -9154,7 +9154,7 @@ export const translations: Record<Language, any> = {
     title: "العربية",
     subtitle: "",
     nav: {
-      market: 'العلامات التجارية',
+      market: 'ماركت',
       ngos: 'المنظمات غير الحكومية',
       clubs: 'النوادي الطلابية',
       donations: 'تبرعاتي',
@@ -9407,7 +9407,7 @@ export const translations: Record<Language, any> = {
     title: "فارسی",
     subtitle: "",
     nav: {
-      market: 'برندها',
+      market: 'مارکت',
       ngos: 'سازمان‌های غیردولتی',
       clubs: 'انجمن‌های دانشجویی',
       donations: 'کمک‌های من',
@@ -9660,7 +9660,7 @@ export const translations: Record<Language, any> = {
     title: "Español",
     subtitle: "",
     nav: {
-      market: 'Marcas',
+      market: 'Market',
       ngos: 'ONGs',
       clubs: 'Clubes Estudiantiles',
       donations: 'Mis Donaciones',
@@ -9913,7 +9913,7 @@ export const translations: Record<Language, any> = {
     title: "Hausa",
     subtitle: "",
     nav: {
-      market: 'Alamomi',
+      market: 'Kasuwa',
       ngos: 'NGOs',
       clubs: 'Ƙungiyoyin Ɗalibai',
       donations: 'Gudummuwata',

@@ -87,26 +87,10 @@ const useVolunteerApplications = (opportunities: Volunteering[]) => {
                 return;
             }
 
-            // volunteerCount.approved bakımı: bu ilana (entityId) ait Onaylandı
-            // başvuru sayısını yeniden hesaplayıp listing doc'una yaz. Detay
-            // sayfası bu alanı "Onaylanan gönüllü" göstergesi olarak okur.
-            // applications zaten bu component'in state'inde; güncel kararı da
-            // (status) yerel olarak uygula ki sayım yeni değeri yansıtsın.
-            const targetId = application.entityId;
-            if (targetId) {
-                const approvedCount = applications.filter((a) => {
-                    if (a.entityId !== targetId) return false;
-                    const effectiveStatus = a.id === application.id ? status : a.status;
-                    return effectiveStatus === 'Onaylandı';
-                }).length;
-                try {
-                    await updateDoc(doc(db, COLLECTIONS.volunteering, targetId), {
-                        'volunteerCount.approved': approvedCount,
-                    });
-                } catch (countErr) {
-                    console.error('[ngo-admin/volunteer] volunteerCount.approved update failed', countErr);
-                }
-            }
+            // volunteerCount.approved bakımı artık SERVER-SIDE yapılıyor
+            // (approve/reject route'u Admin SDK ile yeniden hesaplıyor). Eski
+            // client-side updateDoc `volunteering` update kuralına (ngoId==auth.uid)
+            // takılıp sessizce PERMISSION_DENIED alıyordu; kaldırıldı.
 
             toast({
                 title: `Başvuru ${status}`,

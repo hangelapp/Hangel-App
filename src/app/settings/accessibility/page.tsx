@@ -54,6 +54,8 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { A11Y_CHANGED_EVENT } from '@/components/shared/accessibility-applier';
 import { applyBlindFriendlyPreset, SMART_A11Y_STATE_EVENT } from '@/components/shared/smart-accessibility';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: { children: React.ReactNode, icon: React.ElementType, label: string, iconColor: string, description?: string }) => (
     <div className="flex items-center p-4 text-sm sm:text-base border-b last:border-b-0">
@@ -298,9 +300,10 @@ export default function AccessibilitySettingsPage() {
         });
     };
 
-    const handleSave = async () => {
-        if (isSaving) return;
-        setIsSaving(true);
+    // Ortak yazım — Kaydet butonu ve otomatik kayıt aynı yolu kullanır.
+    // Sessizdir: canlı uygulama (A11Y_CHANGED_EVENT) ve toast burada YOK;
+    // canlı uygulama yalnızca Kaydet butonunda tetiklenir.
+    const persist = async () => {
         const settings = {
             highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, linkUnderline, screenReaderMode, separateText, showContrastInfo, reflowMode,
             reduceMotion, largeTouchTargets, longPressDuration, fullKeyboard, focusStrength, dragDropAlt, limitShortcuts,
@@ -310,8 +313,6 @@ export default function AccessibilitySettingsPage() {
         };
 
         localStorage.setItem('hangel-a11y-v3', JSON.stringify(settings));
-        // Aynı tab'da anında uygula (storage event same-tab tetiklenmiyor)
-        window.dispatchEvent(new Event(A11Y_CHANGED_EVENT));
 
         // Persist core a11y preferences to Firestore so they sync across devices.
         if (userDocRef) {
@@ -322,19 +323,41 @@ export default function AccessibilitySettingsPage() {
                     reducedMotion: reduceMotion,
                 },
             });
-            setIsSaving(false);
-            if (!result.ok) {
-                toast({ variant: 'destructive', title: 'Bulut senkronu başarısız', description: 'Yerelde uygulandı; cihazlar arası senkron için tekrar deneyin.' });
-                return;
-            }
-        } else {
+            if (!result.ok) throw result.error;
+        }
+    };
+
+    // Otomatik kayıt: son değişiklikten 1 sn sonra sessizce yaz.
+    // İlk yükleme (localStorage hydration) dirty işaretlemediği için tetiklenmez.
+    const { status: autosaveStatus, markDirty } = useAutosave(persist, [
+        highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, linkUnderline, screenReaderMode, separateText, showContrastInfo, reflowMode,
+        reduceMotion, largeTouchTargets, longPressDuration, fullKeyboard, focusStrength, dragDropAlt, limitShortcuts,
+        readingLevel, stepByStep, termConsistency, focusMode, termDefinitions, errorPrevention,
+        screenReader, dynamicAnnouncements, mediaDescriptions, logicalOrder, audioFeedback, visualAlerts, muteAutoAudio, ignoreDecorative,
+        timeoutWarnings, autoSave, disableTimeLimits, transactionConfirmation, undoSupport, undoTime,
+    ], { delayMs: 1000 });
+
+    // Kullanıcı kaynaklı değişiklik → dirty işaretle + state güncelle.
+    const dirty = <T,>(setter: (v: T) => void) => (v: T) => { markDirty(); setter(v); };
+
+    const handleSave = async () => {
+        if (isSaving) return;
+        setIsSaving(true);
+        try {
+            await persist();
+            // Aynı tab'da anında uygula (storage event same-tab tetiklenmiyor)
+            window.dispatchEvent(new Event(A11Y_CHANGED_EVENT));
+            toast({
+                title: t('dashboard.settingsAccessibility.toastSavedTitle'),
+                description: t('dashboard.settingsAccessibility.toastSavedDesc'),
+            });
+        } catch {
+            // localStorage persist() içinde yazıldı — yerelde uygula, bulut hatasını bildir.
+            window.dispatchEvent(new Event(A11Y_CHANGED_EVENT));
+            toast({ variant: 'destructive', title: 'Bulut senkronu başarısız', description: 'Yerelde uygulandı; cihazlar arası senkron için tekrar deneyin.' });
+        } finally {
             setIsSaving(false);
         }
-
-        toast({
-            title: t('dashboard.settingsAccessibility.toastSavedTitle'),
-            description: t('dashboard.settingsAccessibility.toastSavedDesc'),
-        });
     };
 
     return (
@@ -349,7 +372,10 @@ export default function AccessibilitySettingsPage() {
                         <Sparkles className="h-4 w-4" />
                         <span className="text-[10px] font-black uppercase tracking-widest">{t('dashboard.settingsAccessibility.badge')}</span>
                     </div>
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter font-headline leading-[0.95]">{t('dashboard.settingsAccessibility.heading')}</h1>
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter font-headline leading-[0.95]">{t('dashboard.settingsAccessibility.heading')}</h1>
+                        <AutosaveIndicator status={autosaveStatus} />
+                    </div>
                     <p className="text-muted-foreground text-lg font-medium leading-relaxed">
                         {t('dashboard.settingsAccessibility.subheading')}
                     </p>

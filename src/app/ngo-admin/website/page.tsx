@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
+import { useAutosave } from '@/hooks/use-autosave';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useUser } from '@/firebase';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
@@ -117,6 +119,7 @@ export default function WebsiteBuilderPage() {
     }, [ngoData, hydrated]);
 
     const toggleSection = (key: SectionKey) => {
+        markDirty();
         setSections(prev => ({ ...prev, [key]: !prev[key] }));
         const state = !sections[key] ? t('ngo_admin_website.toggleActive') : t('ngo_admin_website.togglePassive');
         toast({
@@ -144,6 +147,16 @@ export default function WebsiteBuilderPage() {
         },
     });
 
+    // Ortak yazım — Kaydet butonları ve otomatik kayıt aynı yolu kullanır (toast yok).
+    const persistSite = async () => {
+        if (!db || !ngoId) return;
+        await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), buildPayload() as Record<string, unknown>);
+        setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
+    };
+
+    // Otomatik kayıt: içerik değişince 1 sn sonra sessizce yaz.
+    const { status: autosaveStatus, markDirty } = useAutosave(persistSite, [sections, primaryColor, selectedRegistrar, domainName, presidentName, presidentsMessage, stats, banners], { delayMs: 1000 });
+
     const handleSave = async (silent = false) => {
         if (!db || !ngoId) {
             toast({ variant: 'destructive', title: t('ngo_admin_website.noEntityTitle'), description: t('ngo_admin_website.noEntityDescription') });
@@ -151,8 +164,7 @@ export default function WebsiteBuilderPage() {
         }
         setIsSaving(true);
         try {
-            await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), buildPayload() as Record<string, unknown>);
-            setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
+            await persistSite();
             if (!silent) {
                 toast({ title: t('ngo_admin_website.saveSuccessTitle'), description: t('ngo_admin_website.saveSuccessDescription') });
             }
@@ -175,12 +187,14 @@ export default function WebsiteBuilderPage() {
     };
 
     const addBanner = () => {
+        markDirty();
         const newId = (banners.length + 1).toString();
         setBanners([...banners, { id: newId, url: `https://picsum.photos/seed/banner${newId}/1920/600`, isPrimary: false }]);
         toast({ title: t('ngo_admin_website.bannerAddedTitle'), description: t('ngo_admin_website.bannerAddedDescription') });
     };
 
     const removeBanner = (id: string) => {
+        markDirty();
         setBanners(prev => prev.filter(b => b.id !== id));
         toast({ variant: "destructive", title: t('ngo_admin_website.bannerRemovedTitle') });
     };
@@ -242,15 +256,18 @@ export default function WebsiteBuilderPage() {
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('ngo_admin_website.backAria')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
-            <div>
-                <h1 className="text-2xl font-bold font-headline">{t('ngo_admin_website.heading')}</h1>
-                <p className="text-muted-foreground text-sm">
-                    {ngoData?.name ? (
-                        <><span className="font-semibold text-foreground">{ngoData.name}</span> {t('ngo_admin_website.subheadingForName')}</>
-                    ) : (
-                        t('ngo_admin_website.subheadingDefault')
-                    )}
-                </p>
+            <div className="flex items-start justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold font-headline">{t('ngo_admin_website.heading')}</h1>
+                    <p className="text-muted-foreground text-sm">
+                        {ngoData?.name ? (
+                            <><span className="font-semibold text-foreground">{ngoData.name}</span> {t('ngo_admin_website.subheadingForName')}</>
+                        ) : (
+                            t('ngo_admin_website.subheadingDefault')
+                        )}
+                    </p>
+                </div>
+                <AutosaveIndicator status={autosaveStatus} />
             </div>
 
             <div className="space-y-6">
@@ -264,9 +281,9 @@ export default function WebsiteBuilderPage() {
                 >
                     <DomainSection
                         domainName={domainName}
-                        onDomainChange={setDomainName}
+                        onDomainChange={(v) => { markDirty(); setDomainName(v); }}
                         selectedRegistrar={selectedRegistrar}
-                        onRegistrarChange={setSelectedRegistrar}
+                        onRegistrarChange={(v) => { markDirty(); setSelectedRegistrar(v); }}
                         onCopy={copyToClipboard}
                     />
                     {ngoId && (
@@ -287,7 +304,7 @@ export default function WebsiteBuilderPage() {
                     enabled={sections.colors}
                     onToggle={() => toggleSection('colors')}
                 >
-                    <ColorsSection primaryColor={primaryColor} onColorChange={setPrimaryColor} />
+                    <ColorsSection primaryColor={primaryColor} onColorChange={(v) => { markDirty(); setPrimaryColor(v); }} />
                 </SectionCard>
 
                 <SectionCard
@@ -327,9 +344,9 @@ export default function WebsiteBuilderPage() {
                 >
                     <PresidentSection
                         presidentName={presidentName}
-                        onPresidentNameChange={setPresidentName}
+                        onPresidentNameChange={(v) => { markDirty(); setPresidentName(v); }}
                         presidentsMessage={presidentsMessage}
-                        onPresidentsMessageChange={setPresidentsMessage}
+                        onPresidentsMessageChange={(v) => { markDirty(); setPresidentsMessage(v); }}
                         onSave={() => handleSave()}
                     />
                 </SectionCard>
@@ -342,7 +359,7 @@ export default function WebsiteBuilderPage() {
                     enabled={sections.stats}
                     onToggle={() => toggleSection('stats')}
                 >
-                    <StatsSection stats={stats} onStatsChange={setStats} onSave={() => handleSave()} />
+                    <StatsSection stats={stats} onStatsChange={(v) => { markDirty(); setStats(v); }} onSave={() => handleSave()} />
                 </SectionCard>
 
                 <SectionCard

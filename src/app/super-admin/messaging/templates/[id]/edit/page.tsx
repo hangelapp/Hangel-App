@@ -15,6 +15,8 @@ import {
 import { useFirestore, useUser } from '@/firebase';
 import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 import { Loader2, Save, Trash2, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { extractVariables, render } from '@/lib/messaging/template';
 import { segmentInfo } from '@/lib/messaging/sms-segments';
@@ -80,6 +82,33 @@ export default function TemplateEditPage() {
       body: render(body, previewVars),
     }),
     [body, subject, previewVars]
+  );
+
+  const persist = async () => {
+    if (isNew || !name.trim() || !body.trim() || (channel === 'email' && !subject.trim())) return;
+    await setDoc(
+      doc(db, COLLECTIONS.messageTemplates, params.id),
+      {
+        name: name.trim(),
+        channel,
+        useCase,
+        language,
+        active,
+        subject: channel === 'email' ? subject.trim() : null,
+        body,
+        variables,
+        iysApproved: useCase === 'marketing' && channel === 'sms' ? iysApproved : false,
+        updatedAt: serverTimestamp(),
+        updatedBy: user?.uid ?? 'unknown',
+      },
+      { merge: true }
+    );
+  };
+
+  const { status: autosaveStatus, markDirty } = useAutosave(
+    persist,
+    [name, channel, useCase, language, active, subject, body, iysApproved],
+    { delayMs: 1000, enabled: !isNew }
   );
 
   const handleSave = async () => {
@@ -164,6 +193,7 @@ export default function TemplateEditPage() {
           <ArrowLeft className="h-4 w-4 mr-1" /> Şablonlar
         </Link>
         <div className="flex items-center gap-2">
+          <AutosaveIndicator status={autosaveStatus} />
           {!isNew && (
             <Button variant="outline" onClick={handleDelete} disabled={deleting}>
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -184,13 +214,13 @@ export default function TemplateEditPage() {
           <CardContent className="space-y-4">
             <div>
               <Label>İsim</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="ör. Bağış Teşekkür Mesajı" />
+              <Input value={name} onChange={(e) => { markDirty(); setName(e.target.value); }} placeholder="ör. Bağış Teşekkür Mesajı" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Kanal</Label>
-                <Select value={channel} onValueChange={(v) => setChannel(v as 'sms' | 'email')}>
+                <Select value={channel} onValueChange={(v) => { markDirty(); setChannel(v as 'sms' | 'email'); }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -202,7 +232,7 @@ export default function TemplateEditPage() {
               </div>
               <div>
                 <Label>Kullanım amacı</Label>
-                <Select value={useCase} onValueChange={(v) => setUseCase(v as typeof useCase)}>
+                <Select value={useCase} onValueChange={(v) => { markDirty(); setUseCase(v as typeof useCase); }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -218,7 +248,7 @@ export default function TemplateEditPage() {
             <div className="grid grid-cols-2 gap-3 items-center">
               <div>
                 <Label>Dil</Label>
-                <Select value={language} onValueChange={(v) => setLanguage(v as 'tr' | 'en')}>
+                <Select value={language} onValueChange={(v) => { markDirty(); setLanguage(v as 'tr' | 'en'); }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -229,7 +259,7 @@ export default function TemplateEditPage() {
                 </Select>
               </div>
               <div className="flex items-center gap-2 mt-6">
-                <Switch checked={active} onCheckedChange={setActive} id="active" />
+                <Switch checked={active} onCheckedChange={(v) => { markDirty(); setActive(v); }} id="active" />
                 <Label htmlFor="active">Aktif</Label>
               </div>
             </div>
@@ -245,7 +275,7 @@ export default function TemplateEditPage() {
                   <div className="flex items-center gap-2 mt-2">
                     <Switch
                       checked={iysApproved}
-                      onCheckedChange={setIysApproved}
+                      onCheckedChange={(v) => { markDirty(); setIysApproved(v); }}
                       id="iys"
                     />
                     <Label htmlFor="iys" className="text-xs">
@@ -266,18 +296,18 @@ export default function TemplateEditPage() {
             {channel === 'email' && (
               <div>
                 <Label>Konu</Label>
-                <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="ör. Hoş geldin {ad}!" />
+                <Input value={subject} onChange={(e) => { markDirty(); setSubject(e.target.value); }} placeholder="ör. Hoş geldin {ad}!" />
               </div>
             )}
 
             <div>
               <Label>Gövde</Label>
               {channel === 'email' ? (
-                <RichTextEditor value={body} onChange={setBody} />
+                <RichTextEditor value={body} onChange={(v) => { markDirty(); setBody(v); }} />
               ) : (
                 <Textarea
                   value={body}
-                  onChange={(e) => setBody(e.target.value)}
+                  onChange={(e) => { markDirty(); setBody(e.target.value); }}
                   rows={6}
                   placeholder="Merhaba {ad}, …"
                 />

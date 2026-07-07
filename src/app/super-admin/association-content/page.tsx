@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 import { ArrowLeft, Save, Loader2, Upload, ImageIcon, X, Plus, Pencil, Trash2, ExternalLink, FolderOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -380,6 +382,7 @@ export default function AssociationContentPage() {
     const [savingProject, setSavingProject] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
+    const dirtySectionsRef = useRef<Set<SectionKey>>(new Set());
 
     useEffect(() => {
         if (!db) return;
@@ -410,7 +413,24 @@ export default function AssociationContentPage() {
         return () => { cancelled = true; };
     }, [db]);
 
+    const persist = async () => {
+        const keys = [...dirtySectionsRef.current];
+        if (!db || keys.length === 0) return;
+        const payload: ContentMap = {};
+        for (const k of keys) payload[k] = content[k];
+        await setDoc(
+            doc(db, SETTINGS_DOC, CONTENT_ID),
+            payload,
+            { merge: true },
+        );
+        keys.forEach(k => dirtySectionsRef.current.delete(k));
+    };
+
+    const { status: autosaveStatus, markDirty } = useAutosave(persist, [content], { delayMs: 1000 });
+
     const updateField = (sectionKey: SectionKey, fieldKey: string, value: unknown) => {
+        markDirty();
+        dirtySectionsRef.current.add(sectionKey);
         setContent(prev => ({
             ...prev,
             [sectionKey]: { ...(prev[sectionKey] as Record<string, unknown>), [fieldKey]: value },
@@ -530,6 +550,9 @@ export default function AssociationContentPage() {
                     <p className="text-muted-foreground text-sm">
                         /hangelassociation altındaki tüm sayfaların içerik ve görsellerini Firestore üzerinden yönetin.
                     </p>
+                </div>
+                <div className="ml-auto">
+                    <AutosaveIndicator status={autosaveStatus} />
                 </div>
             </div>
 

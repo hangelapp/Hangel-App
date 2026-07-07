@@ -25,6 +25,7 @@ import { BrandLogo } from '@/components/market/brand-logo';
 import { ProductOtherSellers } from '@/components/market/product-other-sellers';
 import { DonationImpact } from '@/components/market/donation-impact';
 import { ProductBoughtTogether } from '@/components/market/product-bought-together';
+import { ProductBrandOtherStores } from '@/components/market/product-brand-other-stores';
 import { ProductCard } from '@/components/market/product-card';
 import { ShareButton } from '@/components/market/share-button';
 import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
@@ -42,6 +43,48 @@ import { recordView } from '@/lib/market/recently-viewed';
 function formatPrice(value: number, currency: string): string {
   const sym = currency === 'TRY' ? 'TL' : currency;
   return `${value.toLocaleString('tr-TR')} ${sym}`;
+}
+
+// Bilinen mağazalar için arama URL şablonu. `productUrl` bir mağaza ana sayfasına
+// düşerse (ör. affiliate deep-link kırılmış) kullanıcıyı en azından mağaza içi
+// arama sonuç sayfasına götürürüz. `brand.link` üzerinde encoded query bırakır.
+const STORE_SEARCH_URLS: Array<{ match: RegExp; url: (q: string) => string }> = [
+  { match: /trendyol/i,     url: (q) => `https://www.trendyol.com/sr?q=${encodeURIComponent(q)}` },
+  { match: /hepsiburada/i,  url: (q) => `https://www.hepsiburada.com/ara?q=${encodeURIComponent(q)}` },
+  { match: /n11\b/i,        url: (q) => `https://www.n11.com/arama?q=${encodeURIComponent(q)}` },
+  { match: /amazon/i,       url: (q) => `https://www.amazon.com.tr/s?k=${encodeURIComponent(q)}` },
+  { match: /gittigidiyor/i, url: (q) => `https://www.gittigidiyor.com/arama?k=${encodeURIComponent(q)}` },
+  { match: /modanisa/i,     url: (q) => `https://www.modanisa.com/tr/arama?q=${encodeURIComponent(q)}` },
+  { match: /beymen/i,       url: (q) => `https://www.beymen.com/search?q=${encodeURIComponent(q)}` },
+  { match: /media[\s-]?markt/i, url: (q) => `https://www.mediamarkt.com.tr/tr/search.html?query=${encodeURIComponent(q)}` },
+  { match: /morhipo/i,      url: (q) => `https://www.morhipo.com/arama?SearchTerm=${encodeURIComponent(q)}` },
+  { match: /vatan bilg/i,   url: (q) => `https://www.vatanbilgisayar.com/arama/${encodeURIComponent(q)}/` },
+  { match: /teknosa/i,      url: (q) => `https://www.teknosa.com/arama/?s=${encodeURIComponent(q)}` },
+  { match: /boyner/i,       url: (q) => `https://www.boyner.com.tr/arama?q=${encodeURIComponent(q)}` },
+];
+
+// productUrl'in gerçek ürün linki olup olmadığını sezgisel doğrular. Mağaza ana
+// sayfası ("/", boş path) ise search fallback tetiklenir.
+function isRealProductUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    const path = u.pathname.replace(/\/+$/, '');
+    // Ana sayfa (path yok) veya sadece "www.x.com/" → gerçek ürün değil.
+    if (!path || path === '/') return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Kullanıcıyı ürün başlığıyla mağaza içi aramaya götürecek URL üretir. Şablonu
+// olmayan mağazalar için null döner (o zaman "Ürüne Git" disabled kalır).
+function buildStoreSearchUrl(storeName: string, productName: string, productBrand?: string | null): string | null {
+  const q = [productBrand, productName].filter(Boolean).join(' ').trim();
+  if (!q) return null;
+  const tpl = STORE_SEARCH_URLS.find((t) => t.match.test(storeName));
+  return tpl ? tpl.url(q) : null;
 }
 
 export function ProductDetailClient({ id }: { id: string }) {
@@ -101,26 +144,39 @@ export function ProductDetailClient({ id }: { id: string }) {
   // üretip affiliateClicks doc'unu yazar ve subId'i affiliate URL'ine enjekte
   // ederek 302 ile markaya yönlendirir (conversion postback'i bağışa çevirir).
   // Ürün markaya bağlı değilse (brandId yok) izleme yapılamaz; doğrudan açılır.
+  //
+  // productUrl gerçek bir ürün linki değilse (mağaza ana sayfası vb.) `productLinkTarget`
+  // bir mağaza içi arama URL'ine düşer. İkisi de yoksa buton disabled — kullanıcıya
+  // "Mağazada arayın" tooltip'i gösterilir (aşağıdaki `canGo`).
+  const productLinkTarget = useMemo(() => {
+    if (!product) return null;
+    if (isRealProductUrl(product.productUrl)) return product.productUrl;
+    const search = buildStoreSearchUrl(product.brandName || '', product.title, productBrand);
+    return search;
+  }, [product, productBrand]);
+  const canGo = !!(product?.brandId || productLinkTarget);
+
   const handleGoToProduct = async () => {
     if (!product) return;
     if (!authUser) {
       toast({ variant: 'destructive', title: 'Giriş Yapmalısınız', description: 'Bağış sürecini başlatmak için lütfen oturum açın.' });
       return;
     }
-    if (!product.productUrl && !product.brandId) return;
+    if (!canGo) return;
 
     setIsGoing(true);
 
     if (product.brandId) {
       // Affiliate redirect endpoint'i (subId enjeksiyonu + click kaydı route'ta).
+      // Gerçek ürün linki yoksa mağaza arama URL'ini fallback olarak veririz.
       await goToAffiliate({
         brandId: product.brandId,
         authUser,
-        fallbackUrl: product.productUrl || null,
+        fallbackUrl: productLinkTarget,
       });
-    } else if (product.productUrl) {
+    } else if (productLinkTarget) {
       // Markaya bağlı değil → izlenemez; kullanıcıyı yine de mağazaya götür.
-      void openExternalUrl(product.productUrl);
+      void openExternalUrl(productLinkTarget);
     }
 
     toast({
@@ -534,29 +590,69 @@ export function ProductDetailClient({ id }: { id: string }) {
           </div>
 
           {/* 7. MAĞAZA (Satıcı) kartı — ürünü hangi mağazanın sitesinden çektiğimiz.
-              Trendyol'daki "Satıcı" kutusu; tıklanınca o mağazanın profiline gider. */}
+              Trendyol'daki "Satıcı" kutusu; tıklanınca o mağazanın profiline gider.
+              Alt satırlar: MARKA (ürün markası → /market/brand/<key>) + Bağış Oranı. */}
           {product.brandName && (
-            <Link
-              href={storeId ? `/market/${storeId}` : `/market/products?brand=${encodeURIComponent(product.brandName)}`}
-              className="flex items-center gap-3 rounded-2xl border bg-card p-3.5 transition-colors hover:border-primary/40 hover:bg-primary/5"
-            >
-              <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border bg-white">
-                {brand ? (
-                  <BrandLogo brand={brand} />
-                ) : (
-                  <span className="flex h-full w-full items-center justify-center text-primary">
-                    <Store className="h-5 w-5" aria-hidden="true" />
+            <div className="rounded-2xl border bg-card">
+              {/* Satıcı Mağaza satırı — tıklanınca mağaza profili. */}
+              <Link
+                href={storeId ? `/market/${storeId}` : `/market/products?brand=${encodeURIComponent(product.brandName)}`}
+                className="flex items-center gap-3 rounded-t-2xl p-3.5 transition-colors hover:bg-primary/5"
+              >
+                <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border bg-white">
+                  {brand ? (
+                    <BrandLogo brand={brand} />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center text-primary">
+                      <Store className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                  )}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Satıcı Mağaza
+                  </p>
+                  {/* Mağaza adı (feed doc'undan gelir; brands doc varsa küratörlü ad).
+                      İsim ASLA kesilmez — uzunsa alt satıra sarar. */}
+                  <p className="text-sm font-black text-foreground break-words">{brand?.name || product.brandName}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+              </Link>
+              {/* MARKA satırı — Nike/Apple gibi ürün markası; tıklanınca marka profili.
+                  Sadece marka çıkarılabildiyse gösterilir. */}
+              {productBrand && productBrandKey && (
+                <Link
+                  href={`/market/brand/${encodeURIComponent(productBrandKey)}`}
+                  className="flex items-center gap-3 border-t border-border/60 px-3.5 py-2.5 transition-colors hover:bg-primary/5"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-white text-primary">
+                    <Tag className="h-4 w-4" aria-hidden="true" />
                   </span>
-                )}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Satıcı Mağaza
-                </p>
-                <p className="truncate text-sm font-black text-foreground">{brand?.name || product.brandName}</p>
-              </div>
-              <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-            </Link>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Marka
+                    </p>
+                    {/* Marka adı ASLA kesilmez — uzunsa alt satıra sarar. */}
+                    <p className="text-sm font-black text-foreground break-words">{productBrand}</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                </Link>
+              )}
+              {/* Bağış oranı satırı — mağazanın bu ürüne uyguladığı oran (özet). */}
+              {donationRate !== null && donationRate > 0 && (
+                <div className="flex items-center gap-3 border-t border-border/60 px-3.5 py-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-white text-primary">
+                    <HeartHandshake className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Bağış Oranı
+                    </p>
+                    <p className="truncate text-sm font-black text-primary">%{donationRate}</p>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {/* 7a. BAĞIŞ ETKİSİ — kullanıcının seçtiği STK(ları) ve bu alışverişten
@@ -568,17 +664,36 @@ export function ProductDetailClient({ id }: { id: string }) {
           {/* 7b. Diğer satıcılar — aynı ürünü (GTIN/MPN) satan mağazalar, bağış oranıyla */}
           <ProductOtherSellers product={product} />
 
+          {/* 7d. Bu Marka Başka Mağazalarda — aynı marka (Nike), farklı mağazalar,
+              bağış oranı karşılaştırması. `ProductOtherSellers`tan farkı: ürün-özdeşliği
+              (GTIN) değil, marka-özdeşliği (productBrandKey) üzerinden çalışır. */}
+          <ProductBrandOtherStores product={product} />
+
           {/* 8b. Ürün künyesi / özellikler */}
           {(product.gtin || product.mpn || product.category) && (
             <div className="rounded-2xl border bg-card p-4">
               <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-foreground">Ürün Bilgileri</h2>
               <div className="space-y-1 text-xs text-muted-foreground">
-                {product.category && (
-                  <div className="flex justify-between gap-3 border-b border-border/50 py-1.5">
-                    <span>Kategori</span>
-                    <span className="text-right font-semibold text-foreground">{product.category}</span>
-                  </div>
-                )}
+                {product.category && (() => {
+                  // Kategori → kürasyon kategorisi çözülürse tıklanır satır olur.
+                  const curated = curatedCategoryOf(product.category, product.title, product.brandName);
+                  return (
+                    <div className="flex items-center justify-between gap-3 border-b border-border/50 py-1.5">
+                      <span>Kategori</span>
+                      {curated ? (
+                        <Link
+                          href={`/market/kategori/${encodeURIComponent(curated)}`}
+                          className="flex items-center gap-1 text-right font-semibold text-primary hover:underline"
+                        >
+                          <span className="truncate">{product.category}</span>
+                          <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
+                        </Link>
+                      ) : (
+                        <span className="text-right font-semibold text-foreground">{product.category}</span>
+                      )}
+                    </div>
+                  );
+                })()}
                 {product.gtin && (
                   <div className="flex justify-between gap-3 border-b border-border/50 py-1.5">
                     <span>Barkod (GTIN)</span>
@@ -647,13 +762,14 @@ export function ProductDetailClient({ id }: { id: string }) {
             size="lg"
             className="h-12 flex-1 gap-2 rounded-2xl text-base font-black"
             onClick={handleGoToProduct}
-            disabled={isGoing}
+            disabled={isGoing || !canGo}
+            title={!canGo ? 'Bu ürünün doğrudan linki yok — mağazada arayın' : undefined}
           >
             {isGoing ? (
               <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
             ) : (
               <>
-                Ürüne Git
+                {canGo ? 'Ürüne Git' : 'Mağazada Arayın'}
                 <ExternalLink className="h-5 w-5" aria-hidden="true" />
               </>
             )}
@@ -662,7 +778,9 @@ export function ProductDetailClient({ id }: { id: string }) {
           <ShareButton product={product} donationRate={donationRate || 0} />
         </div>
         <p className="mx-auto mt-1.5 max-w-3xl text-center text-[10px] text-muted-foreground lg:max-w-6xl">
-          Markanın resmi sitesine güvenli yönlendirilirsin · alışverişin bir kısmı bağışa döner
+          {canGo
+            ? 'Markanın resmi sitesine güvenli yönlendirilirsin · alışverişin bir kısmı bağışa döner'
+            : 'Bu ürünün doğrudan linki yok — mağaza sayfasından arayarak ulaşabilirsin'}
         </p>
       </div>
     </div>

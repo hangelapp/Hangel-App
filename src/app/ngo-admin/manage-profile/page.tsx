@@ -22,6 +22,8 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -325,6 +327,69 @@ export default function ManageProfilePage() {
     setRepEmail(d.representative?.email || '');
   }, [activeEntity]);
 
+  // Otomatik kayıt için SAF persist — Kaydet'teki updateDoc bloğunun birebir aynısı.
+  // Doğrulama geçmezse SESSİZCE çıkar (autosave inline hata göstermez); şeffaflık
+  // yenileme fetch'i + toast'lar yalnızca Kaydet (handleSave) akışında kalır.
+  const persistProfile = async () => {
+    if (!activeEntity) return;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!name.trim()) return;
+    if (email.trim() && !emailRegex.test(email.trim())) return;
+    if (repEmail.trim() && !emailRegex.test(repEmail.trim())) return;
+    const collectionName = activeEntity.kind === 'ngo' ? COLLECTIONS.ngos : activeEntity.kind === 'brand' ? COLLECTIONS.brands : COLLECTIONS.clubs;
+    await updateDoc(doc(firestore, collectionName, activeEntity.data.id), {
+      name,
+      shortName,
+      shortLink: shortLink.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/(^-|-$)/g, ''),
+      ngoType,
+      foundedYear,
+      economicEntity,
+      purpose,
+      about: aboutText,
+      sportsFederations: selectedFeds,
+      beneficiaries,
+      sdgs,
+      memberships,
+      ...(activeEntity.kind === 'brand' ? { sector, donationCategories: donationCategories.filter(d => d.category.trim()) } : {}),
+      ...(activeEntity.kind === 'club' ? { university, clubAffiliation: university } : {}),
+      // KÖK NEDEN FIX: Adres + iletişim + sosyal medya KANONIK olarak
+      // `contact.*` altında saklanır (super-admin edit bunu yazar, tüm detay
+      // sayfaları + market bunu okur). Önceden manage-profile yanlış top-level
+      // `address`/`socialMedia`'ya yazıyor ve `contact: {...}` ile tüm contact
+      // objesini değiştirip mevcut `contact.social`/`contact.address`'i SİLİYORDU
+      // → adres/sosyal/website güncellemeleri görünmüyor + kayboluyordu.
+      // Dot-notation ile sadece ilgili nested alanları yazıyoruz (geri kalan
+      // contact alanları — website, doorNo, facebook — korunur).
+      'contact.email': email,
+      'contact.phoneCountryCode': phoneCode,
+      'contact.phone': phone,
+      'contact.social.instagram': instagram || null,
+      'contact.social.twitter': twitter || null,
+      'contact.social.linkedin': linkedin || null,
+      'contact.social.youtube': youtube || null,
+      'contact.address.country': country || null,
+      'contact.address.city': city || null,
+      'contact.address.district': district || null,
+      'contact.address.neighborhood': neighborhood || null,
+      'contact.address.fullAddress': street || null,
+      representative: { fullName: repFullName, title: repTitle, email: repEmail },
+      // KÖK NEDEN FIX: Logo gösterim alanı kurum tipine göre farklı okunuyor —
+      // NGO/club detay+kartlar `avatarUrl`, brand market `logoUrl`, eski yüzeyler
+      // `files.logo`. Önceden yalnız `files.logo`'ya yazılıyordu → yüklenen logo
+      // hiçbir yerde görünmüyordu ("logo yüklenmedi"). Üçüne de yaz ki her
+      // yüzeyde görünsün.
+      avatarUrl: logoFile ?? null,
+      logoUrl: logoFile ?? null,
+      'files.logo': logoFile ?? null,
+      'files.activityCertificate': activityCertificate ?? null,
+      'files.charter': charterFile ?? null,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  // Sessiz otomatik kayıt — Kaydet butonları ve toast'ları aynen kalır.
+  const { status: autosaveStatus, markDirty } = useAutosave(persistProfile, [name, shortName, shortLink, ngoType, foundedYear, economicEntity, purpose, aboutText, selectedFeds, beneficiaries, sdgs, memberships, sector, university, donationCategories, country, city, district, neighborhood, street, email, phoneCode, phone, instagram, twitter, linkedin, youtube, logoFile, activityCertificate, charterFile, repFullName, repTitle, repEmail], { delayMs: 1000 });
+
   const handleFileUpload = async (file: File, kind: 'logo' | 'activityCertificate' | 'charter') => {
       if (!activeEntity) {
         toast({ variant: 'destructive', title: t('ngo_admin_manage_profile.toastEntityNotFound') });
@@ -346,6 +411,7 @@ export default function ManageProfilePage() {
         if (kind === 'logo') setLogoFile(url);
         else if (kind === 'activityCertificate') setActivityCertificate(url);
         else setCharterFile(url);
+        markDirty();
 
         // Super-admin "Arşiv" sekmesine kurum evrakı olarak ayna (best-effort).
         const docType = kind === 'logo' ? t('ngo_admin_manage_profile.docTypeLogo') : kind === 'activityCertificate' ? t('ngo_admin_manage_profile.docTypeActivity') : (ngoType === 'vakif' ? t('ngo_admin_manage_profile.docTypeVakif') : t('ngo_admin_manage_profile.docTypeCharter'));
@@ -394,55 +460,7 @@ export default function ManageProfilePage() {
       }
       setIsSaving(true);
       try {
-        const collectionName = activeEntity.kind === 'ngo' ? COLLECTIONS.ngos : activeEntity.kind === 'brand' ? COLLECTIONS.brands : COLLECTIONS.clubs;
-        await updateDoc(doc(firestore, collectionName, activeEntity.data.id), {
-          name,
-          shortName,
-          shortLink: shortLink.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/(^-|-$)/g, ''),
-          ngoType,
-          foundedYear,
-          economicEntity,
-          purpose,
-          about: aboutText,
-          sportsFederations: selectedFeds,
-          beneficiaries,
-          sdgs,
-          memberships,
-          ...(activeEntity.kind === 'brand' ? { sector, donationCategories: donationCategories.filter(d => d.category.trim()) } : {}),
-          ...(activeEntity.kind === 'club' ? { university, clubAffiliation: university } : {}),
-          // KÖK NEDEN FIX: Adres + iletişim + sosyal medya KANONIK olarak
-          // `contact.*` altında saklanır (super-admin edit bunu yazar, tüm detay
-          // sayfaları + market bunu okur). Önceden manage-profile yanlış top-level
-          // `address`/`socialMedia`'ya yazıyor ve `contact: {...}` ile tüm contact
-          // objesini değiştirip mevcut `contact.social`/`contact.address`'i SİLİYORDU
-          // → adres/sosyal/website güncellemeleri görünmüyor + kayboluyordu.
-          // Dot-notation ile sadece ilgili nested alanları yazıyoruz (geri kalan
-          // contact alanları — website, doorNo, facebook — korunur).
-          'contact.email': email,
-          'contact.phoneCountryCode': phoneCode,
-          'contact.phone': phone,
-          'contact.social.instagram': instagram || null,
-          'contact.social.twitter': twitter || null,
-          'contact.social.linkedin': linkedin || null,
-          'contact.social.youtube': youtube || null,
-          'contact.address.country': country || null,
-          'contact.address.city': city || null,
-          'contact.address.district': district || null,
-          'contact.address.neighborhood': neighborhood || null,
-          'contact.address.fullAddress': street || null,
-          representative: { fullName: repFullName, title: repTitle, email: repEmail },
-          // KÖK NEDEN FIX: Logo gösterim alanı kurum tipine göre farklı okunuyor —
-          // NGO/club detay+kartlar `avatarUrl`, brand market `logoUrl`, eski yüzeyler
-          // `files.logo`. Önceden yalnız `files.logo`'ya yazılıyordu → yüklenen logo
-          // hiçbir yerde görünmüyordu ("logo yüklenmedi"). Üçüne de yaz ki her
-          // yüzeyde görünsün.
-          avatarUrl: logoFile ?? null,
-          logoUrl: logoFile ?? null,
-          'files.logo': logoFile ?? null,
-          'files.activityCertificate': activityCertificate ?? null,
-          'files.charter': charterFile ?? null,
-          updatedAt: new Date().toISOString(),
-        });
+        await persistProfile();
         // Şeffaflık skorunu tazele — profil (web/e-posta/telefon/adres/üyelik) ilgili
         // kriterleri otomatik karşılar; kart/liste/profildeki % anında güncellenir.
         if (activeEntity.kind === 'ngo') {
@@ -470,6 +488,7 @@ export default function ManageProfilePage() {
   };
 
   const toggleFed = (fed: string) => {
+    markDirty();
     if (selectedFeds.includes(fed)) {
         setSelectedFeds(selectedFeds.filter(f => f !== fed));
     } else if (selectedFeds.length < 3) {
@@ -536,6 +555,7 @@ export default function ManageProfilePage() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <AutosaveIndicator status={autosaveStatus} />
             <Button type="button" onClick={openPreview} variant="outline" size="sm" className="gap-1.5">
               <Eye className="h-4 w-4" /> <span className="hidden sm:inline">Önizle</span>
             </Button>

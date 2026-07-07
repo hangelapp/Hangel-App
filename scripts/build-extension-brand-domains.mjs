@@ -28,6 +28,14 @@ const DOMAINS_OUT = join(OUT_DIR, 'brand-domains.json');
 const MANIFEST_OUT = join(OUT_DIR, 'manifest-narrow.json');
 const MANIFEST_SRC = join(EXT_DIR, 'manifest.json');
 
+// HasOffers'ta targetDomain'i olmayan / eksik geçen ama Chrome uzantısında
+// desteklenmesi istenen manuel marka domain'leri. HasOffers feed ile birleşir,
+// dedupe otomatik.
+const EXTRA_DOMAINS = [
+  'gratis.com',
+  'gratis.com.tr',
+];
+
 // Domain'i temizle: protokol, path, query, www, port → bare apex/subdomain.
 function normalizeDomain(raw) {
   if (!raw || typeof raw !== 'string') return null;
@@ -74,6 +82,11 @@ async function main() {
       continue;
     }
     domainSet.add(d);
+  }
+  // Manuel eklenmiş marka domain'leri
+  for (const extra of EXTRA_DOMAINS) {
+    const d = normalizeDomain(extra);
+    if (d) domainSet.add(d);
   }
   const domains = Array.from(domainSet).sort();
   const matches = domains.map(buildMatchPattern);

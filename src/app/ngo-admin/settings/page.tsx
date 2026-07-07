@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -24,6 +24,8 @@ import { collection, doc, updateDoc, addDoc, Timestamp } from 'firebase/firestor
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { useTranslation } from '@/components/providers/language-provider';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -74,14 +76,18 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [requesting, setRequesting] = useState(false);
 
-  // Hydrate switches from the entity doc once it resolves.
+  // Hydrate switches ONCE per entity — the live doc emits a new snapshot after
+  // every autosave write, and re-hydrating would overwrite in-flight toggles.
+  const hydratedIdRef = useRef<string | null>(null);
   useEffect(() => {
-    if (activeEntity?.data?.panelSettings) {
-      setSettings({ ...defaultPanelSettings, ...activeEntity.data.panelSettings });
-    }
-  }, [activeEntity?.data?.panelSettings]);
+    if (!activeEntity?.data?.id) return;
+    if (hydratedIdRef.current === activeEntity.data.id) return;
+    hydratedIdRef.current = activeEntity.data.id;
+    setSettings({ ...defaultPanelSettings, ...(activeEntity.data.panelSettings ?? {}) });
+  }, [activeEntity?.data?.id, activeEntity?.data?.panelSettings]);
 
   const handleToggle = (key: keyof PanelSettings) => {
+    markDirty();
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
@@ -90,6 +96,21 @@ export default function SettingsPage() {
     return doc(firestore, COLLECTION_BY_KIND[activeEntity.kind], activeEntity.data.id);
   }, [firestore, activeEntity?.kind, activeEntity?.data?.id]);
 
+  // Pure Firestore write — no toast; errors propagate to the caller.
+  const persistPanelSettings = async () => {
+    if (!entityRef) return;
+    await updateDoc(entityRef, {
+      panelSettings: {
+        notifyNewMessage: settings.notifyNewMessage,
+        notifyNewVolunteerApplication: settings.notifyNewVolunteerApplication,
+        notifyNewDonation: settings.notifyNewDonation,
+        publicListing: settings.publicListing,
+      },
+    });
+  };
+
+  const { status: autosaveStatus, markDirty } = useAutosave(persistPanelSettings, [settings], { delayMs: 600 });
+
   const handleSave = async () => {
     if (!entityRef) {
       toast({ variant: 'destructive', title: t('ngo_admin_settings.toastEntityMissing'), description: t('ngo_admin_settings.toastEntityMissingDesc') });
@@ -97,14 +118,7 @@ export default function SettingsPage() {
     }
     setSaving(true);
     try {
-      await updateDoc(entityRef, {
-        panelSettings: {
-          notifyNewMessage: settings.notifyNewMessage,
-          notifyNewVolunteerApplication: settings.notifyNewVolunteerApplication,
-          notifyNewDonation: settings.notifyNewDonation,
-          publicListing: settings.publicListing,
-        },
-      });
+      await persistPanelSettings();
       toast({ title: t('ngo_admin_settings.toastSaved'), description: t('ngo_admin_settings.toastSavedDesc') });
     } catch (error) {
       console.error('Panel settings save failed:', error);
@@ -186,11 +200,14 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t('ngo_admin_settings.title')}</h1>
-        <p className="text-muted-foreground">
-          {activeEntity.data.name || activeEntity.data.shortName || t('ngo_admin_settings.orgFallback')} {t('ngo_admin_settings.subtitleSuffix')}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">{t('ngo_admin_settings.title')}</h1>
+          <p className="text-muted-foreground">
+            {activeEntity.data.name || activeEntity.data.shortName || t('ngo_admin_settings.orgFallback')} {t('ngo_admin_settings.subtitleSuffix')}
+          </p>
+        </div>
+        <AutosaveIndicator status={autosaveStatus} />
       </div>
 
       <Card>

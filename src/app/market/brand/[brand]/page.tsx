@@ -12,7 +12,7 @@
  */
 import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Tag, Store as StoreIcon, ChevronRight, SlidersHorizontal, ArrowDownUp, Check, Search, Shirt, Home, Smartphone, Baby, Dumbbell, Gem, Package } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
@@ -37,6 +37,22 @@ import type { Brand } from '@/lib/types';
 const normStore = (s: string) => (s || '').toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
 const srcPrefix = (s?: string) => (s === 'affocean' ? 'ao' : s === 'reklamaction' ? 'ra' : s === 'gelirortaklari' ? 'go' : '');
 
+// URL slug normalizasyonu — "Land Rover" / "land%20rover" / "land_rover" → "land-rover".
+// Aksan (diakritik) düşürülür, boşluk/alt-çizgi → tire; sadece a-z0-9 ve tire kalır.
+function slugifyBrand(s: string): string {
+  return (s || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+// productBrandKey DB'de boşluklu saklanır ("land rover"). URL slug'ını
+// DB anahtarına çevir: tire → boşluk.
+function slugToKey(slug: string): string {
+  return (slug || '').replace(/-+/g, ' ').trim();
+}
+
 // Kategori adı → temsili ikon (market ana sayfası hızlı kutucuklarıyla aynı desen).
 function iconForCategory(name: string): React.ComponentType<{ className?: string }> {
   const n = (name || '').toLocaleLowerCase('tr');
@@ -51,7 +67,21 @@ function iconForCategory(name: string): React.ComponentType<{ className?: string
 
 export default function BrandProfilePage() {
   const params = useParams();
-  const key = decodeURIComponent((params.brand as string) || '');
+  const router = useRouter();
+  // URL param'ı hem encoded ("land%20rover") hem raw ("Land Rover") gelebilir.
+  // Kanonik biçim: slugify (küçük harf + tire). Farklıysa /market/brand/<slug>'a
+  // kalıcı yönlendir (aynı marka için tek URL).
+  const rawParam = decodeURIComponent((params.brand as string) || '');
+  const canonicalSlug = slugifyBrand(rawParam);
+  const isCanonical = rawParam === canonicalSlug;
+  useEffect(() => {
+    if (!isCanonical && canonicalSlug) {
+      router.replace(`/market/brand/${canonicalSlug}`);
+    }
+  }, [isCanonical, canonicalSlug, router]);
+  // Firestore'daki productBrandKey boşluklu tutulur ("land rover"),
+  // URL slug'ı ise tireli. Sorgu için tire → boşluk çevir.
+  const key = slugToKey(canonicalSlug);
   const db = useFirestore();
 
   const productsQuery = useMemoFirebase(
@@ -90,9 +120,31 @@ export default function BrandProfilePage() {
     return rates.length ? Math.round(rates.reduce((a, b) => a + b, 0) / rates.length) : 0;
   }, [products]);
 
-  // Bu markayı satan MAĞAZALAR — logo + bağış oranı + profil linki ile.
-  // (topRate stores'a bağlı olduğundan stores tanımından SONRA hesaplanır.)
+  // Bu markayı satan MAĞAZALAR — sunucudan (TÜM ürünleri sayarak, limit(120) DEĞİL).
+  // /api/market/brand/[slug]/stores → { id, name, logoUrl, productCount, donationRate }
+  // Böylece Huawei/Apple gibi çok mağazalı markalarda EKSİK mağaza görünmez.
+  const [apiStores, setApiStores] = useState<Array<{ id: string; name: string; logoUrl?: string; productCount: number; donationRate: number }>>([]);
+  useEffect(() => {
+    if (!key) return;
+    let alive = true;
+    fetch(`/api/market/brand/${encodeURIComponent(key)}/stores`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (alive && Array.isArray(j?.stores)) setApiStores(j.stores); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [key]);
+
   const stores = useMemo(() => {
+    // Sunucudan geldiyse onu kullan (kanonik, tam sayım). Aksi halde
+    // ürünlerden türet (fallback — ilk yüklemede API yanıtı gelmeden gösterim).
+    if (apiStores.length > 0) {
+      return apiStores.map((s) => {
+        const doc = storeByName.get(normStore(s.name));
+        const brand = (doc ?? { id: s.id, slug: s.id, name: s.name, category: '', type: 'brand', logoUrl: s.logoUrl || '', targetDomain: '', donationRate: s.donationRate }) as Brand;
+        const storeId = (doc?.slug || doc?.id || s.id).toString();
+        return { name: s.name, rate: s.donationRate, brand, storeId };
+      });
+    }
     const map = new Map<string, { name: string; storeId: string; rateSum: number; rateCount: number }>();
     for (const p of products ?? []) {
       if (!p.brandName) continue;
@@ -114,7 +166,7 @@ export default function BrandProfilePage() {
       const storeId = (doc?.slug || doc?.id || s.storeId || '').toString();
       return { name: s.name, rate, brand, storeId };
     }).sort((a, b) => b.rate - a.rate || a.name.localeCompare(b.name, 'tr')); // en çok bağışlayan mağaza önce
-  }, [products, storeByName]);
+  }, [apiStores, products, storeByName]);
 
   // EN YÜKSEK bağış oranı — satan mağazaların ve ürünlerin en yükseği (ort. değil).
   const topRate = useMemo(() => {

@@ -22,6 +22,8 @@ import { allProvinces, allInterests, allSkills } from '@/lib/data';
 import { messagingFetch } from '@/lib/messaging/client';
 import type { SegmentFilters, ResolvedRecipient } from '@/lib/messaging/types';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 interface DryRunResult {
   summary: {
@@ -149,6 +151,30 @@ export default function SegmentEditPage() {
     return f;
   }, [roles, cities, interests, skills, bloodTypes, donationMin, donationMax]);
 
+  const persist = async () => {
+    if (isNew || !name.trim()) return;
+    await setDoc(
+      doc(db, COLLECTIONS.recipientSegments, params.id),
+      {
+        name: name.trim(),
+        description: description.trim(),
+        channel,
+        useCase,
+        filters: filtersObj,
+        estimatedSize: dryRun?.summary.afterConsent ?? null,
+        updatedAt: serverTimestamp(),
+        updatedBy: user?.uid ?? 'unknown',
+      },
+      { merge: true }
+    );
+  };
+
+  const { status: autosaveStatus, markDirty } = useAutosave(
+    persist,
+    [name, description, channel, useCase, filtersObj],
+    { delayMs: 1000, enabled: !isNew }
+  );
+
   const handleDryRun = async () => {
     setDryRunning(true);
     try {
@@ -227,6 +253,7 @@ export default function SegmentEditPage() {
           <ArrowLeft className="h-4 w-4 mr-1" /> Segmentler
         </Link>
         <div className="flex items-center gap-2">
+          <AutosaveIndicator status={autosaveStatus} />
           {!isNew && (
             <Button variant="outline" onClick={handleDelete}>
               <Trash2 className="h-4 w-4" />
@@ -246,16 +273,16 @@ export default function SegmentEditPage() {
         <CardContent className="space-y-4">
           <div>
             <Label>İsim</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="ör. İstanbul Aktif Gönüllüleri" />
+            <Input value={name} onChange={(e) => { markDirty(); setName(e.target.value); }} placeholder="ör. İstanbul Aktif Gönüllüleri" />
           </div>
           <div>
             <Label>Açıklama</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+            <Textarea value={description} onChange={(e) => { markDirty(); setDescription(e.target.value); }} rows={2} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Kanal</Label>
-              <Select value={channel} onValueChange={(v) => setChannel(v as 'sms' | 'email' | 'both')}>
+              <Select value={channel} onValueChange={(v) => { markDirty(); setChannel(v as 'sms' | 'email' | 'both'); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="sms">SMS</SelectItem>
@@ -266,7 +293,7 @@ export default function SegmentEditPage() {
             </div>
             <div>
               <Label>Kullanım amacı</Label>
-              <Select value={useCase} onValueChange={(v) => setUseCase(v as typeof useCase)}>
+              <Select value={useCase} onValueChange={(v) => { markDirty(); setUseCase(v as typeof useCase); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="transactional">İşlemsel</SelectItem>
@@ -292,6 +319,7 @@ export default function SegmentEditPage() {
                   <Checkbox
                     checked={roles.includes(r)}
                     onCheckedChange={(c) => {
+                      markDirty();
                       if (c) setRoles([...roles, r]);
                       else setRoles(roles.filter((x) => x !== r));
                     }}
@@ -302,19 +330,19 @@ export default function SegmentEditPage() {
             </div>
           </div>
 
-          <MultiPicker label="Şehir" options={allProvinces} values={cities} onChange={setCities} />
-          <MultiPicker label="İlgi Alanları" options={allInterests} values={interests} onChange={setInterests} />
-          <MultiPicker label="Yetenekler" options={allSkills} values={skills} onChange={setSkills} />
-          <MultiPicker label="Kan Grubu" options={BLOOD_TYPES} values={bloodTypes} onChange={setBloodTypes} />
+          <MultiPicker label="Şehir" options={allProvinces} values={cities} onChange={(v) => { markDirty(); setCities(v); }} />
+          <MultiPicker label="İlgi Alanları" options={allInterests} values={interests} onChange={(v) => { markDirty(); setInterests(v); }} />
+          <MultiPicker label="Yetenekler" options={allSkills} values={skills} onChange={(v) => { markDirty(); setSkills(v); }} />
+          <MultiPicker label="Kan Grubu" options={BLOOD_TYPES} values={bloodTypes} onChange={(v) => { markDirty(); setBloodTypes(v); }} />
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-xs">Min. Toplam Bağış (TRY)</Label>
-              <Input type="number" value={donationMin} onChange={(e) => setDonationMin(e.target.value)} placeholder="0" />
+              <Input type="number" value={donationMin} onChange={(e) => { markDirty(); setDonationMin(e.target.value); }} placeholder="0" />
             </div>
             <div>
               <Label className="text-xs">Max. Toplam Bağış (TRY)</Label>
-              <Input type="number" value={donationMax} onChange={(e) => setDonationMax(e.target.value)} placeholder="—" />
+              <Input type="number" value={donationMax} onChange={(e) => { markDirty(); setDonationMax(e.target.value); }} placeholder="—" />
             </div>
           </div>
         </CardContent>

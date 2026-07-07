@@ -187,6 +187,10 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
       const nameLower = name.toLowerCase();
       if (/e?kitap|e?book/i.test(nameLower)) continue;
       if (/xxx|porn|adult|sex|eroti[ck]|video\s*marks?/i.test(nameLower)) continue;
+      // Deneme/test kayıtları asla listelenmez (ör. "FashFed_Deneme", "Brand Test").
+      // Boşluk/altçizgi/tire varyantları da tek desenle yakalanır.
+      if (/(^|[\s_\-])(deneme|test)([\s_\-]|$)/i.test(nameLower)) continue;
+      if (nameLower.includes('fashfed_deneme') || nameLower.includes('fashfed deneme')) continue;
 
       const thumbnailUrl = entry?.Thumbnail?.thumbnail || entry?.Thumbnail?.display;
       const rawPreviewUrl = offer.preview_url || offer.offer_url || '';
@@ -269,6 +273,19 @@ const NETWORKS: HasOffersConfig[] = [
 ];
 
 // ── Main export ─────────────────────────────────────────────────────────────
+// Mağaza adını dedup ANAHTARına indirger — aynı mağaza farklı ajanslardan farklı
+// yazımlarla (boşluk, & vs "ve", TR karakter, "resmi/mobil" vb.) gelse bile
+// tek satırda birleşir.
+function storeDedupKey(name: string): string {
+  return (name || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[ıİ]/g, 'i')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
+}
+
 export async function fetchAllAgencyOffers(): Promise<Brand[]> {
   const results = await Promise.allSettled(
     NETWORKS.map(config => fetchHasOffersOffers(config))
@@ -276,11 +293,13 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
 
   const combined = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
 
-  // Deduplicate by name — keep highest donationRate
+  // Dedup: aynı mağaza (name normalize) birden fazla ajanstan geliyorsa
+  // donationRate en yüksek olan kazanır. Eşitlikte önce gelen kalır.
   const uniqueMap = new Map<string, Brand>();
   for (const brand of combined) {
     if (!brand?.name) continue;
-    const key = brand.name.toLowerCase().trim();
+    const key = storeDedupKey(brand.name);
+    if (!key) continue;
     const existing = uniqueMap.get(key);
     if (!existing || brand.donationRate > existing.donationRate) {
       uniqueMap.set(key, brand);
@@ -363,6 +382,8 @@ async function fetchHasOffersTemplates(config: HasOffersConfig): Promise<Resolve
       const nameLower = name.toLowerCase();
       if (/e?kitap|e?book/i.test(nameLower)) continue;
       if (/xxx|porn|adult|sex|eroti[ck]|video\s*marks?/i.test(nameLower)) continue;
+      if (/(^|[\s_\-])(deneme|test)([\s_\-]|$)/i.test(nameLower)) continue;
+      if (nameLower.includes('fashfed_deneme') || nameLower.includes('fashfed deneme')) continue;
 
       const rawPreviewUrl = offer.preview_url || offer.offer_url || '';
       const hasPlaceholder = /\{aff_id\}|\{affiliate_id\}/i.test(rawPreviewUrl);

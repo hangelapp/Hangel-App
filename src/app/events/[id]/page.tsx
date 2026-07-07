@@ -605,7 +605,14 @@ export default function EventDetailPage() {
             {/* Canlı etkinlik modu — geri sayım / Canlı Başlat-Bitir / konuşmacıya canlı puan */}
             {resolvedEventId && (
               <div className="mt-4">
-                <LiveEventSection eventId={resolvedEventId} event={{ ...event, organizer: event.organizer, organizerLogoUrl: organizerLogo }} isGoing={isGoing} isManager={isManager} authUser={authUser ?? null} />
+                <LiveEventSection
+                  eventId={resolvedEventId}
+                  event={{ ...event, organizer: event.organizer, organizerLogoUrl: organizerLogo, slug: event.slug }}
+                  isGoing={isGoing}
+                  isManager={isManager}
+                  authUser={authUser ?? null}
+                  weather={weather && weather.length > 0 ? { emoji: weather[0].emoji, tempMax: weather[0].tempMax, tempMin: weather[0].tempMin, label: weather[0].label } : null}
+                />
               </div>
             )}
 

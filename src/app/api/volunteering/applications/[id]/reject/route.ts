@@ -41,7 +41,7 @@ export async function POST(
     return NextResponse.json({ errorCode: 'INVALID_INPUT', error: 'applicationId yok' }, { status: 400 });
   }
 
-  const auth = await requireNgoAdminForRoute(req);
+  const auth = await requireNgoAdminForRoute(req, { allowSuperAdmin: true });
   if (auth.error) return auth.error;
   const actor = auth.actor;
 
@@ -92,6 +92,21 @@ export async function POST(
     reviewedBy: actor.uid,
     ...(ngoNote ? { ngoNote } : {}),
   });
+
+  // volunteerCount.approved bakımı — önceden onaylı bir başvuru reddedilirse sayı
+  // düşmeli. Server-side (Admin SDK, rules bypass).
+  try {
+    const approvedSnap = await db
+      .collection(COLLECTIONS.applications)
+      .where('entityId', '==', oppId)
+      .where('status', '==', 'Onaylandı')
+      .get();
+    await db.collection(COLLECTIONS.volunteering).doc(oppId).update({
+      'volunteerCount.approved': approvedSnap.size,
+    });
+  } catch (countErr) {
+    console.warn('[volunteering/reject] volunteerCount.approved update failed', countErr);
+  }
 
   if (!userId) {
     console.warn('[volunteering/reject] application has no userId', { applicationId });
