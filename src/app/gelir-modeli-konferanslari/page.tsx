@@ -112,42 +112,111 @@ const curriculum = [
 ];
 
 // Ulusal/uluslararası kuruluşların STK'lara verdiği hibe ve destekler + nasıl başvurulur.
-const grants = [
+// perks: kartın altında maddeler halinde somut destek/indirim listesi.
+const grants: Array<{
+  name: string;
+  offer: string;
+  how: string;
+  href: string;
+  perks: string[];
+}> = [
   {
     name: 'Google for Nonprofits',
     offer: 'Ad Grants ile aylık 10.000 $ değerinde ücretsiz Google Ads reklam kredisi + ücretsiz Google Workspace ve YouTube ayrıcalıkları.',
     how: 'TechSoup üzerinden kurum doğrulaması yapın, ardından google.com/nonprofits üzerinden başvurun.',
     href: 'https://www.google.com/nonprofits/',
+    perks: [
+      'Google Ad Grants: aylık 10.000 $ (~330 $/gün) ücretsiz arama reklamı kredisi',
+      'Google Workspace: 14 kullanıcıya kadar Business Standard ücretsiz (mail + Drive + Meet)',
+      'YouTube Nonprofit: video altında bağış butonu + link kartı + Live yayın ayrıcalıkları',
+      'Google Earth & Maps ücretsiz kurumsal kullanım',
+      'Cloud kredi programı: yıllık ~2.000 $ Google Cloud + AI/ML kredisi',
+      'Google Fiber & One promosyonlarında ek indirimler',
+    ],
   },
   {
     name: 'Canva for Nonprofits',
     offer: "STK'lara ücretsiz Canva Pro: sınırsız tasarım, marka kiti, ekip çalışması ve premium görsel arşivi.",
     how: 'Kuruluş belgelerinizle canva.com/canva-for-nonprofits sayfasından başvurun; onay genelde birkaç gün sürer.',
     href: 'https://www.canva.com/canva-for-nonprofits/',
+    perks: [
+      'Canva Pro (yıllık ~1.500 ₺) tamamen %100 ücretsiz',
+      '100 milyon+ premium foto, video, ses, ikon, şablon',
+      'Sınırsız Marka Kiti (logo, renk, font tutarlılığı)',
+      'Ekip çalışması: sınırsız üye + gerçek zamanlı düzenleme',
+      '1 TB bulut depolama',
+      'AI araçları (Magic Write, Magic Design, Text-to-Image) dahil',
+      'İçerik planlayıcı + sosyal medya doğrudan yayın',
+    ],
+  },
+  {
+    name: 'Coridor',
+    offer: 'STK ve sosyal girişimler için dijital pazarlama, PR, mentorluk ve topluluk yönetimi araçlarını tek panelde sunan platform.',
+    how: 'coridor.co üzerinden kurumunuzla kayıt olun; STK doğrulaması sonrası nonprofit tarifesi aktifleşir.',
+    href: 'https://www.coridor.co/login',
+    perks: [
+      "STK'lara özel indirimli / ücretsiz tarife (kayıt sonrası netleşir)",
+      'Kampanya yönetimi + landing page oluşturucu',
+      'Bağışçı ilişkileri yönetimi (CRM)',
+      'Mentor eşleştirme + kurumsal gönüllü ağı',
+      'Sosyal medya çoklu hesap yönetimi + planlayıcı',
+      'Etki raporlaması ve şeffaflık paneli',
+    ],
   },
   {
     name: 'Help Steps',
     offer: 'Kullanıcıların attığı adımları bağışa dönüştüren mobil platform; STK\'lar kampanya açarak sponsor markalardan fon toplar.',
     how: 'Help Steps STK paneline kayıt olun, kampanyanızı oluşturun ve sponsorlarla eşleşin.',
     href: 'https://helpsteps.com/',
+    perks: [
+      'Adım tabanlı bağış: kullanıcı yürüdükçe sponsor marka STK\'ya bağışlar',
+      "STK için ücretsiz kampanya paneli (0 ₺ platform ücreti)",
+      'Sponsor marka eşleşme sistemi (CSR bütçelerine erişim)',
+      'Sınırsız kampanya oluşturma',
+      'Gerçek zamanlı raporlama + bağış impact metrikleri',
+      'Kurumsal partnerlik + PR desteği',
+    ],
   },
   {
     name: 'hangel',
     offer: 'Alışverişle bağış, şeffaflık endeksi, gönüllülük ve reklam yönetimi — tek panelde, tamamen ücretsiz sürdürülebilir gelir altyapısı.',
     how: 'hangel STK başvurusunu doldurun; kurumunuz onaylandığında panel anında aktifleşir.',
     href: '/ngo-onboarding',
+    perks: [
+      '%100 ücretsiz STK paneli (kalıcı sıfır platform ücreti)',
+      "150+ markada alışveriş komisyonu %2 — %15 STK'ya bağış",
+      'Google Ads + Meta Ads + TikTok Ads reklam yönetimi tek panelde',
+      'Şeffaflık endeksi + bağışçı güven puanı otomatik',
+      'Gönüllülük yönetimi + sertifika + kurumsal gönüllü eşleşme',
+      'Sanal santral (çağrı merkezi) + toplu SMS/WhatsApp/e-posta',
+      'Chrome uzantısı + iOS + Android + Watch + Apple Wallet',
+    ],
   },
   {
     name: 'Ability Pool',
     offer: 'Pro-bono yetenek havuzu: tasarımcı, yazılımcı, hukukçu ve danışmanların STK projelerine ücretsiz uzman desteği.',
     how: 'Kurumunuzu ve ihtiyaç duyduğunuz yetkinliği tanımlayın; uygun gönüllü uzmanlarla eşleşin.',
     href: 'https://abilitypool.org/',
+    perks: [
+      'Pro-bono uzman havuzu: tasarım, yazılım, hukuk, iletişim, finans',
+      "STK'ya sıfır maliyetle uzman eşleştirme",
+      'Proje bazlı çalışma (1 haftalık sprint\'ten 6 aylık danışmanlığa)',
+      'Ekip liderliği + mentörlük',
+      'Kurumsal partnerlerden çalışan gönüllülüğü',
+    ],
   },
   {
     name: 'Gönüllüyüz Biz',
     offer: 'Kurumsal gönüllülük programları; şirket çalışanlarını STK projelerine gönüllü ve kaynak olarak yönlendirir.',
     how: 'STK olarak projenizi platforma ekleyin; kurumsal gönüllü ekiplerden destek talep edin.',
     href: 'https://www.gonulluyuzbiz.com/',
+    perks: [
+      'Ücretsiz STK paneli + proje yayınlama',
+      "Türkiye'nin büyük şirket ağı ile CSR eşleşmesi",
+      'Toplu kurumsal gönüllü ekibi tahsisi',
+      'Etki raporlama + iş dünyası PR desteği',
+      'Sponsorluk fırsatları ve ayni destek yönlendirmesi',
+    ],
   },
 ];
 
@@ -392,7 +461,17 @@ export default function IncomeModelConferencePage() {
               <Card key={g.name} className="border-border hover:shadow-md transition-shadow">
                 <CardContent className="p-6 flex flex-col h-full">
                   <h3 className="text-lg font-bold mb-2">{g.name}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">{g.offer}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{g.offer}</p>
+                  {g.perks && g.perks.length > 0 && (
+                    <ul className="mt-3 space-y-1.5 flex-1">
+                      {g.perks.map((perk, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs leading-relaxed">
+                          <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
+                          <span className="text-foreground/80 break-words">{perk}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <div className="mt-3 rounded-xl bg-primary/5 p-3">
                     <p className="text-xs font-semibold text-primary mb-0.5">Nasıl başvurulur?</p>
                     <p className="text-xs text-muted-foreground leading-relaxed">{g.how}</p>
