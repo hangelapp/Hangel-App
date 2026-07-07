@@ -13,6 +13,8 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { requestPushPermission, registerForPushToken } from '@/lib/fcm';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
+import { useAutosave } from '@/hooks/use-autosave';
 
 // Gruplar i18n key referansı ile tanımlandı — render anında t() ile çevrilir.
 const notificationGroups: Array<{
@@ -85,7 +87,16 @@ export default function NotificationSettingsPage() {
         }
     }, [userData]);
 
+    const persist = async () => {
+        if (!userDocRef) return;
+        const result = await updateDocumentNonBlocking(userDocRef, { notificationSettings: settings });
+        if (!result.ok) throw result.error;
+    };
+
+    const { status: autosaveStatus, markDirty } = useAutosave(persist, [settings], { delayMs: 600 });
+
     const handleToggle = (id: string) => {
+        markDirty();
         setSettings(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
@@ -110,9 +121,12 @@ export default function NotificationSettingsPage() {
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
-            <div>
-                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsNotifications.heading')}</h1>
-                <p className="text-muted-foreground text-sm">{t('dashboard.settingsNotifications.subheading')}</p>
+            <div className="flex items-end justify-between gap-3">
+                <div>
+                    <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsNotifications.heading')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('dashboard.settingsNotifications.subheading')}</p>
+                </div>
+                <AutosaveIndicator status={autosaveStatus} />
             </div>
 
             <PushPermissionCard authUid={authUser?.uid} />

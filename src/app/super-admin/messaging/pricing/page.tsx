@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Save, Loader2, Coins } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 interface Tier {
   upToVolume: number | null;
@@ -67,13 +69,19 @@ export default function PricingPage() {
     })();
   }, [toast]);
 
+  const persist = async () => {
+    await messagingFetch('/api/admin/messaging/pricing', {
+      method: 'PUT',
+      body: JSON.stringify(cfg),
+    });
+  };
+
+  const { status: autosaveStatus, markDirty } = useAutosave(persist, [cfg], { delayMs: 1000 });
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      await messagingFetch('/api/admin/messaging/pricing', {
-        method: 'PUT',
-        body: JSON.stringify(cfg),
-      });
+      await persist();
       toast({ title: 'Kaydedildi' });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -92,6 +100,7 @@ export default function PricingPage() {
   }
 
   const updateTier = (channel: keyof PricingConfig['tiers'], idx: number, field: keyof Tier, value: string) => {
+    markDirty();
     const tiers = [...cfg.tiers[channel]];
     const num = value === '' ? null : Number(value);
     tiers[idx] = { ...tiers[idx], [field]: num };
@@ -109,10 +118,13 @@ export default function PricingPage() {
           <h1 className="text-2xl md:text-3xl font-bold font-headline">Pricing</h1>
           <p className="text-muted-foreground text-sm mt-1">Tier indirimleri, ücretsiz kotalar, KDV ve WhatsApp çarpanları.</p>
         </div>
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-          Kaydet
-        </Button>
+        <div className="flex items-center gap-3">
+          <AutosaveIndicator status={autosaveStatus} />
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+            Kaydet
+          </Button>
+        </div>
       </div>
 
       {(['sms', 'email', 'whatsapp'] as const).map((ch) => (
@@ -149,9 +161,10 @@ export default function PricingPage() {
               <Input
                 type="number"
                 value={cfg.freeQuota[ch]}
-                onChange={(e) =>
-                  setCfg({ ...cfg, freeQuota: { ...cfg.freeQuota, [ch]: Number(e.target.value) } })
-                }
+                onChange={(e) => {
+                  markDirty();
+                  setCfg({ ...cfg, freeQuota: { ...cfg.freeQuota, [ch]: Number(e.target.value) } });
+                }}
               />
             </div>
           </CardContent>
@@ -170,15 +183,16 @@ export default function PricingPage() {
                 type="number"
                 step="0.5"
                 value={cfg.whatsappCategoryMultiplier[c]}
-                onChange={(e) =>
+                onChange={(e) => {
+                  markDirty();
                   setCfg({
                     ...cfg,
                     whatsappCategoryMultiplier: {
                       ...cfg.whatsappCategoryMultiplier,
                       [c]: Number(e.target.value),
                     },
-                  })
-                }
+                  });
+                }}
               />
             </div>
           ))}
@@ -194,7 +208,10 @@ export default function PricingPage() {
             type="number"
             step="0.01"
             value={cfg.kdvRate}
-            onChange={(e) => setCfg({ ...cfg, kdvRate: Number(e.target.value) })}
+            onChange={(e) => {
+              markDirty();
+              setCfg({ ...cfg, kdvRate: Number(e.target.value) });
+            }}
           />
         </CardContent>
       </Card>

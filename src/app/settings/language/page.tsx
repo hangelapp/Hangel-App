@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 export default function LanguageSettingsPage() {
     const router = useRouter();
@@ -22,6 +24,16 @@ export default function LanguageSettingsPage() {
         if (!db || !authUser) return null;
         return doc(db, COLLECTIONS.users, authUser.uid);
     }, [db, authUser]);
+
+    // Ortak yazım — Kaydet butonu ile aynı Firestore yolu (anon'da provider localStorage'a zaten yazar).
+    const persist = async () => {
+        if (!userDocRef) return;
+        const result = await updateDocumentNonBlocking(userDocRef, { language });
+        if (!result.ok) throw result.error;
+    };
+
+    // Otomatik kayıt: dil seçilince 600 ms sonra sessizce yaz.
+    const { status: autosaveStatus, markDirty } = useAutosave(persist, [language], { delayMs: 600 });
 
     const handleSave = async () => {
         if (!userDocRef) {
@@ -50,9 +62,12 @@ export default function LanguageSettingsPage() {
         <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
             <ArrowLeft className="h-6 w-6" />
         </Button>
-        <div>
-            <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsLanguage.heading')}</h1>
-            <p className="text-muted-foreground text-sm">{t('dashboard.settingsLanguage.subheading')}</p>
+        <div className="flex items-end justify-between gap-3">
+            <div>
+                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsLanguage.heading')}</h1>
+                <p className="text-muted-foreground text-sm">{t('dashboard.settingsLanguage.subheading')}</p>
+            </div>
+            <AutosaveIndicator status={autosaveStatus} />
         </div>
 
         <Card>
@@ -62,7 +77,7 @@ export default function LanguageSettingsPage() {
                     <div 
                         key={lang.value} 
                         className="flex items-center justify-between p-4 hover:bg-accent cursor-pointer"
-                        onClick={() => changeLanguage(lang.value)}
+                        onClick={() => { markDirty(); changeLanguage(lang.value); }}
                     >
                         <div>
                             <p className="font-medium">{lang.label}</p>

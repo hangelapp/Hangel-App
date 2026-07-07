@@ -10,6 +10,9 @@
 import React, { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
+import { useAutosave } from '@/hooks/use-autosave';
+
 import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -52,7 +55,25 @@ export default function IntentsSettingsPage() {
     })();
   }, [user]);
 
+  // Ortak yazım — Kaydet butonu ve otomatik kayıt aynı yolu kullanır.
+  // size === 0 koruması Kaydet butonunun disabled kuralını yansıtır: boş küme asla yazılmaz.
+  const persist = async () => {
+    if (!user || selected.size === 0) return;
+    const idToken = await user.getIdToken();
+    const res = await fetch('/api/users/me/intents', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({ intents: Array.from(selected) }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.message || t('welcome.saveError'));
+  };
+
+  // Otomatik kayıt: seçim değişince 600 ms sonra sessizce yaz.
+  const { status: autosaveStatus, markDirty } = useAutosave(persist, [selected], { delayMs: 600 });
+
   const toggle = (key: IntentKey) => {
+    markDirty();
     setSelected((prev) => {
       const next = new Set(prev);
       if (key === 'browse_only') {
@@ -71,14 +92,7 @@ export default function IntentsSettingsPage() {
     if (!user) return;
     setSaving(true);
     try {
-      const idToken = await user.getIdToken();
-      const res = await fetch('/api/users/me/intents', {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json', authorization: `Bearer ${idToken}` },
-        body: JSON.stringify({ intents: Array.from(selected) }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.message || t('welcome.saveError'));
+      await persist();
       toast({ title: t('welcome.intentTitle'), description: t('settingsIntentsPage.saved') });
     } catch (e) {
       toast({ variant: 'destructive', title: t('welcome.saveError'), description: e instanceof Error ? e.message : t('common.unknownError') });
@@ -94,9 +108,12 @@ export default function IntentsSettingsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="px-4 sm:px-1">
-        <h1 className="text-2xl font-black tracking-tight">{t('welcome.intentTitle')}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t('welcome.intentSubtitle')}</p>
+      <div className="px-4 sm:px-1 flex items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight">{t('welcome.intentTitle')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('welcome.intentSubtitle')}</p>
+        </div>
+        <AutosaveIndicator status={autosaveStatus} />
       </div>
 
       <Card>

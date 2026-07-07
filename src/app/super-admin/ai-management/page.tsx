@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 import {
   Brain,
   Sparkles,
@@ -144,7 +146,22 @@ function AssistantEditor({
     };
   }, [db, kind]);
 
+  const persist = async () => {
+    await setDoc(
+      doc(db, COLLECTIONS.aiAssistantConfig, kind),
+      {
+        ...config,
+        kind,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+  };
+
+  const { status: autosaveStatus, markDirty } = useAutosave(persist, [config], { delayMs: 1000 });
+
   const toggleSlug = (slug: string) => {
+    markDirty();
     setConfig(prev => {
       const exists = prev.knowledgeSourceSlugs.includes(slug);
       return {
@@ -159,15 +176,7 @@ function AssistantEditor({
   const handleSave = async () => {
     setSaving(true);
     try {
-      await setDoc(
-        doc(db, COLLECTIONS.aiAssistantConfig, kind),
-        {
-          ...config,
-          kind,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true },
-      );
+      await persist();
       toast({
         title: 'Kaydedildi',
         description: `${kind === 'library' ? 'Kütüphane AI Asistanı' : 'Proje Yazma Asistanı'} ayarları güncellendi.`,
@@ -199,7 +208,10 @@ function AssistantEditor({
           id={`${kind}-prompt`}
           rows={8}
           value={config.systemPrompt}
-          onChange={e => setConfig(prev => ({ ...prev, systemPrompt: e.target.value }))}
+          onChange={e => {
+            markDirty();
+            setConfig(prev => ({ ...prev, systemPrompt: e.target.value }));
+          }}
           placeholder="Asistanın rolünü, kısıtlarını ve cevap formatını yazın..."
         />
         <p className="text-xs text-muted-foreground">
@@ -213,7 +225,10 @@ function AssistantEditor({
           {config.knowledgeSourceSlugs.length > 0 && (
             <button
               type="button"
-              onClick={() => setConfig(prev => ({ ...prev, knowledgeSourceSlugs: [] }))}
+              onClick={() => {
+                markDirty();
+                setConfig(prev => ({ ...prev, knowledgeSourceSlugs: [] }));
+              }}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
               Temizle ({config.knowledgeSourceSlugs.length})
@@ -254,7 +269,10 @@ function AssistantEditor({
           <Label>Model</Label>
           <Select
             value={config.model}
-            onValueChange={v => setConfig(prev => ({ ...prev, model: v }))}
+            onValueChange={v => {
+              markDirty();
+              setConfig(prev => ({ ...prev, model: v }));
+            }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Model seçin" />
@@ -281,12 +299,13 @@ function AssistantEditor({
             max={8192}
             step={64}
             value={config.maxTokens}
-            onChange={e =>
+            onChange={e => {
+              markDirty();
               setConfig(prev => ({
                 ...prev,
                 maxTokens: Math.max(64, Math.min(8192, Number(e.target.value) || 0)),
-              }))
-            }
+              }));
+            }}
           />
         </div>
       </div>
@@ -301,19 +320,21 @@ function AssistantEditor({
           max={1}
           step={0.05}
           value={[config.temperature]}
-          onValueChange={v =>
+          onValueChange={v => {
+            markDirty();
             setConfig(prev => ({
               ...prev,
               temperature: Array.isArray(v) ? Number(v[0]) : prev.temperature,
-            }))
-          }
+            }));
+          }}
         />
         <p className="text-[11px] text-muted-foreground">
           0 = deterministik / 1 = yaratıcı.
         </p>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-3">
+        <AutosaveIndicator status={autosaveStatus} />
         <Button onClick={handleSave} disabled={saving}>
           {saving ? (
             <>

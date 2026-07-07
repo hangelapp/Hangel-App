@@ -16,6 +16,8 @@ import { signOut } from 'firebase/auth';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { getSessionId } from '@/lib/session-tracker';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 interface SessionDoc {
     id: string;
@@ -150,6 +152,22 @@ export default function PrivacySettingsPage() {
         setHideDonations(!!p.hideDonations);
     }, [userData]);
 
+    // Ortak yazım — Kaydet butonu ile aynı alanları sessizce yazar.
+    const persist = async () => {
+        if (!userDocRef) return;
+        const result = await updateDocumentNonBlocking(userDocRef, {
+            twoFactorEnabled,
+            privacySettings: {
+                isPrivate, hideScore, hideAbout, hideVolunteer,
+                hideBadges, hideCertificates, hidePosts, hideDonations,
+            }
+        });
+        if (!result.ok) throw result.error;
+    };
+
+    // Otomatik kayıt: anahtar değişince 600 ms sonra sessizce yaz.
+    const { status: autosaveStatus, markDirty } = useAutosave(persist, [isPrivate, hideScore, hideAbout, hideVolunteer, hideBadges, hideCertificates, hidePosts, hideDonations, twoFactorEnabled], { delayMs: 600 });
+
     const handleSave = async () => {
         if (!userDocRef || saving) return;
         setSaving(true);
@@ -177,16 +195,19 @@ export default function PrivacySettingsPage() {
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
-            <div>
-                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsPrivacy.heading')}</h1>
-                <p className="text-muted-foreground text-sm">{t('dashboard.settingsPrivacy.subheading')}</p>
+            <div className="flex items-start justify-between gap-3">
+                <div>
+                    <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsPrivacy.heading')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('dashboard.settingsPrivacy.subheading')}</p>
+                </div>
+                <AutosaveIndicator status={autosaveStatus} />
             </div>
 
             <Card>
                 <CardHeader><CardTitle>{t('dashboard.settingsPrivacy.profileVisibilityTitle')}</CardTitle></CardHeader>
                 <CardContent className="p-0">
                     <SettingsItem label={t('dashboard.settingsPrivacy.privateProfileLabel')} description={t('dashboard.settingsPrivacy.privateProfileDesc')} icon={Lock} iconColor="bg-red-500">
-                        <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
+                        <Switch checked={isPrivate} onCheckedChange={(v) => { markDirty(); setIsPrivate(v); }} />
                     </SettingsItem>
                 </CardContent>
             </Card>
@@ -198,25 +219,25 @@ export default function PrivacySettingsPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideScoreLabel')} description={t('dashboard.settingsPrivacy.hideScoreDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideScore} onCheckedChange={setHideScore} />
+                        <Switch checked={hideScore} onCheckedChange={(v) => { markDirty(); setHideScore(v); }} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideAboutLabel')} description={t('dashboard.settingsPrivacy.hideAboutDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideAbout} onCheckedChange={setHideAbout} />
+                        <Switch checked={hideAbout} onCheckedChange={(v) => { markDirty(); setHideAbout(v); }} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideVolunteerLabel')} description={t('dashboard.settingsPrivacy.hideVolunteerDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideVolunteer} onCheckedChange={setHideVolunteer} />
+                        <Switch checked={hideVolunteer} onCheckedChange={(v) => { markDirty(); setHideVolunteer(v); }} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideBadgesLabel')} description={t('dashboard.settingsPrivacy.hideBadgesDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideBadges} onCheckedChange={setHideBadges} />
+                        <Switch checked={hideBadges} onCheckedChange={(v) => { markDirty(); setHideBadges(v); }} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideCertsLabel')} description={t('dashboard.settingsPrivacy.hideCertsDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideCertificates} onCheckedChange={setHideCertificates} />
+                        <Switch checked={hideCertificates} onCheckedChange={(v) => { markDirty(); setHideCertificates(v); }} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hidePostsLabel')} description={t('dashboard.settingsPrivacy.hidePostsDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hidePosts} onCheckedChange={setHidePosts} />
+                        <Switch checked={hidePosts} onCheckedChange={(v) => { markDirty(); setHidePosts(v); }} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideDonationsLabel')} description={t('dashboard.settingsPrivacy.hideDonationsDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideDonations} onCheckedChange={setHideDonations} />
+                        <Switch checked={hideDonations} onCheckedChange={(v) => { markDirty(); setHideDonations(v); }} />
                     </SettingsItem>
                 </CardContent>
             </Card>
@@ -238,6 +259,7 @@ export default function PrivacySettingsPage() {
                             id="2fa-switch"
                             checked={twoFactorEnabled}
                             onCheckedChange={(c) => {
+                                markDirty();
                                 setTwoFactorEnabled(c);
                                 toast({ title: t('dashboard.settingsPrivacy.twoFaToastTitle'), description: c ? t('dashboard.settingsPrivacy.twoFaToastOn') : t('dashboard.settingsPrivacy.twoFaToastOff') });
                             }}

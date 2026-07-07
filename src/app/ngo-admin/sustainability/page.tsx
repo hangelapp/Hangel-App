@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, Leaf, Save, Upload, Trash2, FileText, ExternalLink, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -77,9 +79,14 @@ export default function SustainabilityPage() {
     const [kssAreas, setKssAreas] = useState<KssArea[]>([]);
     const [certificates, setCertificates] = useState<{ name: string; issuer: string; year: string }[]>([]);
     const [saving, setSaving] = useState(false);
+    // Formu kurum başına BİR kez doldur — canlı doc her snapshot'ta güncellenince
+    // effect yeniden çalışıp kullanıcının girdiği değerleri ezmesin.
+    const hydratedIdRef = useRef<string | null>(null);
 
     useEffect(() => {
         if (!entity) return;
+        if (hydratedIdRef.current === entity.id) return;
+        hydratedIdRef.current = entity.id;
         const s = entity.sustainability || {};
         setMission(s.mission || '');
         setContactEmail(s.contactEmail || '');
@@ -89,50 +96,77 @@ export default function SustainabilityPage() {
         setCertificates(s.certificates || []);
     }, [entity]);
 
+    const persistSustainability = async () => {
+        if (!entityId || !firestore) return;
+        const colName = kind === 'brand' ? COLLECTIONS.brands : kind === 'ngo' ? COLLECTIONS.ngos : COLLECTIONS.clubs;
+        await updateDoc(doc(firestore, colName, entityId), {
+            sustainability: {
+                mission: mission.trim(),
+                contactEmail: contactEmail.trim(),
+                sdgGoals: selectedSdgs,
+                reports: reports.filter(r => r.title.trim()),
+                kssAreas: kssAreas.filter(k => k.title.trim()),
+                certificates: certificates.filter(c => c.name.trim()),
+                updatedAt: serverTimestamp(),
+            },
+        });
+    };
+
+    const { status: autosaveStatus, markDirty } = useAutosave(
+        persistSustainability,
+        [mission, contactEmail, selectedSdgs, reports, kssAreas, certificates],
+        { delayMs: 1000 },
+    );
+
     const toggleSdg = (n: number) => {
+        markDirty();
         setSelectedSdgs(prev => prev.includes(n) ? prev.filter(x => x !== n) : [...prev, n].sort((a, b) => a - b));
     };
 
     const addReport = () => {
+        markDirty();
         setReports(prev => [...prev, { id: `r_${Date.now()}`, year: String(new Date().getFullYear()), title: '', description: '', url: '' }]);
     };
     const updateReport = (id: string, patch: Partial<SustainabilityReport>) => {
+        markDirty();
         setReports(prev => prev.map(r => r.id === id ? { ...r, ...patch } : r));
     };
-    const removeReport = (id: string) => setReports(prev => prev.filter(r => r.id !== id));
+    const removeReport = (id: string) => {
+        markDirty();
+        setReports(prev => prev.filter(r => r.id !== id));
+    };
 
     const addKssArea = () => {
+        markDirty();
         setKssAreas(prev => [...prev, { id: `k_${Date.now()}`, title: '', description: '', impactMetric: '' }]);
     };
     const updateKssArea = (id: string, patch: Partial<KssArea>) => {
+        markDirty();
         setKssAreas(prev => prev.map(k => k.id === id ? { ...k, ...patch } : k));
     };
-    const removeKssArea = (id: string) => setKssAreas(prev => prev.filter(k => k.id !== id));
+    const removeKssArea = (id: string) => {
+        markDirty();
+        setKssAreas(prev => prev.filter(k => k.id !== id));
+    };
 
     const addCertificate = () => {
+        markDirty();
         setCertificates(prev => [...prev, { name: '', issuer: '', year: String(new Date().getFullYear()) }]);
     };
     const updateCertificate = (idx: number, patch: Partial<{ name: string; issuer: string; year: string }>) => {
+        markDirty();
         setCertificates(prev => prev.map((c, i) => i === idx ? { ...c, ...patch } : c));
     };
-    const removeCertificate = (idx: number) => setCertificates(prev => prev.filter((_, i) => i !== idx));
+    const removeCertificate = (idx: number) => {
+        markDirty();
+        setCertificates(prev => prev.filter((_, i) => i !== idx));
+    };
 
     const handleSave = async () => {
         if (!entityId || !firestore || saving) return;
         setSaving(true);
         try {
-            const colName = kind === 'brand' ? COLLECTIONS.brands : kind === 'ngo' ? COLLECTIONS.ngos : COLLECTIONS.clubs;
-            await updateDoc(doc(firestore, colName, entityId), {
-                sustainability: {
-                    mission: mission.trim(),
-                    contactEmail: contactEmail.trim(),
-                    sdgGoals: selectedSdgs,
-                    reports: reports.filter(r => r.title.trim()),
-                    kssAreas: kssAreas.filter(k => k.title.trim()),
-                    certificates: certificates.filter(c => c.name.trim()),
-                    updatedAt: serverTimestamp(),
-                },
-            });
+            await persistSustainability();
             toast({ title: t('ngo_admin_sustainability.saveSuccessTitle'), description: t('ngo_admin_sustainability.saveSuccessDescription') });
         } catch (e) {
             toast({ variant: 'destructive', title: t('ngo_admin_sustainability.saveErrorTitle'), description: e instanceof Error ? e.message.slice(0, 200) : t('ngo_admin_sustainability.saveErrorDefault') });
@@ -151,14 +185,17 @@ export default function SustainabilityPage() {
 
     return (
         <div className="space-y-6 max-w-4xl">
-            <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-emerald-100">
-                    <Leaf className="h-6 w-6 text-emerald-700" />
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-emerald-100">
+                        <Leaf className="h-6 w-6 text-emerald-700" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-black tracking-tight">{t('ngo_admin_sustainability.heading')}</h1>
+                        <p className="text-sm text-muted-foreground">{t('ngo_admin_sustainability.subheading')}</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight">{t('ngo_admin_sustainability.heading')}</h1>
-                    <p className="text-sm text-muted-foreground">{t('ngo_admin_sustainability.subheading')}</p>
-                </div>
+                <AutosaveIndicator status={autosaveStatus} />
             </div>
 
             {/* Misyon + İletişim */}

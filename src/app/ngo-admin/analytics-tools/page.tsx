@@ -15,6 +15,8 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 type NgoAnalyticsDoc = {
     id: string;
@@ -72,6 +74,19 @@ export default function AnalyticsToolsPage() {
         return 'Bağlanabilir';
     };
 
+    const persistAnalytics = async () => {
+        if (!db || !ngoId) return;
+        await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), {
+            analytics: {
+                gaId: gaId.trim(),
+                gtmId: gtmId.trim(),
+                metaPixelId: metaPixelId.trim(),
+            },
+        });
+    };
+
+    const { status: autosaveStatus, markDirty } = useAutosave(persistAnalytics, [gaId, metaPixelId, gtmId], { delayMs: 1000 });
+
     const handleSave = async () => {
         if (!db || !ngoId) {
             toast({
@@ -83,13 +98,7 @@ export default function AnalyticsToolsPage() {
         }
         setIsSaving(true);
         try {
-            await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), {
-                analytics: {
-                    gaId: gaId.trim(),
-                    gtmId: gtmId.trim(),
-                    metaPixelId: metaPixelId.trim(),
-                },
-            });
+            await persistAnalytics();
             toast({ title: 'Takip Kodları Kaydedildi', description: 'Değişiklikler NGO profil sayfanızda aktif hale getirildi.' });
         } catch (err) {
             const e = err as { message?: string };
@@ -101,20 +110,23 @@ export default function AnalyticsToolsPage() {
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
-            <div className="flex items-center gap-2">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
-                    <ArrowLeft className="h-6 w-6" />
-                </Button>
-                <div>
-                    <h1 className="text-2xl font-bold font-headline">Web Analiz Araçları</h1>
-                    <p className="text-muted-foreground text-sm">
-                        {ngoData?.name ? (
-                            <><span className="font-semibold text-foreground">{ngoData.name}</span> için takip kodlarını yönetin.</>
-                        ) : (
-                            'Ziyaretçi trafiğinizi ve bağışçı dönüşümlerini profesyonelce ölçümleyin.'
-                        )}
-                    </p>
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+                        <ArrowLeft className="h-6 w-6" />
+                    </Button>
+                    <div>
+                        <h1 className="text-2xl font-bold font-headline">Web Analiz Araçları</h1>
+                        <p className="text-muted-foreground text-sm">
+                            {ngoData?.name ? (
+                                <><span className="font-semibold text-foreground">{ngoData.name}</span> için takip kodlarını yönetin.</>
+                            ) : (
+                                'Ziyaretçi trafiğinizi ve bağışçı dönüşümlerini profesyonelce ölçümleyin.'
+                            )}
+                        </p>
+                    </div>
                 </div>
+                <AutosaveIndicator status={autosaveStatus} />
             </div>
 
             {!isAdmin && (
@@ -168,7 +180,7 @@ export default function AnalyticsToolsPage() {
                                         id="ga4-id"
                                         placeholder="G-XXXXXXXXXX"
                                         value={gaId}
-                                        onChange={(e) => setGaId(e.target.value)}
+                                        onChange={(e) => { markDirty(); setGaId(e.target.value); }}
                                         disabled={!isAdmin}
                                     />
                                 </div>
@@ -178,7 +190,7 @@ export default function AnalyticsToolsPage() {
                                         id="meta-pixel-id"
                                         placeholder="123456789012345"
                                         value={metaPixelId}
-                                        onChange={(e) => setMetaPixelId(e.target.value)}
+                                        onChange={(e) => { markDirty(); setMetaPixelId(e.target.value); }}
                                         disabled={!isAdmin}
                                     />
                                 </div>
@@ -189,7 +201,7 @@ export default function AnalyticsToolsPage() {
                                     id="gtm-id"
                                     placeholder="GTM-XXXXXXX"
                                     value={gtmId}
-                                    onChange={(e) => setGtmId(e.target.value)}
+                                    onChange={(e) => { markDirty(); setGtmId(e.target.value); }}
                                     disabled={!isAdmin}
                                 />
                             </div>

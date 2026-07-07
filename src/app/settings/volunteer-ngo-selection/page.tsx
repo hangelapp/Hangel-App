@@ -18,6 +18,8 @@ import type { NGO } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { cn } from '@/lib/utils';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 type NgoType = NGO['type'] | 'Tümü';
 
@@ -109,7 +111,18 @@ export default function VolunteerNgoSelectionPage() {
         return filtered;
     }, [activeNgos, typeFilter, searchTerm, sortConfig, categoryFilter, randomIndexMap]);
 
+    // Ortak yazım — Kaydet butonu ile aynı Firestore yolu; otomatik kayıt sessiz (toast/navigasyon yok).
+    const persist = async () => {
+        if (!userDocRef) return;
+        const result = await updateDocumentNonBlocking(userDocRef, { volunteerNgos: selectedNgos });
+        if (!result.ok) throw result.error;
+    };
+
+    // Otomatik kayıt: seçim değişince 600 ms sonra sessizce yaz.
+    const { status: autosaveStatus, markDirty } = useAutosave(persist, [selectedNgos], { delayMs: 600 });
+
     const handleSelectNgo = (ngoId: string) => {
+        markDirty();
         setSelectedNgos(prev => prev.includes(ngoId) ? prev.filter(id => id !== ngoId) : [...prev, ngoId]);
     };
 
@@ -143,9 +156,12 @@ export default function VolunteerNgoSelectionPage() {
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
-            <div>
-                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsVolunteerNgo.heading')}</h1>
-                <p className="text-muted-foreground text-sm">{t('dashboard.settingsVolunteerNgo.subheading')}</p>
+            <div className="flex items-start justify-between gap-3">
+                <div>
+                    <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsVolunteerNgo.heading')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('dashboard.settingsVolunteerNgo.subheading')}</p>
+                </div>
+                <AutosaveIndicator status={autosaveStatus} />
             </div>
 
             <div className="flex gap-2 items-center">

@@ -9,6 +9,8 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocki
 import { doc, collection, query, limit as fsLimit } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -126,7 +128,18 @@ export default function FollowedBrandsPage() {
     return filtered;
   }, [allBrands, typeFilter, searchTerm, sortConfig, categoryFilter, selectedBrands]);
 
+  // Ortak yazım — Kaydet butonu ve otomatik kayıt aynı yolu kullanır (toast/yönlendirme yok).
+  const persist = async () => {
+    if (!userDocRef) return;
+    const result = await updateDocumentNonBlocking(userDocRef, { followedBrands: selectedBrands });
+    if (!result.ok) throw result.error;
+  };
+
+  // Otomatik kayıt: marka seçimi değişince 600 ms sonra sessizce yaz.
+  const { status: autosaveStatus, markDirty } = useAutosave(persist, [selectedBrands], { delayMs: 600 });
+
   const handleBrandSelect = (brandId: string) => {
+    markDirty();
     setSelectedBrands(prev =>
       prev.includes(brandId) ? prev.filter(id => id !== brandId) : [...prev, brandId],
     );
@@ -156,9 +169,12 @@ export default function FollowedBrandsPage() {
       <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
         <ArrowLeft className="h-6 w-6" />
       </Button>
-      <div>
-        <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsBrands.heading')}</h1>
-        <p className="text-muted-foreground text-sm">{t('dashboard.settingsBrands.subheading')}</p>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsBrands.heading')}</h1>
+          <p className="text-muted-foreground text-sm">{t('dashboard.settingsBrands.subheading')}</p>
+        </div>
+        <AutosaveIndicator status={autosaveStatus} />
       </div>
 
       <div className="flex gap-2 items-center">
