@@ -119,6 +119,8 @@ const grants: Array<{
   how: string;
   href: string;
   perks: string[];
+  /** Destek kapsamı — "kaç kişiye/projeye kadar" (kartın altında rozet). */
+  supportsUpTo: string;
 }> = [
   {
     name: 'Google for Nonprofits',
@@ -133,6 +135,7 @@ const grants: Array<{
       'Cloud kredi programı: yıllık ~2.000 $ Google Cloud + AI/ML kredisi',
       'Google Fiber & One promosyonlarında ek indirimler',
     ],
+    supportsUpTo: '14 çalışan hesabı + sınırsız reklam görüntülemesi',
   },
   {
     name: 'Canva for Nonprofits',
@@ -148,20 +151,22 @@ const grants: Array<{
       'AI araçları (Magic Write, Magic Design, Text-to-Image) dahil',
       'İçerik planlayıcı + sosyal medya doğrudan yayın',
     ],
+    supportsUpTo: 'Sınırsız ekip üyesi',
   },
   {
     name: 'Coridor',
-    offer: 'STK ve sosyal girişimler için dijital pazarlama, PR, mentorluk ve topluluk yönetimi araçlarını tek panelde sunan platform.',
-    how: 'coridor.co üzerinden kurumunuzla kayıt olun; STK doğrulaması sonrası nonprofit tarifesi aktifleşir.',
-    href: 'https://www.coridor.co/login',
+    offer: "Markaların kurumsal sosyal sorumluluk projelerini gençlerin gönüllü katılımıyla oyunlaştıran mobil uygulama; STK'lar yerel projelerini binlerce gence duyurur.",
+    how: 'info.coridor.co üzerinden Community Programı başvurusunu doldurun; kurumsal onay sonrası panel aktifleşir.',
+    href: 'https://www.info.coridor.co/',
     perks: [
-      "STK'lara özel indirimli / ücretsiz tarife (kayıt sonrası netleşir)",
-      'Kampanya yönetimi + landing page oluşturucu',
-      'Bağışçı ilişkileri yönetimi (CRM)',
-      'Mentor eşleştirme + kurumsal gönüllü ağı',
-      'Sosyal medya çoklu hesap yönetimi + planlayıcı',
-      'Etki raporlaması ve şeffaflık paneli',
+      "STK'ya 65.000 ₺ değerindeki Community hizmet paketi ücretsiz",
+      'Gönüllülük faaliyetlerini binlerce gence ulaştırma',
+      'Etkinliklerinizi oyunlaştırıp katılım motivasyonu artırma',
+      'Coridor Community Programı: dijital etkinlik + otomatik başarı raporu',
+      "Şirketlerin CSR bütçesi + kampanyalarıyla proje eşleşmesi",
+      'Öğrenci kulüpleri + STK\'lar için özel kontenjan',
     ],
+    supportsUpTo: 'Sınırsız gönüllü + proje başına 65K ₺ değerinde paket',
   },
   {
     name: 'Help Steps',
@@ -176,6 +181,7 @@ const grants: Array<{
       'Gerçek zamanlı raporlama + bağış impact metrikleri',
       'Kurumsal partnerlik + PR desteği',
     ],
+    supportsUpTo: 'Sınırsız kampanya + sınırsız katılımcı',
   },
   {
     name: 'hangel',
@@ -191,6 +197,7 @@ const grants: Array<{
       'Sanal santral (çağrı merkezi) + toplu SMS/WhatsApp/e-posta',
       'Chrome uzantısı + iOS + Android + Watch + Apple Wallet',
     ],
+    supportsUpTo: 'Sınırsız yönetici + sınırsız gönüllü + sınırsız bağışçı',
   },
   {
     name: 'Ability Pool',
@@ -204,6 +211,7 @@ const grants: Array<{
       'Ekip liderliği + mentörlük',
       'Kurumsal partnerlerden çalışan gönüllülüğü',
     ],
+    supportsUpTo: 'Proje başına 1-5 uzman + sınırsız proje',
   },
   {
     name: 'Gönüllüyüz Biz',
@@ -217,6 +225,7 @@ const grants: Array<{
       'Etki raporlama + iş dünyası PR desteği',
       'Sponsorluk fırsatları ve ayni destek yönlendirmesi',
     ],
+    supportsUpTo: 'Sınırsız proje + kurumsal ekip başına 10-500 gönüllü',
   },
 ];
 
@@ -471,6 +480,12 @@ export default function IncomeModelConferencePage() {
                         </li>
                       ))}
                     </ul>
+                  )}
+                  {g.supportsUpTo && (
+                    <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/80 mb-0.5">Kapsam</p>
+                      <p className="text-xs font-semibold text-foreground break-words">{g.supportsUpTo}</p>
+                    </div>
                   )}
                   <div className="mt-3 rounded-xl bg-primary/5 p-3">
                     <p className="text-xs font-semibold text-primary mb-0.5">Nasıl başvurulur?</p>
