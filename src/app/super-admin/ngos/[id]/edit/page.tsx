@@ -156,7 +156,13 @@ export default function NgoEditPage() {
 
     const c = (form.contact ?? {}) as { email?: string; phone?: string; website?: string; social?: Record<string, string>; address?: Record<string, string> };
     const social = c?.social ?? {};
-    const address = c?.address ?? {};
+    // Eski veri modelinde contact.address düz STRING olabiliyor; {...string}
+    // spread'i karakter-spread ("0":"K","1":"a"…) üretip doc'u bozuyordu
+    // (2026-07-07, Akdeniz Koruma Vakfı). String ise fullAddress'e taşı.
+    const rawAddress = c?.address as Record<string, string> | string | undefined;
+    const address: Record<string, string> = typeof rawAddress === 'string'
+        ? { fullAddress: rawAddress }
+        : (rawAddress ?? {});
     const currentCountry = address.country ?? '';
     const currentCity = address.city ?? '';
     const currentDistrict = address.district ?? '';
@@ -590,7 +596,7 @@ export default function NgoEditPage() {
                     <Field label="Ülke">
                         <Select
                             value={currentCountry || 'Türkiye'}
-                            onValueChange={v => set('contact.address', { ...address, country: v, city: '', district: '', neighborhood: '' })}
+                            onValueChange={v => { if (v === (currentCountry || 'Türkiye')) return; set('contact.address', { ...address, country: v, city: '', district: '', neighborhood: '' }); }}
                         >
                             <SelectTrigger><SelectValue placeholder="Ülke seçin..." /></SelectTrigger>
                             <SelectContent className="max-h-72">
@@ -605,7 +611,7 @@ export default function NgoEditPage() {
                         {cityOptions.length > 0 ? (
                             <Select
                                 value={currentCity || ''}
-                                onValueChange={v => set('contact.address', { ...address, city: v, district: '', neighborhood: '' })}
+                                onValueChange={v => { if (v === currentCity) return; set('contact.address', { ...address, city: v, district: '', neighborhood: '' }); }}
                             >
                                 <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent className="max-h-60">

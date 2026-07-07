@@ -724,7 +724,10 @@ export default function ManageProfilePage() {
             <CardContent className="space-y-6 pt-6">
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelCountry')}</Label>
-                    <Select value={country || 'Türkiye'} onValueChange={(val) => { setCountry(val); setCity(''); setDistrict(''); setNeighborhood(''); }}>
+                    {/* Aynı değer yeniden seçilince (Radix aynı değerde de tetikler) il/ilçe
+                        SİLİNMESİN — yalnızca ülke GERÇEKTEN değişince alt seçimleri sıfırla.
+                        (Emirhan bug'ı 2026-07-07: Türkiye'ye dokununca İzmir/Bornova kayboluyordu.) */}
+                    <Select value={country || 'Türkiye'} onValueChange={(val) => { if (val !== (country || 'Türkiye')) { setCity(''); setDistrict(''); setNeighborhood(''); } setCountry(val); }}>
                         <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={t('ngo_admin_manage_profile.countryPlaceholder')} /></SelectTrigger>
                         <SelectContent>
                             {countryOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -736,7 +739,7 @@ export default function ManageProfilePage() {
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelCity')}</Label>
                         {isTurkey ? (
-                            <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }}>
+                            <Select value={city} onValueChange={(val) => { if (val !== city) { setDistrict(''); setNeighborhood(''); } setCity(val); }}>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={t('ngo_admin_manage_profile.cityPlaceholderTr')} /></SelectTrigger>
                                 <SelectContent className="max-h-72">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                             </Select>
@@ -749,7 +752,7 @@ export default function ManageProfilePage() {
                         {isTurkey ? (
                             <Select
                                 value={district}
-                                onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }}
+                                onValueChange={(val) => { if (val !== district) setNeighborhood(''); setDistrict(val); }}
                                 disabled={!city || districtOptions.length === 0}
                             >
                                 <SelectTrigger className="h-11 rounded-xl">
