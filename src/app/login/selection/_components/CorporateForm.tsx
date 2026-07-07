@@ -136,12 +136,12 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         ozelIzinAmaci: '',
         ozelIzinAmaciDiger: '',
         authorizedRelation: '', // 'görevi' yerine 'yakınlığı'
-        // Marka iktisadi işletme için bağlı STK
+        // Mağaza iktisadi işletme için bağlı STK
         iktisadiBagliStk: '',
         // E-ticaret sitesi linki (Kooperatif/Sosyal/İktisadi için)
         ecommerceUrl: '',
     });
-    // Marka E-ticaret: ürün kategorileri (max 5)
+    // Mağaza E-ticaret: ürün kategorileri (max 5)
     const [selectedProductCategories, setSelectedProductCategories] = useState<string[]>([]);
     const MAX_PRODUCT_CATEGORIES = 5;
     // Diğer sosyal medya platformları (+Ekle ile)
@@ -648,7 +648,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <SelectTrigger className="h-12 rounded-xl border-primary bg-primary/5 shadow-sm font-bold text-left"><SelectValue placeholder="Önce kuruluş türünü seçin..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="NGO">Sivil Toplum Kuruluşu (STK)</SelectItem>
-                            <SelectItem value="BRAND">Marka / Sosyal İşletme</SelectItem>
+                            <SelectItem value="BRAND">Mağaza / Sosyal İşletme</SelectItem>
                             <SelectItem value="CLUB">Öğrenci Kulübü</SelectItem>
                         </SelectContent>
                     </Select>
@@ -1412,7 +1412,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <Select value={formData.brandStatus} onValueChange={v => setFormData({...formData, brandStatus: v})}>
                                 <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="Statü seçin..." /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="brand">Ticari Marka</SelectItem>
+                                    <SelectItem value="brand">Ticari İşletme</SelectItem>
                                     <SelectItem value="cooperative">Kooperatif</SelectItem>
                                     <SelectItem value="social-enterprise">Sosyal İşletme</SelectItem>
                                     <SelectItem value="economic-enterprise">İktisadi İşletme</SelectItem>
@@ -1494,12 +1494,12 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     )}
 
-                    {/* Marka Kimliği */}
+                    {/* Mağaza Kimliği */}
                     <div className="space-y-6">
-                        <SectionTitle icon={Store}>MARKA KİMLİĞİ</SectionTitle>
+                        <SectionTitle icon={Store}>MAĞAZA KİMLİĞİ</SectionTitle>
                         <div className="space-y-2">
-                            <FormLabel required>Marka Adı</FormLabel>
-                            <FormInput placeholder="Markanızın adı" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                            <FormLabel required>Mağaza Adı</FormLabel>
+                            <FormInput placeholder="Mağazanızın adı" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                         </div>
                         <div className="space-y-2">
                             <FormLabel>Sektör</FormLabel>
@@ -1523,15 +1523,15 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                             <Textarea
                                 className="rounded-2xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30 min-h-[96px]"
-                                placeholder="Markanızı kısaca tanıtın"
+                                placeholder="Mağazanızı kısaca tanıtın"
                                 value={formData.about}
                                 maxLength={ABOUT_MAX}
                                 onChange={e => setFormData({...formData, about: e.target.value})}
                             />
                         </div>
                         <div className="space-y-2">
-                            <FormLabel>Marka Logosu</FormLabel>
-                            <FileUpload label="LOGO" accept=".png,.jpg,.jpeg,.svg,.webp" hint="PNG, JPG, SVG veya WEBP. Markanızın profilinde ve listelerde görünür." kind="logo" draftId={draftId} onUploaded={handleUploaded} />
+                            <FormLabel>Mağaza Logosu</FormLabel>
+                            <FileUpload label="LOGO" accept=".png,.jpg,.jpeg,.svg,.webp" hint="PNG, JPG, SVG veya WEBP. Mağazanızın profilinde ve listelerde görünür." kind="logo" draftId={draftId} onUploaded={handleUploaded} />
                         </div>
                     </div>
 
@@ -1598,7 +1598,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     <IconInput
                                         icon={Globe}
                                         type="url"
-                                        placeholder="https://shop.markaniz.com"
+                                        placeholder="https://shop.magazaniz.com"
                                         value={(formData as { ecommerceUrl?: string }).ecommerceUrl || ''}
                                         onChange={e => setFormData(p => ({ ...p, ecommerceUrl: e.target.value } as typeof p))}
                                     />
@@ -1670,23 +1670,23 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                             <div className="space-y-2">
                                 <FormLabel required>Mail</FormLabel>
-                                <IconInput icon={Mail} type="email" placeholder="iletisim@marka.com" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                                <IconInput icon={Mail} type="email" placeholder="iletisim@magaza.com" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>Web Sitesi</FormLabel>
-                                <IconInput icon={Globe} type="text" placeholder="marka.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
+                                <IconInput icon={Globe} type="text" placeholder="magaza.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>Instagram</FormLabel>
-                                <FormInput placeholder="@marka" value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} />
+                                <FormInput placeholder="@magaza" value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} />
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>X (Twitter)</FormLabel>
-                                <FormInput placeholder="@marka" value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} />
+                                <FormInput placeholder="@magaza" value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} />
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>LinkedIn</FormLabel>
-                                <FormInput placeholder="linkedin.com/company/marka" value={formData.linkedin} onChange={e => setFormData({...formData, linkedin: e.target.value})} />
+                                <FormInput placeholder="linkedin.com/company/magaza" value={formData.linkedin} onChange={e => setFormData({...formData, linkedin: e.target.value})} />
                             </div>
                             {/* Diğer platformlar — +Ekle */}
                             <div className="space-y-2">
@@ -1866,7 +1866,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <IconInput
                                     icon={Mail}
                                     type="email"
-                                    placeholder="yetkili@marka.com"
+                                    placeholder="yetkili@magaza.com"
                                     required
                                     value={formData.authorized.email}
                                     onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})}
@@ -1923,7 +1923,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, brandMembership: !!checked }))}
                             />
                             <span className="text-xs text-muted-foreground leading-relaxed">
-                                <a href="/settings/contracts/marka-uyelik" className="font-bold text-primary underline">Marka Üyelik Sözleşmesi</a>&apos;ni okudum ve kabul ediyorum
+                                <a href="/settings/contracts/marka-uyelik" className="font-bold text-primary underline">Mağaza Üyelik Sözleşmesi</a>&apos;ni okudum ve kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">

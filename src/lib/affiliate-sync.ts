@@ -12,8 +12,10 @@
  *      Affiliate_Offer.findAll ile tarar; approval_status, status, require_approval alır.
  *   2. isListable(o) = status active VE (approval_status='approved' VEYA require_approval=0/yok).
  *   3. system/affiliateSyncState ile diff'ler (yeni offer / listeye giren / listeden çıkan).
- *   4. Firestore `brands` kayıtlarını eşitler (kendi linki yok + onaylı offer yok → Pasif+hidden;
- *      kendi linki var + yanlış gizlenmiş → geri aç).
+ *   4. Firestore `brands` kayıtlarını eşitler. Kayıt yayında KALIR eğer:
+ *      (a) kendi affiliate linki var, VEYA (b) onaylı bir offer ile eşleşiyor, VEYA
+ *      (c) başvuru kaynaklı (kurumsal başvuru formu / kurumun kendi eklediği).
+ *      Yalnız üçü de yoksa Pasif+affiliateHidden. Yanlış gizlenen kayıt geri açılır.
  *   5. system/affiliateSyncReport + affiliateSyncRuns/{tarih} yazar; opsiyonel super-admin bildirim.
  */
 import { FieldValue, type Firestore } from 'firebase-admin/firestore';
@@ -57,6 +59,37 @@ function cleanBrandName(name: string): string {
 
 function normName(name: string): string {
   return cleanBrandName(name).toLowerCase().trim();
+}
+
+/**
+ * BAŞVURU KORUMASI: Bir `brands` kaydı kurumsal başvuru formundan geldiyse
+ * (veya kurumun/kullanıcının kendi eklediği bir kayıtsa) affiliate offer'a hiç
+ * bağlı olmasa bile robot bunu ASLA gizlemez — başvuru sahibinin mağazasıdır.
+ *
+ * Aşağıdaki alanlardan HERHANGI biri varsa kayıt "başvuru kaynaklı" sayılır:
+ *   - source ∈ {application, basvuru, corporate-form}
+ *   - applicationId dolu (başvuru referansı)
+ *   - entityType === 'BRAND' + status === 'Onaylandı' (onaylı kurumsal marka/mağaza)
+ *   - createdVia === 'application'
+ *   - ngoId veya ownerId dolu (kurumun kendi eklediği — affiliate değil)
+ */
+function isFromApplication(b: {
+  source?: string;
+  applicationId?: string;
+  entityType?: string;
+  status?: string;
+  createdVia?: string;
+  ngoId?: string;
+  ownerId?: string;
+}): boolean {
+  const source = (b.source || '').toLowerCase();
+  if (source === 'application' || source === 'basvuru' || source === 'corporate-form') return true;
+  if (typeof b.applicationId === 'string' && b.applicationId.trim().length > 0) return true;
+  if (b.entityType === 'BRAND' && b.status === 'Onaylandı') return true;
+  if ((b.createdVia || '').toLowerCase() === 'application') return true;
+  if (typeof b.ngoId === 'string' && b.ngoId.trim().length > 0) return true;
+  if (typeof b.ownerId === 'string' && b.ownerId.trim().length > 0) return true;
+  return false;
 }
 
 // isListableOffer (api-clients.ts) ile birebir aynı kural.
@@ -160,6 +193,8 @@ export interface SyncSummary {
   newOffers: Array<OfferRef & { listable: boolean }>;
   hiddenBrands: string[];
   reactivatedBrands: string[];
+  /** Başvuru formundan gelen / kurumun kendi eklediği için gizlenmekten korunan kayıt sayısı. */
+  protectedByApplication: number;
 }
 
 export interface RunOptions {
@@ -190,6 +225,7 @@ export async function runAffiliateSync(db: Firestore, options: RunOptions = {}):
       newOffers: [],
       hiddenBrands: [],
       reactivatedBrands: [],
+      protectedByApplication: 0,
     };
   }
 
@@ -216,22 +252,72 @@ export async function runAffiliateSync(db: Firestore, options: RunOptions = {}):
 
   const firstRun = prevKnown.size === 0;
 
-  // 4) Elle eklenmiş Firestore `brands` kayıtlarını eşitle.
+  // 4) Firestore `brands` kayıtlarını eşitle.
+  //
+  //    YAYINDA KALMA KURALI (3 koşuldan HERHANGI biri yeterli):
+  //      (a) kaydın kendi affiliate linki var (hasOwnLink), VEYA
+  //      (b) onaylı bir affiliate offer ile ad eşleşiyor (matchesListable), VEYA
+  //      (c) BAŞVURU KAYNAKLI — kurumsal başvuru formundan gelmiş / kurumun kendi
+  //          eklediği kayıt (isFromApplication). Bu kayıtlar affiliate'a bağlı
+  //          olmasa bile başvuru sahibinin mağazasıdır → robot dokunmaz.
+  //
+  //    Yalnızca "ne ajansta onaylı, ne başvurudan gelmiş" kayıtlar gizlenir
+  //    (kendi linki YOK + onaylı offer YOK + başvuru kaynaklı DEĞİL).
   const listableNames = new Set(listable.map((o) => normName(o.name)));
   const HIDDEN_STATUSES = new Set(['Pasif', 'Silindi', 'Reddedildi']);
+
+  // CANLI BAŞVURU KORUMASI (en güvenli kat): onaylı kurumsal başvuruları doğrudan
+  // `applications` koleksiyonundan oku ve isimlerini "korumalı mağaza" set'ine ekle.
+  // Böylece brands doc'unda `source`/`applicationId` alanı OLMASA bile (bu alanlar
+  // ancak bugünden sonraki onaylarda yazılıyor; eski onaylı mağazalar taşımıyor)
+  // ad eşleşmesiyle koruma garanti edilir. 'BRAND' teknik identifier'dır; kullanıcıya
+  // "Mağaza" olarak gösterilir. Query hatasında (index vb.) koruma set'i boş kalır —
+  // doc-alanı tabanlı isFromApplication() ikinci kat olarak devrede kalmaya devam eder.
+  const protectedAppNames = new Set<string>();
+  const appsSnap = await db
+    .collection('applications')
+    .where('entityType', '==', 'BRAND')
+    .where('status', '==', 'Onaylandı')
+    .get()
+    .catch(() => null);
+  if (appsSnap) {
+    for (const appDoc of appsSnap.docs) {
+      const a = appDoc.data() as { name?: string; org?: string };
+      const appName = a.name || a.org || '';
+      if (appName) protectedAppNames.add(normName(appName));
+    }
+  }
+
   const brandsSnap = await db.collection('brands').get();
   const hiddenBrands: string[] = [];
   const reactivatedBrands: string[] = [];
+  let protectedByApplication = 0;
 
   for (const docSnap of brandsSnap.docs) {
-    const b = docSnap.data() as { name?: string; link?: string; status?: string; affiliateHidden?: boolean };
+    const b = docSnap.data() as {
+      name?: string;
+      link?: string;
+      status?: string;
+      affiliateHidden?: boolean;
+      source?: string;
+      applicationId?: string;
+      entityType?: string;
+      createdVia?: string;
+      ngoId?: string;
+      ownerId?: string;
+    };
     const name = b.name || '(isimsiz)';
     const hasOwnLink = typeof b.link === 'string' && b.link.trim().length > 0;
     const matchesListable = b.name ? listableNames.has(normName(b.name)) : false;
+    // Başvuru kaynaklı: (i) doc alanları (source/applicationId/... — isFromApplication)
+    // VEYA (ii) canlı applications sorgusuyla ad eşleşmesi (eski onaylar için).
+    const matchesApplication = b.name ? protectedAppNames.has(normName(b.name)) : false;
+    const fromApplication = isFromApplication(b) || matchesApplication;
 
-    if (hasOwnLink) {
-      // Kendi affiliate linki olan kayıt her zaman geçerli; robot yanlışlıkla
-      // gizlemişse (affiliateHidden) geri aç.
+    // (a) kendi linki VEYA (b) onaylı offer VEYA (c) başvuru kaynaklı → yayında kalır.
+    // Robot yanlışlıkla gizlemişse (affiliateHidden) hepsi geri açılır.
+    if (hasOwnLink || matchesListable || fromApplication) {
+      if (fromApplication && !hasOwnLink && !matchesListable) protectedByApplication += 1;
       if (b.affiliateHidden === true) {
         await docSnap.ref.update({
           affiliateHidden: FieldValue.delete(),
@@ -245,7 +331,7 @@ export async function runAffiliateSync(db: Firestore, options: RunOptions = {}):
       continue;
     }
 
-    // Kendi linki YOK → çalışan butonu ancak onaylı bir API offer'ı sağlayabilir.
+    // Ne kendi linki, ne onaylı offer, ne de başvuru kaynağı var → yayından kaldır.
     const alreadyAdminHidden = b.status ? HIDDEN_STATUSES.has(b.status) && b.affiliateHidden !== true : false;
     if (alreadyAdminHidden) continue; // admin elle gizlemiş, dokunma.
     if (b.affiliateHidden === true) continue; // zaten robot gizlemiş, churn yok.
@@ -253,9 +339,7 @@ export async function runAffiliateSync(db: Firestore, options: RunOptions = {}):
     await docSnap.ref.update({
       status: 'Pasif',
       affiliateHidden: true,
-      affiliateHiddenReason: matchesListable
-        ? 'Onaylı affiliate offer ile karşılanıyor (çift kayıt önlendi)'
-        : 'Onaylı affiliate offer bulunamadı (link yok)',
+      affiliateHiddenReason: 'Onaylı affiliate offer bulunamadı (link yok, başvuru kaydı değil)',
       affiliateHiddenAt: FieldValue.serverTimestamp(),
     });
     hiddenBrands.push(name);
@@ -282,6 +366,7 @@ export async function runAffiliateSync(db: Firestore, options: RunOptions = {}):
     newOffers: newOffers.map((o) => ({ id: o.id, network: o.network, agency: o.agency, name: o.name, listable: isListable(o) })),
     hiddenBrands,
     reactivatedBrands,
+    protectedByApplication,
   };
 
   await db.doc('system/affiliateSyncReport').set(summaryForStore, { merge: false });
@@ -340,5 +425,6 @@ export async function runAffiliateSync(db: Firestore, options: RunOptions = {}):
     newOffers: summaryForStore.newOffers,
     hiddenBrands,
     reactivatedBrands,
+    protectedByApplication,
   };
 }

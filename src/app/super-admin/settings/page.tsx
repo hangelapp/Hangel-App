@@ -41,6 +41,7 @@ import {
   PhoneCall,
   Presentation,
   Music2,
+  Store,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -202,6 +203,9 @@ const SETTINGS_SECTIONS = [
   { id: 'ai-management', label: 'Yapay Zeka Yönetimi', icon: Brain, color: 'bg-indigo-600',
     href: '/super-admin/ai-management',
     description: 'Kütüphane AI Asistanı ve Proje Yazma Asistanı yapay zekalarını eğit ve yönet.' },
+  { id: 'affiliate-sync', label: 'Mağaza Onay Senkronu', icon: Store, color: 'bg-[#f34723]',
+    href: '/super-admin/affiliate-sync',
+    description: 'Her gün 06:00 affiliate ajanslarını tarar; onaysız + başvurusuz mağazaları yayından kaldırır, onaylıları ekler. Manuel "Şimdi Çalıştır" + durum takibi.' },
   { id: 'payment-providers', label: 'Ödeme Sağlayıcı Yönetimi', icon: CreditCard, color: 'bg-green-600',
     href: '/super-admin/settings/payment-providers',
     description: 'N-Kolay (mevcut) + İyzico/Stripe/PayTR alternatifleri, komisyon ayarları, A/B test.' },

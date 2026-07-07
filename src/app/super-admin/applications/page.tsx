@@ -441,6 +441,12 @@ export default function ApplicationsPage() {
           selectedBeneficiaries: beneficiaries,
           otherBeneficiaryText: app.otherBeneficiaryText || '',
           link: app.website || '',
+          // Başvuru formundan gelen mağaza — affiliate senkron robotu bu kaydı
+          // (kendi linki boş olsa bile) ASLA gizlememeli. affiliate-sync.ts
+          // hem bu `source` alanına hem de canlı applications sorgusuna bakar.
+          source: 'application',
+          applicationId: app.id,
+          approvedAt: serverTimestamp(),
         });
         return ref.id;
       }
