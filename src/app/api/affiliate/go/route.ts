@@ -36,9 +36,13 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // extension/click ile aynı revalidate'li cache; index brand id → template.
+// ⚠️ unstable_cache JSON serileştirir: Map cache HIT'te düz `{}`'a döner ve
+// `.get()` TypeError → 500 (flapping bug, 2026-07-07). Bu yüzden Record saklanır.
+// Cache key v2: eski zehirli `{}` girdileri yeniden kullanılmasın.
 const getCachedTemplateIndex = unstable_cache(
-  async () => fetchAffiliateLinkTemplates(),
-  ['affiliate-link-template-index-v1'],
+  async (): Promise<Record<string, AffiliateLinkTemplate>> =>
+    Object.fromEntries(await fetchAffiliateLinkTemplates()),
+  ['affiliate-link-template-index-v2-record'],
   { revalidate: 3600 },
 );
 
@@ -59,6 +63,10 @@ function extractIdToken(req: NextRequest): string | null {
 
 export async function GET(req: NextRequest) {
   const brandId = req.nextUrl.searchParams.get('brandId')?.trim() ?? '';
+  // format=json → client fetch akışı (affiliate-go.ts): 302 yerine {url} döner.
+  // Neden: fetch'in cross-origin 302 follow'u merchant CORS'una takılıp atılıyor;
+  // JSON modunda final URL'i client kendisi openExternalUrl ile açar.
+  const wantsJson = req.nextUrl.searchParams.get('format') === 'json';
   if (!brandId) {
     return errorResponse(400, 'INVALID_BODY', 'brandId zorunlu');
   }
@@ -67,7 +75,7 @@ export async function GET(req: NextRequest) {
   let brand: AffiliateLinkTemplate | undefined;
   try {
     const index = await getCachedTemplateIndex();
-    brand = index.get(brandId);
+    brand = index[brandId];
   } catch (err) {
     console.error('[affiliate/go] template index error', err);
     return errorResponse(500, 'INTERNAL_ERROR', 'Affiliate link alınamadı');
@@ -95,6 +103,7 @@ export async function GET(req: NextRequest) {
     if (!anonUrl) {
       return errorResponse(404, 'NOT_FOUND', 'Marka tracking link\'i bulunamadı');
     }
+    if (wantsJson) return NextResponse.json({ ok: true, url: anonUrl });
     return NextResponse.redirect(anonUrl, 302);
   }
 
@@ -124,5 +133,6 @@ export async function GET(req: NextRequest) {
     console.error('[affiliate/go] click write failed', err);
   }
 
+  if (wantsJson) return NextResponse.json({ ok: true, url: productUrl });
   return NextResponse.redirect(productUrl, 302);
 }

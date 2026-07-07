@@ -22,16 +22,18 @@ import { unstable_cache } from 'next/cache';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// ⚠️ unstable_cache JSON serileştirir: Map cache HIT'te düz `{}`'a döner ve
+// `.get()` TypeError → 500 (affiliate/go ile aynı bug, 2026-07-07) → Record.
 const getCachedBrandIndex = unstable_cache(
   async () => {
     const all = await fetchAllAgencyOffers();
-    const map = new Map<string, { id: string; name: string; donationRate: number; link?: string }>();
+    const map: Record<string, { id: string; name: string; donationRate: number; link?: string }> = {};
     for (const b of all) {
-      if (b.link) map.set(b.id, { id: b.id, name: b.name, donationRate: b.donationRate, link: b.link });
+      if (b.link) map[b.id] = { id: b.id, name: b.name, donationRate: b.donationRate, link: b.link };
     }
     return map;
   },
-  ['extension-brand-index-v2-a101hidden'],
+  ['extension-brand-index-v3-record'],
   { revalidate: 3600 },
 );
 
@@ -92,7 +94,7 @@ export async function POST(req: NextRequest) {
   }
   try {
     const index = await getCachedBrandIndex();
-    const brand = index.get(brandId);
+    const brand = index[brandId];
     if (!brand || !brand.link) {
       return NextResponse.json(
         { errorCode: 'NOT_FOUND', message: 'Marka tracking link\'i bulunamadı' },

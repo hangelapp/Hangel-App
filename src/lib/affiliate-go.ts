@@ -58,14 +58,25 @@ export async function goToAffiliate(params: {
       }
     }
 
-    // 302'yi takip et; son merchant URL'i res.url olur. credentials:'include'
-    // ileride cookie tabanlı oturum eklenirse de çalışsın diye verilir.
+    // format=json: route 302 yerine {ok,url} döner. Neden: fetch'in cross-origin
+    // 302 follow'u merchant CORS'una takılıp atılabiliyordu; ayrıca hata
+    // yanıtlarında res.url API URL'inin KENDİSİ olduğundan kullanıcıya ham JSON
+    // hata sayfası açılıyordu (2026-07-07 bug). JSON modunda final URL'i biz açarız.
     const res = await fetch(
-      `/api/affiliate/go?brandId=${encodeURIComponent(brandId)}`,
-      { headers, redirect: 'follow', credentials: 'include' },
+      `/api/affiliate/go?brandId=${encodeURIComponent(brandId)}&format=json`,
+      { headers, credentials: 'include' },
     );
 
-    const target = res.url || fallbackUrl || null;
+    let target: string | null = null;
+    if (res.ok) {
+      const data = (await res.json().catch(() => null)) as { ok?: boolean; url?: string } | null;
+      if (data?.ok && typeof data.url === 'string' && /^https?:\/\//i.test(data.url)) {
+        target = data.url;
+      }
+    }
+    // Route markayı bulamadıysa (PIM/affiliate'siz marka → 404) veya hata verdiyse:
+    // kullanıcıyı yine de ürüne götür (bağış izlenemez ama deneyim kırılmaz).
+    if (!target) target = fallbackUrl || null;
     if (!target) return false;
 
     void openExternalUrl(target);
