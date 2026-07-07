@@ -58,6 +58,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { EventContributor, EventContributorRole, EventAgendaItem } from '@/lib/types';
 import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
+import { BroadcastMessageButton } from '@/components/messaging/broadcast-message-button';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -101,6 +102,9 @@ interface ClubEventDoc {
     createdAt?: number;
     tags?: string[];
     time?: string;
+    completed?: boolean;
+    completedAt?: unknown;
+    endDate?: string;
 }
 
 const EVENT_TYPE_OPTIONS = ['Seminer', 'Atölye', 'Konferans', 'Panel', 'Söyleşi', 'Konser', 'Sergi', 'Gezi / Tur', 'Turnuva', 'Yarışma', 'Eğitim', 'Buluşma', 'Gönüllülük', 'Bağış Kampanyası', 'Diğer'];
@@ -339,6 +343,67 @@ export default function EventManagementPage() {
         [firestore, isClub, activeEntity?.data.id],
     );
     const { data: myEvents } = useCollection<ClubEventDoc>(myEventsQ);
+
+    // Aktif (henüz tamamlanmamış) ve tamamlanan etkinlikleri ayır. Tamamlananlar
+    // ayrı "Tamamlananlar" tab'ında listelenir; public listeden 24 saat sonra
+    // otomatik düşer (events/page.tsx COMPLETED_VISIBLE_WINDOW_MS). Yönetim
+    // panelinde ise kalıcı arşiv olarak görünürler.
+    const activeEvents = useMemo(() => (myEvents ?? []).filter((e) => e.completed !== true), [myEvents]);
+    const completedEvents = useMemo(() => (myEvents ?? []).filter((e) => e.completed === true), [myEvents]);
+
+    // Tek etkinlik kartı — hem "Etkinliklerim" hem "Tamamlananlar" tab'ında kullanılır.
+    const renderEventCard = (event: ClubEventDoc) => (
+        <div
+            key={event.id}
+            className="rounded-3xl border border-border/60 bg-card p-4 shadow-sm transition-shadow hover:shadow-md flex flex-col gap-3.5"
+        >
+            {/* Başlık + durum + İncele (public sayfayı yeni sekmede açar) */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="font-bold text-[15px] leading-snug break-words text-foreground">{event.name || t('ngo_admin_events.unnamedEvent')}</h4>
+                    {event.completed ? <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100"><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Tamamlandı</Badge> : <StatusBadge status={event.status} />}
+                </div>
+                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{event.date || event.startDate || '—'}</span>
+                    {event.location?.city ? <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{event.location.city}</span> : null}
+                </p>
+              </div>
+              <a href={`/events/${event.id}`} target="_blank" rel="noopener noreferrer" title="İncele — public sayfayı aç" aria-label="İncele" className="shrink-0 rounded-full p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                <Eye className="h-4 w-4" />
+              </a>
+            </div>
+            {/* Aksiyonlar — sarılan ızgara (mobilde de hepsi görünür, taşma/sıkışma yok) */}
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                <SocialShareButton
+                    kind="event"
+                    item={{
+                        title: event.name || '',
+                        description: event.description || '',
+                        date: event.date || event.startDate || '',
+                        location: event.location?.address || '',
+                        city: event.location?.city || '',
+                        ngoName: activeEntity?.data.name || '',
+                        url: typeof window !== 'undefined' ? `${window.location.origin}/events/${event.id}` : '',
+                    }}
+                />
+                <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => openEdit(event)}>
+                    <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
+                </Button>
+                <Button asChild variant="outline" size="sm" className="rounded-xl w-full sm:w-auto border-blue-500/30 text-blue-600 hover:bg-blue-500/10 hover:text-blue-700">
+                    <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)"><Megaphone className="h-4 w-4 mr-1.5" /> Google'da Ücretsiz Tanıt</a>
+                </Button>
+                <EventCheckinQR eventId={event.id} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
+                <RewardManager kind="event" id={event.id} />
+                <ExamManager id={event.id} />
+                <EventCompleteButton eventId={event.id} />
+                <EventAttendees eventId={event.id} />
+                <BroadcastMessageButton targetId={event.id} kind="event" title={event.name || ''} className="rounded-xl w-full sm:w-auto" />
+                <EventBadgeCards eventId={event.id} eventName={event.name || ''} ngoName={activeEntity?.data.name || ''} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
+                <EventCertificates eventId={event.id} eventName={event.name || ''} ngoName={activeEntity?.data.name || ''} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
+            </div>
+        </div>
+    );
 
     // ---- New / edit event dialog state ----
     const [createOpen, setCreateOpen] = useState(false);
@@ -735,8 +800,9 @@ export default function EventManagementPage() {
             )}
 
             <Tabs defaultValue="my-events">
-                <TabsList className="grid w-full grid-cols-3 max-w-lg">
+                <TabsList className="grid w-full grid-cols-4 max-w-2xl">
                     <TabsTrigger value="my-events" className="gap-1.5 px-2"><Calendar className="h-4 w-4 shrink-0" /> <span className="truncate">{t('ngo_admin_events.tabMyEvents')}</span></TabsTrigger>
+                    <TabsTrigger value="completed" className="gap-1.5 px-2"><CheckCircle2 className="h-4 w-4 shrink-0" /> <span className="truncate">Tamamlananlar{completedEvents.length > 0 ? ` (${completedEvents.length})` : ''}</span></TabsTrigger>
                     <TabsTrigger value="venues" className="gap-1.5 px-2"><Landmark className="h-4 w-4 shrink-0" /> <span className="truncate">{t('ngo_admin_events.tabVenues')}</span></TabsTrigger>
                     <TabsTrigger value="booking" className="gap-1.5 px-2"><CheckCircle2 className="h-4 w-4 shrink-0" /> <span className="truncate">{t('ngo_admin_events.tabBooking')}</span></TabsTrigger>
                 </TabsList>
@@ -798,65 +864,15 @@ export default function EventManagementPage() {
                                 </div>
                             )}
 
-                            {!initialLoading && isClub && (myEvents?.length ?? 0) === 0 && (
+                            {!initialLoading && isClub && activeEvents.length === 0 && (
                                 <p className="text-sm text-muted-foreground py-6 text-center">
                                     {t('ngo_admin_events.noEventsYet')}
                                 </p>
                             )}
 
-                            {!initialLoading && (myEvents?.length ?? 0) > 0 && (
+                            {!initialLoading && activeEvents.length > 0 && (
                                 <div className="space-y-3">
-                                    {myEvents!.map((event) => (
-                                        <div
-                                            key={event.id}
-                                            className="rounded-3xl border border-border/60 bg-card p-4 shadow-sm transition-shadow hover:shadow-md flex flex-col gap-3.5"
-                                        >
-                                            {/* Başlık + durum + İncele (public sayfayı yeni sekmede açar) */}
-                                            <div className="flex items-start justify-between gap-2">
-                                              <div className="min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <h4 className="font-bold text-[15px] leading-snug break-words text-foreground">{event.name || t('ngo_admin_events.unnamedEvent')}</h4>
-                                                    <StatusBadge status={event.status} />
-                                                </div>
-                                                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-                                                    <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{event.date || event.startDate || '—'}</span>
-                                                    {event.location?.city ? <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{event.location.city}</span> : null}
-                                                </p>
-                                              </div>
-                                              <a href={`/events/${event.id}`} target="_blank" rel="noopener noreferrer" title="İncele — public sayfayı aç" aria-label="İncele" className="shrink-0 rounded-full p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                                                <Eye className="h-4 w-4" />
-                                              </a>
-                                            </div>
-                                            {/* Aksiyonlar — sarılan ızgara (mobilde de hepsi görünür, taşma/sıkışma yok) */}
-                                            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
-                                                <SocialShareButton
-                                                    kind="event"
-                                                    item={{
-                                                        title: event.name || '',
-                                                        description: event.description || '',
-                                                        date: event.date || event.startDate || '',
-                                                        location: event.location?.address || '',
-                                                        city: event.location?.city || '',
-                                                        ngoName: activeEntity?.data.name || '',
-                                                        url: typeof window !== 'undefined' ? `${window.location.origin}/events/${event.id}` : '',
-                                                    }}
-                                                />
-                                                <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => openEdit(event)}>
-                                                    <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
-                                                </Button>
-                                                <Button asChild variant="outline" size="sm" className="rounded-xl w-full sm:w-auto border-blue-500/30 text-blue-600 hover:bg-blue-500/10 hover:text-blue-700">
-                                                    <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)"><Megaphone className="h-4 w-4 mr-1.5" /> Google'da Ücretsiz Tanıt</a>
-                                                </Button>
-                                                <EventCheckinQR eventId={event.id} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
-                                                <RewardManager kind="event" id={event.id} />
-                                                <ExamManager id={event.id} />
-                                                <EventCompleteButton eventId={event.id} />
-                                                <EventAttendees eventId={event.id} />
-                                                <EventBadgeCards eventId={event.id} eventName={event.name || ''} ngoName={activeEntity?.data.name || ''} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
-                                                <EventCertificates eventId={event.id} eventName={event.name || ''} ngoName={activeEntity?.data.name || ''} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
-                                            </div>
-                                        </div>
-                                    ))}
+                                    {activeEvents.map(renderEventCard)}
                                 </div>
                             )}
 
@@ -864,6 +880,34 @@ export default function EventManagementPage() {
                                 <p className="text-xs text-muted-foreground py-4">
                                     {t('ngo_admin_events.noPermission')}
                                 </p>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="completed" className="mt-6 space-y-6">
+                    <Card className="rounded-2xl">
+                        <CardHeader>
+                            <CardTitle>Tamamlanan Etkinlikler</CardTitle>
+                            <CardDescription className="text-xs mt-1">
+                                Tamamlanmış etkinlikler burada arşivlenir. Public etkinlik sayfasından tamamlanma anından 24 saat sonra otomatik kaldırılır.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {initialLoading && (
+                                <div className="flex items-center justify-center py-8 text-muted-foreground">
+                                    <Loader2 className="h-5 w-5 animate-spin mr-2" /> {t('ngo_admin_events.loading')}
+                                </div>
+                            )}
+                            {!initialLoading && completedEvents.length === 0 && (
+                                <p className="text-sm text-muted-foreground py-6 text-center">
+                                    Henüz tamamlanan etkinlik yok.
+                                </p>
+                            )}
+                            {!initialLoading && completedEvents.length > 0 && (
+                                <div className="space-y-3">
+                                    {completedEvents.map(renderEventCard)}
+                                </div>
                             )}
                         </CardContent>
                     </Card>

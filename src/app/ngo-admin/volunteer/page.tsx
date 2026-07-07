@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone, Globe, Send, MessageCircle, Check, Users, Clock } from "lucide-react";
+import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone, Check, Users, Clock } from "lucide-react";
 import React, { useMemo, useEffect, useRef, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -17,6 +17,14 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { VolunteerApplicants } from '@/components/volunteering/volunteer-applicants';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
+import { EventAttendees } from '@/components/events/event-attendees';
+import { EventBadgeCards, EventCertificates } from '@/components/events/event-bulk-docs';
+import { VolunteeringCheckinQR } from '@/components/volunteering/volunteering-checkin-qr';
+import { RewardManager } from '@/components/rewards/reward-manager';
+import { BroadcastMessageButton } from '@/components/messaging/broadcast-message-button';
+import { ApplicantProfileDialog } from '@/components/volunteering/applicant-profile-dialog';
+import { CheckCircle2 } from 'lucide-react';
 
 
 // Başvuru çekme + onay/red mantığını tek yerde topla. Hem üstteki ilan
@@ -152,42 +160,93 @@ const ListingApplications = ({
                 />
             </div>
             {apps.map((app) => (
-                <div key={app.id} className="p-3 border rounded-lg flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-3">
-                        <Avatar>
-                            <AvatarFallback>{app.userName?.charAt(0) || 'G'}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-semibold text-sm">{app.userName || 'Gönüllü'}</p>
-                            <p className="text-xs text-muted-foreground">{app.date}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 basis-full sm:basis-auto justify-end">
-                      <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" asChild>
-                        <Link href={`/profile/${app.userId}`}>Profil</Link>
-                      </Button>
-                      {app.status === 'Onaylandı' ? (
-                        <Badge className="bg-green-600 hover:bg-green-600 text-white"><Check className="h-3.5 w-3.5 mr-1" /> Onaylandı</Badge>
-                      ) : app.status === 'Reddedildi' ? (
-                        <Badge variant="destructive">Reddedildi</Badge>
-                      ) : (
-                        <>
-                          <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">Beklemede</Badge>
-                          <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleApplication(app, 'approved')}>Onayla</Button>
-                          <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => handleApplication(app, 'rejected')}>Reddet</Button>
-                        </>
-                      )}
-                    </div>
-                </div>
+                <ApplicantRow key={app.id} app={app} listingTitle={listingTitle} handleApplication={handleApplication} />
             ))}
         </div>
     );
 };
 
+// Tek başvuran satırı — başvuranın gerçek adını (users/{uid}.name) çeker; başvuru
+// kaydındaki userName boş/"Gönüllü" ise bununla doldurur (isim-soyisim gösterimi).
+// "Profil" butonu, o ilana dair başvuru detayı + kullanıcının gönüllülük profilini
+// gösteren ApplicantProfileDialog'u açar.
+const ApplicantRow = ({
+    app, listingTitle, handleApplication,
+}: {
+    app: UserApplication;
+    listingTitle: string;
+    handleApplication: (application: UserApplication, decision: 'approved' | 'rejected') => void;
+}) => {
+    const db = useFirestore();
+    const userRef = useMemoFirebase(
+        () => (db && app.userId ? doc(db, COLLECTIONS.users, app.userId) : null),
+        [db, app.userId],
+    );
+    const { data: userDoc } = useDoc<{ name?: string; username?: string }>(userRef);
+    // İsim önceliği: profil adı (isim-soyisim) → başvuru kaydındaki ad → 'Gönüllü'.
+    const profileName = (userDoc?.name || '').trim();
+    const displayName = profileName || (app.userName && app.userName !== 'Gönüllü' ? app.userName : '') || app.userName || 'Gönüllü';
 
-const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, applications, handleApplication }: { opportunities: Volunteering[], isLoading: boolean, countsByListing: Record<string, PerListingCounts>, applications: UserApplication[], handleApplication: (application: UserApplication, decision: 'approved' | 'rejected') => void }) => {
+    return (
+        <div className="p-3 border rounded-lg flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+                <Avatar>
+                    <AvatarFallback>{displayName.charAt(0) || 'G'}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                    <p className="font-semibold text-sm break-words">{displayName}</p>
+                    <p className="text-xs text-muted-foreground">{app.date}</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2 basis-full sm:basis-auto justify-end">
+              <ApplicantProfileDialog
+                userId={app.userId}
+                userName={displayName}
+                application={{ status: app.status, date: app.date, title: app.title || listingTitle, rejectionReason: app.rejectionReason }}
+              />
+              {app.status === 'Onaylandı' ? (
+                <Badge className="bg-green-600 hover:bg-green-600 text-white"><Check className="h-3.5 w-3.5 mr-1" /> Onaylandı</Badge>
+              ) : app.status === 'Reddedildi' ? (
+                <Badge variant="destructive">Reddedildi</Badge>
+              ) : (
+                <>
+                  <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">Beklemede</Badge>
+                  <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleApplication(app, 'approved')}>Onayla</Button>
+                  <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => handleApplication(app, 'rejected')}>Reddet</Button>
+                </>
+              )}
+            </div>
+        </div>
+    );
+};
+
+
+const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, applications, handleApplication, ngoName, ngoLogoUrl }: { opportunities: Volunteering[], isLoading: boolean, countsByListing: Record<string, PerListingCounts>, applications: UserApplication[], handleApplication: (application: UserApplication, decision: 'approved' | 'rejected') => void, ngoName: string, ngoLogoUrl: string }) => {
     const { toast } = useToast();
     const db = useFirestore();
+
+    // Gönüllülük ilanını "Tamamla" — status='Tamamlandı' + completedAt yazar.
+    // Tamamlanan ilan "Tamamlananlar" tab'ına düşer; public sayfadan 24 saat
+    // sonra otomatik kaldırılır (volunteering/page.tsx filtresi).
+    const handleComplete = async (opp: Volunteering) => {
+        try {
+            await updateDoc(doc(db, COLLECTIONS.volunteering, opp.id), {
+                status: 'Tamamlandı',
+                completedAt: serverTimestamp(),
+            });
+            toast({
+                title: 'İlan Tamamlandı',
+                description: 'Gönüllülük ilanı tamamlandı olarak işaretlendi. "Tamamlananlar" sekmesinde görebilirsin.',
+            });
+        } catch (err) {
+            console.error('[ngo-admin/volunteer] handleComplete failed', err);
+            toast({
+                variant: 'destructive',
+                title: 'İşlem başarısız',
+                description: 'İlan tamamlanırken bir hata oluştu. Lütfen tekrar deneyin.',
+            });
+        }
+    };
 
     // Başvuruları ait olduğu ilana (entityId === ilan.id) grupla. Her ilan
     // kartının ALTINDAki accordion bölümü kendi başvurularını buradan alır.
@@ -293,58 +352,50 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, a
                       </AccordionItem>
                     </Accordion>
                 </CardContent>
-                <CardFooter className="flex flex-wrap gap-2">
-                    <Button asChild variant="secondary" size="sm" className='flex-1'>
-                        <Link href={`/volunteering/${opp.id}`}>Görüntüle</Link>
-                    </Button>
-                    {/* NOT: ayrı bir ilan "düzenle" rotası henüz yok (yalnızca /new
-                        var ve onun ?id'si STK id'sini ifade eder, ilan id'sini değil).
-                        Mevcut desene aykırı bir edit linki uydurmuyoruz; düzenleme
-                        rotası eklendiğinde buraya "Düzenle" butonu gelecek. */}
-                    {/* Süper admin onayı bekleyen (Beklemede) ilanlarda STK statusü
-                        değiştiremez → yayınla/pasife al butonu gösterilmez. */}
-                    {isPending ? null : isPassive ? (
-                        <Button variant="default" size="sm" className='flex-1' onClick={() => handleToggleStatus(opp)}>Yayına Al</Button>
-                    ) : (
-                        <Button variant="destructive" size="sm" className='flex-1' onClick={() => handleToggleStatus(opp)}>Pasife Al</Button>
-                    )}
-                    {/* Google Ad Grants ile ücretsiz tanıtım — ilan başlığı + sosyal alanı ads sihirbazına taşınır */}
-                    <Button asChild variant="outline" size="sm" className="basis-full">
+                {/* Aksiyonlar — etkinlik yönetimi kartıyla aynı buton seti:
+                    Sosyal Medya · Google Tanıt · Kayıt/Check-in QR · Ödül · Katılımcılar
+                    · Mesaj Gönder · Yaka Kartları · Sertifikalar · Tamamla + yayın kontrolü. */}
+                <CardFooter className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                    <SocialShareButton
+                        kind="volunteering"
+                        item={{
+                            title: opp.title,
+                            description: opp.description || '',
+                            date: opp.dates?.eventStart || '',
+                            location: opp.location?.address || '',
+                            city: opp.location?.city || '',
+                            ngoName: ngoName || opp.organization || '',
+                            url: `${origin}/volunteering/${opp.id}`,
+                        }}
+                    />
+                    {/* Google Ad Grants ile ücretsiz tanıtım */}
+                    <Button asChild variant="outline" size="sm" className="rounded-xl w-full sm:w-auto border-blue-500/30 text-blue-600 hover:bg-blue-500/10 hover:text-blue-700">
                         <Link href={`/ngo-admin/ads?source=volunteering&listingId=${opp.id}&q=${encodeURIComponent(opp.title || '')}`}>
-                            <Megaphone className="h-3.5 w-3.5 mr-1.5" /> Google&apos;da Ücretsiz Tanıt
+                            <Megaphone className="h-4 w-4 mr-1.5" /> Google&apos;da Ücretsiz Tanıt
                         </Link>
                     </Button>
-                    {/* Paylaş / yayınla: herkese açık ilan linki üzerinden web / Telegram / WhatsApp */}
-                    {(() => {
-                      const publicUrl = `${origin}/volunteering/${opp.id}`;
-                      return (
-                        <div className="basis-full flex flex-wrap gap-2">
-                          <Button asChild variant="outline" size="sm" className="flex-1">
-                            <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-                              <Globe className="h-3.5 w-3.5 mr-1.5" /> Web sitende
-                            </a>
-                          </Button>
-                          <Button asChild variant="outline" size="sm" className="flex-1">
-                            <a
-                              href={`https://t.me/share/url?url=${encodeURIComponent(publicUrl)}&text=${encodeURIComponent(opp.title || '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <Send className="h-3.5 w-3.5 mr-1.5" /> Telegram&apos;da
-                            </a>
-                          </Button>
-                          <Button asChild variant="outline" size="sm" className="flex-1">
-                            <a
-                              href={`https://wa.me/?text=${encodeURIComponent(`${opp.title || ''} ${publicUrl}`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <MessageCircle className="h-3.5 w-3.5 mr-1.5" /> WhatsApp&apos;ta
-                            </a>
-                          </Button>
-                        </div>
-                      );
-                    })()}
+                    <VolunteeringCheckinQR oppId={opp.id} logoUrl={ngoLogoUrl} />
+                    <RewardManager kind="volunteering" id={opp.id} />
+                    <EventAttendees eventId={opp.id} label="Gönüllüler" endpoint={`/api/volunteering/${opp.id}/attendees`} />
+                    <BroadcastMessageButton targetId={opp.id} kind="volunteering" title={opp.title} className="rounded-xl w-full sm:w-auto" />
+                    <EventBadgeCards eventId={opp.id} eventName={opp.title} ngoName={ngoName} logoUrl={ngoLogoUrl} orgKind="volunteer" attendeesEndpoint={`/api/volunteering/${opp.id}/attendees`} />
+                    <EventCertificates eventId={opp.id} eventName={opp.title} ngoName={ngoName} logoUrl={ngoLogoUrl} orgKind="volunteer" attendeesEndpoint={`/api/volunteering/${opp.id}/attendees`} />
+                    {/* Süper admin onayı bekleyen (Beklemede) ilanlarda STK statusü
+                        değiştiremez → yayınla/pasife al gösterilmez. */}
+                    {isPending ? null : isPassive ? (
+                        <Button variant="default" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => handleToggleStatus(opp)}>Yayına Al</Button>
+                    ) : (
+                        <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => handleToggleStatus(opp)}>Pasife Al</Button>
+                    )}
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        className="rounded-xl w-full sm:w-auto"
+                        onClick={() => handleComplete(opp)}
+                        disabled={status === 'Tamamlandı'}
+                    >
+                        <CheckCircle2 className="h-4 w-4 mr-1.5" /> Tamamla
+                    </Button>
                 </CardFooter>
               </Card>
               );
@@ -450,6 +501,16 @@ const VolunteerPage = () => {
   // Başvuruları + onay/red mantığını tek kaynaktan çek (hem üst ilan rozetleri
   // hem alttaki başvuru listesi aynı veriyi kullanır). Veri yazımı korunur.
   const oppList = useMemo(() => opportunities || [], [opportunities]);
+  // Aktif (yayında/pasif) ve tamamlanan ilanları ayır. Tamamlananlar ayrı tab'da
+  // arşivlenir; public listeden (volunteering/page.tsx) 24 saat sonra otomatik düşer.
+  const activeOpps = useMemo(
+    () => oppList.filter((o) => (o as Volunteering & { status?: string }).status !== 'Tamamlandı'),
+    [oppList],
+  );
+  const completedOpps = useMemo(
+    () => oppList.filter((o) => (o as Volunteering & { status?: string }).status === 'Tamamlandı'),
+    [oppList],
+  );
   const { applications, isLoading: appsLoading, handleApplication } = useVolunteerApplications(oppList);
   const countsByListing = useApplicationCountsByListing(applications);
 
@@ -508,8 +569,9 @@ const VolunteerPage = () => {
           </div>
 
           <Tabs defaultValue="manage" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="manage">İlanlar & Başvurular</TabsTrigger>
+              <TabsTrigger value="completed">Tamamlananlar{completedOpps.length > 0 ? ` (${completedOpps.length})` : ''}</TabsTrigger>
               <TabsTrigger value="publish">Web'de Yayınla</TabsTrigger>
             </TabsList>
             <TabsContent value="manage" className="mt-4 space-y-4">
@@ -547,7 +609,16 @@ const VolunteerPage = () => {
                         </CardContent>
                       </Card>
                     )}
-                    <OpportunityManagementTab opportunities={oppList} isLoading={isLoading} countsByListing={countsByListing} applications={applications} handleApplication={handleApplication} />
+                    <OpportunityManagementTab opportunities={activeOpps} isLoading={isLoading} countsByListing={countsByListing} applications={applications} handleApplication={handleApplication} ngoName={ngoDoc?.name || ''} ngoLogoUrl={ngoDoc?.avatarUrl || ''} />
+                </section>
+            </TabsContent>
+            <TabsContent value="completed" className="mt-4 space-y-4">
+                <section className="space-y-3">
+                    <h2 className="text-lg font-bold px-1">Tamamlanan İlanlar</h2>
+                    <p className="text-xs text-muted-foreground px-1">
+                        Tamamlanmış gönüllülük ilanları burada arşivlenir. Public gönüllülük sayfasından tamamlanma anından 24 saat sonra otomatik kaldırılır.
+                    </p>
+                    <OpportunityManagementTab opportunities={completedOpps} isLoading={isLoading} countsByListing={countsByListing} applications={applications} handleApplication={handleApplication} ngoName={ngoDoc?.name || ''} ngoLogoUrl={ngoDoc?.avatarUrl || ''} />
                 </section>
             </TabsContent>
             <TabsContent value="publish" className="mt-4">
