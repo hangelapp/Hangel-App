@@ -12,7 +12,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { Country } from 'country-state-city';
 import { LocationFields } from '@/components/shared/location-fields';
-import Link from 'next/link';
+import { SettingsNextStep } from '@/components/shared/settings-next-step';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
+import { useAutosave } from '@/hooks/use-autosave';
 import type { User } from '@/lib/types';
 
 const emptyUser: User = {
@@ -129,6 +131,7 @@ export default function ProfileSettingsPage() {
   }, [userData]);
 
   const handleChange = (section: string, field: string, value: unknown) => {
+    markDirty();
     setProfile(prev => {
         const newProfile = JSON.parse(JSON.stringify(prev));
         if (section === 'personalInfo' && field === 'address') {
@@ -162,6 +165,7 @@ export default function ProfileSettingsPage() {
   };
 
   const handleSocialChange = (field: string, value: string) => {
+    markDirty();
     setProfile(prev => {
         const newProfile = JSON.parse(JSON.stringify(prev));
         newProfile.personalInfo.social = {
@@ -176,6 +180,7 @@ export default function ProfileSettingsPage() {
     (profile.personalInfo.social as (User['personalInfo']['social'] & { custom?: { platform: string; url: string }[] }) | undefined)?.custom ?? [];
 
   const setCustomLinks = (links: { platform: string; url: string }[]) => {
+    markDirty();
     setProfile(prev => {
         const newProfile = JSON.parse(JSON.stringify(prev));
         newProfile.personalInfo.social = {
@@ -269,10 +274,11 @@ export default function ProfileSettingsPage() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userDocRef || isSaving) return;
-    setIsSaving(true);
+  // Ortak kayıt yolu: uniqueness (telefon/e-posta) + payload + updateDoc.
+  // silent=true → autosave (başarı toast'u yok); false → Kaydet butonu.
+  // Dönüş: kayıt yazıldı mı (duplicate'te false).
+  const persistProfile = async (silent: boolean): Promise<boolean> => {
+    if (!userDocRef) return false;
 
     // Uniqueness check: telefon + email bir kullanıcıda sadece 1 kere
     // bulunabilir. Server-side endpoint duplicate'i kontrol eder.
@@ -299,8 +305,7 @@ export default function ProfileSettingsPage() {
                     title: 'Bu ' + label + ' zaten kullanımda',
                     description: 'Başka bir hesap bu ' + label + 'ni kullanıyor. Lütfen farklı bir ' + label + ' girin.',
                 });
-                setIsSaving(false);
-                return;
+                return false;
             }
         }
     } catch (err) {
@@ -342,9 +347,27 @@ export default function ProfileSettingsPage() {
         'personalInfo.address.fullAddress': normalizedAddress.fullAddress,
     };
 
-    try {
-        await updateDoc(userDocRef, payload);
+    await updateDoc(userDocRef, payload);
+    if (!silent) {
         toast({ title: t('dashboard.settingsProfile.toastSavedTitle'), description: t('dashboard.settingsProfile.toastSavedDesc') });
+    }
+    return true;
+  };
+
+  // Otomatik kayıt: son değişiklikten 1.2 sn sonra sessizce yaz.
+  // İlk yükleme (Firestore hydration) dirty işaretlemediği için tetiklenmez.
+  const { status: autosaveStatus, markDirty } = useAutosave(async () => {
+    const ok = await persistProfile(true);
+    if (!ok) throw new Error('duplicate');
+  }, [profile], { delayMs: 1200 });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userDocRef || isSaving) return;
+    setIsSaving(true);
+    try {
+        const ok = await persistProfile(false);
+        if (!ok) return;
 
         if (isOnboarding) {
             trackOnboardingStep(db, 'profile', 'complete');
@@ -381,9 +404,12 @@ export default function ProfileSettingsPage() {
        <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
             <ArrowLeft className="h-6 w-6" />
         </Button>
-      <div>
-        <h1 className="text-3xl font-bold font-headline">{t('dashboard.settingsProfile.heading')}</h1>
-        <p className="text-muted-foreground text-sm">{t('dashboard.settingsProfile.subheading')}</p>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold font-headline">{t('dashboard.settingsProfile.heading')}</h1>
+          <p className="text-muted-foreground text-sm">{t('dashboard.settingsProfile.subheading')}</p>
+        </div>
+        <AutosaveIndicator status={autosaveStatus} />
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
@@ -543,18 +569,6 @@ export default function ProfileSettingsPage() {
 
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><GraduationCap className="h-5 w-5 text-primary" /> Eğitim Bilgileri</CardTitle>
-                <CardDescription>Eğitim geçmişin (lise, üniversite, yüksek lisans, doktora) ve kulüp üyeliklerin artık tek sayfada — Eğitim Geçmişi.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Button asChild variant="outline" className="h-11 rounded-xl gap-2">
-                    <Link href="/settings/education"><GraduationCap className="h-4 w-4" /> Eğitim Geçmişini Düzenle</Link>
-                </Button>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-primary" /> {t('dashboard.settingsProfile.socialCardTitle')}</CardTitle>
                 <CardDescription>Profilinizde görünecek bağlantıları ekleyin. Boş bırakabilirsiniz.</CardDescription>
             </CardHeader>
@@ -654,6 +668,16 @@ export default function ProfileSettingsPage() {
                 </Button>
             </CardContent>
         </Card>
+
+        {/* Akış: kişisel bilgiler → eğitim → afet/acil durum → gönüllülük.
+            Eğitim ayrıntısı /settings/education'da (tek kaynak); buradan yönlendirilir. */}
+        <SettingsNextStep
+            href="/settings/education"
+            icon={<GraduationCap className="h-5 w-5 text-blue-600" />}
+            iconBg="bg-blue-100 dark:bg-blue-900/30"
+            title="Eğitim Bilgileri"
+            description="Lise, üniversite ve kulüp üyeliklerini düzenle."
+        />
 
         <div className="flex flex-col sm:flex-row gap-3 sm:justify-end pt-4 pb-2">
           {isOnboarding && (

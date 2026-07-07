@@ -62,16 +62,23 @@ env:
     value: "tr"
     availability:
       - RUNTIME
+  # Public site origin — QR/Wallet/sertifika/.ics çıktı URL'leri ile paylaşım/
+  # unsubscribe linklerinin tabanı. 2026-07 hangelorg göçü: hangel.org.tr → hangel.org.
+  - variable: NEXT_PUBLIC_APP_URL
+    value: "https://hangel.org"
+    availability:
+      - BUILD
+      - RUNTIME
   # Web Push (FCM) — VAPID public key. Build-time'da gerek (client SDK init).
   - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
     value: "BKywxnqvDXeMiOwSOm8WGNlssLlCau8gLKOM2F0EYZ38wlR9uaj7Z3horSPEufkK6sNh9_UeCMGJAulBNsV94Hs"
     availability:
       - BUILD
       - RUNTIME
-  # Santral WebRTC geçidi (kendi sunucumuz — santral.hangel.org). NEXT_PUBLIC:
+  # Santral WebRTC geçidi (kendi sunucumuz — santral.hangel.org.tr). NEXT_PUBLIC:
   # softphone credential'ları doğası gereği tarayıcıda; rotate edilebilir.
   - variable: NEXT_PUBLIC_SANTRAL_WSS_URL
-    value: "wss://santral.hangel.org/ws"
+    value: "wss://santral.hangel.org.tr/ws"
     availability:
       - BUILD
       - RUNTIME
@@ -86,12 +93,12 @@ env:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_SANTRAL_SIP_DOMAIN
-    value: "santral.hangel.org"
+    value: "santral.hangel.org.tr"
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_SANTRAL_TURN_URL
-    value: "turn:santral.hangel.org:3478"
+    value: "turn:santral.hangel.org.tr:3478"
     availability:
       - BUILD
       - RUNTIME

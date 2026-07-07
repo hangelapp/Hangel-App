@@ -5,6 +5,10 @@ import { Capacitor } from '@capacitor/core';
 import { doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { Loader2, Droplet, Siren, HeartPulse, Activity, HeartHandshake } from 'lucide-react';
 
+import { SettingsNextStep } from '@/components/shared/settings-next-step';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
+import { useAutosave } from '@/hooks/use-autosave';
+
 import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -64,20 +68,35 @@ export default function EmergencySettingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- toast/t stable; rerun only on user/firestore
   }, [user, firestore]);
 
+  // Ortak yazım — Kaydet butonu ve otomatik kayıt aynı yolu kullanır.
+  const persist = async () => {
+    if (!user || !firestore) return;
+    await updateDoc(doc(firestore, COLLECTIONS.users, user.uid), {
+      'personalInfo.bloodType': prefs.bloodType || null,
+      'personalInfo.bloodNotifications': !!prefs.bloodNotifications,
+      'personalInfo.canDonateBlood': !!prefs.canDonateBlood,
+      'personalInfo.stemCellRegistered': !!prefs.stemCellRegistered,
+      'personalInfo.thrombocyteAvailable': !!prefs.thrombocyteAvailable,
+      'personalInfo.emergencyAvailable': !!prefs.emergencyAvailable,
+      'preferences.disasterAlerts': !!prefs.disasterAlerts,
+      'preferences.emergencyUpdatedAt': serverTimestamp(),
+    });
+  };
+
+  // Otomatik kayıt: anahtar/seçim değişince 700 ms sonra sessizce yaz.
+  const { status: autosaveStatus, markDirty } = useAutosave(persist, [prefs], { delayMs: 700 });
+
+  // Kullanıcı kaynaklı değişiklik → dirty işaretle + state güncelle.
+  const update = (patch: Partial<EmergencyPrefs>) => {
+    markDirty();
+    setPrefs((p) => ({ ...p, ...patch }));
+  };
+
   const save = async () => {
     if (!user || !firestore) return;
     setSaving(true);
     try {
-      await updateDoc(doc(firestore, COLLECTIONS.users, user.uid), {
-        'personalInfo.bloodType': prefs.bloodType || null,
-        'personalInfo.bloodNotifications': !!prefs.bloodNotifications,
-        'personalInfo.canDonateBlood': !!prefs.canDonateBlood,
-        'personalInfo.stemCellRegistered': !!prefs.stemCellRegistered,
-        'personalInfo.thrombocyteAvailable': !!prefs.thrombocyteAvailable,
-        'personalInfo.emergencyAvailable': !!prefs.emergencyAvailable,
-        'preferences.disasterAlerts': !!prefs.disasterAlerts,
-        'preferences.emergencyUpdatedAt': serverTimestamp(),
-      });
+      await persist();
       toast({ title: t('emergencyPage.saved'), description: t('emergencyPage.savedDesc') });
     } catch (e) {
       toast({ variant: 'destructive', title: t('emergencyPage.saveError'), description: e instanceof Error ? e.message : t('common.unknownError') });
@@ -127,9 +146,12 @@ export default function EmergencySettingsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="px-4 sm:px-1">
-        <h1 className="text-2xl font-black tracking-tight">{t('emergencyPage.title')}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t('emergencyPage.subtitle')}</p>
+      <div className="px-4 sm:px-1 flex items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight">{t('emergencyPage.title')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('emergencyPage.subtitle')}</p>
+        </div>
+        <AutosaveIndicator status={autosaveStatus} />
       </div>
 
       <Card>
@@ -140,7 +162,7 @@ export default function EmergencySettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground">{t('emergencyPage.bloodType')}</label>
-            <Select value={prefs.bloodType || ''} onValueChange={(v) => setPrefs((p) => ({ ...p, bloodType: v }))}>
+            <Select value={prefs.bloodType || ''} onValueChange={(v) => update({ bloodType: v })}>
               <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={t('emergencyPage.bloodTypePlaceholder')} /></SelectTrigger>
               <SelectContent>{BLOOD_TYPES.map((bt: BloodType) => (<SelectItem key={bt} value={bt}>{bt === 'Bilinmiyor' ? t('emergencyPage.bloodTypeUnknown') : bt}</SelectItem>))}</SelectContent>
             </Select>
@@ -157,10 +179,10 @@ export default function EmergencySettingsPage() {
               </Button>
             )}
           </div>
-          <ToggleRow label={t('emergencyPage.bloodNotifications')} checked={!!prefs.bloodNotifications} onChange={(v) => setPrefs((p) => ({ ...p, bloodNotifications: v }))} />
-          <ToggleRow label={t('emergencyPage.canDonateBlood')} checked={!!prefs.canDonateBlood} onChange={(v) => setPrefs((p) => ({ ...p, canDonateBlood: v }))} />
-          <ToggleRow label={t('emergencyPage.thrombocyte')} checked={!!prefs.thrombocyteAvailable} onChange={(v) => setPrefs((p) => ({ ...p, thrombocyteAvailable: v }))} />
-          <ToggleRow label={t('emergencyPage.stemCell')} checked={!!prefs.stemCellRegistered} onChange={(v) => setPrefs((p) => ({ ...p, stemCellRegistered: v }))} />
+          <ToggleRow label={t('emergencyPage.bloodNotifications')} checked={!!prefs.bloodNotifications} onChange={(v) => update({ bloodNotifications: v })} />
+          <ToggleRow label={t('emergencyPage.canDonateBlood')} checked={!!prefs.canDonateBlood} onChange={(v) => update({ canDonateBlood: v })} />
+          <ToggleRow label={t('emergencyPage.thrombocyte')} checked={!!prefs.thrombocyteAvailable} onChange={(v) => update({ thrombocyteAvailable: v })} />
+          <ToggleRow label={t('emergencyPage.stemCell')} checked={!!prefs.stemCellRegistered} onChange={(v) => update({ stemCellRegistered: v })} />
         </CardContent>
       </Card>
 
@@ -170,14 +192,23 @@ export default function EmergencySettingsPage() {
           <CardDescription>{t('emergencyPage.disasterSectionDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <ToggleRow label={t('emergencyPage.disasterAlerts')} checked={!!prefs.disasterAlerts} onChange={(v) => setPrefs((p) => ({ ...p, disasterAlerts: v }))} icon={<HeartPulse className="h-4 w-4 text-orange-600" />} />
-          <ToggleRow label={t('emergencyPage.emergencyAvailable')} checked={!!prefs.emergencyAvailable} onChange={(v) => setPrefs((p) => ({ ...p, emergencyAvailable: v }))} icon={<Activity className="h-4 w-4 text-orange-600" />} />
+          <ToggleRow label={t('emergencyPage.disasterAlerts')} checked={!!prefs.disasterAlerts} onChange={(v) => update({ disasterAlerts: v })} icon={<HeartPulse className="h-4 w-4 text-orange-600" />} />
+          <ToggleRow label={t('emergencyPage.emergencyAvailable')} checked={!!prefs.emergencyAvailable} onChange={(v) => update({ emergencyAvailable: v })} icon={<Activity className="h-4 w-4 text-orange-600" />} />
         </CardContent>
       </Card>
 
       <Button onClick={save} disabled={saving} className="w-full h-12 rounded-xl font-bold">
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('emergencyPage.save')}
       </Button>
+
+      {/* Akış: kişisel bilgiler → eğitim → afet/acil durum → gönüllülük. */}
+      <SettingsNextStep
+        href="/settings/volunteer"
+        icon={<HeartHandshake className="h-5 w-5 text-primary" />}
+        iconBg="bg-primary/10"
+        title="Gönüllülük Bilgileri"
+        description="Yetenekler, ilgi alanları ve gönüllülük tercihlerini düzenle."
+      />
     </div>
   );
 }

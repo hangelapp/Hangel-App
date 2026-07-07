@@ -2,7 +2,11 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { collection, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where, limit as fsLimit } from 'firebase/firestore';
-import { Loader2, GraduationCap, Users2, Plus, Trash2 } from 'lucide-react';
+import { Loader2, GraduationCap, Users2, Plus, Trash2, Siren } from 'lucide-react';
+
+import { SettingsNextStep } from '@/components/shared/settings-next-step';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
+import { useAutosave } from '@/hooks/use-autosave';
 
 import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -76,12 +80,15 @@ export default function EducationSettingsPage() {
     );
   }, [availableClubs, clubSearch]);
 
-  const addEducation = () => setEducation((prev) => [...prev, { level: '', school: '' }]);
-  const removeEducation = (idx: number) => setEducation((prev) => prev.filter((_, i) => i !== idx));
-  const updateEducation = (idx: number, patch: Partial<EducationEntry>) =>
+  const addEducation = () => { markDirty(); setEducation((prev) => [...prev, { level: '', school: '' }]); };
+  const removeEducation = (idx: number) => { markDirty(); setEducation((prev) => prev.filter((_, i) => i !== idx)); };
+  const updateEducation = (idx: number, patch: Partial<EducationEntry>) => {
+    markDirty();
     setEducation((prev) => prev.map((e, i) => (i === idx ? { ...e, ...patch } : e)));
+  };
 
   const toggleClub = (clubId: string) => {
+    markDirty();
     setClubMemberships((prev) =>
       prev.includes(clubId) ? prev.filter((c) => c !== clubId) : [...prev, clubId],
     );
@@ -110,15 +117,24 @@ export default function EducationSettingsPage() {
     } catch { /* search optional */ }
   };
 
+  // Ortak yazım — Kaydet butonu ve otomatik kayıt aynı yolu kullanır.
+  const persist = async () => {
+    if (!user || !firestore) return;
+    await updateDoc(doc(firestore, COLLECTIONS.users, user.uid), {
+      'volunteerInfo.education': education.filter((e) => e.school.trim()),
+      'volunteerInfo.clubMemberships': clubMemberships,
+      'volunteerInfo.educationUpdatedAt': serverTimestamp(),
+    });
+  };
+
+  // Otomatik kayıt: son değişiklikten 1.2 sn sonra sessizce yaz (toast yok).
+  const { status: autosaveStatus, markDirty } = useAutosave(persist, [education, clubMemberships], { delayMs: 1200 });
+
   const save = async () => {
     if (!user || !firestore) return;
     setSaving(true);
     try {
-      await updateDoc(doc(firestore, COLLECTIONS.users, user.uid), {
-        'volunteerInfo.education': education.filter((e) => e.school.trim()),
-        'volunteerInfo.clubMemberships': clubMemberships,
-        'volunteerInfo.educationUpdatedAt': serverTimestamp(),
-      });
+      await persist();
       toast({ title: t('educationPage.saved'), description: t('educationPage.savedDesc') });
     } catch (e) {
       toast({ variant: 'destructive', title: t('educationPage.saveError'), description: e instanceof Error ? e.message : t('common.unknownError') });
@@ -134,9 +150,12 @@ export default function EducationSettingsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="px-4 sm:px-1">
-        <h1 className="text-2xl font-black tracking-tight">{t('educationPage.title')}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t('educationPage.subtitle')}</p>
+      <div className="px-4 sm:px-1 flex items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight">{t('educationPage.title')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('educationPage.subtitle')}</p>
+        </div>
+        <AutosaveIndicator status={autosaveStatus} />
       </div>
 
       <Card>
@@ -260,6 +279,15 @@ export default function EducationSettingsPage() {
       <Button onClick={save} disabled={saving} className="w-full h-12 rounded-xl font-bold">
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('educationPage.save')}
       </Button>
+
+      {/* Akış: kişisel bilgiler → eğitim → afet/acil durum → gönüllülük. */}
+      <SettingsNextStep
+        href="/settings/emergency"
+        icon={<Siren className="h-5 w-5 text-orange-600" />}
+        iconBg="bg-orange-100 dark:bg-orange-900/30"
+        title="Afet ve Acil Durum"
+        description="Kan grubu, bağış tercihleri ve afet gönüllülüğü."
+      />
     </div>
   );
 }
