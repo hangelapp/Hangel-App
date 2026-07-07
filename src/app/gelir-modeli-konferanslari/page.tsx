@@ -311,25 +311,22 @@ const audience = [
   { icon: Award, title: 'Sertifikalı', desc: 'Konferans katılımcılarına resmî katılım sertifikası verilir.' },
 ];
 
-// Canlı market sayacı — /api/market/stats'tan (10 dk cache) gerçek ürün/marka
-// sayısını çeker; "kaç marka ve ürün olduğu anlık değişsin" (2026-07-07).
-// brandCount kaynağı (appStats/marketStats) yoksa güvenli "4.000+" gösterilir.
+// Canlı marka sayacı — /api/market/stats'tan (10 dk cache) gerçek affiliate
+// marka sayısını çeker (2026-07-07; kullanıcı kararı: ürün sayısı gösterilmez,
+// yalnız marka). Yeni marka onaylanınca sayı kendiliğinden artar.
 function LiveMarketStats() {
-  const [stats, setStats] = useState<{ products: number; brandCount: number | null } | null>(null);
+  const [brands, setBrands] = useState<number | null>(null);
   useEffect(() => {
     fetch('/api/market/stats')
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
-        if (j?.ok && typeof j.products === 'number') {
-          setStats({ products: j.products, brandCount: typeof j.brandCount === 'number' ? j.brandCount : null });
-        }
+        if (j?.ok && typeof j.brands === 'number' && j.brands > 0) setBrands(j.brands);
       })
       .catch(() => {});
   }, []);
-  const marka = stats?.brandCount ? stats.brandCount.toLocaleString('tr-TR') : '4.000+';
-  const urun = stats?.products ? stats.products.toLocaleString('tr-TR') : '1.900.000+';
+  const marka = brands ? brands.toLocaleString('tr-TR') : '130+';
   return (
-    <>Tüm gönüllülerin alışverişten bağış desteği: {marka} marka ve {urun} üründe %2 — %15 STK&apos;ya bağış</>
+    <>Tüm gönüllülerin alışverişten bağış desteği: {marka} markada %2 — %15 STK&apos;ya bağış</>
   );
 }
 

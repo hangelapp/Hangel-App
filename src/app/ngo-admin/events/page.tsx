@@ -49,7 +49,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, query, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, query, setDoc, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { useTranslation } from '@/components/providers/language-provider';
@@ -99,10 +99,191 @@ interface ClubEventDoc {
     description?: string;
     status?: EventStatus;
     createdAt?: number;
+    tags?: string[];
+    time?: string;
 }
 
 const EVENT_TYPE_OPTIONS = ['Seminer', 'Atölye', 'Konferans', 'Panel', 'Söyleşi', 'Konser', 'Sergi', 'Gezi / Tur', 'Turnuva', 'Yarışma', 'Eğitim', 'Buluşma', 'Gönüllülük', 'Bağış Kampanyası', 'Diğer'];
 const EVENT_LANGUAGE_OPTIONS = ['Türkçe', 'İngilizce', 'Türkçe + İngilizce', 'Almanca', 'Fransızca', 'Arapça', 'İşaret Dili', 'Diğer'];
+
+// ── Gelir Modeli Konferansları seri yönetimi ────────────────────────────────
+// Sadece seri organizatörü ULUSLARARASI SOSYAL FAYDA DERNEĞİ panelinde görünür.
+// Buradan açılan konferans, seri standardıyla (tag + slug + açıklama + sertifika)
+// oluşturulur ve /gelir-modeli-konferanslari sayfasında ANINDA listelenir.
+const SERIES_ORGANIZER_ID = 'ZqFO7jP2R3DvvyNlPRsp';
+const SERIES_TAG = 'gelir-modeli-konferansi';
+const SERIES_DESCRIPTION =
+    'Sivil Toplum Kuruluşlarında Gelir Modeli Oluşturma ve Sürdürülebilirlik Eğitim Konferansı. ' +
+    'Dernek, vakıf ve spor kulüplerinin gönüllü ve yöneticilerine özel; bağışçı çeşitlendirme, kurumsal iş birlikleri, ' +
+    'alışverişle bağış, sosyal girişimcilik ve şeffaflık başlıklarında uygulamalı eğitim. Katılım sertifikalıdır. ' +
+    'Her STK için başkan + 2 kişilik kontenjan planlanmıştır; genç yöneticilere öncelik verilir. ' +
+    'Bu proje İç İşleri Bakanlığı Sivil Toplum Kuruluşları Genel Müdürlüğü tarafından desteklenmektedir.';
+
+const slugifyTr = (s: string) =>
+    s.toLocaleLowerCase('tr')
+        .replaceAll('ı', 'i').replaceAll('ğ', 'g').replaceAll('ü', 'u')
+        .replaceAll('ş', 's').replaceAll('ö', 'o').replaceAll('ç', 'c')
+        .replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/(^-|-$)/g, '');
+
+function SeriesConferenceManager({ fs, organizer, events }: {
+    fs: NonNullable<ReturnType<typeof useFirestore>>;
+    organizer: { id: string; name: string; logoUrl?: string | null };
+    events: ClubEventDoc[];
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+}) {
+    const { toast } = useToast();
+    const { user: authUser } = useUser();
+    const [open, setOpen] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [city, setCity] = useState('');
+    const [district, setDistrict] = useState('');
+    const [date, setDate] = useState('');
+    const [start, setStart] = useState('14:00');
+    const [end, setEnd] = useState('17:00');
+    const [venue, setVenue] = useState('');
+    const [imageUrl, setImageUrl] = useState('');
+
+    const seriesEvents = events
+        .filter((e) => (e.tags || []).includes(SERIES_TAG))
+        .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+    const create = async () => {
+        if (!city.trim() || !date || !venue.trim()) {
+            toast({ variant: 'destructive', title: 'Eksik bilgi', description: 'Şehir, tarih ve mekan zorunludur.' });
+            return;
+        }
+        setSaving(true);
+        try {
+            // Slug: şehir (+ ilçe, şehirde ikinci etkinlikse) — çakışırsa -2, -3…
+            const base = `${SERIES_TAG}-${slugifyTr(city)}`;
+            let id = base;
+            if ((await getDoc(doc(fs, COLLECTIONS.events, id))).exists() && district.trim()) {
+                id = `${base}-${slugifyTr(district)}`;
+            }
+            for (let n = 2; (await getDoc(doc(fs, COLLECTIONS.events, id))).exists(); n++) {
+                id = `${base}-${n}`;
+            }
+            await setDoc(doc(fs, COLLECTIONS.events, id), {
+                name: `STK Gelir Modeli ve Sürdürülebilirlik — ${city.trim()}`,
+                slug: id,
+                type: 'Konferans',
+                status: 'Yayında',
+                language: 'Türkçe',
+                participationCondition: 'Herkese Açık',
+                providesCertificate: true,
+                tags: ['Konferans', 'Gelir Modeli', 'Sürdürülebilirlik', SERIES_TAG],
+                description: SERIES_DESCRIPTION,
+                organizer: organizer.name,
+                organizerId: organizer.id,
+                organizerKind: 'ngo',
+                organizerLogoUrl: organizer.logoUrl || null,
+                date,
+                time: start,
+                endDate: `${date} ${end}`,
+                location: { type: 'Fiziksel', address: venue.trim(), city: city.trim(), district: district.trim(), neighborhood: '', lat: '', lon: '' },
+                capacity: { max: 0, current: 0 },
+                imageUrl: imageUrl.trim(),
+                imageHint: `${city.trim()} manzarası`,
+                createdAt: Date.now(),
+                createdBy: authUser?.uid || null,
+                approvedBy: authUser?.uid || null,
+                approvedAt: Date.now(),
+            });
+            toast({ title: 'Konferans yayında 🧡', description: `${city.trim()} konferansı seri sayfasına eklendi.` });
+            setOpen(false);
+            setCity(''); setDistrict(''); setDate(''); setStart('14:00'); setEnd('17:00'); setVenue(''); setImageUrl('');
+        } catch (err) {
+            const e = err as { message?: string };
+            toast({ variant: 'destructive', title: 'Oluşturulamadı', description: (e?.message || '').slice(0, 160) || 'Bilinmeyen hata.' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <Card className="rounded-2xl border-primary/25 bg-primary/[0.03]">
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="flex items-center gap-2 text-primary">Gelir Modeli Konferansları</CardTitle>
+                    <CardDescription className="text-xs mt-1">
+                        Seri etkinlikleri buradan yönetilir; yeni şehir açıldığında{' '}
+                        <a href="/gelir-modeli-konferanslari" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">seri sayfasında</a>{' '}
+                        anında yayınlanır.
+                    </CardDescription>
+                </div>
+                <Button size="sm" onClick={() => setOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" /> Yeni Konferans
+                </Button>
+            </CardHeader>
+            <CardContent className="space-y-2">
+                {seriesEvents.length === 0 && <p className="text-sm text-muted-foreground">Henüz seri konferansı yok.</p>}
+                {seriesEvents.map((ev) => (
+                    <div key={ev.id} className="flex items-center justify-between gap-3 rounded-xl border bg-card px-3 py-2">
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold break-words">{ev.location?.city || ev.name}</p>
+                            <p className="text-xs text-muted-foreground">{ev.date} {ev.time || ''} · {ev.location?.district || ''}</p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <StatusBadge status={ev.status} />
+                            <Button asChild variant="ghost" size="sm" className="h-8 px-2">
+                                <a href={`/events/${ev.slug || ev.id}`} target="_blank" rel="noopener noreferrer">Görüntüle</a>
+                            </Button>
+                        </div>
+                    </div>
+                ))}
+            </CardContent>
+
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent className="rounded-3xl max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Yeni Gelir Modeli Konferansı</DialogTitle>
+                        <DialogDescription>Seri standardı (açıklama, sertifika, kontenjan kuralları) otomatik uygulanır.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <Label>Şehir *</Label>
+                                <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Afyonkarahisar" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label>İlçe</Label>
+                                <Input value={district} onChange={(e) => setDistrict(e.target.value)} placeholder="Merkez" />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                            <div className="space-y-1.5 col-span-1">
+                                <Label>Tarih *</Label>
+                                <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label>Başlangıç</Label>
+                                <Input type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label>Bitiş</Label>
+                                <Input type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+                            </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label>Mekan + açık adres *</Label>
+                            <Input value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="Afyon Valiliği B Blok Konferans Salonu — Burmalı Mah. …" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label>Görsel URL (opsiyonel)</Label>
+                            <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://…" />
+                        </div>
+                    </div>
+                    <DialogFooter className="flex flex-row gap-2">
+                        <Button type="button" variant="outline" className="flex-1" onClick={() => setOpen(false)}>Vazgeç</Button>
+                        <Button type="button" className="flex-1" disabled={saving} onClick={create}>
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Yayınla'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </Card>
+    );
+}
 
 function StatusBadge({ status }: { status?: EventStatus }) {
     const { t } = useTranslation();
@@ -578,6 +759,19 @@ export default function EventManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="my-events" className="mt-6 space-y-6">
+                    {/* Gelir Modeli Konferansları — yalnız seri organizatörü USFD görür. */}
+                    {firestore && activeEntity?.data.id === SERIES_ORGANIZER_ID && (
+                        <SeriesConferenceManager
+                            fs={firestore}
+                            organizer={{
+                                id: activeEntity.data.id,
+                                name: activeEntity.data.name || 'ULUSLARARASI SOSYAL FAYDA DERNEĞİ',
+                                logoUrl: (activeEntity.data as { avatarUrl?: string; logoUrl?: string }).avatarUrl
+                                    || (activeEntity.data as { logoUrl?: string }).logoUrl || null,
+                            }}
+                            events={myEvents || []}
+                        />
+                    )}
                     <Card className="rounded-2xl">
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
