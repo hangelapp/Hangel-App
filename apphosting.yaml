@@ -216,3 +216,10 @@ env:
     value: "REPLACE_IN_SECRET_MANAGER_LATER"
     availability:
       - RUNTIME
+
+  # ── Affiliate onay senkron cron ────────────────────────────────────────────
+  # App Hosting NATIVE cron desteklemez → burada schedule tanımlanamaz, sadece
+  # dökümante edilir.
+  # Affiliate sync cron: Cloud Function affiliateApprovalSync (her gün 06:00) BİRİNCİL yol.
+  # İkincil yedek: harici cron (cron-job.org) → POST https://hangel.org/api/cron/affiliate-sync
+  #   Authorization: Bearer <MESSAGING_WORKER_KEY>. Incident sonrası CF durursa bu devrede.

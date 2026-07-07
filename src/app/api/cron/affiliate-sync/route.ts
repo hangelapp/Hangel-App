@@ -1,68 +1,62 @@
 /**
- * POST /api/cron/affiliate-sync — Günlük affiliate onay senkronu (Cloud Scheduler, 06:00).
+ * GET|POST /api/cron/affiliate-sync — Affiliate onay senkronu (App Hosting cron, İKİNCİ yol).
  *
- * fetchAllAgencyOffers() yalnız ONAYLI/açık offer'ları döndürür. STORE_BRANDS
- * içinden onaylı offer'ı OLMAYAN mağazaları hesaplar ve marketAggregates/hiddenStores
- * doküman(ın)a yazar. Onay gelen mağaza otomatik listeden ÇIKAR (geri yayına girer).
+ * Cloud Function (affiliateApprovalSync, her gün 06:00) 2026-06-26 GCP incident'inden
+ * beri tetiklenmiyor. Bu route AYNI robot mantığını (runAffiliateSync) App Hosting
+ * üzerinde çalıştıran yedek yoldur; Cloud Scheduler VEYA harici cron (cron-job.org)
+ * ile 06:00'da çağrılabilir. Cloud Function çalışsa bile idempotent — iki yol da
+ * aynı system/affiliateSyncReport + affiliateSyncRuns/{tarih} + state doc'larına yazar.
  *
- * SİLME YOK — sadece market görünürlüğü (brands-all filterHidden bunu okur).
- * Auth: checkMessagingKey (x-messaging-key: MESSAGING_WORKER_KEY) — messaging worker'larla aynı.
+ * NOT: Bu route ESKİDEN farklı bir işi (STORE_BRANDS → marketAggregates/hiddenStores)
+ * ve x-messaging-key auth'unu kullanıyordu. Görev gereği Cloud Function port'una
+ * (brands collection eşitleme) ve Bearer/x-cloudscheduler auth'una geçirildi.
+ *
+ * Auth (biri yeterli):
+ *   • Authorization: Bearer ${MESSAGING_WORKER_KEY}  (mevcut cron secret'ı reuse)
+ *   • x-cloudscheduler header  (Cloud Scheduler doğrudan tetiklerse)
+ * Başarısız → 403. Hata: { errorCode, message }.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { checkMessagingKey } from '@/lib/messaging/server-auth';
 import { getAdminFirestore } from '@/lib/firebase-admin';
-import { fetchAllAgencyOffers } from '@/lib/api-clients';
-import { normBrandKey } from '@/lib/brand-normalize';
-import { STORE_BRANDS, STORE_BRAND_KEYS } from '@/lib/store-brands';
+import { runAffiliateSync } from '@/lib/affiliate-sync';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 120;
+export const maxDuration = 300; // 3 ağ taraması uzun sürebilir.
 
-export async function POST(req: NextRequest) {
-  const authErr = checkMessagingKey(req);
-  if (authErr) return authErr;
+function isAuthorized(req: NextRequest): boolean {
+  // Cloud Scheduler HTTP hedefleri her istekte x-cloudscheduler: true gönderir.
+  if (req.headers.get('x-cloudscheduler')) return true;
 
-  let approvedKeys: Set<string>;
-  try {
-    const offers = await fetchAllAgencyOffers(); // yalnız onaylı/açık offer'lar
-    approvedKeys = new Set(offers.map((o) => normBrandKey(o?.name || '')).filter(Boolean));
-  } catch (e) {
-    console.error('[affiliate-sync] offers alınamadı', e);
-    return NextResponse.json({ error: 'Offer listesi alınamadı.' }, { status: 502 });
-  }
-
-  // Onaylı offer'ı OLMAYAN mağazalar → gizle.
-  const hiddenKeys: string[] = [];
-  const hiddenNames: string[] = [];
-  STORE_BRANDS.forEach((name) => {
-    const key = normBrandKey(name);
-    if (key && !approvedKeys.has(key)) {
-      hiddenKeys.push(key);
-      hiddenNames.push(name);
-    }
-  });
-  const reactivated = STORE_BRAND_KEYS.filter((k) => approvedKeys.has(k));
-
-  const db = getAdminFirestore();
-  await db.collection('marketAggregates').doc('hiddenStores').set({
-    keys: Array.from(new Set(hiddenKeys)),
-    hiddenNames,
-    approvedStoreCount: reactivated.length,
-    checkedStores: STORE_BRANDS.length,
-    updatedAt: Date.now(),
-  });
-
-  return NextResponse.json({
-    ok: true,
-    hiddenCount: hiddenKeys.length,
-    hidden: hiddenNames,
-    approvedStores: reactivated.length,
-    checkedStores: STORE_BRANDS.length,
-  });
+  const expected = process.env.MESSAGING_WORKER_KEY;
+  if (!expected) return false;
+  const authHeader = req.headers.get('authorization') || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  return token.length > 0 && token === expected;
 }
 
-// Cloud Scheduler bazı kurulumlarda GET ile tetikler — aynı işi yapsın.
+async function handle(req: NextRequest) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Yetkisiz istek.' }, { status: 403 });
+  }
+
+  try {
+    const summary = await runAffiliateSync(getAdminFirestore(), { notifySuperAdmins: true });
+    return NextResponse.json({ ok: true, summary });
+  } catch (e) {
+    console.error('[cron/affiliate-sync] senkron hatası', e);
+    return NextResponse.json(
+      { errorCode: 'SYNC_FAILED', message: 'Affiliate senkronu çalıştırılamadı.' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  return handle(req);
+}
+
+// Cloud Scheduler / cron-job.org bazı kurulumlarda GET ile tetikler — aynı işi yapsın.
 export async function GET(req: NextRequest) {
-  return POST(req);
+  return handle(req);
 }

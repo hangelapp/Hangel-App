@@ -28,6 +28,7 @@ import {
   MessageSquare,
   Newspaper,
   Presentation,
+  RefreshCw,
   School,
   Send,
   Settings,
@@ -60,6 +61,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   MessageSquare,
   Newspaper,
   Presentation,
+  RefreshCw,
   School,
   Send,
   Settings,
@@ -117,6 +119,7 @@ const iconColorMap: { [key: string]: string } = {
   'DatabaseZap': 'bg-red-600',
   'Siren': 'bg-red-700',
   'Brain': 'bg-fuchsia-500',
+  'RefreshCw': 'bg-emerald-600',
 };
 
 const superAdminNavSections = [
@@ -138,6 +141,7 @@ const superAdminNavSections = [
             { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'UserCog', description: 'Platformdaki kullanıcıları görüntüle ve yönet.' },
             { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building', description: 'Platformdaki STK\'ları görüntüle ve yönet.' },
             { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store', description: 'Platformdaki markaları görüntüle ve yönet.' },
+            { href: '/super-admin/affiliate-sync', label: 'Affiliate Senkron', icon: 'RefreshCw', description: '3 affiliate ağını tara; onaysız mağazaları Market\'ten kaldır, yeni onaylıları ekle. Elle "Şimdi Çalıştır" + son çalışma durumu.' },
             { href: '/super-admin/feed', label: 'Ürün Feed & Listeleme', icon: 'Library', description: 'Marka feed\'lerinden ürünleri çek (ingest) ve markaların marka/ürün listeleme modunu yönet.' },
             { href: '/super-admin/clubs', label: 'Kulüp Yönetimi', icon: 'School', description: 'Öğrenci kulüplerini görüntüle ve yönet.' },
         ],
