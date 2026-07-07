@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -113,12 +113,15 @@ const curriculum = [
 
 // Ulusal/uluslararası kuruluşların STK'lara verdiği hibe ve destekler + nasıl başvurulur.
 // perks: kartın altında maddeler halinde somut destek/indirim listesi.
+// Canlı market sayacı perk'i için sentinel — render'da <LiveMarketStats /> ile değiştirilir.
+const LIVE_MARKET_STATS = '__LIVE_MARKET_STATS__';
+
 const grants: Array<{
   name: string;
   offer: string;
   how: string;
   href: string;
-  perks: string[];
+  perks: React.ReactNode[];
   /** Destek kapsamı — "kaç kişiye/projeye kadar" (kartın altında rozet). */
   supportsUpTo: string;
 }> = [
@@ -130,8 +133,8 @@ const grants: Array<{
     perks: [
       'Google Ad Grants: aylık 10.000 $ (~330 $/gün) ücretsiz arama reklamı kredisi',
       "Google Workspace: 300 kullanıcıya kadar ücretsiz kurumsal mail (@stkadı.org uzantılı)",
-      'Google Drive: kullanıcı başına 2 TB bulut depolama (300 kullanıcı × 2 TB = 600 TB toplam)',
-      'Google Meet: 150 katılımcıya kadar toplantı + kayıt + attendance raporu',
+      'Google Drive: 100 TB ortak havuz depolama (300 kullanıcı)',
+      'Google Meet: 150 katılımcıya kadar 24 saat toplantı',
       'Google Docs / Sheets / Slides / Calendar / Forms — tüm Workspace uygulamaları',
       'YouTube Nonprofit: video altında bağış butonu + link kartı + Live yayın ayrıcalıkları',
       'Google Earth & Maps ücretsiz kurumsal kullanım',
@@ -189,19 +192,25 @@ const grants: Array<{
     name: 'hangel',
     offer: 'Alışverişle bağış, şeffaflık endeksi, gönüllülük ve reklam yönetimi — tek panelde, tamamen ücretsiz sürdürülebilir gelir altyapısı.',
     how: 'hangel STK başvurusunu doldurun; kurumunuz onaylandığında panel anında aktifleşir.',
-    href: '/ngo-onboarding',
+    href: '/login/selection?tab=corporate&entity=NGO',
     perks: [
-      '%100 ücretsiz STK paneli (kalıcı sıfır platform ücreti)',
-      "200+ mağazada alışveriş komisyonu %2 — %15 STK'ya bağış (Trendyol, Modanisa, Beymen, Media Markt vb.)",
-      '4.000+ marka ürünü market içi arama + filtreleme (Nike, Samsung, Apple, LG vb.)',
+      LIVE_MARKET_STATS, // canlı marka + ürün sayacı (render'da <LiveMarketStats />)
       'Google Ads + Meta Ads + TikTok Ads reklam yönetimi tek panelde',
-      'Etkinlik paneli: takvim + kayıt + sertifika + katılım tracking + canlı mod',
+      'Etkinlik paneli: ücretsiz etkinlik açma + takvim + kayıt + katılım takibi + canlı mod + tüm katılımcılara ücretsiz sertifika',
       'Şeffaflık endeksi + bağışçı güven puanı otomatik',
-      'Gönüllülük yönetimi + sertifika + kurumsal gönüllü eşleşme',
-      'Sanal santral (çağrı merkezi) + toplu SMS/WhatsApp/e-posta',
-      'Chrome uzantısı + iOS + Android + Watch + Apple Wallet',
+      'Gönüllülük yönetimi + ücretsiz gönüllülük ilanı + kurumsal gönüllü eşleşme + tüm katılımcılara ücretsiz sertifika',
+      'Sanal santral (çağrı merkezi)',
+      'Toplu SMS + WhatsApp + e-posta gönderimi',
+      <React.Fragment key="apps">
+        <a href="/app" className="underline underline-offset-2 hover:text-primary">Chrome uzantısı</a>{' + '}
+        <a href="https://apps.apple.com/tr/app/hangel/id6664058822" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-primary">iPhone APP</a>{' + '}
+        <a href="https://apps.apple.com/tr/app/hangel/id6664058822" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-primary">Mac APP</a>{' + '}
+        <a href="https://play.google.com/store/apps/details?id=com.hangel.app" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-primary">Android APP</a>{' + '}
+        <a href="https://apps.apple.com/tr/app/hangel/id6664058822" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-primary">Watch APP</a>{' + '}
+        <a href="/app" className="underline underline-offset-2 hover:text-primary">Apple Wallet</a>
+      </React.Fragment>,
     ],
-    supportsUpTo: 'Sınırsız yönetici + gönüllü + bağışçı + etkinlik',
+    supportsUpTo: 'Sınırsız gönüllü + bağışçı + etkinlik',
   },
   {
     name: 'Ability Pool',
@@ -224,12 +233,10 @@ const grants: Array<{
     href: 'https://www.gonulluyuzbiz.com/',
     perks: [
       'Ücretsiz STK paneli + proje yayınlama',
-      "Türkiye'nin büyük şirket ağı ile CSR eşleşmesi",
       'Toplu kurumsal gönüllü ekibi tahsisi',
-      'Etki raporlama + iş dünyası PR desteği',
-      'Sponsorluk fırsatları ve ayni destek yönlendirmesi',
+      'Etki raporlama',
     ],
-    supportsUpTo: 'Sınırsız proje + kurumsal ekip başına 10-500 gönüllü',
+    supportsUpTo: 'Sınırsız kampanya + sınırsız katılımcı',
   },
   {
     name: 'Microsoft for Nonprofits',
@@ -253,7 +260,8 @@ const grants: Array<{
     how: 'openai.com/nonprofits sayfasından başvurun; kurum doğrulaması + kullanım planı isteniyor.',
     href: 'https://openai.com/nonprofits',
     perks: [
-      'ChatGPT Team plan (kullanıcı başına 25 $/ay) — nonprofit için %50 indirim',
+      'ChatGPT Business (Team): normal 25 $/kullanıcı/ay (yıllıkta 20 $) → STK için 10 $/ay (yıllıkta 8 $)',
+      "ChatGPT Enterprise: büyük STK'lara %75'e varan indirim (satış ekibiyle görüşülür)",
       "STK'ya özel onboarding + kullanım desteği",
       'API kredi hibesi: 500 $ — 5.000 $ arası (proje kapsamına göre)',
       'GPT-4 + görsel + ses erişimi',
@@ -268,14 +276,16 @@ const grants: Array<{
     how: 'anthropic.com/nonprofits (varsa) veya support@anthropic.com üzerinden bireysel başvuru — API kredi programı görüşülebilir.',
     href: 'https://www.anthropic.com/',
     perks: [
-      'Claude Pro (20 $/ay) — bireysel STK personeli için ücretsiz veya indirimli talep',
+      'Claude Team: normal 30 $/kullanıcı/ay → STK için 8 $/kullanıcı/ay (%75\'e varan indirim)',
+      'Claude Team Premium: normal ~150 $ → STK için 40 $/kullanıcı/ay',
+      'Claude Pro (bireysel) 20 $/ay; Enterprise: satış ekibiyle STK indirimi görüşülür',
       'API kredi hibesi: proje bazlı (nonprofit vakaları için indirim)',
       "200.000 token'lık uzun bağlam — tüm STK belgelerini tek istekte analiz",
       'Kod, rapor, tüzük, sözleşme analizi için özellikle güçlü',
       "Veri gizliliği: kurumsal data eğitim setine girmez",
       'Türkçe içerik üretimi + çeviri desteği',
     ],
-    supportsUpTo: 'Kişi/proje bazlı — Anthropic ekibi ile görüşülür',
+    supportsUpTo: 'Minimum 2 — maksimum 150 kullanıcı (Team); üzeri Enterprise',
   },
   {
     name: 'LinkedIn for Nonprofits',
@@ -285,8 +295,7 @@ const grants: Array<{
     perks: [
       'LinkedIn Recruiter Lite: yıllık ~1.200 $ değerinde, %90+ indirimle ~120 $/yıl',
       'Sales Navigator: %50 indirim (nonprofit sales / donor prospecting)',
-      'LinkedIn Learning: STK personeline ücretsiz veya indirimli erişim',
-      'LinkedIn Ads Grants: nonprofit reklam kredisi programı',
+      "LinkedIn Ad Grants: seçili STK'lara ayda 10.000 $'a kadar ücretsiz LinkedIn reklam kredisi — dönemsel başvuru penceresi (çeşitlilik, çevre ve ekonomik fırsat temalı projeler öncelikli; duyurular AdGrants@linkedin.com)",
       "Türkiye'de 15M+ profesyonele erişim (gönüllü / donör / mentor)",
       'STK sayfası: rozetler + kurum profil özellikleri',
     ],
@@ -301,6 +310,28 @@ const audience = [
   { icon: ClipboardCheck, title: 'Kayıt', desc: 'Katılmak istediğiniz şehri seçip giriş yaparak kaydınızı oluşturun.' },
   { icon: Award, title: 'Sertifikalı', desc: 'Konferans katılımcılarına resmî katılım sertifikası verilir.' },
 ];
+
+// Canlı market sayacı — /api/market/stats'tan (10 dk cache) gerçek ürün/marka
+// sayısını çeker; "kaç marka ve ürün olduğu anlık değişsin" (2026-07-07).
+// brandCount kaynağı (appStats/marketStats) yoksa güvenli "4.000+" gösterilir.
+function LiveMarketStats() {
+  const [stats, setStats] = useState<{ products: number; brandCount: number | null } | null>(null);
+  useEffect(() => {
+    fetch('/api/market/stats')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (j?.ok && typeof j.products === 'number') {
+          setStats({ products: j.products, brandCount: typeof j.brandCount === 'number' ? j.brandCount : null });
+        }
+      })
+      .catch(() => {});
+  }, []);
+  const marka = stats?.brandCount ? stats.brandCount.toLocaleString('tr-TR') : '4.000+';
+  const urun = stats?.products ? stats.products.toLocaleString('tr-TR') : '1.900.000+';
+  return (
+    <>Tüm gönüllülerin alışverişten bağış desteği: {marka} marka ve {urun} üründe %2 — %15 STK&apos;ya bağış</>
+  );
+}
 
 const SupportBadge = () => (
   <p className="text-xs text-muted-foreground leading-relaxed">
@@ -541,7 +572,7 @@ export default function IncomeModelConferencePage() {
                       {g.perks.map((perk, i) => (
                         <li key={i} className="flex items-start gap-2 text-xs leading-relaxed">
                           <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
-                          <span className="text-foreground/80 break-words">{perk}</span>
+                          <span className="text-foreground/80 break-words">{perk === LIVE_MARKET_STATS ? <LiveMarketStats /> : perk}</span>
                         </li>
                       ))}
                     </ul>
