@@ -666,7 +666,7 @@ export function InviteHub({
     const pendingCount = phoneContacts.filter(c => !c.onPlatform).length;
 
     // ── iOS-stili küçük yardımcı bileşenler ────────────────────────────────
-    const QuickAction = ({ icon: Icon, label, sub, onClick, asLabel, htmlFor }: { icon: React.ElementType; label: string; sub: string; onClick?: () => void; asLabel?: boolean; htmlFor?: string }) => {
+    const renderQuickAction = ({ icon: Icon, label, sub, onClick, asLabel, htmlFor }: { icon: React.ElementType; label: string; sub: string; onClick?: () => void; asLabel?: boolean; htmlFor?: string }) => {
         const inner = (
             <>
                 <span className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -683,7 +683,7 @@ export function InviteHub({
         return <button type="button" onClick={onClick} disabled={phoneLoading} className={cls}>{inner}</button>;
     };
 
-    const ContactRow = ({ contact }: { contact: PhoneContact }) => (
+    const renderContactRow = ({ contact }: { contact: PhoneContact }) => (
         <div className="flex items-center justify-between gap-3 px-4 py-2.5">
             <div className="flex items-center gap-3 min-w-0">
                 <Avatar className="h-10 w-10 ring-1 ring-border/50">
@@ -764,11 +764,11 @@ export function InviteHub({
                         LinkedIn kişi içe aktarmaya izin vermez (API kısıtı) → onlar yalnız
                         aşağıdaki "paylaş" bölümünde. */}
                     <div className="grid grid-cols-1 gap-2.5">
-                        <QuickAction icon={Smartphone} label="Telefon Rehberi" sub="iOS / Android / Chrome" onClick={handlePhoneConnect} />
-                        <QuickAction icon={Mail} label="Gmail Kişileri" sub="Google ile bağlan" onClick={() => handleEmailOAuth('google')} />
-                        <QuickAction icon={Mail} label="Outlook / Hotmail Kişileri" sub="Microsoft ile bağlan" onClick={() => handleEmailOAuth('microsoft')} />
-                        <QuickAction icon={Upload} label="vCard / CSV" sub="Tüm cihazlar (.vcf / .csv)" asLabel htmlFor="main-vcard-csv-upload" />
-                        <QuickAction icon={MessageSquare} label="WhatsApp ile paylaş" sub="Davet linkini gönder" onClick={() => setWhatsappDialogOpen(true)} />
+                        {renderQuickAction({ icon: Smartphone, label: "Telefon Rehberi", sub: "iOS / Android / Chrome", onClick: handlePhoneConnect })}
+                        {renderQuickAction({ icon: Mail, label: "Gmail Kişileri", sub: "Google ile bağlan", onClick: () => handleEmailOAuth('google') })}
+                        {renderQuickAction({ icon: Mail, label: "Outlook / Hotmail Kişileri", sub: "Microsoft ile bağlan", onClick: () => handleEmailOAuth('microsoft') })}
+                        {renderQuickAction({ icon: Upload, label: "vCard / CSV", sub: "Tüm cihazlar (.vcf / .csv)", asLabel: true, htmlFor: "main-vcard-csv-upload" })}
+                        {renderQuickAction({ icon: MessageSquare, label: "WhatsApp ile paylaş", sub: "Davet linkini gönder", onClick: () => setWhatsappDialogOpen(true) })}
                     </div>
                     <p className="px-1 text-[12px] text-muted-foreground leading-snug">
                         iPhone / Safari&apos;de rehberi bağlamak için <span className="font-semibold text-foreground">hangel mobil uygulamasını</span> kullanın ya da rehberinizi vCard / CSV olarak yükleyin.
@@ -854,7 +854,7 @@ export function InviteHub({
                                         <div className="rounded-2xl bg-muted/40 border border-border/50 divide-y divide-border/50 overflow-hidden max-h-[26rem] overflow-y-auto">
                                             {sortedPhoneContacts.length === 0 ? (
                                                 <p className="text-center text-muted-foreground text-[13px] py-10">Rehberinde kişi bulunamadı.</p>
-                                            ) : sortedPhoneContacts.map(c => (<ContactRow key={c.id} contact={c} />))}
+                                            ) : sortedPhoneContacts.map(c => (<React.Fragment key={c.id}>{renderContactRow({ contact: c })}</React.Fragment>))}
                                         </div>
                                     </div>
                                 )}

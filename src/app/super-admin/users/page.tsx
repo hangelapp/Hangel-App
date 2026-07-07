@@ -12,7 +12,7 @@ import { Search, ShieldAlert, Loader2, ArrowDownUp } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase, useAuth, useUser, initiatePasswordResetEmail } from '@/firebase';
-import { collection, doc, updateDoc, query, orderBy, limit, documentId } from 'firebase/firestore';
+import { collection, doc, updateDoc, query, orderBy, documentId } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { ProfileViewDialog } from './_components/profile-view-dialog';
 import { SessionLogDialog } from './_components/session-log-dialog';
