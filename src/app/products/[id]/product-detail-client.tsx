@@ -38,6 +38,7 @@ import { goToAffiliate } from '@/lib/affiliate-go';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import type { Brand } from '@/lib/types';
 import { canonicalBrand } from '@/lib/market/brand-extract';
+import { curatedCategoryOf } from '@/lib/market/curated-categories';
 import { recordView } from '@/lib/market/recently-viewed';
 import { useFavorites } from '@/hooks/use-favorites';
 
@@ -363,6 +364,17 @@ export function ProductDetailClient({ id }: { id: string }) {
         : PLATFORM_MIN_RATE;
   // Tahmini bağış: etkin fiyat × bağış oranı.
   const estimatedDonation = Math.round((effectivePrice * donationRate) / 100);
+
+  // #7 eksik-bilgi (SIFIR yazma — render anında türetme):
+  // • Kategori yolu boşsa kürasyon kategorisini (başlık/marka/mağazadan) türet.
+  // • Açıklama boşsa başlık/marka/mağaza/orandan güvenli bir açıklama üret.
+  const catSegments = categorySegments(product.category);
+  const derivedCategory = catSegments.length === 0
+    ? curatedCategoryOf(product.category, product.title, product.brandName)
+    : null;
+  const displayDescription = (product.description && product.description.trim())
+    ? product.description
+    : `${product.title}${productBrand ? ` — ${productBrand}` : ''}. ${product.brandName || 'Anlaşmalı mağaza'} üzerinden hangel ile alışverişte tutarın yaklaşık %${donationRate}'i (${formatPrice(estimatedDonation, product.currency)}) desteklediğin STK'ya bağışa dönüşür. Ürünü markanın resmi sitesinde inceleyip satın alabilirsin; sen ekstra ödemezsin.`;
   const inStock =
     !product.availability ||
     /in.?stock|stokta|mevcut|available/i.test(product.availability);
@@ -510,7 +522,7 @@ export function ProductDetailClient({ id }: { id: string }) {
             <Link href="/market" className="shrink-0 hover:text-foreground">Market</Link>
             {/* Kategori yolunun HER parçası ayrı tıklanabilir (Bilgisayar&Tablet ›
                 Tablet Aksesuarı › Tablet Kılıfı) → o parçanın araması. */}
-            {categorySegments(product.category).map((seg) => (
+            {catSegments.map((seg) => (
               <span key={seg} className="flex shrink-0 items-center gap-1">
                 <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
                 <Link href={`/market/products?q=${encodeURIComponent(seg)}`} className="shrink-0 hover:text-foreground">
@@ -518,6 +530,15 @@ export function ProductDetailClient({ id }: { id: string }) {
                 </Link>
               </span>
             ))}
+            {/* Kategori yolu boşsa türetilen kürasyon kategorisi (eksik-bilgi #7). */}
+            {catSegments.length === 0 && derivedCategory && (
+              <span className="flex shrink-0 items-center gap-1">
+                <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
+                <Link href={`/market/kategori/${encodeURIComponent(derivedCategory)}`} className="shrink-0 hover:text-foreground">
+                  {derivedCategory}
+                </Link>
+              </span>
+            )}
             {/* Marka parçası (Apple) → marka profili */}
             {productBrand && productBrandKey && (
               <span className="flex shrink-0 items-center gap-1">
@@ -776,16 +797,15 @@ export function ProductDetailClient({ id }: { id: string }) {
         </div>
 
         {/* 8. Ürün açıklaması */}
-        {product.description && (
-          <div className="px-4 pb-4">
-            <div className="space-y-2 rounded-2xl border bg-card p-4">
-              <h2 className="text-sm font-black uppercase tracking-wide text-foreground">Ürün Açıklaması</h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">
-                {product.description}
-              </p>
-            </div>
+        {/* Açıklama — boşsa türetilen güvenli metin (eksik-bilgi #7, sıfır yazma). */}
+        <div className="px-4 pb-4">
+          <div className="space-y-2 rounded-2xl border bg-card p-4">
+            <h2 className="text-sm font-black uppercase tracking-wide text-foreground">Ürün Açıklaması</h2>
+            <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">
+              {displayDescription}
+            </p>
           </div>
-        )}
+        </div>
 
         {/* 9. Benzer Ürünler — yatay şerit (aynı kategori) */}
         {similarProducts.length > 0 && (
