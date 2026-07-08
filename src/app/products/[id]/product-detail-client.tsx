@@ -38,6 +38,7 @@ import { goToAffiliate } from '@/lib/affiliate-go';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import type { Brand } from '@/lib/types';
 import { curatedCategoryOf } from '@/lib/market/curated-categories';
+import { canonicalBrand } from '@/lib/market/brand-extract';
 import { recordView } from '@/lib/market/recently-viewed';
 
 function formatPrice(value: number, currency: string): string {
@@ -135,7 +136,9 @@ export function ProductDetailClient({ id }: { id: string }) {
 
   // MARKA (ürün markası: Nike/Apple/Ülker) — başlıktan çıkarılmış `productBrand`.
   // Mağazadan bağımsız; marka profiline (/market/brand/<key>) gider. Boş olabilir.
-  const productBrand = (product?.productBrand || '').trim();
+  // canonicalBrand: saklı "iPad"/"Galaxy" ürün serilerini ANA markaya (Apple/
+  // Samsung) indirger → mevcut ürünlerde backfill'siz doğru marka gösterimi.
+  const productBrand = (canonicalBrand(product?.productBrand) || '').trim();
   const productBrandKey = (product?.productBrandKey || '').trim();
 
   // "Ürüne Git" — market marka CTA'sını yansıtır: oturum zorunlu + tıklama/

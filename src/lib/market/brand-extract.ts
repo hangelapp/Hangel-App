@@ -93,17 +93,41 @@ export function isFalseBrandMatch(brandRaw: string, title: string): boolean {
   return false;
 }
 
+// Alt-marka / ürün serisi → ANA MARKA. iPad/iPhone/MacBook Apple'ın MARKASI
+// değil ürün serisidir; başlıkta geçince marka "Apple" olmalı (ekran: "MARKA:
+// iPad" bug'ı, 2026-07-08). Anahtarlar normKey'li. Hem çıkarımda hem render'da
+// (canonicalBrand) uygulanır → 1.9M ürünü backfill etmeden görünüm düzelir.
+const SUB_TO_PARENT: Record<string, string> = {
+  iphone: 'Apple', ipad: 'Apple', macbook: 'Apple', imac: 'Apple', airpods: 'Apple',
+  'apple watch': 'Apple', 'apple pencil': 'Apple', 'apple tv': 'Apple', 'mac mini': 'Apple', 'mac studio': 'Apple',
+  galaxy: 'Samsung',
+  redmi: 'Xiaomi', poco: 'Xiaomi',
+  playstation: 'Sony', ps5: 'Sony', ps4: 'Sony',
+  xbox: 'Microsoft', surface: 'Microsoft',
+  pixel: 'Google', kindle: 'Amazon', alexa: 'Amazon',
+};
+
+/**
+ * Kanonik marka: alt-marka/ürün serisini ana markaya indirger (iPad → Apple).
+ * Zaten ana marka veya boş ise değiştirmez. Hem ingest hem render'da güvenli;
+ * mevcut ürünlerde saklı "iPad" değeri gösterimde "Apple"a çevrilir (backfill'siz).
+ */
+export function canonicalBrand(raw?: string | null): string | null {
+  if (!raw) return raw ?? null;
+  return SUB_TO_PARENT[normKey(raw)] || raw;
+}
+
 export function extractProductBrand(title: string, storeName: string): string | null {
   const sn = normKey(storeName);
   // 1) mağaza adı bilinen markaysa → marka = mağaza
-  if (STORE_BRAND.has(sn)) return STORE_BRAND.get(sn)!;
+  if (STORE_BRAND.has(sn)) return canonicalBrand(STORE_BRAND.get(sn)!);
   // 2) çok-markalı mağaza → başlıktan (yalnız curated; STORE_ONLY/riskli hariç)
   const t = ' ' + normKey(title) + ' ';
   for (const d of DICT) {
     if (AMBIGUOUS.has(d.n)) continue;
     if (t.includes(' ' + d.n + ' ')) {
       if (isFalseBrandMatch(d.raw, title)) continue; // apple=meyve → marka sayma
-      return d.raw;
+      return canonicalBrand(d.raw); // iPad → Apple
     }
   }
   return null;
