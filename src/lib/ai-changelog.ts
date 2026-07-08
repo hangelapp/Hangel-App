@@ -3,6 +3,96 @@ export const AI_CHANGELOG_GENERATED = "2026-07-08";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "0cb1c2a9",
+    "date": "2026-07-08",
+    "subject": "fix(gelir-modeli): 10 kart bağımsız doğrulama — 22 yanlış/riskli iddia düzeltildi"
+  },
+  {
+    "hash": "5e96b3c3",
+    "date": "2026-07-08",
+    "subject": "fix(gelir-modeli): Help Steps kartı — doğru site (helpsteps.app) + gerçek mekanizma"
+  },
+  {
+    "hash": "2048476a",
+    "date": "2026-07-08",
+    "subject": "feat(autosave): batch-2 son sayfa — süper admin STK düzenleme otomatik kayıt"
+  },
+  {
+    "hash": "4cc22411",
+    "date": "2026-07-08",
+    "subject": "fix(market): ürün kartı standardı — marka canonical + bağış oranı %2 tabanı (detayla aynı)"
+  },
+  {
+    "hash": "8a23d774",
+    "date": "2026-07-08",
+    "subject": "feat(market): #7 eksik bilgi — render anında türetme (SIFIR yazma, sıfır maliyet)"
+  },
+  {
+    "hash": "1a3130f5",
+    "date": "2026-07-08",
+    "subject": "fix(events): konuşmacı üye sorgusu + sosyal medya auth + embed + app-içi check-in + sertifika teyit"
+  },
+  {
+    "hash": "bccff415",
+    "date": "2026-07-08",
+    "subject": "fix(market): #7 her üründe bağış oranı görünsün — platform %2 tabanı fallback"
+  },
+  {
+    "hash": "3b65ff96",
+    "date": "2026-07-08",
+    "subject": "refactor(market): #8 marka profili standardizasyonu — /market/apple → jenerik şablon"
+  },
+  {
+    "hash": "16f249aa",
+    "date": "2026-07-08",
+    "subject": "feat(market): ana sayfa — Favorilerin şeridi + Öne Çıkanlar mağazaların ardına"
+  },
+  {
+    "hash": "720dfea7",
+    "date": "2026-07-08",
+    "subject": "feat(market): ürün detay — kalıcı favori + fiyat alarmı + tıklanabilir kategori breadcrumb"
+  },
+  {
+    "hash": "0048ea84",
+    "date": "2026-07-08",
+    "subject": "feat(events): checklist'e Ekip & Görev Dağılımı + PR & Tanıtım bölümleri"
+  },
+  {
+    "hash": "cd57296a",
+    "date": "2026-07-08",
+    "subject": "fix(market): iPad/Galaxy vb. ürün serisi → ana marka (Apple/Samsung)"
+  },
+  {
+    "hash": "d18be90e",
+    "date": "2026-07-08",
+    "subject": "feat(events): etkinlik yönetimi kartına Checklist butonu"
+  },
+  {
+    "hash": "34c7b456",
+    "date": "2026-07-08",
+    "subject": "feat(events): etkinlik detay sayfasında Etkinlik Programı (agenda) yayınla"
+  },
+  {
+    "hash": "4093f150",
+    "date": "2026-07-08",
+    "subject": "fix(build): eksik-commit market dosyalarını ekle → App Hosting build unblock"
+  },
+  {
+    "hash": "56ae4ecd",
+    "date": "2026-07-08",
+    "subject": "feat(robot): başvuru-korumalı eleme + Marka→Mağaza adlandırma"
+  },
+  {
+    "hash": "bfc2d98c",
+    "date": "2026-07-08",
+    "subject": "feat(gönüllülük+etkinlik): sayaç gün/sa/dk/sn + mali değer fix + onay hatası + kart buton seti + mesaj gönder + Tamamlananlar"
+  },
+  {
+    "hash": "f2d7280c",
+    "date": "2026-07-08",
+    "subject": "feat(affiliate): manuel tetik + super-admin panel + App Hosting cron yedek yolu"
+  },
+  {
     "hash": "a76b6477",
     "date": "2026-07-08",
     "subject": "fix(super-admin): remove unused autosave imports (eslint pre-push)"
@@ -36,95 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "4a915bb6",
     "date": "2026-07-07",
     "subject": "fix(ngo-profile): il/ilçe sessiz sıfırlanma + contact.address string-spread bozulması"
-  },
-  {
-    "hash": "af8cb7e4",
-    "date": "2026-07-07",
-    "subject": "feat(gelir-modeli): Coridor gerçek özellikleri + tüm kartlara 'Kapsam' rozeti"
-  },
-  {
-    "hash": "45db3ce0",
-    "date": "2026-07-07",
-    "subject": "fix(affiliate): 500 flapping (Map unstable_cache tuzağı) + ham JSON hata sayfası"
-  },
-  {
-    "hash": "7f0b9cc0",
-    "date": "2026-07-07",
-    "subject": "feat(gelir-modeli): hibe kartlarına madde madde destek + %indirim + Coridor kartı"
-  },
-  {
-    "hash": "bb036e50",
-    "date": "2026-07-07",
-    "subject": "fix(santral)+feat(settings): santral .tr geri al + ayarlar akışı (adım kartları + otomatik kayıt)"
-  },
-  {
-    "hash": "a044b646",
-    "date": "2026-07-07",
-    "subject": "fix: resolve build lint errors"
-  },
-  {
-    "hash": "dd3de9d2",
-    "date": "2026-07-06",
-    "subject": "fix: remove limit from super-admin users list"
-  },
-  {
-    "hash": "c3c8a4b4",
-    "date": "2026-07-05",
-    "subject": "fix(hosting): Node runtime'ı 22'ye sabitle (App Hosting node24'ü kapattı → 503)"
-  },
-  {
-    "hash": "d86c54e4",
-    "date": "2026-07-04",
-    "subject": "feat(market): paylaş butonu (bağış mesajı) + 'Sana Özel' kişiselleştirilmiş şerit"
-  },
-  {
-    "hash": "7d24417d",
-    "date": "2026-07-04",
-    "subject": "feat(market): bağış etkisi + fiyat alarmı + SEO/paylaşım kartları"
-  },
-  {
-    "hash": "6b780626",
-    "date": "2026-07-04",
-    "subject": "Merge remote-tracking branch 'origin/main'"
-  },
-  {
-    "hash": "c2a9eedd",
-    "date": "2026-07-04",
-    "subject": "Merge remote-tracking branch 'origin/main'"
-  },
-  {
-    "hash": "8ee67a5e",
-    "date": "2026-07-04",
-    "subject": "Merge pull request #51 from hangelapp/feature/all-brands-list"
-  },
-  {
-    "hash": "eb853883",
-    "date": "2026-07-04",
-    "subject": "feat(market): ürün detay Trendyol masaüstü düzeni — solda sticky galeri, sağda satın-alma"
-  },
-  {
-    "hash": "d97c61a5",
-    "date": "2026-07-04",
-    "subject": "feat(market): 7 yeni özellik — favoriler, reklam analitiği, hedefleme, autocomplete, fiyat geçmişi, cron"
-  },
-  {
-    "hash": "226f0562",
-    "date": "2026-07-04",
-    "subject": "Merge pull request #50 from hangelapp/feature/all-brands-list"
-  },
-  {
-    "hash": "ecffd5de",
-    "date": "2026-07-04",
-    "subject": "polish(market): denetim düzeltmeleri — kategori/mağaza tutarlılığı + breadcrumb + bağış₺ sort"
-  },
-  {
-    "hash": "292ce370",
-    "date": "2026-07-04",
-    "subject": "feat(market): Trendyol marka profili + Otel düzeltmesi + görsel standardı + reklam linkleri"
-  },
-  {
-    "hash": "1281c79c",
-    "date": "2026-07-04",
-    "subject": "feat(market): günlük affiliate onay senkronu — onaysız mağazaları otomatik gizle/geri aç"
   }
 ];

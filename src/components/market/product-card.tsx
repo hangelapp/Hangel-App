@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import { useFavorites } from '@/hooks/use-favorites';
 import { canonicalBrand } from '@/lib/market/brand-extract';
+import { proxiedThumb } from '@/lib/market/image';
 
 // Ürün detayıyla AYNI standart: bağış oranı boşsa platform tabanı %2 (hiçbir
 // kart oransız kalmasın). api-clients DEFAULT_DONATION_RATE ile aynı; o modül
@@ -57,9 +58,11 @@ export function ProductCard({
   const { isFavorite, toggle } = useFavorites();
   const fav = isFavorite(product.id);
 
-  // Kırık/eksik görsel — hata olursa placeholder'a düş.
-  const [imgError, setImgError] = useState(false);
-  const showImage = !!product.imageLink && !imgError;
+  // Görsel: önce küçültülmüş thumbnail (perf), proxy patlarsa orijinal, o da
+  // olmazsa placeholder. imgStage: 0=thumb · 1=orijinal · 2=placeholder.
+  const [imgStage, setImgStage] = useState(0);
+  const showImage = !!product.imageLink && imgStage < 2;
+  const imgSrc = imgStage === 0 ? proxiedThumb(product.imageLink, 320) : product.imageLink;
 
   // "30 günün en düşüğü" — güncel efektif fiyat 30 günlük en düşüğe eşit/altındaysa
   // ve gerçek bir fiyat geçmişi (>1 nokta) varsa göster. Veri gelene kadar gizli.
@@ -77,11 +80,12 @@ export function ProductCard({
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-white">
         {showImage ? (
           <img
-            src={product.imageLink}
+            src={imgSrc}
             alt={product.title}
             loading="lazy"
+            decoding="async"
             referrerPolicy="no-referrer"
-            onError={() => setImgError(true)}
+            onError={() => setImgStage((s) => s + 1)}
             className="h-full w-full object-contain p-1 transition-transform duration-300 group-hover:scale-[1.04]"
           />
         ) : (
