@@ -6,6 +6,12 @@ import { ImageOff, HeartHandshake, Heart, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import { useFavorites } from '@/hooks/use-favorites';
+import { canonicalBrand } from '@/lib/market/brand-extract';
+
+// Ürün detayıyla AYNI standart: bağış oranı boşsa platform tabanı %2 (hiçbir
+// kart oransız kalmasın). api-clients DEFAULT_DONATION_RATE ile aynı; o modül
+// API anahtarlı olduğu için client'a import edilmez → sabit inline.
+const PLATFORM_MIN_RATE = 2;
 
 function formatPrice(value: number, currency: string): string {
   const sym = currency === 'TRY' ? 'TL' : currency;
@@ -32,12 +38,14 @@ export function ProductCard({
     ? Math.round((1 - salePrice / product.price) * 100)
     : 0;
   const rawRate = donationRateProp ?? product.donationRate;
+  // Standart: her kartta oran görünsün — boşsa platform tabanı %2 (detayla aynı).
   const donationRate =
-    typeof rawRate === 'number' && rawRate > 0 ? rawRate : null;
+    typeof rawRate === 'number' && rawRate > 0 ? rawRate : PLATFORM_MIN_RATE;
 
   // Ürünün MARKASI (Nike/Apple/Samsung) — başlıktan çıkarılmış. Tıklanınca marka
   // profiline (/market/brand/<key>) gider. Çıkarılamadıysa MAĞAZAya (satıcı) düşer.
-  const productBrand = (product.productBrand || '').trim();
+  // canonicalBrand: "iPad"/"Galaxy" ürün serisini ANA markaya indirir (detayla aynı).
+  const productBrand = (canonicalBrand(product.productBrand) || '').trim();
   const productBrandKey = (product.productBrandKey || '').trim();
   const brandHref = productBrand && productBrandKey
     ? `/market/brand/${encodeURIComponent(productBrandKey)}`
