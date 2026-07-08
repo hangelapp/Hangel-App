@@ -257,7 +257,18 @@ export async function GET(req: NextRequest) {
   // getir, sonra tüm kelimeleri folded AND-substring ile doğrula. "ormancı" → "...Ormancılar...".
   const searchFold = nrm(search);
   const searchTokensArr = searchFold.split(/\s+/).filter(Boolean);
-  const searchToken = searchTokensArr.reduce((a, b) => (b.length > a.length ? b : a), '');
+  // Token seçimi: array-contains için EN AYIRT EDİCİ token'ı seç. "sosyal" gibi
+  // çok yaygın kelimeler (STK adlarında binlerce kez) sonuç kümesini şişirip
+  // post-filter'da hedefi kaçırıyordu. Yaygın "stop-word"leri ele; kalanların
+  // EN UZUNUNU seç (uzun kelime genelde daha nadir → daha küçük, isabetli küme).
+  const COMMON_ORG_WORDS = new Set([
+    'dernegi', 'dernek', 'vakfi', 'vakif', 'sosyal', 've', 'ile', 'icin',
+    'kulubu', 'kulup', 'spor', 'genclik', 'egitim', 'kultur', 'yardimlasma',
+    'dayanisma', 'federasyonu', 'federasyon', 'platformu', 'turkiye',
+  ]);
+  const distinctive = searchTokensArr.filter((t) => t.length >= 2 && !COMMON_ORG_WORDS.has(t));
+  const pool = distinctive.length > 0 ? distinctive : searchTokensArr;
+  const searchToken = pool.reduce((a, b) => (b.length > a.length ? b : a), '');
   // 2+ harf token-search (searchPrefixes array-contains) kullanır — kısa
   // aramalar da (örn. "tv", "ak") isabetli sonuç bulur; 1 harf prefix'e düşer.
   const useTokenSearch = searchToken.length >= 2;
