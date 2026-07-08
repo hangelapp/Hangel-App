@@ -236,6 +236,13 @@ export async function GET(req: NextRequest) {
   const faaliyet = nrm(searchParams.get('faaliyet') || '') || null;
   const foundedFrom = parseInt(searchParams.get('foundedFrom') || '', 10) || null;
   const foundedTo = parseInt(searchParams.get('foundedTo') || '', 10) || null;
+  // Tür filtresi (SporKulübü, Federasyon, GencSporMudurlugu…) — virgülle çoklu.
+  // ÖNCE client-side'daydı → server pagination ile "sonuç bulmuyor" hatası
+  // yaratıyordu; artık server-side post-filter (kesin ve tam sonuç).
+  const typeSet = (() => {
+    const raw = (searchParams.get('type') || '').trim();
+    return raw ? new Set(raw.split(',').map((t) => t.trim()).filter(Boolean)) : null;
+  })();
 
   const db = getAdminFirestore();
   let q: FirebaseFirestore.Query = db.collection(source);
@@ -251,7 +258,9 @@ export async function GET(req: NextRequest) {
   const searchFold = nrm(search);
   const searchTokensArr = searchFold.split(/\s+/).filter(Boolean);
   const searchToken = searchTokensArr.reduce((a, b) => (b.length > a.length ? b : a), '');
-  const useTokenSearch = searchToken.length >= 3;
+  // 2+ harf token-search (searchPrefixes array-contains) kullanır — kısa
+  // aramalar da (örn. "tv", "ak") isabetli sonuç bulur; 1 harf prefix'e düşer.
+  const useTokenSearch = searchToken.length >= 2;
   if (arrField && arrVal) {
     // Platform/Federasyon seçili: array-contains ile sorgula (sonuç küçük);
     // city/search/kamu/faaliyet/yıl bellek-içi post-filter, __name__ sırası.
@@ -296,12 +305,17 @@ export async function GET(req: NextRequest) {
   let lastCursorDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
   let fetched = 0;
   const baseLimit = limitNum;
-  const postFilterActive = emailOnly || phoneOnly || !!search || !!district || !!mahalle || !!arrField || !!faaliyet || !!foundedFrom || !!foundedTo || (!!city && !cityWhereApplied);
-  const perFetch = postFilterActive ? Math.min(MAX_LIMIT, baseLimit * 3) : baseLimit;
-  // İlçe/mahalle gibi seyrek post-filter'larda sayfayı doldurabilmek için daha çok tur.
-  const maxIter = postFilterActive ? 20 : 5;
+  const postFilterActive = emailOnly || phoneOnly || !!search || !!district || !!mahalle || !!arrField || !!faaliyet || !!foundedFrom || !!foundedTo || !!typeSet || (!!city && !cityWhereApplied);
+  // Seyrek post-filter kombinasyonlarında (il+faaliyet+platform) sayfayı
+  // doldurmak için daha büyük batch + daha çok tur. 100K derneği tararken bile
+  // makul kalması için toplam taranan doc bütçesiyle sınırlanır (scanBudget).
+  const perFetch = postFilterActive ? MAX_LIMIT : baseLimit;
+  const maxIter = postFilterActive ? 60 : 5;
+  // Toplam taranacak doc tavanı — "sonuç yok gibi görünüp aslında var" sorununu
+  // çözer: bu tavana kadar aramaya devam eder (60 × 1000 = 60K doc).
+  const scanBudget = postFilterActive ? 60_000 : baseLimit * 5;
 
-  for (let iter = 0; iter < maxIter && finalRows.length < baseLimit; iter++) {
+  for (let iter = 0; iter < maxIter && finalRows.length < baseLimit && fetched < scanBudget; iter++) {
     let iterQ = q;
     if (lastCursorDoc) iterQ = iterQ.startAfter(lastCursorDoc);
     iterQ = iterQ.limit(perFetch);
@@ -318,6 +332,7 @@ export async function GET(req: NextRequest) {
       if (!showUnsubscribed && isUnsubscribed) continue;
       if (emailOnly && !row.email) continue;
       if (phoneOnly && !row.phone) continue;
+      if (typeSet && !typeSet.has(row.type || '')) continue;
       if (district && !(nrm(row.district).includes(district) || nrm(row.address).includes(district))) continue;
       if (mahalle && !(nrm(row.neighborhood).includes(mahalle) || nrm(row.address).includes(mahalle))) continue;
       if (searchTokensArr.length) {
@@ -339,11 +354,20 @@ export async function GET(req: NextRequest) {
     if (snap.docs.length < perFetch) break; // sonuna geldik
   }
 
-  // KRİTİK: nextCursor son RETURNED row'un id'si olmalı, son fetched doc DEĞİL.
-  // Aksi halde post-filter ile elenen doc'lar arasından "atlama" olur.
-  const nextCursor = finalRows.length === baseLimit && finalRows.length > 0
-    ? finalRows[finalRows.length - 1].id
-    : null;
+  // KRİTİK cursor mantığı (post-filter'da atlama/tekrar önlenir):
+  //  - Post-filter AKTİF: cursor = son TARANAN doc (lastCursorDoc). Böylece
+  //    sonraki sayfa, elenen doc'ları TEKRAR taramaz, tam kaldığı yerden devam
+  //    eder. (finalRows son id'si kullanılsaydı aradaki taranmış doc'lar yeniden
+  //    taranır → yavaşlık + olası tekrar.)
+  //  - Post-filter YOK (native sıralı sorgu): son döndürülen row id yeterli.
+  //  - Sayfa dolmadıysa (finalRows < baseLimit) daha fazla yok → cursor null.
+  const pageFull = finalRows.length >= baseLimit;
+  let nextCursor: string | null = null;
+  if (pageFull) {
+    nextCursor = postFilterActive
+      ? (lastCursorDoc?.id ?? finalRows[finalRows.length - 1].id)
+      : finalRows[finalRows.length - 1].id;
+  }
 
   return NextResponse.json({
     rows: finalRows,

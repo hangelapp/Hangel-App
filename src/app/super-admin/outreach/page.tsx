@@ -407,6 +407,8 @@ export default function OutreachHubPage() {
       if (federationFilter) params.set('federation', federationFilter);
       if (foundedFrom.trim()) params.set('foundedFrom', foundedFrom.trim());
       if (foundedTo.trim()) params.set('foundedTo', foundedTo.trim());
+      // Tür filtresi server-side — client-side süzme "sonuç bulmuyor" yaratıyordu.
+      if (typeFilter) params.set('type', typeFilter);
 
       const res = await fetch(`/api/super-admin/outreach/list?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -433,7 +435,7 @@ export default function OutreachHubPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user, activeTab, searchTerm, emailOnly, phoneOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter, ilceFilter, mahalleFilter, faaliyetAlaniFilter, platformFilter, federationFilter, foundedFrom, foundedTo]);
+  }, [user, activeTab, searchTerm, emailOnly, phoneOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter, ilceFilter, mahalleFilter, faaliyetAlaniFilter, platformFilter, federationFilter, foundedFrom, foundedTo, typeFilter]);
 
   // "Tümünü Yükle" — loop ile son sayfaya kadar fetch et.
   // hasMore false olunca durur. Max 1000 sayfa güvenlik limiti (= 1M kayıt).
@@ -467,10 +469,14 @@ export default function OutreachHubPage() {
     setHasMore(true);  // pageSize/filter değişince hasMore kalıntısını sıfırla
     setSelectedIds(new Set());
     if (user) {
-      const t = setTimeout(() => fetchPage(null, false), searchTerm ? 350 : 0);
+      // Debounce: arama yazarken 500ms, filtre değiştirirken 250ms bekle → hızlı
+      // ardışık değişimlerde (çoklu-seçim, hızlı yazım) tek fetch atılır; 100K
+      // kayıtlı kaynakta gereksiz sorgu yığılması önlenir.
+      const delay = searchTerm ? 500 : 250;
+      const t = setTimeout(() => fetchPage(null, false), delay);
       return () => clearTimeout(t);
     }
-  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter, ilceFilter, mahalleFilter, faaliyetAlaniFilter, platformFilter, federationFilter, foundedFrom, foundedTo, fetchPage]);
+  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter, ilceFilter, mahalleFilter, faaliyetAlaniFilter, platformFilter, federationFilter, foundedFrom, foundedTo, typeFilter, fetchPage]);
 
   // Cascading süzgeç seçenekleri (tüm Türkiye — neighborhoodsData)
   const ilOptions = useMemo(() => {
@@ -501,11 +507,10 @@ export default function OutreachHubPage() {
 
   // İl/ilçe/mahalle/faaliyet/platform/federasyon/yıl artık server-side süzülüyor.
   // Client'ta yalnız tür (spor/federasyon vb. outreach içi tür) süzgeci kalır.
-  const filteredRows = useMemo(() => {
-    if (!typeFilter) return rows;
-    const set = new Set(typeFilter.split(','));
-    return rows.filter((r) => set.has(r.type || ''));
-  }, [rows, typeFilter]);
+  // Tür filtresi artık SERVER-side (params 'type'). Client-side çift-süzme
+  // kaldırıldı: server pagination ile "sonuç bulmuyor" hatasının kaynağıydı
+  // (100 kayıtlık sayfa tipe uymayınca boş görünüyordu). rows doğrudan gösterilir.
+  const filteredRows = rows;
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
