@@ -19,7 +19,8 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-// Kontrol listesi — üç faz. `key` Firestore'da işaret durumunu tutar (stabil kalmalı).
+// Kontrol listesi — fazlara ayrılmış. `key` Firestore'da işaret durumunu tutar
+// (stabil kalmalı — mevcut key'ler asla değiştirilmez).
 const CHECKLIST: Array<{ phase: string; items: Array<{ key: string; label: string }> }> = [
   {
     phase: 'Etkinlik Öncesi',
@@ -28,10 +29,46 @@ const CHECKLIST: Array<{ phase: string; items: Array<{ key: string; label: strin
       { key: 'pre_agenda', label: 'Etkinlik programı (akış) girildi ve detay sayfasında yayınlandı.' },
       { key: 'pre_speakers', label: 'Konuşmacı / sanatçı / ekip listesi eklendi.' },
       { key: 'pre_capacity', label: 'Kapasite / kontenjan belirlendi.' },
-      { key: 'pre_promote', label: 'Etkinlik sosyal medyada ve Google’da (Ad Grants) tanıtıldı.' },
       { key: 'pre_qr', label: 'Kayıt QR ve Check-in QR oluşturuldu, gerekiyorsa yazdırıldı.' },
       { key: 'pre_venue', label: 'Mekan / online bağlantı teyit edildi (fiziksel: yönlendirme, online: link testi).' },
       { key: 'pre_reminder', label: 'Katılımcılara hatırlatma mesajı gönderildi.' },
+    ],
+  },
+  {
+    phase: 'PR & Tanıtım',
+    items: [
+      { key: 'pr_social', label: 'Sosyal medya paylaşımları yapıldı.' },
+      { key: 'pr_promote', label: 'Etkinlik sosyal medyada ve Google’da (Ad Grants) tanıtıldı.' },
+      { key: 'pr_press_release', label: 'Basın bülteni yazıldı ve yerel haber sitelerine e-posta ile gönderildi.' },
+      { key: 'pr_press_call', label: 'Yerel haber siteleri tek tek arandı, yayınlanması rica edildi.' },
+      { key: 'pr_protocol', label: 'Etkinlik içeriğine uygun protokol (kaymakamlık, belediye, STK vb.) davet edildi.' },
+      { key: 'pr_school', label: 'Etkinlik içeriğine uygun okul yönetimi davet edildi.' },
+      { key: 'pr_whatsapp', label: 'WhatsApp gruplarında paylaşıldı ve paylaştırıldı.' },
+      { key: 'pr_poster_school', label: 'Afişler okula asıldı.' },
+      { key: 'pr_poster_dorm', label: 'Afişler yurtlara asıldı.' },
+      { key: 'pr_poster_cafe', label: 'Afişler kafelere asıldı.' },
+      { key: 'pr_poster_public', label: 'Afişler ilan panoları / muhtarlık / kütüphane gibi ortak alanlara asıldı.' },
+      { key: 'pr_invite_partners', label: 'Paydaş kurum ve sponsorlar bilgilendirildi / davet edildi.' },
+      { key: 'pr_post_press', label: 'Etkinlik sonrası “gerçekleşti” basın bülteni yazılıp e-posta ile servis edildi.' },
+    ],
+  },
+  {
+    phase: 'Ekip & Görev Dağılımı',
+    items: [
+      { key: 'team_dresscode', label: 'Ekip ortak kararla tek tip giyindi (ör. beyaz gömlek, lacivert kot).' },
+      { key: 'team_identify', label: 'Görevli ekip yaka kartı veya renkli sticker ile ayrıştırıldı.' },
+      { key: 'team_speaker', label: 'Her konuşmacı / sanatçı için min. 1 kolaylaştırıcı belirlendi.' },
+      { key: 'team_tech', label: 'Teknik işler için min. 1 kolaylaştırıcı belirlendi.' },
+      { key: 'team_catering', label: 'İkramlar için min. 1 kolaylaştırıcı belirlendi.' },
+      { key: 'team_seating', label: 'Yerleşim düzeni için min. 2 kolaylaştırıcı belirlendi (ön koltuklardan başlayarak oturma düzeni sağlanıyor).' },
+      { key: 'team_photo', label: 'Fotoğraf çekimi için min. 1 kolaylaştırıcı belirlendi.' },
+      { key: 'team_video', label: 'Video çekimi için min. 1 kolaylaştırıcı belirlendi.' },
+      { key: 'team_mic', label: 'Soru-cevap mikrofonu için min. 1 kolaylaştırıcı belirlendi.' },
+      { key: 'team_engage', label: 'Katılımcıları etkinliğe dahil etmek için min. 1 kolaylaştırıcı belirlendi.' },
+      { key: 'team_social', label: 'Sosyal medya paylaşımları için min. 1 kolaylaştırıcı belirlendi.' },
+      { key: 'team_badge_cert', label: 'Yaka kartı ve sertifika dağıtımı için min. 2 kolaylaştırıcı belirlendi.' },
+      { key: 'team_checkin', label: 'Check-in için min. 1 kolaylaştırıcı belirlendi.' },
+      { key: 'team_briefing', label: 'Etkinlik öncesi ekip brifingi yapıldı (herkes görevini biliyor).' },
     ],
   },
   {
