@@ -30,7 +30,9 @@ const getStats = unstable_cache(
 export async function GET() {
   try {
     const stats = await getStats();
-    return NextResponse.json({ ok: true, ...stats });
+    return NextResponse.json({ ok: true, ...stats }, {
+      headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
+    });
   } catch (err) {
     console.error('[market/stats] error', err);
     return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'İstatistik alınamadı' }, { status: 500 });
