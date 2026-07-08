@@ -263,24 +263,33 @@ service cloud.firestore {
         (isSignedIn() && resource.data.createdBy == request.auth.uid);
     }
 
+    // organizerId = STK/kulüp doküman id'si (auth.uid DEĞİL). Sahiplik create
+    // kuralındaki pattern ile doğrulanır: organizerId == auth.uid (eski/tek-org)
+    // VEYA users/{uid}.managed{Ngo,Club}Id == organizerId. Eski update/delete
+    // kuralı yalnız `organizerId == auth.uid` idi → STK/kulüp yöneticisinin
+    // client-side etkinlik güncellemesi (ör. managerChecklist) sessizce
+    // PERMISSION_DENIED alıyordu.
+    function ownsEvent(organizerId) {
+      return isSignedIn() && (
+        organizerId == request.auth.uid ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == organizerId ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == organizerId))
+      );
+    }
     match /events/{eventId} {
       allow read, list: if true; // Public event listings
       // Öğrenci kulüpleri VE STK'lar kendi etkinliklerini oluşturabilir (status='Beklemede').
       allow create: if isSignedIn() &&
         request.resource.data.status == 'Beklemede' &&
-        (request.resource.data.organizerId == request.auth.uid ||
-         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == request.resource.data.organizerId ||
-           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == request.resource.data.organizerId)));
+        ownsEvent(request.resource.data.organizerId);
       // Sahibi kendi etkinliğini günceller (status DAHIL DEĞIL — super-admin onaylar).
       // Super-admin tüm alanları (status dahil) günceller; spesifik match catch-all'ı override eder.
       allow update: if isSuperAdmin() || (
-        isSignedIn() && resource.data.organizerId == request.auth.uid &&
+        ownsEvent(resource.data.organizerId) &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
       );
-      allow delete: if isSuperAdmin() || (
-        isSignedIn() && resource.data.organizerId == request.auth.uid
-      );
+      allow delete: if isSuperAdmin() || ownsEvent(resource.data.organizerId);
 
       // FEAT-EVENT-RSVP — server-side write via /api/events/[id]/rsvp.
       // Client can read its own rsvp; super-admin reads all; writes go through Admin SDK.

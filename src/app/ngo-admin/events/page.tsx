@@ -59,6 +59,7 @@ import type { EventContributor, EventContributorRole, EventAgendaItem } from '@/
 import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
 import { BroadcastMessageButton } from '@/components/messaging/broadcast-message-button';
+import { EventChecklistButton } from '@/components/events/event-checklist-button';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -105,6 +106,7 @@ interface ClubEventDoc {
     completed?: boolean;
     completedAt?: unknown;
     endDate?: string;
+    managerChecklist?: Record<string, boolean>;
 }
 
 const EVENT_TYPE_OPTIONS = ['Seminer', 'Atölye', 'Konferans', 'Panel', 'Söyleşi', 'Konser', 'Sergi', 'Gezi / Tur', 'Turnuva', 'Yarışma', 'Eğitim', 'Buluşma', 'Gönüllülük', 'Bağış Kampanyası', 'Diğer'];
@@ -390,6 +392,7 @@ export default function EventManagementPage() {
                 <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => openEdit(event)}>
                     <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
                 </Button>
+                <EventChecklistButton eventId={event.id} checklist={event.managerChecklist} className="rounded-xl w-full sm:w-auto" />
                 <Button asChild variant="outline" size="sm" className="rounded-xl w-full sm:w-auto border-blue-500/30 text-blue-600 hover:bg-blue-500/10 hover:text-blue-700">
                     <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)"><Megaphone className="h-4 w-4 mr-1.5" /> Google'da Ücretsiz Tanıt</a>
                 </Button>
