@@ -21,7 +21,7 @@ import { differenceInDays, parse } from 'date-fns';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query, limit } from 'firebase/firestore';
 import { UserNav } from '@/components/layout/user-nav';
 import { useRouter } from 'next/navigation';
 import { useWebContent } from '@/hooks/use-site-content';
@@ -370,8 +370,12 @@ export default function LoginPage() {
     }, [user, isUserLoading, mounted, router]);
 
     const db = useFirestore();
+    // MALİYET (2026-07-08): eskiden TÜM volunteering koleksiyonu limitsiz realtime
+    // (onSnapshot) dinleniyordu → ana sayfa en yüksek trafik olduğundan her ziyaret
+    // koleksiyon boyutu kadar Firestore okuması = Read Ops faturasının ana kaynağı.
+    // Ana sayfada yalnız birkaç rastgele ilan gösteriliyor → limit(50) yeter.
     const volunteeringQuery = useMemoFirebase(
-        () => (db ? collection(db, COLLECTIONS.volunteering) : null),
+        () => (db ? query(collection(db, COLLECTIONS.volunteering), limit(50)) : null),
         [db]
     );
     const { data: fsVolunteering } = useCollection<Volunteering>(volunteeringQuery);
@@ -684,7 +688,7 @@ export default function LoginPage() {
                         <div className="text-center mt-8">
                             <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-white/20 text-white bg-transparent hover:bg-white hover:text-black">
                                 <Link href="/volunteering">
-                                    {t('landing.viewAllListingsPrefix')} ({(fsVolunteering && fsVolunteering.length > 0 ? fsVolunteering.length : volunteeringOpportunities.length)} {t('landing.listingsSuffix')})
+                                    {t('landing.viewAllListingsPrefix')} ({(fsVolunteering && fsVolunteering.length > 0 ? (fsVolunteering.length >= 50 ? '50+' : fsVolunteering.length) : volunteeringOpportunities.length)} {t('landing.listingsSuffix')})
                                 </Link>
                             </Button>
                         </div>

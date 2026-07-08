@@ -107,19 +107,19 @@ export default function ClubsPage() {
   );
   const { data: allUsers } = useCollection<MemberUser>(usersRef);
 
-  // Realtime API: /api/clubs/stats (30s cache, server-side count aggregation).
+  // Kulüp istatistikleri: /api/clubs/stats. MALİYET (2026-07-08): eskiden 30s
+  // setInterval ile poll ediliyordu; minInstances:0 nedeniyle server cache miss
+  // olunca her poll doğrudan Firestore'u okuyordu (Read Ops faturasının ana
+  // kaynaklarından). İstatistikler saniyelik değişmez → sayfa açılışında BİR KEZ
+  // çek, polling YOK.
   const [apiStats, setApiStats] = useState<Record<string, { members: number; points: number }> | null>(null);
   useEffect(() => {
     let active = true;
-    const fetchStats = () => {
-      fetch('/api/clubs/stats')
-        .then((r) => r.json())
-        .then((d) => { if (active && d?.ok && d.stats) setApiStats(d.stats); })
-        .catch(() => {});
-    };
-    fetchStats();
-    const t = setInterval(fetchStats, 30_000);
-    return () => { active = false; clearInterval(t); };
+    fetch('/api/clubs/stats')
+      .then((r) => r.json())
+      .then((d) => { if (active && d?.ok && d.stats) setApiStats(d.stats); })
+      .catch(() => {});
+    return () => { active = false; };
   }, []);
 
   const clubStats = useMemo(() => {

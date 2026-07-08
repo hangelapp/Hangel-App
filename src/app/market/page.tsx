@@ -85,7 +85,7 @@ import {
   where,
   orderBy,
   startAt,
-  getCountFromServer,
+  getDocs,
 } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import { useFavorites } from '@/hooks/use-favorites';
@@ -238,15 +238,22 @@ export default function DiscoverPage() {
   }, []);
 
   // Katalogun GERÇEK toplam ürün sayısı (arama barı altında gösterilir).
+  // Önceden her market açılışında getCountFromServer ile ~85k ürün sayılıyordu
+  // (count aggregation ≈ okuma/açılış, yüksek trafik). Bunun yerine cache'li
+  // /api/public/stats endpoint'inden (unstable_cache + revalidate:3600) okunur:
+  // ürün sayısı orada saatte bir hesaplanır, tüm ziyaretçiler paylaşır.
   const [totalCount, setTotalCount] = useState<number | null>(null);
   useEffect(() => {
-    if (!db) return;
-    getCountFromServer(collection(db, COLLECTIONS.products))
-      .then((snap) => setTotalCount(snap.data().count))
+    fetch('/api/public/stats')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { products?: unknown } | null) => {
+        const n = Number(d?.products);
+        if (Number.isFinite(n) && n > 0) setTotalCount(n);
+      })
       .catch(() => {
         /* sessiz */
       });
-  }, [db]);
+  }, []);
 
   // Arama barındaki toplam MARKA sayısı = /market/brands/all ile PARALEL (aynı kaynak:
   // /api/market/brands-all ürün markaları listesi). Böylece iki sayı birbirini tutar.
@@ -279,8 +286,27 @@ export default function DiscoverPage() {
 
   // Markaların bağış oranı — ürünün, linkine sahip olduğu markanın oranını kartta göster.
   // firestore brands + affiliate (api) brands birleşiminden brandId/brandName ile eşlenir.
-  const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
-  const { data: firestoreBrands } = useCollection<Brand>(brandsQuery);
+  // `brands` koleksiyonu küratörlü MAĞAZA listesidir (~150-200 kayıt) ve saniyelik
+  // değişmez → realtime onSnapshot (useCollection) GEREKSİZ. Tek seferlik getDocs
+  // ile okunur (kalıcı dinleyici yok → gereksiz Firestore okuması kesilir).
+  const [firestoreBrands, setFirestoreBrands] = useState<Brand[]>([]);
+  useEffect(() => {
+    if (!db) return;
+    let cancelled = false;
+    getDocs(collection(db, COLLECTIONS.brands))
+      .then((snap) => {
+        if (cancelled) return;
+        setFirestoreBrands(
+          snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Brand),
+        );
+      })
+      .catch(() => {
+        /* sessiz — api/offers markaları yine yüklenir */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [db]);
   const [apiBrands, setApiBrands] = useState<Brand[]>([]);
   useEffect(() => {
     fetch('/api/offers')

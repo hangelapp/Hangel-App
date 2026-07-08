@@ -2,15 +2,19 @@
 # https://firebase.google.com/docs/app-hosting/configure
 
 runConfig:
-  # Cold-start fix (2026-06-01): kullanıcılar ara ara 'upstream connect error
-  # / connection termination' alıyordu. Sebebi: minInstances default 0
-  # (scale-to-zero) → idle period sonrası ilk request Next.js + Firestore
-  # bootstrap 10-30 sn sürerken Envoy bağlantıyı düşürüyordu.
-  # En az 1 warm instance her zaman ayakta.
-  minInstances: 1
-  maxInstances: 10
-  concurrency: 60      # Next.js SSR ağır — OOM önle
-  memoryMiB: 2048      # 1024 yetmedi (2026-06-06): yeni outreach route'lar build sırasında OOM
+  # MALİYET (2026-07-08): minInstances:1 + 2GB warm instance 7/24 açık kalınca
+  # App Engine/Cloud Run faturası ~₺8.45K/ay'a çıkmıştı (Haziran ~₺0 → Temmuz patlama,
+  # site 07-04'te canlıya çıkınca). Scale-to-zero'ya döndük: idle'da 0 instance =
+  # 0 maliyet. Trafik gelince otomatik açılır.
+  #
+  # Cold-start notu (2026-06-01): eskiden idle sonrası ilk istek 10-30 sn bootstrap
+  # + Envoy 'connection termination' veriyordu. minInstances:0 ile bu geri gelebilir;
+  # olursa çözüm minInstances:1'e dönmek DEĞİL (pahalı), memoryMiB'ı düşürüp
+  # (512-1024) 1 warm instance tutmak — çok daha ucuz. Önce maliyeti kesiyoruz.
+  minInstances: 0
+  maxInstances: 4      # Runaway scale tavanı (10→4): düşük-trafikli STK sitesi için yeter
+  concurrency: 80      # Instance başına daha çok istek → daha az instance (maliyet ↓)
+  memoryMiB: 2048      # SSR + Genkit için 2GB'da kal (riske girme); asıl fatura Firestore okuması, memory değil
   cpu: 1
   timeoutSeconds: 120  # Yavaş Firestore aggregation için
 

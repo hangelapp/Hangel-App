@@ -14,9 +14,6 @@ import { useTranslation } from '@/components/providers/language-provider';
 import { useFirestore } from '@/firebase';
 import {
     collection,
-    query,
-    where,
-    getDocs,
     getAggregateFromServer,
     sum,
 } from 'firebase/firestore';
@@ -131,33 +128,21 @@ export default function SocialImpactPage() {
                 .then((snap) => snap.data().total ?? 0)
                 .catch(() => 0);
 
-            // Donation volume: donationAmount is a string field, so we read the
-            // expense donations and parse client-side (mirrors the admin analytics
-            // page). Filtered server-side to exclude 'income' rows.
-            const donationVolumePromise = getDocs(
-                query(collection(db, COLLECTIONS.donations), where('type', '!=', 'income')),
-            )
-                .then((snap) =>
-                    snap.docs.reduce((acc, d) => {
-                        const raw = (d.data() as { donationAmount?: unknown }).donationAmount;
-                        const n = parseFloat(String(raw ?? '0'));
-                        return acc + (Number.isFinite(n) ? n : 0);
-                    }, 0),
-                )
-                // The '!=' filter excludes docs missing the `type` field; fall back
-                // to an unfiltered read so legacy rows without `type` still count.
-                .catch(() =>
-                    getDocs(collection(db, COLLECTIONS.donations))
-                        .then((snap) =>
-                            snap.docs.reduce((acc, d) => {
-                                const data = d.data() as { donationAmount?: unknown; type?: unknown };
-                                if (data.type === 'income') return acc;
-                                const n = parseFloat(String(data.donationAmount ?? '0'));
-                                return acc + (Number.isFinite(n) ? n : 0);
-                            }, 0),
-                        )
-                        .catch(() => 0),
-                );
+            // Donation volume: donationAmount is a string field, so a server-side
+            // sum() is impossible. Previously we downloaded the ENTIRE donations
+            // collection on every visit and parsed client-side (Firestore read cost
+            // scaled with donations size). Instead read the SAME value from the
+            // cached /api/public/stats endpoint (unstable_cache + revalidate:3600),
+            // which already computes `donationVolume` identically (parse
+            // donationAmount, skip type==='income'). One hourly server read shared
+            // across all visitors instead of a full-collection download per visit.
+            const donationVolumePromise = fetch('/api/public/stats')
+                .then((r) => (r.ok ? r.json() : null))
+                .then((d: { donationVolume?: unknown } | null) => {
+                    const n = Number(d?.donationVolume);
+                    return Number.isFinite(n) ? n : 0;
+                })
+                .catch(() => 0);
 
             const [peopleReached, volunteerHours, donationVolume] = await Promise.all([
                 peopleReachedPromise,

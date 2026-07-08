@@ -39,20 +39,18 @@ export default function NgosPage() {
 
     const { data: ngosData, isLoading } = useCollection<NGO>(ngosQuery);
 
-    // Kartlardaki Bağışçı/Gönüllü için gerçek (kullanıcı ilişkisi bazlı) sayıları çek.
-    // 30s aralıklı polling → "anlık" hissi (server tarafında zaten 30s cache var,
-    // gereksiz Firestore okuması yapmaz).
+    // Kartlardaki Bağışçı/Gönüllü sayıları: /api/ngos/engagement. MALİYET
+    // (2026-07-08): eskiden 30s setInterval ile poll ediliyordu; minInstances:0
+    // ile server cache miss olunca her poll NGO başına count sorgusu yapıp
+    // Firestore Read Ops faturasını şişiriyordu. Sayfa açılışında BİR KEZ çek,
+    // polling YOK (sayılar saniyelik değişmez).
     useEffect(() => {
         let active = true;
-        const fetchCounts = () => {
-            fetch('/api/ngos/engagement')
-                .then(r => r.json())
-                .then(d => { if (active && d?.ok && d.counts) setRealCounts(d.counts); })
-                .catch(() => {});
-        };
-        fetchCounts();
-        const t = setInterval(fetchCounts, 30_000);
-        return () => { active = false; clearInterval(t); };
+        fetch('/api/ngos/engagement')
+            .then(r => r.json())
+            .then(d => { if (active && d?.ok && d.counts) setRealCounts(d.counts); })
+            .catch(() => {});
+        return () => { active = false; };
     }, []);
 
     // ngosData'yı gerçek sayılarla zenginleştir → hem sıralama hem görüntüleme tutarlı.
