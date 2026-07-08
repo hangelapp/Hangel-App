@@ -14,6 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 import { ArrowLeft, Loader2, Save, Upload, ImageIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
@@ -141,6 +143,7 @@ export default function NgoEditPage() {
     }, [ngo, initialized]);
 
     const set = (path: string, value: unknown) => {
+        markDirty();
         setForm(prev => {
             const copy = { ...prev };
             const keys = path.split('.');
@@ -306,29 +309,36 @@ export default function NgoEditPage() {
         }
     };
 
+    // Pure persist — Kaydet butonu ve otomatik kayıt aynı yazımı paylaşır
+    // (toast/navigation YOK; onlar sadece butonda). updateDoc undefined reddeder,
+    // id/subcollection alanları temizlenir.
+    const persist = async () => {
+        if (!ngoDocRef) return;
+        const stripUndefined = (v: unknown): unknown => {
+            if (Array.isArray(v)) return v.map(stripUndefined).filter(x => x !== undefined);
+            if (v && typeof v === 'object' && !(v instanceof Date) && typeof (v as { toDate?: unknown }).toDate !== 'function') {
+                const out: Record<string, unknown> = {};
+                for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+                    const cleaned = stripUndefined(val);
+                    if (cleaned !== undefined) out[k] = cleaned;
+                }
+                return out;
+            }
+            return v === undefined ? undefined : v;
+        };
+        const { id: _id, posts: _posts, opportunities: _opps, campaigns: _camps, ...rest } = form as Record<string, unknown>;
+        await updateDoc(ngoDocRef, stripUndefined(rest) as Record<string, unknown>);
+    };
+
+    // Otomatik kayıt — set() ile her alan değişiminde markDirty; 1.2 sn sonra
+    // sessizce yazar. Hydration `initialized` ile korunduğundan echo formu ezmez.
+    const { status: autosaveStatus, markDirty } = useAutosave(persist, [form], { delayMs: 1200 });
+
     const handleSave = async () => {
         if (!ngoDocRef) return;
         setSaving(true);
         try {
-            // updateDoc undefined değerleri reddeder; ayrıca id ve subcollection benzeri
-            // alanları yazmamak için temizliyoruz.
-            const stripUndefined = (v: unknown): unknown => {
-                if (Array.isArray(v)) return v.map(stripUndefined).filter(x => x !== undefined);
-                if (v && typeof v === 'object' && !(v instanceof Date) && typeof (v as { toDate?: unknown }).toDate !== 'function') {
-                    const out: Record<string, unknown> = {};
-                    for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
-                        const cleaned = stripUndefined(val);
-                        if (cleaned !== undefined) out[k] = cleaned;
-                    }
-                    return out;
-                }
-                return v === undefined ? undefined : v;
-            };
-
-            const { id: _id, posts: _posts, opportunities: _opps, campaigns: _camps, ...rest } = form as Record<string, unknown>;
-            const payload = stripUndefined(rest);
-
-            await updateDoc(ngoDocRef, payload as Record<string, unknown>);
+            await persist();
             toast({ title: 'Kaydedildi', description: 'STK bilgileri güncellendi.' });
             router.back();
         } catch (e) {
@@ -376,10 +386,13 @@ export default function NgoEditPage() {
                         <p className="text-xs text-muted-foreground">STK Profili Düzenleniyor</p>
                     </div>
                 </div>
+                <div className="flex items-center gap-3">
+                <AutosaveIndicator status={autosaveStatus} />
                 <Button onClick={handleSave} disabled={saving} className="rounded-xl font-bold">
                     {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     Kaydet
                 </Button>
+                </div>
             </div>
 
             {/* Temel Bilgiler */}
