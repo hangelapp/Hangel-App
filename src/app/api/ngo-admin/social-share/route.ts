@@ -11,7 +11,7 @@
  * Quota AI flow tarafında uygulanır. Hata: { errorCode, message }.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { requireNgoAdmin } from '@/lib/messaging/server-auth';
+import { resolveOrgAdminCtx } from '@/lib/ngo-admin/org-admin-auth';
 import { generateSocialShare } from '@/ai/flows/social-share-flow';
 import { SOCIAL_SHARE_KINDS, type SocialShareKind } from '@/ai/flows/social-share-types';
 import { AIQuotaExceededError } from '@/ai/flow-auth';
@@ -46,8 +46,13 @@ function templatePosts(
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await requireNgoAdmin(req);
-  if ('error' in auth) return auth.error;
+  // Yetki: STK / marka / kulüp yöneticisi VEYA super-admin. Eski requireNgoAdmin
+  // yalnız NGO admini kabul ediyordu → super-admin ve KULÜP/MARKA yöneticilerinde
+  // 403 dönüp "Sosyal Medya" dialog'u hata veriyordu (etkinlikleri kulüpler de açar).
+  const auth = await resolveOrgAdminCtx(req);
+  if (!auth.ok) {
+    return NextResponse.json({ errorCode: 'FORBIDDEN', message: auth.error }, { status: auth.status });
+  }
 
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body) {

@@ -62,6 +62,35 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     } catch { setStatus('error'); setErrMsg('Bağlantı hatası.'); }
   }, [user, toast, onOpenChange]);
 
+  // Check-in QR'ı okununca (…/e/{id}/checkin): etkinliğe check-in yap. Header'daki
+  // QR aracı hem giriş hem check-in QR'larını tanır.
+  const checkin = useCallback(async (eventId: string) => {
+    if (!user) { setStatus('error'); setErrMsg('Check-in için giriş yapmalısın.'); return; }
+    setStatus('approving');
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/clip/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ eventId, source: 'qr' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setStatus('error'); setErrMsg(data?.message || 'Check-in yapılamadı.'); return; }
+      setStatus('done');
+      toast({ title: 'Check-in yapıldı! 🧡', description: 'Katılımın kaydedildi.' });
+      setTimeout(() => onOpenChange(false), 1500);
+    } catch { setStatus('error'); setErrMsg('Bağlantı hatası.'); }
+  }, [user, toast, onOpenChange]);
+
+  // QR içeriğini işle: önce giriş QR'ı, sonra check-in QR'ı. Eşleşme yoksa false.
+  const handleRaw = useCallback((raw: string): boolean => {
+    const login = raw.match(/\/qr-login\/([a-f0-9]+)/i);
+    if (login) { void approve(login[1]); return true; }
+    const ci = raw.match(/\/e\/([^/?#]+)\/checkin/i);
+    if (ci) { void checkin(decodeURIComponent(ci[1])); return true; }
+    return false;
+  }, [approve, checkin]);
+
   // Kamerasız cihaz: diğer cihazın ekranındaki KODU elle girip onaylar.
   const submitCode = useCallback(async () => {
     const c = codeInput.trim().toUpperCase().replace(/\s+/g, '');
@@ -100,8 +129,7 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(img.data, img.width, img.height);
       if (code?.data && !handledRef.current) {
-        const m = code.data.match(/\/qr-login\/([a-f0-9]+)/i);
-        if (m) { handledRef.current = true; stop(); void approve(m[1]); return; }
+        if (handleRaw(code.data)) { handledRef.current = true; stop(); return; }
       }
       rafRef.current = requestAnimationFrame(scan);
     };
@@ -158,7 +186,7 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             : 'Kameraya erişilemedi. Uygulamayı en son sürüme güncelleyip tekrar dene.',
       );
     }
-  }, [approve, stop]);
+  }, [handleRaw, stop]);
 
   // Native: ML Kit tam-ekran tarayıcıyı aç, okunan QR'ı işle (WebView kamerası kullanılmaz).
   const runNativeScan = useCallback(async () => {
@@ -172,10 +200,9 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       setErrMsg('Tarama tamamlanmadı ya da kameraya erişilemedi. Tekrar dene.');
       return;
     }
-    const m = raw.match(/\/qr-login\/([a-f0-9]+)/i);
-    if (m) { handledRef.current = true; void approve(m[1]); }
-    else { setStatus('error'); setErrMsg('Bu bir hangel giriş QR kodu değil.'); }
-  }, [approve]);
+    if (handleRaw(raw)) { handledRef.current = true; }
+    else { setStatus('error'); setErrMsg('Bu bir hangel giriş veya check-in QR kodu değil.'); }
+  }, [handleRaw]);
 
   useEffect(() => {
     if (!open) { stop(); return; }
@@ -189,7 +216,7 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>QR Okut</DialogTitle>
-          <DialogDescription>Bilgisayardaki giriş ekranındaki QR kodunu kameraya göster.</DialogDescription>
+          <DialogDescription>Giriş QR&apos;ını (bilgisayardaki giriş ekranı) veya etkinlik check-in QR&apos;ını kameraya göster.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-3 py-2">
           {status === 'done' ? (

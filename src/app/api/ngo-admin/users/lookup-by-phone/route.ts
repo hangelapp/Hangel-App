@@ -17,26 +17,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { canonicalPhone, phoneMatchCandidates, toE164 } from '@/lib/phone-normalize';
+import { resolveOrgAdminCtx } from '@/lib/ngo-admin/org-admin-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-async function authorize(req: NextRequest): Promise<{ uid: string; ngoId: string } | null> {
-    const authHeader = req.headers.get('authorization') || '';
-    const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-    if (!idToken) return null;
-    try {
-        const decoded = (await getAdminAuth().verifyIdToken(idToken)) as { uid: string };
-        const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
-        if (!snap.exists) return null;
-        const d = snap.data() as { role?: string; managedNgoId?: string };
-        if (!d?.managedNgoId) return null;
-        if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
-        return { uid: decoded.uid, ngoId: d.managedNgoId };
-    } catch {
-        return null;
-    }
-}
 
 /** users doc'undan görünen adı çöz (link-or-create / passes route'larıyla aynı sıra). */
 function resolveName(d: Record<string, unknown> | undefined): string {
@@ -57,9 +41,13 @@ function resolveName(d: Record<string, unknown> | undefined): string {
 }
 
 export async function POST(req: NextRequest) {
-    const ctx = await authorize(req);
-    if (!ctx) {
-        return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Yetki gerekli' }, { status: 403 });
+    // Yetki: STK / marka / kulüp yöneticisi VEYA super-admin. Eski dar authorize()
+    // yalnız managedNgoId + role==='ngo-admin' kabul ediyordu → kulüp/marka
+    // yöneticileri (managedClubId/managedBrandId) "Yetki gerekli" hatası alıyordu.
+    // Paylaşılan resolveOrgAdminCtx üç managed alanını da destekler.
+    const auth = await resolveOrgAdminCtx(req);
+    if (!auth.ok) {
+        return NextResponse.json({ errorCode: 'FORBIDDEN', message: auth.error }, { status: auth.status });
     }
 
     let body: { phone?: unknown };

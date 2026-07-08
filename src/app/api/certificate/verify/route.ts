@@ -46,6 +46,7 @@ interface VerifyResult {
   subject?: string;
   organization?: string;
   issuedAt?: string;
+  eventDate?: string; // etkinliğin gerçekleşme tarihi (cert doc.date) — teyit için
 }
 
 const TYPE_TO_KIND: Record<string, CertKind> = {
@@ -100,7 +101,7 @@ export async function GET(req: Request) {
       const data = snap.docs[0].data() as {
         userId?: string; title?: string; eventName?: string; ngoName?: string; type?: string;
         certCountry?: string; certYear?: number; certActivityNo?: number; certPersonNo?: number;
-        completedAt?: unknown;
+        completedAt?: unknown; date?: unknown;
       };
       result.found = true;
       if (data.type && TYPE_TO_KIND[data.type]) result.kind = TYPE_TO_KIND[data.type];
@@ -112,6 +113,10 @@ export async function GET(req: Request) {
       const subject = data.title || data.eventName;
       if (subject) result.subject = subject;
       if (data.ngoName) result.organization = data.ngoName;
+      // Etkinliğin gerçekleşme tarihi (doc.date, ISO string veya Timestamp) — teyit
+      // özetinde gösterilir. issuedAt (completedAt) sertifikanın düzenlenme tarihidir.
+      if (typeof data.date === 'string' && data.date.trim()) result.eventDate = data.date.slice(0, 10);
+      else { const ed = toIsoDate(data.date); if (ed) result.eventDate = ed; }
       const issuedAt = toIsoDate(data.completedAt);
       if (issuedAt) result.issuedAt = issuedAt;
 

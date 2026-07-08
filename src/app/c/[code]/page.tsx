@@ -30,6 +30,7 @@ interface VerifyResponse {
   subject?: string;
   organization?: string;
   issuedAt?: string;
+  eventDate?: string; // etkinliğin gerçekleşme tarihi (issuedAt = sertifika düzenlenme)
 }
 
 const CORAL = '#f34723';
@@ -118,6 +119,25 @@ export default function CertificateVerifyPage() {
               <p className="rounded-full px-4 py-1.5 text-sm font-medium" style={{ backgroundColor: 'rgba(243, 71, 35, 0.08)', color: CORAL_DARK }}>
                 {kindLabel(data?.kind)}
               </p>
+
+              {/* Teyit özeti — bir bakışta doğrula: kim, hangi etkinlik/konu, ne zaman. */}
+              {(data?.holderName || data?.subject) && (
+                <div className="w-full rounded-2xl border border-black/5 bg-[#f5f5f7] px-4 py-3 text-left">
+                  {data?.holderName ? (
+                    <p className="text-base font-bold leading-snug break-words" style={{ color: INK }}>{data.holderName}</p>
+                  ) : null}
+                  {data?.subject ? (
+                    <p className="mt-0.5 text-sm leading-snug break-words" style={{ color: INK }}>
+                      {subjectLabel(data?.kind)}: <span className="font-semibold">{data.subject}</span>
+                    </p>
+                  ) : null}
+                  {(data?.eventDate || displayDate) ? (
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      {data?.eventDate ? `Etkinlik tarihi: ${formatTrDate(data.eventDate) || data.eventDate}` : `Tarih: ${displayDate}`}
+                    </p>
+                  ) : null}
+                </div>
+              )}
 
               <dl className="mt-2 w-full divide-y divide-black/5 text-left">
                 {data?.holderName ? (

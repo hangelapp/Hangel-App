@@ -366,6 +366,8 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, a
                             city: opp.location?.city || '',
                             ngoName: ngoName || opp.organization || '',
                             url: `${origin}/volunteering/${opp.id}`,
+                            ngoId: opp.ngoId || '',
+                            itemId: opp.id,
                         }}
                     />
                     {/* Google Ad Grants ile ücretsiz tanıtım */}

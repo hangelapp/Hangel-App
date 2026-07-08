@@ -8,6 +8,7 @@ import { EventCountdown } from '@/components/events/event-countdown';
 import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
 import { LiveEventSection } from '@/components/events/live-event-section';
 import { EventEvaluateButton } from '@/components/events/event-evaluate-button';
+import { EventCheckinScanButton } from '@/components/events/event-checkin-scan-button';
 import { RewardBanner } from '@/components/rewards/reward-banner';
 import { ExamEntry } from '@/components/exam/exam-entry';
 import { openExternalUrl } from '@/lib/capacitor';
@@ -1059,6 +1060,14 @@ export default function EventDetailPage() {
                 >
                   📲 NFC
                 </Button>
+                )}
+
+                {/* QR ile Check-in — kamera açılıp kapıdaki check-in QR'ını okur. */}
+                {!event.completed && (
+                  <EventCheckinScanButton
+                    eventId={resolvedEventId || ''}
+                    className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words"
+                  />
                 )}
 
                 {/* Etkinlik bittiyse: sertifika + değerlendir */}

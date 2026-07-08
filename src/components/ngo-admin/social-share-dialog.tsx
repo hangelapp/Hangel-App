@@ -11,7 +11,7 @@
  */
 
 import { useState } from 'react';
-import { Share2, Copy, Loader2, Sparkles, RefreshCw } from 'lucide-react';
+import { Share2, Copy, Loader2, Sparkles, RefreshCw, Code2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -40,6 +40,9 @@ export interface SocialShareItem {
   city?: string;
   ngoName?: string;
   url?: string;
+  /** Web sitesine gömme (iframe) kodu için: kuruluş (STK/kulüp) doc id + içerik id. */
+  ngoId?: string;
+  itemId?: string;
 }
 
 // lucide'de marka ikonu yok → metin etiketi kullanıyoruz.
@@ -59,6 +62,30 @@ export function SocialShareButton({ kind, item }: { kind: 'event' | 'volunteerin
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [embedCopied, setEmbedCopied] = useState(false);
+
+  // Web sitesine gömme (iframe) kodu — yalnız ngoId biliniyorsa. Tek içerik için
+  // ?event= / ?listing= parametresi eklenir. Public embed endpoint'i CSP
+  // frame-ancestors * ile dış sitede yüklenir.
+  const embedBase = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
+  const embedUrl = item.ngoId
+    ? (kind === 'event'
+        ? `${embedBase}/api/public/events/${item.ngoId}/embed${item.itemId ? `?event=${item.itemId}` : ''}`
+        : `${embedBase}/api/public/volunteering/${item.ngoId}/embed${item.itemId ? `?listing=${item.itemId}` : ''}`)
+    : '';
+  const embedCode = embedUrl
+    ? `<iframe src="${embedUrl}" width="100%" height="600" style="border:0;border-radius:16px" loading="lazy" title="${kind === 'event' ? 'Etkinlikler' : 'Gönüllülük İlanları'}"></iframe>`
+    : '';
+  const copyEmbed = async () => {
+    try {
+      await navigator.clipboard.writeText(embedCode);
+      setEmbedCopied(true);
+      toast({ title: 'Kopyalandı', description: 'iframe kodu panoya kopyalandı. Web sitene yapıştırabilirsin.' });
+      setTimeout(() => setEmbedCopied(false), 2000);
+    } catch {
+      toast({ variant: 'destructive', title: 'Kopyalanamadı', description: 'Kodu elle seçip kopyalayabilirsin.' });
+    }
+  };
 
   const generate = async () => {
     if (!user) {
@@ -163,6 +190,26 @@ export function SocialShareButton({ kind, item }: { kind: 'event' | 'volunteerin
             <p>Metin üretilemedi.</p>
             <Button variant="outline" size="sm" className="mt-3" onClick={() => void generate()}>
               <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Tekrar dene
+            </Button>
+          </div>
+        )}
+
+        {/* Web sitene göm — iframe kodu (ngoId biliniyorsa). En altta, ayrı bölüm. */}
+        {embedCode && (
+          <div className="mt-4 space-y-2 rounded-2xl border border-border/60 bg-muted/30 p-3">
+            <div className="flex items-center gap-2">
+              <Code2 className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-bold leading-tight">Web sitene ekle</p>
+                <p className="text-xs text-muted-foreground leading-snug">
+                  Aşağıdaki kodu web sitene yapıştır — {kind === 'event' ? 'etkinlik' : 'ilan'} otomatik görünür ve güncellenir.
+                </p>
+              </div>
+            </div>
+            <pre className="text-[11px] bg-background rounded-xl p-3 overflow-x-auto whitespace-pre-wrap break-all font-mono border">{embedCode}</pre>
+            <Button variant="outline" size="sm" onClick={() => void copyEmbed()} className="w-full">
+              {embedCopied ? <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 mr-1.5" />}
+              {embedCopied ? 'Kopyalandı' : 'iframe kodunu kopyala'}
             </Button>
           </div>
         )}

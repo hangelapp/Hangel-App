@@ -387,6 +387,8 @@ export default function EventManagementPage() {
                         city: event.location?.city || '',
                         ngoName: activeEntity?.data.name || '',
                         url: typeof window !== 'undefined' ? `${window.location.origin}/events/${event.id}` : '',
+                        ngoId: event.organizerId || activeEntity?.data.id || '',
+                        itemId: event.id,
                     }}
                 />
                 <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => openEdit(event)}>
