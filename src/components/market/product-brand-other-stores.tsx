@@ -107,15 +107,15 @@ export function ProductBrandOtherStores({ product }: { product: CanonicalProduct
     <section className="space-y-2 rounded-2xl border bg-card p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-black uppercase tracking-wide text-foreground">
-          Bu Marka Başka Mağazalarda ({rows.length})
+          Bu Ürün Başka Mağazalarda ({rows.length})
         </h2>
         <span className="text-[11px] font-semibold text-primary">
           en çok bağışlayan önce
         </span>
       </div>
       <p className="text-[11px] leading-relaxed text-muted-foreground">
-        <strong className="text-foreground">{brandLabel}</strong> ürünlerini başka
-        mağazalarda karşılaştır — aynı marka, farklı bağış oranı.
+        Aynı ürünü başka mağazalarda karşılaştır — en yüksek bağış oranı olan mağaza
+        üstte. Başka sayfaya gitmene gerek yok.
       </p>
       <div className="divide-y divide-border/60">
         {rows.map((r) => {

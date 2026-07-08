@@ -38,8 +38,12 @@ export default function ProductsPage() {
   const [brandParam, setBrandParam] = useState('');
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const b = new URLSearchParams(window.location.search).get('brand') || '';
+    const sp = new URLSearchParams(window.location.search);
+    const b = sp.get('brand') || '';
     if (b) { setBrandParam(b); setActiveBrand(b); }
+    // Kategori breadcrumb segment linki (?q=Tablet Kılıfı) → aramayı ön-doldur.
+    const q = sp.get('q') || '';
+    if (q) setSearchTerm(q);
   }, []);
 
   // Arama: yazma durunca (350ms) tetiklenir; kelimelere bölünür (Türkçe İ/ı normalize).

@@ -37,13 +37,24 @@ import { openExternalUrl } from '@/lib/capacitor';
 import { goToAffiliate } from '@/lib/affiliate-go';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import type { Brand } from '@/lib/types';
-import { curatedCategoryOf } from '@/lib/market/curated-categories';
 import { canonicalBrand } from '@/lib/market/brand-extract';
 import { recordView } from '@/lib/market/recently-viewed';
+import { useFavorites } from '@/hooks/use-favorites';
 
 function formatPrice(value: number, currency: string): string {
   const sym = currency === 'TRY' ? 'TL' : currency;
   return `${value.toLocaleString('tr-TR')} ${sym}`;
+}
+
+// Ham kategori yolunu ("Bilgisayar&Tablet>Tablet Aksesuarı>Tablet Kılıfı")
+// ayrı ayrı TIKLANABİLİR parçalara böler. Her parça /market/products?q=<parça>
+// aramasına gider (deep-link products sayfasında q ile ön-doldurulur).
+function categorySegments(category?: string | null): string[] {
+  if (!category) return [];
+  return category
+    .split(/[>›/|»]/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 1 && s.length < 40);
 }
 
 // Bilinen mağazalar için arama URL şablonu. `productUrl` bir mağaza ana sayfasına
@@ -93,7 +104,27 @@ export function ProductDetailClient({ id }: { id: string }) {
   const { user: authUser } = useUser();
   const { toast } = useToast();
   const [isGoing, setIsGoing] = useState(false);
-  const [fav, setFav] = useState(false);
+  // Kalıcı favori (users/{uid}/favorites) — fiyat-düşüş cron'u (price-drop-alerts)
+  // bu koleksiyonu izleyip fiyat düşünce bildirir. Eski local useState kaldırıldı
+  // (kaydolmuyordu). fav = bu ürün favoride mi.
+  const { isFavorite, toggle: toggleFavorite, signedIn: favSignedIn } = useFavorites();
+  const fav = isFavorite(id);
+  const onToggleFav = (asAlarm = false) => {
+    if (!favSignedIn) {
+      toast({ variant: 'destructive', title: 'Giriş yapmalısın', description: 'Favori ve fiyat alarmı için oturum aç.' });
+      return;
+    }
+    if (!product) return;
+    const willAdd = !fav;
+    toggleFavorite(product);
+    toast(
+      willAdd
+        ? asAlarm
+          ? { title: '🔔 Fiyat alarmı kuruldu', description: 'Bu ürün daha ucuz olunca sana bildirim göndereceğiz.' }
+          : { title: '🧡 Favorilere eklendi', description: 'Fiyatı düşünce haber vereceğiz.' }
+        : { title: 'Favorilerden çıkarıldı', description: 'Fiyat alarmı kapandı.' }
+    );
+  };
 
   const productRef = useMemoFirebase(
     () => doc(db, COLLECTIONS.products, id),
@@ -359,7 +390,7 @@ export function ProductDetailClient({ id }: { id: string }) {
             variant="ghost"
             size="icon"
             className="h-10 w-10 rounded-xl"
-            onClick={() => setFav((v) => !v)}
+            onClick={() => onToggleFav(false)}
             aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
           >
             <Heart className={cn('h-5 w-5 transition-colors', fav ? 'fill-primary text-primary' : 'text-foreground')} />
@@ -421,7 +452,7 @@ export function ProductDetailClient({ id }: { id: string }) {
           {/* Favori kalbi (sağ üst, görsel üzerinde) */}
           <button
             type="button"
-            onClick={() => setFav((v) => !v)}
+            onClick={() => onToggleFav(false)}
             aria-label={fav ? 'Favorilerden çıkar' : 'Favorilere ekle'}
             className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white"
           >
@@ -475,25 +506,25 @@ export function ProductDetailClient({ id }: { id: string }) {
           {/* Breadcrumb — Market › kategori › ürün */}
           <nav className="flex items-center gap-1 overflow-x-auto text-[11px] text-muted-foreground">
             <Link href="/market" className="shrink-0 hover:text-foreground">Market</Link>
-            {product.category && (() => {
-              // Ham kategoriyi kürasyon kategorisine çevir → gerçek kategori sayfasına bağla.
-              const curated = curatedCategoryOf(product.category, product.title, product.brandName);
-              return (
-                <>
-                  <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
-                  {curated ? (
-                    <Link
-                      href={`/market/kategori/${encodeURIComponent(curated)}`}
-                      className="shrink-0 hover:text-foreground"
-                    >
-                      {product.category}
-                    </Link>
-                  ) : (
-                    <span className="shrink-0">{product.category}</span>
-                  )}
-                </>
-              );
-            })()}
+            {/* Kategori yolunun HER parçası ayrı tıklanabilir (Bilgisayar&Tablet ›
+                Tablet Aksesuarı › Tablet Kılıfı) → o parçanın araması. */}
+            {categorySegments(product.category).map((seg) => (
+              <span key={seg} className="flex shrink-0 items-center gap-1">
+                <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
+                <Link href={`/market/products?q=${encodeURIComponent(seg)}`} className="shrink-0 hover:text-foreground">
+                  {seg}
+                </Link>
+              </span>
+            ))}
+            {/* Marka parçası (Apple) → marka profili */}
+            {productBrand && productBrandKey && (
+              <span className="flex shrink-0 items-center gap-1">
+                <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
+                <Link href={`/market/brand/${encodeURIComponent(productBrandKey)}`} className="shrink-0 hover:text-foreground">
+                  {productBrand}
+                </Link>
+              </span>
+            )}
             <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
             <span className="truncate text-foreground/70">{product.title}</span>
           </nav>
@@ -592,6 +623,29 @@ export function ProductDetailClient({ id }: { id: string }) {
             </div>
           </div>
 
+          {/* Favorilere Ekle + Fiyat Alarmı — ikisi de kalıcı favoriye yazar;
+              fiyat-düşüş cron'u favorileri izleyip daha ucuz olunca bildirir. */}
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant={fav ? 'secondary' : 'outline'}
+              className="h-11 rounded-xl gap-2 font-bold"
+              onClick={() => onToggleFav(false)}
+            >
+              <Heart className={cn('h-4 w-4', fav ? 'fill-primary text-primary' : '')} />
+              {fav ? 'Favoride' : 'Favorilere Ekle'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className={cn('h-11 rounded-xl gap-2 font-bold', fav && 'border-primary/40 text-primary')}
+              onClick={() => onToggleFav(true)}
+              title="Bu ürün daha ucuz olunca bildirim göndeririz"
+            >
+              🔔 {fav ? 'Alarm Kurulu' : 'Fiyat Alarmı Kur'}
+            </Button>
+          </div>
+
           {/* 7. MAĞAZA (Satıcı) kartı — ürünü hangi mağazanın sitesinden çektiğimiz.
               Trendyol'daki "Satıcı" kutusu; tıklanınca o mağazanın profiline gider.
               Alt satırlar: MARKA (ürün markası → /market/brand/<key>) + Bağış Oranı. */}
@@ -677,26 +731,22 @@ export function ProductDetailClient({ id }: { id: string }) {
             <div className="rounded-2xl border bg-card p-4">
               <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-foreground">Ürün Bilgileri</h2>
               <div className="space-y-1 text-xs text-muted-foreground">
-                {product.category && (() => {
-                  // Kategori → kürasyon kategorisi çözülürse tıklanır satır olur.
-                  const curated = curatedCategoryOf(product.category, product.title, product.brandName);
-                  return (
-                    <div className="flex items-center justify-between gap-3 border-b border-border/50 py-1.5">
-                      <span>Kategori</span>
-                      {curated ? (
-                        <Link
-                          href={`/market/kategori/${encodeURIComponent(curated)}`}
-                          className="flex items-center gap-1 text-right font-semibold text-primary hover:underline"
-                        >
-                          <span className="truncate">{product.category}</span>
-                          <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
-                        </Link>
-                      ) : (
-                        <span className="text-right font-semibold text-foreground">{product.category}</span>
-                      )}
-                    </div>
-                  );
-                })()}
+                {product.category && (
+                  <div className="flex items-start justify-between gap-3 border-b border-border/50 py-1.5">
+                    <span className="shrink-0">Kategori</span>
+                    {/* Her kategori parçası ayrı tıklanabilir. */}
+                    <span className="flex flex-wrap items-center justify-end gap-1 text-right">
+                      {categorySegments(product.category).map((seg, i, arr) => (
+                        <span key={seg} className="inline-flex items-center gap-1">
+                          <Link href={`/market/products?q=${encodeURIComponent(seg)}`} className="font-semibold text-primary hover:underline">
+                            {seg}
+                          </Link>
+                          {i < arr.length - 1 && <ChevronRight className="h-3 w-3 text-muted-foreground/60" aria-hidden="true" />}
+                        </span>
+                      ))}
+                    </span>
+                  </div>
+                )}
                 {product.gtin && (
                   <div className="flex justify-between gap-3 border-b border-border/50 py-1.5">
                     <span>Barkod (GTIN)</span>
