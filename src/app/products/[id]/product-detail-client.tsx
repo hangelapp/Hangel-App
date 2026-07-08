@@ -350,17 +350,19 @@ export function ProductDetailClient({ id }: { id: string }) {
     ? Math.round((1 - (product.salePrice as number) / product.price) * 100)
     : 0;
 
-  // Bağış oranı: önce ürünün kendi oranı, yoksa bağlı markanın oranından çöz.
-  const rawRate =
+  // Bağış oranı — #7 (eksik bilgi olmasın): ürün oranı → marka oranı → platform
+  // tabanı %2 (api-clients DEFAULT_DONATION_RATE; o modül API anahtarlı olduğu
+  // için client'a import edilmez, sabit inline). Böylece HER üründe oran görünür,
+  // asla boş/null kalmaz (market kartları da resolveProductRate ile hep gösterir).
+  const PLATFORM_MIN_RATE = 2;
+  const donationRate =
     typeof product.donationRate === 'number' && product.donationRate > 0
       ? product.donationRate
       : typeof brand?.donationRate === 'number' && brand.donationRate > 0
         ? brand.donationRate
-        : null;
-  const donationRate = rawRate;
-  // Tahmini bağış: etkin fiyat × bağış oranı (varsa).
-  const estimatedDonation =
-    donationRate !== null ? Math.round((effectivePrice * donationRate) / 100) : null;
+        : PLATFORM_MIN_RATE;
+  // Tahmini bağış: etkin fiyat × bağış oranı.
+  const estimatedDonation = Math.round((effectivePrice * donationRate) / 100);
   const inStock =
     !product.availability ||
     /in.?stock|stokta|mevcut|available/i.test(product.availability);
