@@ -88,6 +88,7 @@ import {
   getCountFromServer,
 } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
+import { useFavorites } from '@/hooks/use-favorites';
 import { searchProducts, tokenize } from '@/lib/feed/search';
 import type { Brand } from '@/lib/types';
 
@@ -202,6 +203,20 @@ export default function DiscoverPage() {
   const db = useFirestore();
   const homeAds = useMarketAds('home'); // Şerit arası reklam banner'ları (her 5 satırda bir)
   const router = useRouter();
+  // Favorilere Eklenenler şeridi — favori snapshot'larını ProductCard şekline
+  // reconstruct eder (favoriler/page.tsx ile aynı). Boşsa satır çıkmaz.
+  const { favorites: favSnapshots } = useFavorites();
+  const favoriteProducts: CanonicalProduct[] = useMemo(
+    () => favSnapshots.map((f) => ({
+      id: f.productId || f.id, source: '', feedId: '', offerId: '',
+      brandName: f.brandName ?? '', externalId: f.productId || f.id,
+      title: f.title ?? '', price: typeof f.price === 'number' ? f.price : 0,
+      salePrice: typeof f.salePrice === 'number' ? f.salePrice : null, currency: 'TRY',
+      imageLink: f.imageLink ?? undefined, productUrl: '',
+      donationRate: typeof f.donationRate === 'number' ? f.donationRate : undefined, updatedAt: 0,
+    })),
+    [favSnapshots],
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const [activeCategory, setActiveCategory] = useState('Tümü');
@@ -1073,6 +1088,15 @@ export default function DiscoverPage() {
                   // Şeritleri tek bir sıralı diziye topla; sonra planAdInsertions ile
                   // aralarına (rowSlot: 5/10/15/20/25) reklam banner'larını serpiştir.
                   const rows: React.ReactNode[] = [
+                    // 🧡 Favorilerin — favoriye eklenen ürünler (boşsa satır çıkmaz).
+                    <ProductStrip
+                      key="strip-favorites"
+                      title="Favorilerin"
+                      emoji="🧡"
+                      items={favoriteProducts}
+                      resolveRate={resolveProductRate}
+                      onSeeAll={() => router.push('/market/favoriler')}
+                    />,
                     // 🎯 Sana Özel — favoriler + son gezilenlerden kişiselleştirme
                     // (sinyal yoksa ya da <4 sonuçta null döner → satır çıkmaz).
                     <PersonalizedStrip
@@ -1106,7 +1130,16 @@ export default function DiscoverPage() {
                     />,
                     // Mağaza kartları şeridi (3 ajanstan gelen satıcılar).
                     <BrandStrip key="strip-stores" title="Mağazalar" items={brandStripItems} band />,
-                    // Mağazalar altı: kürasyonlu kategori satırları — SABİT sıra (CURATED_ORDER).
+                    // #6: Öne Çıkanlar mağazaların HEMEN ardına — kürasyon satırlarından ÖNCE.
+                    <ProductStrip
+                      key="strip-featured"
+                      title="Öne Çıkanlar"
+                      icon={Sparkles}
+                      items={featuredStrip}
+                      resolveRate={resolveProductRate}
+                      onSeeAll={scrollToAll}
+                    />,
+                    // Öne Çıkanlar altı: kürasyonlu kategori satırları — SABİT sıra (CURATED_ORDER).
                     ...CURATED_ORDER.map((name) => (
                       <CuratedStrip
                         key={`cur-${name}`}
@@ -1116,14 +1149,6 @@ export default function DiscoverPage() {
                         onSeeAll={() => router.push(`/market/kategori/${encodeURIComponent(name)}`)}
                       />
                     )),
-                    <ProductStrip
-                      key="strip-featured"
-                      title="Öne Çıkanlar"
-                      icon={Sparkles}
-                      items={featuredStrip}
-                      resolveRate={resolveProductRate}
-                      onSeeAll={scrollToAll}
-                    />,
                     ...categoryStrips
                       .filter((strip) => strip.items.length >= 3)
                       .map((strip) => (
