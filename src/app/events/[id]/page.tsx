@@ -701,6 +701,32 @@ export default function EventDetailPage() {
                         <RewardBanner kind="event" id={event.id} />
                         <ExamEntry eventId={event.id} />
 
+                        {Array.isArray(event.agenda) && event.agenda.length > 0 && (
+                        <Card className="glass-surface rounded-3xl border-white/40 shadow-sm">
+                            <CardHeader>
+                                <CardTitle className="text-xl flex items-center gap-3">
+                                    <Clock className="h-5 w-5 text-primary" />
+                                    Etkinlik Programı
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <ol className="relative">
+                                    {event.agenda.map((item, i) => (
+                                        <li key={`${item.time}-${i}`} className="flex items-start gap-4 py-4 px-4 sm:px-6 border-t first:border-t-0">
+                                            {/* Saat rozeti — sabit genişlik, tabular hizalı */}
+                                            <span className="shrink-0 inline-flex min-w-[3.5rem] items-center justify-center rounded-lg bg-primary/10 px-2.5 py-1 text-sm font-black tabular-nums text-primary">
+                                                {item.time || '—'}
+                                            </span>
+                                            <p className="flex-1 min-w-0 pt-0.5 font-semibold text-foreground break-words leading-snug">
+                                                {item.title}
+                                            </p>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </CardContent>
+                        </Card>
+                        )}
+
                         {contributors.length > 0 && (
                         <Card className="glass-surface rounded-3xl border-white/40 shadow-sm">
                             <CardHeader>
