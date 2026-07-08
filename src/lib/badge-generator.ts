@@ -39,10 +39,19 @@ async function urlToDataUri(url: string): Promise<string | null> {
  * QR kod data URI üretir. qrcode paketi yoksa qrserver.com fallback'i.
  */
 async function generateQrDataUri(data: string, sizePx = 600): Promise<string | null> {
-  const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=${sizePx}x${sizePx}&data=${encodeURIComponent(
-    data,
-  )}&margin=0`;
-  return urlToDataUri(qrApi);
+  // CLIENT-SIDE qrcode (CORS'suz, offline). Eski qrserver.com fetch'i external
+  // CORS/erişim hatasında rozet/sertifika üretimini patlatıyordu.
+  try {
+    const { default: QRCode } = await import('qrcode');
+    return await QRCode.toDataURL(data, {
+      margin: 0,
+      width: sizePx,
+      color: { dark: '#1f1f1f', light: '#ffffff' },
+      errorCorrectionLevel: 'M',
+    });
+  } catch {
+    return null;
+  }
 }
 
 /**

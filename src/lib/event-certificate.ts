@@ -38,13 +38,22 @@ async function urlToDataUri(url: string): Promise<string | null> {
 }
 
 /**
- * QR kod data URI üretir. badge-generator ile aynı yaklaşım: qrserver.com.
+ * QR kod data URI üretir — CLIENT-SIDE `qrcode` kütüphanesiyle (CORS'suz, offline).
+ * Eskiden qrserver.com'a fetch atıyordu; external CORS/erişim hatası tüm PDF
+ * üretimini patlatıp "sertifika oluşturulamadı" veriyordu. Artık ağ gerektirmez.
  */
 async function generateQrDataUri(data: string, sizePx = 600): Promise<string | null> {
-  const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=${sizePx}x${sizePx}&data=${encodeURIComponent(
-    data,
-  )}&margin=0`;
-  return urlToDataUri(qrApi);
+  try {
+    const { default: QRCode } = await import('qrcode');
+    return await QRCode.toDataURL(data, {
+      margin: 0,
+      width: sizePx,
+      color: { dark: '#1f1f1f', light: '#ffffff' },
+      errorCorrectionLevel: 'M',
+    });
+  } catch {
+    return null;
+  }
 }
 
 /**

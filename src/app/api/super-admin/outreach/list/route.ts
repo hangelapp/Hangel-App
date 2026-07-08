@@ -216,6 +216,11 @@ export async function GET(req: NextRequest) {
   const cursor = searchParams.get('cursor') || null;
   const search = (searchParams.get('search') || '').toLocaleLowerCase('tr').trim();
   const city = searchParams.get('city') || null;
+  // İl PREFIX (indexli where için): dropdown il'inin İLK KELİMESİNİN ilk ~5 harfi.
+  // "Afyonkarahisar"→"Afyon" (veri "Afyon" prefix'iyle eşleşir), "İstanbul"→"İstan"
+  // (veri "İstanbul (Avrupa)" ile eşleşir). Case KORUNUR — veri "Afyon" büyük A ile.
+  // Firestore il>=prefix AND il<=prefix+ aralığı bu ortak kökü yakalar.
+  const cityPrefix = city ? city.trim().split(/\s+/)[0].slice(0, 5) : null;
   // İlçe + Mahalle server-side post-filter (index gerekmez; il where ile daralan
   // sonuç kümesi üzerinde bellek-içi diakritik-duyarsız eşleşme).
   const district = nrm(searchParams.get('district') || '') || null;
@@ -291,27 +296,26 @@ export async function GET(req: NextRequest) {
     q = q.where(arrField, 'array-contains', arrVal);
   } else if (useTokenSearch) {
     q = q.where('searchPrefixes', 'array-contains', searchToken);
-  } else if (source === 'registryVakiflar') {
-    // il where KALDIRILDI — post-filter'da esnek eşleşir (veri "Afyon" vs
-    // dropdown "Afyonkarahisar" uyuşmazlığı çözülür).
+  } else if (source === 'registryVakiflar' || source === 'registryDernekler') {
+    // Öncelik: searchPrefix (nameLower range) > il PREFIX (il range) > sıralı.
+    // İl PREFIX where (indexli, hızlı, timeout yok): dropdown "Afyonkarahisar" →
+    // ilk kelime "Afyon" ile prefix; veri "Afyon"/"Afyonkarahisar" ne yazılırsa
+    // yakalar. Firestore tek alanda range → searchPrefix VARSA il post-filter'a düşer.
+    if (source === 'registryDernekler' && kamuYarariOnly) q = q.where('isKamuYarari', '==', true);
     if (searchPrefix) {
-      q = q.where('nameLower', '>=', searchPrefix).where('nameLower', '<=', searchPrefix + '');
+      q = q.where('nameLower', '>=', searchPrefix).where('nameLower', '<=', searchPrefix + '').orderBy('nameLower');
+    } else if (cityPrefix) {
+      q = q.where('il', '>=', cityPrefix).where('il', '<=', cityPrefix + '').orderBy('il');
+    } else {
+      q = q.orderBy('nameLower');
     }
-    q = q.orderBy('nameLower');
-  } else if (source === 'registryDernekler') {
-    // il where KALDIRILDI — esnek il eşleşmesi post-filter'da (aynı sebep).
-    if (kamuYarariOnly) q = q.where('isKamuYarari', '==', true);
-    if (searchPrefix) {
-      q = q.where('nameLower', '>=', searchPrefix).where('nameLower', '<=', searchPrefix + '');
-    }
-    q = q.orderBy('nameLower');
   } else {
     // outreachContacts: city/ilçe/mahalle/faaliyet vb. hepsi post-filter (index-free).
     q = q.orderBy('createdAt', 'desc');
   }
-  // İl ARTIK her kaynakta post-filter (esnek eşleşme) — where exact match
-  // "Afyon" vs "Afyonkarahisar" uyuşmazlığında 0 sonuç veriyordu.
-  const cityWhereApplied = false;
+  // İl prefix where uygulandıysa post-filter'da il tekrar süzülmez (çift-eleme yok).
+  const cityWhereApplied = !!cityPrefix && !searchPrefix && !arrField && !useTokenSearch
+    && (source === 'registryVakiflar' || source === 'registryDernekler');
 
   // Cursor — bulunamazsa CURSOR_INVALID dön (silent skip yerine)
   if (cursor) {
@@ -368,12 +372,14 @@ export async function GET(req: NextRequest) {
       // İl ESNEK eşleşme (çift-yön prefix + adresten yedek): veri "Afyon" iken
       // dropdown "Afyonkarahisar", ya da veri "İstanbul (Avrupa)" iken dropdown
       // "İstanbul" olsa bile eşleşsin. Biri diğerinin başında geçiyorsa yeter.
-      if (city) {
+      // İl: where PREFIX uygulandıysa (cityWhereApplied) tekrar süzme. Aksi halde
+      // (outreach/search/platform modu) esnek eşleşme — biri diğerinin başında.
+      if (city && !cityWhereApplied) {
         const c = nrm(city);
         const rc = nrm(row.city);
         const ra = nrm(row.address);
         const cityMatch = !!c && (
-          rc === c || rc.startsWith(c) || c.startsWith(rc) && rc.length >= 3 ||
+          rc === c || rc.startsWith(c) || (c.startsWith(rc) && rc.length >= 3) ||
           rc.includes(c) || (!!ra && ra.includes(c))
         );
         if (!cityMatch) continue;
