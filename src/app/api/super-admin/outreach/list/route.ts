@@ -253,22 +253,35 @@ export async function GET(req: NextRequest) {
   // client-side post-filter ile bulamıyorduk — server-side prefix indekslemesi
   // ile native search.
   const searchPrefix = search.trim();
-  // İçerikten arama: en uzun kelimeyi searchPrefixes (kelime-öneki) array-contains ile
-  // getir, sonra tüm kelimeleri folded AND-substring ile doğrula. "ormancı" → "...Ormancılar...".
+  // İçerikten arama: EN NADİR kelimeyi searchPrefixes (kelime-öneki) array-contains
+  // ile getir, sonra TÜM kelimeleri folded AND-substring ile doğrula. Böylece
+  // "sosyal fayda" → nadir olan "fayda" ile küçük küme çekilir, "sosyal" post-
+  // filter'da doğrulanır. "ormancı" → "...Ormancılar..." de bulunur.
   const searchFold = nrm(search);
   const searchTokensArr = searchFold.split(/\s+/).filter(Boolean);
-  // Token seçimi: array-contains için EN AYIRT EDİCİ token'ı seç. "sosyal" gibi
-  // çok yaygın kelimeler (STK adlarında binlerce kez) sonuç kümesini şişirip
-  // post-filter'da hedefi kaçırıyordu. Yaygın "stop-word"leri ele; kalanların
-  // EN UZUNUNU seç (uzun kelime genelde daha nadir → daha küçük, isabetli küme).
-  const COMMON_ORG_WORDS = new Set([
-    'dernegi', 'dernek', 'vakfi', 'vakif', 'sosyal', 've', 'ile', 'icin',
-    'kulubu', 'kulup', 'spor', 'genclik', 'egitim', 'kultur', 'yardimlasma',
-    'dayanisma', 'federasyonu', 'federasyon', 'platformu', 'turkiye',
-  ]);
-  const distinctive = searchTokensArr.filter((t) => t.length >= 2 && !COMMON_ORG_WORDS.has(t));
-  const pool = distinctive.length > 0 ? distinctive : searchTokensArr;
-  const searchToken = pool.reduce((a, b) => (b.length > a.length ? b : a), '');
+  const candidateTokens = searchTokensArr.filter((t) => t.length >= 2);
+  // GENEL çözüm (stop-word listesine bağlı DEĞİL): her aday token için gerçek
+  // yaygınlığı count() ile ölç (doküman okumaz, ucuz), EN AZ sonuç getireni seç.
+  // "sosyal"=binlerce, "fayda"=onlarca → otomatik "fayda" seçilir. Bu her arama
+  // için (gençlik/çevre/kadın… fark etmez) doğru davranır.
+  let searchToken = '';
+  if (candidateTokens.length === 1) {
+    searchToken = candidateTokens[0];
+  } else if (candidateTokens.length > 1) {
+    // En fazla 4 token için count karşılaştır (arama genelde 1-3 kelime).
+    const probe = candidateTokens.slice(0, 4);
+    const counts = await Promise.all(
+      probe.map(async (tok) => {
+        try {
+          const c = await db.collection(source).where('searchPrefixes', 'array-contains', tok).count().get();
+          return { tok, n: c.data().count };
+        } catch { return { tok, n: Number.MAX_SAFE_INTEGER }; }
+      }),
+    );
+    // En az sonuçlu (en nadir) token → en küçük, en isabetli array-contains kümesi.
+    counts.sort((a, b) => a.n - b.n);
+    searchToken = counts[0]?.tok || probe.reduce((a, b) => (b.length > a.length ? b : a), '');
+  }
   // 2+ harf token-search (searchPrefixes array-contains) kullanır — kısa
   // aramalar da (örn. "tv", "ak") isabetli sonuç bulur; 1 harf prefix'e düşer.
   const useTokenSearch = searchToken.length >= 2;
@@ -279,13 +292,14 @@ export async function GET(req: NextRequest) {
   } else if (useTokenSearch) {
     q = q.where('searchPrefixes', 'array-contains', searchToken);
   } else if (source === 'registryVakiflar') {
-    if (city) q = q.where('il', '==', city);
+    // il where KALDIRILDI — post-filter'da esnek eşleşir (veri "Afyon" vs
+    // dropdown "Afyonkarahisar" uyuşmazlığı çözülür).
     if (searchPrefix) {
       q = q.where('nameLower', '>=', searchPrefix).where('nameLower', '<=', searchPrefix + '');
     }
     q = q.orderBy('nameLower');
   } else if (source === 'registryDernekler') {
-    if (city) q = q.where('il', '==', city);
+    // il where KALDIRILDI — esnek il eşleşmesi post-filter'da (aynı sebep).
     if (kamuYarariOnly) q = q.where('isKamuYarari', '==', true);
     if (searchPrefix) {
       q = q.where('nameLower', '>=', searchPrefix).where('nameLower', '<=', searchPrefix + '');
@@ -295,8 +309,9 @@ export async function GET(req: NextRequest) {
     // outreachContacts: city/ilçe/mahalle/faaliyet vb. hepsi post-filter (index-free).
     q = q.orderBy('createdAt', 'desc');
   }
-  // İl, vakıf/dernek kütüğünde where ile (indexli); diğer hallerde post-filter.
-  const cityWhereApplied = !arrField && !useTokenSearch && (source === 'registryVakiflar' || source === 'registryDernekler') && !!city;
+  // İl ARTIK her kaynakta post-filter (esnek eşleşme) — where exact match
+  // "Afyon" vs "Afyonkarahisar" uyuşmazlığında 0 sonuç veriyordu.
+  const cityWhereApplied = false;
 
   // Cursor — bulunamazsa CURSOR_INVALID dön (silent skip yerine)
   if (cursor) {
@@ -350,8 +365,19 @@ export async function GET(req: NextRequest) {
         const hay = `${nrm(row.name)} ${nrm(row.shortName || '')} ${nrm(row.address)}`;
         if (!searchTokensArr.every((tok) => hay.includes(tok))) continue;
       }
-      // İl where ile uygulanmadıysa (outreach veya platform/fed modu) burada süz.
-      if (city && !cityWhereApplied && !nrm(row.city).includes(nrm(city))) continue;
+      // İl ESNEK eşleşme (çift-yön prefix + adresten yedek): veri "Afyon" iken
+      // dropdown "Afyonkarahisar", ya da veri "İstanbul (Avrupa)" iken dropdown
+      // "İstanbul" olsa bile eşleşsin. Biri diğerinin başında geçiyorsa yeter.
+      if (city) {
+        const c = nrm(city);
+        const rc = nrm(row.city);
+        const ra = nrm(row.address);
+        const cityMatch = !!c && (
+          rc === c || rc.startsWith(c) || c.startsWith(rc) && rc.length >= 3 ||
+          rc.includes(c) || (!!ra && ra.includes(c))
+        );
+        if (!cityMatch) continue;
+      }
       if (kamuYarariOnly && arrField && !row.isKamuYarari) continue;
       if (faaliyet && !(nrm(row.faaliyetAlani).includes(faaliyet) || nrm(row.detayliFaaliyetAlani).includes(faaliyet))) continue;
       if (foundedFrom || foundedTo) {
