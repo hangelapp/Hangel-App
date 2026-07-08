@@ -35,16 +35,32 @@ export default function BrandsListPage() {
   }, []);
 
   const brands = useMemo(() => {
-    const map = new Map<string, Brand>();
+    // 1) id-bazlı dedup + ONAYSIZ/pasif eleme + geçersiz oran eleme.
+    // Onay robotu (affiliate-approval-sync) onaysız markaları status:'Pasif'
+    // yapar; 3 ajanstan onaylanmayanlar böylece burada elenir.
+    const byId = new Map<string, Brand>();
     for (const b of [...(firestoreBrands || []), ...apiBrands]) {
-      if (!b?.id || !b?.name || map.has(b.id)) continue;
+      if (!b?.id || !b?.name || byId.has(b.id)) continue;
       const status = (b as Brand & { status?: string }).status;
       if (status === 'Silindi' || status === 'Pasif' || status === 'Reddedildi') continue;
       const rate = Number(b.donationRate);
       if (!Number.isFinite(rate) || rate < 1 || rate > 100) continue;
-      map.set(b.id, b);
+      byId.set(b.id, b);
     }
-    let list = Array.from(map.values()).sort((a, b) =>
+
+    // 2) MÜKERRER isim eleme: aynı isimli mağazalardan YÜKSEK bağış oranlı kalır,
+    // diğeri gizlenir (kullanıcı en avantajlı olanı görür). İsim normalize edilir.
+    const norm = (s: string) => (s || '').toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
+    const byName = new Map<string, Brand>();
+    for (const b of byId.values()) {
+      const key = norm(b.name);
+      const existing = byName.get(key);
+      if (!existing || (Number(b.donationRate) || 0) > (Number(existing.donationRate) || 0)) {
+        byName.set(key, b);
+      }
+    }
+
+    let list = Array.from(byName.values()).sort((a, b) =>
       (a.name || '').localeCompare(b.name || '', 'tr'),
     );
     const q = searchTerm.trim().toLowerCase();

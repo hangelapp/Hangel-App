@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StoreProductsTab } from '@/components/market/store-products-tab';
+import { StoreBrandsRow } from '@/components/market/store-brands-row';
 import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, ShieldAlert, CheckCircle2, AlertTriangle, MessageSquare, Loader2, BarChart3, TrendingUp, Users, FileText, Mail, Phone, Globe, Instagram, Linkedin, Twitter, Target } from 'lucide-react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -316,7 +317,9 @@ export default function BrandProfilePage() {
             <TabsTrigger value="posts" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent font-bold">Akış</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="products" className="p-4">
+        <TabsContent value="products" className="p-4 space-y-4">
+            {/* Bu mağazada satılan markalar — marka→mağaza listesinin tersi. */}
+            <StoreBrandsRow storeId={brand.id} storeName={brand.name} />
             <StoreProductsTab storeName={brand.name} storeRate={Number(brand.donationRate) || undefined} />
         </TabsContent>
 

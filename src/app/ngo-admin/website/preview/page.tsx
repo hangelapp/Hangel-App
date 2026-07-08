@@ -279,15 +279,13 @@ function PreviewContent() {
                                 <CardContent className="px-8 pb-4">
                                     <p className="text-muted-foreground leading-relaxed">{method.description}</p>
                                 </CardContent>
-                                <CardFooter className="px-8 pb-8">
-                                    <Button asChild variant="link" className="p-0 text-primary font-bold text-base hover:no-underline">
-                                      {isHangel ? (
-                                        <Link href={`/ngos/${ngo.id}`}>Hemen Destek Ol <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                                      ) : (
-                                        <a href="#">Detaylı Bilgi <ArrowRight className="ml-2 h-4 w-4" /></a>
-                                      )}
-                                    </Button>
-                                </CardFooter>
+                                {isHangel && (
+                                  <CardFooter className="px-8 pb-8">
+                                      <Button asChild variant="link" className="p-0 text-primary font-bold text-base hover:no-underline">
+                                          <Link href={`/ngos/${ngo.id}`}>Hemen Destek Ol <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                      </Button>
+                                  </CardFooter>
+                                )}
                             </Card>
                         )})}
                         <Card className="rounded-[2rem] border-none shadow-lg bg-card md:col-span-2 overflow-hidden">

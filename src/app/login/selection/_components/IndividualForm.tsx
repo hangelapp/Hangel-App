@@ -681,7 +681,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} />
+                            <FormInput type="tel" autoComplete="tel-national" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} />
                         </div>
                     </div>
                     <div className="space-y-2 pt-4 border-t border-dashed">
@@ -783,7 +783,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} />
+                            <FormInput type="tel" autoComplete="tel-national" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} />
                         </div>
                     </div>
                     <div className="space-y-2 pt-4 border-t border-dashed">
@@ -910,7 +910,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 </div>
                 <div className="space-y-2">
                     <FormLabel required>E-posta</FormLabel>
-                    <FormInput type="email" placeholder="ornek@mail.com" required value={email} onChange={e => setEmail(e.target.value)} />
+                    <FormInput type="email" autoComplete="email" placeholder="ornek@mail.com" required value={email} onChange={e => setEmail(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full h-12 rounded-xl font-bold" disabled={isLoading}>
                     {isLoading ? <Loader2 className="animate-spin" /> : 'Sıfırlama Bağlantısı Gönder'}
@@ -948,7 +948,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 <form onSubmit={handleCheckEmail} className="space-y-4">
                     <div className="space-y-2">
                         <FormLabel required>E-posta</FormLabel>
-                        <FormInput type="email" placeholder="ornek@mail.com" required value={email} onChange={e => setEmail(e.target.value)} />
+                        <FormInput type="email" autoComplete="email" placeholder="ornek@mail.com" required value={email} onChange={e => setEmail(e.target.value)} />
                     </div>
                     <Button type="submit" className="w-full h-12 rounded-xl font-bold" disabled={isLoading}>
                         {isLoading ? <Loader2 className="animate-spin" /> : "Devam Et"}
@@ -976,7 +976,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">
                     <FormLabel required>Ad Soyad</FormLabel>
-                    <FormInput placeholder="İsmail Hilmi ADIGÜZEL" required value={name} onChange={e => setName(e.target.value)} />
+                    <FormInput autoComplete="name" placeholder="İsmail Hilmi ADIGÜZEL" required value={name} onChange={e => setName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                     <FormLabel required>Telefon</FormLabel>

@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import jsQR from 'jsqr';
 import { Capacitor } from '@capacitor/core';
 import { scanQrNative } from '@/lib/native-qr';
@@ -22,6 +23,7 @@ import { Loader2, CheckCircle2, KeyRound } from 'lucide-react';
 export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { toast } = useToast();
   const { user } = useUser();
+  const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -82,14 +84,31 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     } catch { setStatus('error'); setErrMsg('Bağlantı hatası.'); }
   }, [user, toast, onOpenChange]);
 
-  // QR içeriğini işle: önce giriş QR'ı, sonra check-in QR'ı. Eşleşme yoksa false.
+  // Sertifika doğrulama QR'ı (…/c/{code}) veya kayıt/davet QR'ı
+  // (…/login/selection?action=register…) okununca ilgili herkese-açık sayfaya
+  // yönlendir. Bu QR'lar bir EYLEM değil NAVİGASYON'dur; dialog'u kapatıp git.
+  const navigateTo = useCallback((path: string) => {
+    setStatus('done');
+    stop();
+    onOpenChange(false);
+    router.push(path);
+  }, [router, onOpenChange, stop]);
+
+  // QR içeriğini işle: giriş → check-in → sertifika doğrulama → kayıt/davet.
+  // Eşleşme yoksa false (bilinmeyen QR mesajı gösterilir).
   const handleRaw = useCallback((raw: string): boolean => {
     const login = raw.match(/\/qr-login\/([a-f0-9]+)/i);
     if (login) { void approve(login[1]); return true; }
     const ci = raw.match(/\/e\/([^/?#]+)\/checkin/i);
     if (ci) { void checkin(decodeURIComponent(ci[1])); return true; }
+    // Sertifika doğrulama: https://hangel.org/c/{code} (herkese açık, giriş gerekmez)
+    const cert = raw.match(/\/c\/([A-Za-z0-9-]+)/);
+    if (cert) { navigateTo(`/c/${cert[1]}`); return true; }
+    // Kayıt / STK-davet QR'ı: …/login/selection?action=register&ref=…
+    const reg = raw.match(/\/login\/selection\?([^#]*action=register[^#]*)/i);
+    if (reg) { navigateTo(`/login/selection?${reg[1]}`); return true; }
     return false;
-  }, [approve, checkin]);
+  }, [approve, checkin, navigateTo]);
 
   // Kamerasız cihaz: diğer cihazın ekranındaki KODU elle girip onaylar.
   const submitCode = useCallback(async () => {
@@ -201,7 +220,7 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       return;
     }
     if (handleRaw(raw)) { handledRef.current = true; }
-    else { setStatus('error'); setErrMsg('Bu bir hangel giriş veya check-in QR kodu değil.'); }
+    else { setStatus('error'); setErrMsg('Bu bir hangel giriş, check-in, sertifika veya kayıt QR kodu değil.'); }
   }, [handleRaw]);
 
   useEffect(() => {
@@ -216,7 +235,7 @@ export function QrScanDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>QR Okut</DialogTitle>
-          <DialogDescription>Giriş QR&apos;ını (bilgisayardaki giriş ekranı) veya etkinlik check-in QR&apos;ını kameraya göster.</DialogDescription>
+          <DialogDescription>Giriş, etkinlik check-in, sertifika doğrulama veya kayıt/davet QR&apos;ını kameraya göster.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-3 py-2">
           {status === 'done' ? (

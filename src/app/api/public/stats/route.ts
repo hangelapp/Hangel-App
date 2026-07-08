@@ -9,12 +9,20 @@ export const dynamic = 'force-dynamic';
 const getPublicStats = unstable_cache(
   async () => {
     const db = getAdminFirestore();
-    const [ngosSnap, brandsSnap, usersSnap, donationsSnap] = await Promise.all([
+    const [
+      ngosSnap, brandsSnap, usersSnap, productsSnap,
+      donationsSnap, eventsSnap, completionsSnap,
+    ] = await Promise.all([
       db.collection(COLLECTIONS.ngos).count().get().catch(() => null),
       db.collection(COLLECTIONS.brands).count().get().catch(() => null),
       db.collection(COLLECTIONS.users).count().get().catch(() => null),
+      db.collection(COLLECTIONS.products).count().get().catch(() => null),
       db.collection(COLLECTIONS.donations).get().catch(() => null),
+      db.collection(COLLECTIONS.events).get().catch(() => null),
+      db.collection(COLLECTIONS.volunteerCompletions).get().catch(() => null),
     ]);
+
+    // Bağış hacmi + oluşan mali değer (bağışlar + income kayıtları toplamı).
     let donationVolume = 0;
     if (donationsSnap) {
       for (const doc of donationsSnap.docs) {
@@ -24,10 +32,45 @@ const getPublicStats = unstable_cache(
         if (Number.isFinite(n)) donationVolume += n;
       }
     }
+
+    // Gerçekleşen etkinlik = bitiş tarihi geçmiş olan etkinlikler. Tarih yoksa
+    // 'Tamamlandı'/'Bitti' statüsü de sayılır.
+    let eventsHeld = 0;
+    const nowMs = Date.now();
+    if (eventsSnap) {
+      for (const doc of eventsSnap.docs) {
+        const d = doc.data() as { eventEnd?: unknown; endDate?: unknown; status?: unknown; date?: unknown };
+        const endRaw = (d.eventEnd ?? d.endDate ?? d.date) as string | { toMillis?: () => number } | undefined;
+        let endMs = 0;
+        if (endRaw && typeof endRaw === 'object' && typeof endRaw.toMillis === 'function') endMs = endRaw.toMillis();
+        else if (typeof endRaw === 'string') { const t = Date.parse(endRaw); if (Number.isFinite(t)) endMs = t; }
+        const statusDone = d.status === 'Tamamlandı' || d.status === 'Bitti';
+        if ((endMs && endMs < nowMs) || statusDone) eventsHeld += 1;
+      }
+    }
+
+    // Tamamlanan gönüllülük saati — completion doc'larındaki saat alanları toplanır
+    // (şema farklılıklarına karşı birkaç olası alan denenir).
+    let volunteerHours = 0;
+    if (completionsSnap) {
+      for (const doc of completionsSnap.docs) {
+        const d = doc.data() as Record<string, unknown>;
+        // hours ya doğrudan sayı, ya { total: n } objesi olabilir; başka şema
+        // varyantları (totalHours / hoursTotal) da denenir.
+        const hoursObj = (d.hours && typeof d.hours === 'object') ? (d.hours as { total?: unknown }).total : undefined;
+        const raw = hoursObj ?? d.hours ?? d.totalHours ?? d.hoursTotal ?? 0;
+        const n = parseFloat(String(raw ?? '0'));
+        if (Number.isFinite(n)) volunteerHours += n;
+      }
+    }
+
     return {
-      ngos: ngosSnap?.data().count ?? 0,
-      brands: brandsSnap?.data().count ?? 0,
       users: usersSnap?.data().count ?? 0,
+      brands: brandsSnap?.data().count ?? 0,
+      ngos: ngosSnap?.data().count ?? 0,
+      products: productsSnap?.data().count ?? 0,
+      eventsHeld,
+      volunteerHours: Math.round(volunteerHours),
       donationVolume: Math.round(donationVolume),
     };
   },

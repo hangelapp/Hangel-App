@@ -98,7 +98,7 @@ const group2Items: SideNavItem[] = [
     { href: '/my-donations', label: 'nav.donations', icon: 'dollar-sign' },
     { href: '/my-applications', label: 'nav.applications', icon: 'file-text' },
     { href: '/my-badges', label: 'nav.badges', icon: 'award' },
-    { href: '/etki-haritam', label: 'Etki Haritam', icon: 'map-pinned' },
+    { href: '/etki-haritam', label: 'nav.impactMap', icon: 'map-pinned' },
     { href: '/etki-hikayem', label: 'nav.impactStory', icon: 'HeartHandshake' },
     { href: '/messages', label: 'nav.messages', icon: 'message-square' },
 ];
@@ -568,6 +568,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         '/yatirimci-iliskileri',
         '/careers',
         '/corporate',
+        '/kamu',
         '/accessibility',
         '/standards',
         '/sitemap',
@@ -625,7 +626,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             <Link href={`/login/selection?action=login&next=${encodeURIComponent(pathname)}`}>{t('nav.login')}</Link>
                         </Button>
                         <Button asChild size="sm" className="h-11 rounded-full px-4 text-xs font-bold">
-                            <Link href={`/login/selection?action=register&next=${encodeURIComponent(pathname)}`}>Kayıt ol</Link>
+                            <Link href={`/login/selection?action=register&next=${encodeURIComponent(pathname)}`}>{t('nav.register')}</Link>
                         </Button>
                     </div>
                 </header>
@@ -666,7 +667,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             status bar'ın ALTINDA kalır ve X rahat tıklanır. */}
                         <div className="px-4 pb-4 border-b border-glass-black-8 dark:border-glass-white-8 sticky top-0 z-10 glass" style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}>
                             <div className="flex justify-between items-center mb-6">
-                                <Link href="/login" onClick={() => setDrawerOpen(false)}>
+                                <Link href="/timeline" onClick={() => setDrawerOpen(false)} aria-label="hangel ana akış">
                                     <HangelLogo className="text-2xl" href={null} />
                                 </Link>
                                 <SheetClose className="flex h-11 w-11 items-center justify-center rounded-full -mr-2 hover:bg-glass-black-5 dark:hover:bg-glass-white-8 active:scale-95 transition" aria-label="Menüyü kapat">

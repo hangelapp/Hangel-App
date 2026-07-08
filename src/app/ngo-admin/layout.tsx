@@ -109,7 +109,6 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: QrCode },
       { href: '/ngo-admin/community-invite', label: 'Topluluğunu Davet Et', icon: Users },
       { href: '/ngo-admin/marketing-kit', label: 'Tanıtım Araçları', icon: Presentation },
-      { href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: Megaphone, scope: 'ads', beta: true },
     ],
   },
   {
@@ -148,14 +147,16 @@ const NGO_MENU: MenuGroup[] = [
   },
   {
     title: 'Pazarlama & İletişim',
+    // Ana iletişim başlıkları önce: Reklam, Çağrı Merkezi, SMS, Mail, Toplu Mesaj,
+    // WhatsApp. Çağrı Merkezi'nin ALT özellikleri (Kişi Rehberi, Arama Sırası)
+    // menüden çıkarıldı — Çağrı Merkezi sayfası içindeki sekmelerden erişilir.
     items: [
-      { href: '/ngo-admin/messaging', label: 'Toplu Mesaj & Kampanyalar', icon: Send, beta: true },
+      { href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: Megaphone, scope: 'ads', beta: true },
+      { href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: PhoneCall, beta: true },
       { href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: MessageSquare, beta: true },
       { href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: Mail, beta: true },
-      { href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: PhoneCall, beta: true },
+      { href: '/ngo-admin/messaging', label: 'Toplu Mesaj & Kampanyalar', icon: Send, beta: true },
       { href: '/ngo-admin/whatsapp-business', label: 'WhatsApp İş', icon: MessageCircle, beta: true },
-      { href: '/ngo-admin/call-center/contacts', label: 'Kişi Rehberi', icon: Contact, beta: true },
-      { href: '/ngo-admin/call-center/queue', label: 'Arama Sırası', icon: Clock, beta: true },
       { href: '/ngo-admin/messaging-packages', label: 'Kontör Paketleri', icon: Wallet, beta: true },
       { href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: MessageCircle, comingSoon: true },
       { href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: Megaphone, comingSoon: true },

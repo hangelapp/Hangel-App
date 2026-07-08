@@ -31,7 +31,7 @@ import { EmergencyContactsSection } from './_components/emergency-contacts-secti
 import { AddressSection } from './_components/address-section';
 import { HealthSection } from './_components/health-section';
 import { ConsentsSection } from './_components/consents-section';
-import type { VolunteerUserDoc, ConsentsState, NeighborhoodsMap } from './_components/types';
+import type { VolunteerUserDoc, ConsentsState, NeighborhoodsMap, EmergencyContact } from './_components/types';
 
 // ---------------------------------------------------------------------------
 // Page
@@ -64,7 +64,7 @@ export default function VolunteerSettingsPage() {
   const [muhtarMahalle, setMuhtarMahalle] = useState('');
 
   // Existing emergency / education fields
-  const [emergencyContacts, setEmergencyContacts] = useState([{ name: '', phone: '' }, { name: '', phone: '' }]);
+  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([{ name: '', phone: '' }, { name: '', phone: '' }]);
   const [emergencyAvailable, setEmergencyAvailable] = useState(false);
   const [hasChronicIllness, setHasChronicIllness] = useState(false);
   const [usesRegularMedication, setUsesRegularMedication] = useState(false);
@@ -225,6 +225,15 @@ export default function VolunteerSettingsPage() {
     setEmergencyContacts(prev => {
       const next = [...prev];
       next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  // Davet akışı: uid/status/impactScore gibi alanları toptan güncelle.
+  const handleEmergencyContactPatch = (index: number, patch: Partial<typeof emergencyContacts[number]>) => {
+    setEmergencyContacts(prev => {
+      const next = [...prev];
+      next[index] = { ...next[index], ...patch };
       return next;
     });
   };
@@ -504,6 +513,7 @@ export default function VolunteerSettingsPage() {
         <EmergencyContactsSection
           contacts={emergencyContacts}
           onContactChange={handleEmergencyContactChange}
+          onContactPatch={handleEmergencyContactPatch}
         />
 
         <AddressSection

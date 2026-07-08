@@ -28,7 +28,11 @@ export const BrandLogo = ({ brand, padding = 'p-3' }: { brand: Brand; padding?: 
   // Clearbit kapandı (DNS yok) → DB'deki logo.clearbit.com URL'leri atlanır.
   const realLogo = (() => {
     const url = brand.logoUrl || '';
-    return !url || url.includes('logo.clearbit.com/') ? '' : url;
+    // Geçersiz kaynaklar atlanır → doğrudan gerçek logo kaynağına (unavatar/
+    // google sz=256) düşülür: clearbit (DNS kapandı) + hangel-new-v18 (silinen
+    // Storage bucket → 404). Böylece kullanıcı hep gerçek marka logosunu görür.
+    if (!url || url.includes('logo.clearbit.com/') || url.includes('hangel-new-v18')) return '';
+    return url;
   })();
 
   const sources = [

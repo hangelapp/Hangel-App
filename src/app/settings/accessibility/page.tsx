@@ -48,6 +48,11 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import {
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+    AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useUser, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -249,7 +254,6 @@ export default function AccessibilitySettingsPage() {
     // localStorage'tan tercihleri temizler ve aynı tab'a A11Y_CHANGED event'i
     // yayar — kullanıcı dilerse sonra "Kaydet"e basıp Firestore'a da yazar.
     const handleResetToDefaults = () => {
-        if (!confirm('Tüm erişilebilirlik tercihleri varsayılana sıfırlansın mı?')) return;
         setHighContrast(false);
         setFontSize('normal');
         setLineHeight('normal');
@@ -673,15 +677,33 @@ export default function AccessibilitySettingsPage() {
                     <p className="text-xs text-muted-foreground">
                         Tüm tercihleri ilk haline döndürmek ister misin?
                     </p>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleResetToDefaults}
-                        className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
-                    >
-                        <RotateCcw className="h-4 w-4 mr-2" />
-                        Ayarları Varsayılana Sıfırla
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                            >
+                                <RotateCcw className="h-4 w-4 mr-2" />
+                                Ayarları Varsayılana Sıfırla
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Tüm tercihler sıfırlansın mı?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Tüm erişilebilirlik tercihleri ilk (varsayılan) haline döndürülür.
+                                    Dilersen sonra “Kaydet”e basarak bu değişikliği kalıcı yapabilirsin.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleResetToDefaults}>
+                                    Sıfırla
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
 

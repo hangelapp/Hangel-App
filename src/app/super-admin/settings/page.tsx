@@ -42,6 +42,8 @@ import {
   Presentation,
   Music2,
   Store,
+  Library,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -171,6 +173,12 @@ function resolveWebPath(sound: NotificationSound): string | null {
 // Her item süper-admin ana sayfa pattern'ına göre: renkli icon + description.
 // href varsa Link olarak başka sayfaya navigate, yoksa bu sayfada inline render.
 const SETTINGS_SECTIONS = [
+  { id: 'feed', label: 'Ürün Feed & Listeleme', icon: Library, color: 'bg-sky-600',
+    href: '/super-admin/feed',
+    description: 'Marka feed\'lerinden ürünleri çek (ingest) ve markaların marka/ürün listeleme modunu yönet.' },
+  { id: 'affiliate-sync', label: 'Affiliate Senkron', icon: RefreshCw, color: 'bg-cyan-600',
+    href: '/super-admin/affiliate-sync',
+    description: '3 affiliate ağını tara; onaysız mağazaları Market\'ten kaldır, yeni onaylıları ekle. Elle "Şimdi Çalıştır" + son çalışma durumu.' },
   { id: 'marketing-kit', label: 'Tanıtım Malzemeleri', icon: Presentation, color: 'bg-[#f34723]',
     href: '/super-admin/marketing-kit',
     description: 'Sunum, sosyal medya, döner kart, mağaza/kasa kartı, stand görselleri — "Tümünü Yayınla" ile markalar/STK panellerine açılır.' },

@@ -128,15 +128,13 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser,
   };
 
   // Etkinlik hem öncesinde hem esnasında kart tıklanabilir → detay sayfasına gider.
-  // Slug varsa /events/[slug]'a bağla; yoksa tıklanabilir davranışı devre dışı bırak.
-  const HeaderWrap: React.FC<{ children: React.ReactNode }> = ({ children }) =>
-    event.slug ? (
-      <Link href={`/events/${event.slug}`} className="block -m-1 rounded-2xl p-1 transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label={`${event.name} etkinliğini aç`}>
-        {children}
-      </Link>
-    ) : (
-      <div>{children}</div>
-    );
+  // Slug varsa /events/[slug]'a, yoksa /events/[eventId]'e bağla (asla ölü link).
+  const detailHref = `/events/${event.slug || eventId}`;
+  const HeaderWrap: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <Link href={detailHref} className="block -m-1 rounded-2xl p-1 transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label={`${event.name} etkinliğini aç`}>
+      {children}
+    </Link>
+  );
 
   return (
     <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">

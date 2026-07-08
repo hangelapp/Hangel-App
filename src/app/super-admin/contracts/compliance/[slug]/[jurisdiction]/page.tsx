@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { contractsData as seedContracts } from '@/lib/contracts';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 interface ContractDoc {
   id: string;
@@ -253,7 +254,7 @@ export default function ComplianceDetailPage() {
                   <CardContent className="pt-0">
                     <div
                       className="text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none"
-                      dangerouslySetInnerHTML={{ __html: sec.body }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(sec.body) }}
                     />
                     {missing && (
                       <div className="mt-3 text-xs flex items-start gap-2 p-2 rounded-xl bg-red-500/10 border border-red-500/30">

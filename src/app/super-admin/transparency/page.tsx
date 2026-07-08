@@ -366,9 +366,9 @@ export default function TransparencyPage() {
 
       <Tabs defaultValue="approvals" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="approvals">Onay Bekleyenler ({pendingQueue.reduce((s, p) => s + p.items.length, 0)})</TabsTrigger>
-          <TabsTrigger value="ngos">STK Şeffaflık Profilleri</TabsTrigger>
-          <TabsTrigger value="index">Endeks Maddeleri ({criteria?.length || 0})</TabsTrigger>
+          <TabsTrigger value="approvals" className="min-w-0 px-1.5 text-[11px] sm:text-sm"><span className="truncate">Onay Bekleyenler ({pendingQueue.reduce((s, p) => s + p.items.length, 0)})</span></TabsTrigger>
+          <TabsTrigger value="ngos" className="min-w-0 px-1.5 text-[11px] sm:text-sm"><span className="truncate">STK Şeffaflık</span></TabsTrigger>
+          <TabsTrigger value="index" className="min-w-0 px-1.5 text-[11px] sm:text-sm"><span className="truncate">Endeks ({criteria?.length || 0})</span></TabsTrigger>
         </TabsList>
 
         <TabsContent value="approvals" className="space-y-4">

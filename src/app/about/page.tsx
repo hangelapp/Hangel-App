@@ -214,11 +214,15 @@ export default function AboutPage() {
             <section className="bg-background py-32 text-center border-b border-border">
                 <div className="container mx-auto px-6 max-w-6xl">
                     <PublicStatsRow
+                        containerClassName="grid grid-cols-2 md:grid-cols-4 gap-x-10 gap-y-14"
                         items={[
                             { key: 'users', label: t('marketing.about.statUsersLabel'), format: STAT_FORMATTERS.count },
-                            { key: 'ngos', label: t('marketing.about.statNgosLabel'), format: STAT_FORMATTERS.count },
                             { key: 'brands', label: t('marketing.about.statBrandsLabel'), format: STAT_FORMATTERS.count },
-                            { key: 'donationVolume', label: t('marketing.about.statDonationsLabel'), format: STAT_FORMATTERS.currency },
+                            { key: 'ngos', label: t('marketing.about.statNgosLabel'), format: STAT_FORMATTERS.count },
+                            { key: 'eventsHeld', label: 'Gerçekleşen Etkinlik', format: STAT_FORMATTERS.count },
+                            { key: 'volunteerHours', label: 'Tamamlanan Gönüllülük', format: STAT_FORMATTERS.hours },
+                            { key: 'donationVolume', label: 'Oluşan Mali Değer', format: STAT_FORMATTERS.currency },
+                            { key: 'products', label: 'Ürün', format: STAT_FORMATTERS.count },
                         ]}
                     />
                 </div>

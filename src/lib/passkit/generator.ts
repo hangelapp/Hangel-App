@@ -71,9 +71,12 @@ async function fetchPngBuffer(url?: string): Promise<Buffer | null> {
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
     // PNG magic: 89 50 4E 47
-    if (buf.length > 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) {
-      return buf;
-    }
+    const isPng = buf.length > 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
+    // JPEG magic: FF D8 FF — çoğu STK logosu (favicon/JPG) böyle. Apple Wallet
+    // thumbnail alanı JPEG'i de kabul eder; PNG'ye zorlamak logoyu HİÇ
+    // göstermemekten (boş köşe) daha kötü. İkisini de kabul et.
+    const isJpeg = buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+    if (isPng || isJpeg) return buf;
     return null;
   } catch {
     return null;

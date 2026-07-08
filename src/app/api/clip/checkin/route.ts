@@ -197,6 +197,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       await db.collection(COLLECTIONS.users).doc(uid)
         .update({ impactScore: FieldValue.increment(CHECKIN_POINTS) })
         .catch(() => undefined);
+
+      // QR/NFC ile check-in yapan kullanıcı KESİN katıldı → RSVP'yi de 'going'
+      // yaz. Katılımcı listesi (/api/events/[id]/attendees) yalnız 'going' RSVP'yi
+      // gösteriyordu; bu satır olmadan QR ile gelenler listede GÖRÜNMÜYORDU.
+      await eventRef.collection(COLLECTIONS.eventRsvps).doc(uid)
+        .set({ userId: uid, status: 'going', source: 'checkin', updatedAt: FieldValue.serverTimestamp() }, { merge: true })
+        .catch(() => undefined);
     }
 
     return NextResponse.json({ ok: true, checkinId: checkinDocId, source, points: uid ? CHECKIN_POINTS : 0 });

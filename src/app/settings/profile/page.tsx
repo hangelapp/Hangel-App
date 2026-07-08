@@ -92,6 +92,11 @@ export default function ProfileSettingsPage() {
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
   const [profile, setProfile] = useState(emptyUser);
+  // Form state'i yalnız İLK hydration'da doldurulur. Kullanıcı formu açtıktan
+  // sonra Firestore listener tekrar tetiklenirse (kendi autosave'imizin echo'su
+  // dahil) açık formu EZMESİN — yoksa "cinsiyet kaydettim, yenileyince gitti"
+  // yarışı olur: kullanıcının yeni değeri eski snapshot'la geri yazılır.
+  const hydratedRef = useRef(false);
 
   useEffect(() => {
     const onboardingStep = localStorage.getItem('onboardingStep');
@@ -110,7 +115,10 @@ export default function ProfileSettingsPage() {
   }, [isOnboarding, db]);
 
   useEffect(() => {
-    if (userData) {
+    // Sadece ilk hydration'da state'i doldur — sonraki listener tetiklemeleri
+    // (autosave echo'su vb.) kullanıcının açık formunu ezmesin.
+    if (userData && !hydratedRef.current) {
+        hydratedRef.current = true;
         setProfile(prev => ({
             ...prev,
             ...userData,
@@ -345,6 +353,11 @@ export default function ProfileSettingsPage() {
         'personalInfo.address.district': normalizedAddress.district,
         'personalInfo.address.neighborhood': normalizedAddress.neighborhood,
         'personalInfo.address.fullAddress': normalizedAddress.fullAddress,
+        // Demografik alanlar (cinsiyet/doğum/uyruk) — nested personalInfo REPLACE
+        // ya da başka bir yazma yarışı bu alanları düşürmesin diye dot-path garanti.
+        'personalInfo.gender': profile.personalInfo.gender ?? '',
+        'personalInfo.birthDate': (profile.personalInfo as { birthDate?: string }).birthDate ?? '',
+        'personalInfo.nationality': (profile.personalInfo as { nationality?: string }).nationality ?? '',
     };
 
     await updateDoc(userDocRef, payload);

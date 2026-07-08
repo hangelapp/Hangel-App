@@ -18,19 +18,16 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { Store as StoreIcon, ChevronRight, HeartHandshake } from 'lucide-react';
+import { HeartHandshake } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { ProductCard } from '@/components/market/product-card';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import type { Brand } from '@/lib/types';
 
 const eff = (p: CanonicalProduct) =>
   typeof p.salePrice === 'number' && p.salePrice > 0 ? p.salePrice : p.price;
-const fmt = (n: number, c?: string) =>
-  `${new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(n)} ${
-    c === 'TRY' || !c ? 'TL' : c
-  }`;
 const normStore = (s: string) => (s || '').toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
 
 interface Row {
@@ -104,58 +101,31 @@ export function ProductBrandOtherStores({ product }: { product: CanonicalProduct
   const brandLabel = product.productBrand || brandKey;
 
   return (
-    <section className="space-y-2 rounded-2xl border bg-card p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-black uppercase tracking-wide text-foreground">
+    <section className="space-y-3">
+      <div className="flex items-center justify-between px-0.5">
+        <h2 className="text-base font-black text-foreground">
           Bu Ürün Başka Mağazalarda ({rows.length})
         </h2>
-        <span className="text-[11px] font-semibold text-primary">
+        <span className="shrink-0 text-[11px] font-semibold text-primary">
           en çok bağışlayan önce
         </span>
       </div>
-      <p className="text-[11px] leading-relaxed text-muted-foreground">
-        Aynı ürünü başka mağazalarda karşılaştır — en yüksek bağış oranı olan mağaza
-        üstte. Başka sayfaya gitmene gerek yok.
-      </p>
-      <div className="divide-y divide-border/60">
-        {rows.map((r) => {
-          const href = r.storeId
-            ? `/market/${r.storeId}`
-            : `/products/${r.cheapest.id}`;
-          return (
+      {/* Yatay ürün şeridi — her mağazanın en uygun ürünü fiyat + indirim + bağış
+          oranıyla; kullanıcı tek bakışta en uygununu görür, sayfa değiştirmez. */}
+      <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
+        {rows.map((r) => (
+          <div key={r.cheapest.id} className="w-36 shrink-0 space-y-1">
+            {/* Her kart KENDİ mağaza bağış oranını gösterir (ürün oranı yoksa mağaza oranı). */}
+            <ProductCard product={r.cheapest} donationRate={r.storeRate > 0 ? Math.round(r.storeRate) : undefined} />
             <Link
-              key={r.cheapest.id}
-              href={href}
-              className="-mx-1 flex items-center gap-3 rounded-lg px-1 py-2.5 transition-colors hover:bg-primary/5"
+              href={r.storeId ? `/market/${r.storeId}` : `/products/${r.cheapest.id}`}
+              className="flex items-center gap-1 truncate px-0.5 text-[11px] font-bold text-primary hover:underline"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border bg-white text-primary">
-                <StoreIcon className="h-4 w-4" aria-hidden="true" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-foreground">
-                  {r.storeName}
-                </p>
-                {r.storeRate > 0 ? (
-                  <p className="flex items-center gap-1 text-[11px] font-bold text-primary">
-                    <HeartHandshake className="h-3 w-3" aria-hidden="true" />
-                    %{Math.round(r.storeRate)} bağış
-                  </p>
-                ) : (
-                  <p className="text-[11px] font-semibold text-muted-foreground">
-                    Bağış oranı belirtilmemiş
-                  </p>
-                )}
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-sm font-black text-foreground">
-                  {fmt(eff(r.cheapest), r.cheapest.currency)}
-                </p>
-                <p className="text-[10px] text-muted-foreground">en düşük</p>
-              </div>
-              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <HeartHandshake className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{r.storeName}</span>
             </Link>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </section>
   );

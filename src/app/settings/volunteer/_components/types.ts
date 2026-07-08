@@ -65,7 +65,18 @@ export type VolunteerUserDoc = {
 
 export type NeighborhoodsMap = Record<string, Record<string, string[]>>;
 
-export type EmergencyContact = { name: string; phone: string };
+export type EmergencyContact = {
+  name: string;
+  phone: string;
+  /** Telefon bir hangel üyesine aitse, davet/onay durumu. */
+  uid?: string;
+  /** 'pending' = davet gönderildi, kişi henüz yanıtlamadı; 'accepted' = kişi
+   *  onayladı (ad + puan otomatik doldu); 'rejected' = kişi reddetti. Alan yoksa
+   *  klasik manuel giriş (hangel üyesi değil ya da davet akışı kullanılmadı). */
+  status?: 'pending' | 'accepted' | 'rejected';
+  /** Kişi onayladıysa (accepted) görünür — hangel etki puanı. */
+  impactScore?: number;
+};
 
 export type ConsentsState = {
   contract: boolean;

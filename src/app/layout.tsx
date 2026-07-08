@@ -99,6 +99,9 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  // Klavye açılınca layout'u İTMEK yerine viewport'u yeniden boyutlandır →
+  // odaklanılan input klavyenin altında kalmaz, form kaymaz (konfor).
+  interactiveWidget: 'resizes-content',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
     { media: '(prefers-color-scheme: dark)', color: '#0b0d12' },

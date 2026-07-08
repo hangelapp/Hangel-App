@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useFormPersist } from '@/hooks/use-form-persist';
+import { Honeypot, isBotSubmission } from '@/components/shared/honeypot';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
@@ -162,6 +164,18 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     });
     const [logoUrl, setLogoUrl] = useState<string>('');
     const [uploadedDocuments, setUploadedDocuments] = useState<{ kind: string; url: string }[]>([]);
+
+    // Bot koruması — görünmez honeypot alanı (insan görmez, bot doldurur).
+    const [honeypot, setHoneypot] = useState('');
+
+    // Form taslağı: kullanıcı sayfayı kapatsa/gitse bile girdikleri kaybolmasın.
+    // Başarılı gönderimde clearDraft() ile temizlenir. (Dosya URL'leri/parola
+    // yedeklenmez — uploadedDocuments/logoUrl hariç.)
+    const { clear: clearDraft } = useFormPersist(
+        'corporate-register',
+        formData,
+        (saved) => setFormData(prev => ({ ...prev, ...saved })),
+    );
     const handleUploaded = (url: string, kind: string) => {
         if (kind === 'logo') { setLogoUrl(url); return; }
         setUploadedDocuments(prev => [...prev.filter(d => d.kind !== kind), { kind, url }]);
@@ -234,6 +248,12 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        // Bot koruması: honeypot doluysa (insan doldurmaz) sessizce reddet —
+        // bota "başarılı" hissi verilir, gerçek başvuru oluşturulmaz.
+        if (isBotSubmission(honeypot)) {
+            toast({ title: 'Başvuru Alındı', description: 'En kısa sürede sizinle iletişime geçeceğiz.' });
+            return;
+        }
         setIsSubmitting(true);
         try {
             // /my-applications sayfası type='Kulüpler' / 'STK' / 'Marka' filtresiyle çalışır.
@@ -356,6 +376,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     reportNonFatalError('welcome_send_corporate', e, { entityType });
                 }
             }
+            clearDraft(); // Başvuru gönderildi → taslağı temizle.
             toast({ title: "Başvuru Alındı", description: "En kısa sürede sizinle iletişime geçeceğiz." });
             router.push(authUser ? '/my-applications' : '/login');
         } catch (error: unknown) {
@@ -367,6 +388,11 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     };
 
     const selectedCorporatePhone = COUNTRY_PHONE_CODES.find(c => c.code === formData.phoneCountryCode) ?? COUNTRY_PHONE_CODES[0];
+
+    // Türkiye'ye ÖZEL alanlar (kütük no, vakıf kütük araması, il müdürlüğü,
+    // valilik, plaka) yalnızca ülke Türkiye iken gösterilir. Yabancı bir STK/kulüp
+    // için bunlar anlamsız; onlara serbest "resmi kayıt no + şehir" alanı sunulur.
+    const isTurkey = (formData.country || 'Türkiye') === 'Türkiye';
 
     // --- Registry (kütük) auto-fill: Dernek lookup by kütük no, Vakıf search by name ---
     type RegistryMatch = {
@@ -640,6 +666,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
     return (
         <form onSubmit={handleFormSubmit} className="space-y-10 animate-in fade-in-0 pb-10">
+            {/* Bot koruması — görünmez honeypot (insan görmez/doldurmaz). */}
+            <Honeypot value={honeypot} onChange={setHoneypot} name="organization_fax" />
             {/* SADECE Kuruluş Türü görünür; seçim yapılınca alt alanlar açılır */}
             <div className="space-y-6">
                 <div className="space-y-2">
@@ -713,12 +741,19 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </p>
                         </div>
 
-                        {formData.ngoSubType === 'Dernek' && (
+                        {/* Yabancı ülke STK'sı: Türkiye kütük/vakıf sorgusu anlamsız —
+                            serbest "resmi kayıt no" bilgisi istenir. */}
+                        {!isTurkey && (formData.ngoSubType === 'Dernek' || formData.ngoSubType === 'Vakif') && (
+                            <p className="text-[12px] text-muted-foreground -mt-2 leading-snug">
+                                Kuruluşunuzun ülkenizdeki resmi kayıt numarasını ve bilgilerini aşağıya elle girin.
+                            </p>
+                        )}
+                        {isTurkey && formData.ngoSubType === 'Dernek' && (
                             <p className="text-[12px] text-muted-foreground -mt-2 leading-snug">
                                 Kütük numaranızı girip <span className="font-bold text-foreground">Bilgileri Getir</span>&apos;e basın; STK&apos;nın bilgileri (ad, adres, faaliyet alanı, kuruluş yılı, il) otomatik doldurulur. Tire (-) işaretleri sistem tarafından eklenir; sadece rakamları yazın.
                             </p>
                         )}
-                        {formData.ngoSubType === 'Vakif' && (
+                        {isTurkey && formData.ngoSubType === 'Vakif' && (
                             <p className="text-[12px] text-muted-foreground -mt-2 leading-snug">
                                 Vakfınızın adını girip <span className="font-bold text-foreground">Ara</span>&apos;ya basın; eşleşen vakıflardan birini seçerseniz adres ve iletişim bilgileri otomatik doldurulur. Vakıflar kütük numarası kullanmaz, isimle eşleştirilir.
                             </p>
@@ -729,7 +764,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </p>
                         )}
 
-                        {formData.ngoSubType === 'Dernek' && (
+                        {isTurkey && formData.ngoSubType === 'Dernek' && (
                         <div className="space-y-2">
                             <FormLabel>Kütük Numarası</FormLabel>
                             <div className="grid grid-cols-[1fr_auto] gap-2">
@@ -760,7 +795,20 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                         )}
 
-                        {formData.ngoSubType === 'Vakif' && (
+                        {/* Yabancı STK/Vakıf: serbest resmi kayıt no alanı. */}
+                        {!isTurkey && (formData.ngoSubType === 'Dernek' || formData.ngoSubType === 'Vakif') && (
+                            <div className="space-y-2">
+                                <FormLabel>Resmi Kayıt / Sicil Numarası</FormLabel>
+                                <FormInput
+                                    placeholder="Ülkenizdeki resmi kayıt numarası"
+                                    value={formData.registryNo}
+                                    onChange={e => setFormData({ ...formData, registryNo: e.target.value })}
+                                />
+                                <p className="text-[11px] text-muted-foreground ml-1">Kuruluşunuzun bulunduğu ülkedeki resmi kayıt/sicil numarasını girin.</p>
+                            </div>
+                        )}
+
+                        {isTurkey && formData.ngoSubType === 'Vakif' && (
                         <div className="space-y-2">
                             <FormLabel>Vakıf Adı</FormLabel>
                             <div className="grid grid-cols-[1fr_auto] gap-2">

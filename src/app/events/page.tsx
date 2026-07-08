@@ -132,6 +132,11 @@ function EventsPageContent() {
         if (completedMs == null) return true;
         return now - completedMs < COMPLETED_VISIBLE_WINDOW_MS;
       }
+      // Yönetici "tamamla" dememiş olsa bile: bitiş tarihi 24 SAATTEN fazla
+      // geçmiş etkinlik otomatik yayından düşer (gönüllülük listesindeki
+      // applicationEnd kuralıyla tutarlı). Tarih okunamıyorsa güvenli tarafta tut.
+      const endMs = parseEventDate(e.endDate) ?? parseEventDate(e.startDate);
+      if (endMs != null && now - endMs.getTime() >= COMPLETED_VISIBLE_WINDOW_MS) return false;
       return true;
     }) as Event[];
   }, [firestoreEvents]);
@@ -425,7 +430,16 @@ function EventsPageContent() {
                 </div>
                 <CardContent className="p-3 flex-1 space-y-2">
                   <h2 className="text-sm font-bold font-headline leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">{eventName}</h2>
-                  <p className="text-xs font-bold text-primary break-words">{event.organizer}</p>
+                  {/* Organize eden STK/kulüp — logo (varsa) + ad */}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {(event as { organizerLogoUrl?: string }).organizerLogoUrl && (
+                      <span className="h-4 w-4 shrink-0 overflow-hidden rounded-full border border-border bg-white">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={(event as { organizerLogoUrl?: string }).organizerLogoUrl} alt={event.organizer || ''} className="h-full w-full object-contain" />
+                      </span>
+                    )}
+                    <p className="text-xs font-bold text-primary break-words min-w-0">{event.organizer}</p>
+                  </div>
                   <div className="space-y-1 pt-1 border-t border-dashed border-border">
                     <div className="text-xs text-muted-foreground font-bold flex items-center gap-1.5 min-w-0">
                         <Calendar className='h-3 w-3 text-primary shrink-0'/>

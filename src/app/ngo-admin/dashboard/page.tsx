@@ -269,8 +269,6 @@ const buildNavGroups = (t: (key: string) => string): { title: string; items: Nav
             { id: 'mail', href: '/ngo-admin/mail', label: t('ngo_admin_dashboard.itemMail'), icon: 'mail', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'call-center', href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: 'phone-call', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'whatsapp-business', href: '/ngo-admin/whatsapp-business', label: 'WhatsApp İş', icon: 'whatsapp-business', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
-            { id: 'call-center-contacts', href: '/ngo-admin/call-center/contacts', label: 'Kişi Rehberi', icon: 'contact', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
-            { id: 'call-center-queue', href: '/ngo-admin/call-center/queue', label: 'Arama Sırası', icon: 'clock', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'messaging-packages', href: '/ngo-admin/messaging-packages', label: 'Kontör Paketleri', icon: 'wallet', roles: ['Genel Yönetici'], kinds: ['ngo'], beta: true },
             { id: 'dm', href: '/ngo-admin/dm', label: t('ngo_admin_dashboard.itemDm'), icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], beta: true },
             { id: 'marketing', href: '/ngo-admin/marketing', label: t('ngo_admin_dashboard.itemMarketing'), icon: 'target', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },

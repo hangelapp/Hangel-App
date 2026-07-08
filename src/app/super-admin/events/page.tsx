@@ -207,7 +207,7 @@ function EventRow({
         </Link>
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <Link href={detailHref} target="_blank" rel="noopener noreferrer" className="font-bold text-foreground truncate hover:text-primary hover:underline">
+            <Link href={detailHref} target="_blank" rel="noopener noreferrer" className="min-w-0 max-w-full break-words font-bold text-foreground hover:text-primary hover:underline">
               {title}
             </Link>
             {live && (
@@ -247,7 +247,7 @@ function EventRow({
             </p>
           )}
         </div>
-        <div className="flex gap-2 w-full sm:w-auto sm:flex-col md:flex-row">{children}</div>
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:flex-col md:flex-row md:flex-wrap">{children}</div>
       </CardContent>
     </Card>
   );

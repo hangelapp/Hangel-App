@@ -395,8 +395,11 @@ export default function EventManagementPage() {
                     <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
                 </Button>
                 <EventChecklistButton eventId={event.id} checklist={event.managerChecklist} className="rounded-xl w-full sm:w-auto" />
-                <Button asChild variant="outline" size="sm" className="rounded-xl w-full sm:w-auto border-blue-500/30 text-blue-600 hover:bg-blue-500/10 hover:text-blue-700">
-                    <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)"><Megaphone className="h-4 w-4 mr-1.5" /> Google'da Ücretsiz Tanıt</a>
+                <Button asChild variant="outline" size="sm" className="rounded-xl w-full sm:w-auto min-w-0 border-blue-500/30 text-blue-600 hover:bg-blue-500/10 hover:text-blue-700">
+                    <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)" className="flex items-center justify-center min-w-0">
+                        <Megaphone className="h-4 w-4 mr-1.5 shrink-0" />
+                        <span className="truncate">Ücretsiz Tanıt</span>
+                    </a>
                 </Button>
                 <EventCheckinQR eventId={event.id} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
                 <RewardManager kind="event" id={event.id} />
@@ -805,11 +808,10 @@ export default function EventManagementPage() {
             )}
 
             <Tabs defaultValue="my-events">
-                <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+                <TabsList className="grid w-full grid-cols-3 max-w-xl">
                     <TabsTrigger value="my-events" className="gap-1.5 px-2"><Calendar className="h-4 w-4 shrink-0" /> <span className="truncate">{t('ngo_admin_events.tabMyEvents')}</span></TabsTrigger>
                     <TabsTrigger value="completed" className="gap-1.5 px-2"><CheckCircle2 className="h-4 w-4 shrink-0" /> <span className="truncate">Tamamlananlar{completedEvents.length > 0 ? ` (${completedEvents.length})` : ''}</span></TabsTrigger>
                     <TabsTrigger value="venues" className="gap-1.5 px-2"><Landmark className="h-4 w-4 shrink-0" /> <span className="truncate">{t('ngo_admin_events.tabVenues')}</span></TabsTrigger>
-                    <TabsTrigger value="booking" className="gap-1.5 px-2"><CheckCircle2 className="h-4 w-4 shrink-0" /> <span className="truncate">{t('ngo_admin_events.tabBooking')}</span></TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="venues" className="mt-6 space-y-8">
@@ -918,9 +920,6 @@ export default function EventManagementPage() {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="booking" className="mt-6">
-                    <Card><CardContent className="p-12 text-center text-muted-foreground"><CheckCircle2 className="h-12 w-12 mx-auto mb-4 opacity-20" /><p>{t('ngo_admin_events.noBooking')}</p></CardContent></Card>
-                </TabsContent>
             </Tabs>
 
             {/* Create-event dialog (clubs only) */}

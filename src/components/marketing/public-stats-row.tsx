@@ -3,9 +3,14 @@
 import { useEffect, useState } from 'react';
 
 interface StatItem {
-  key: 'users' | 'ngos' | 'brands' | 'donationVolume';
+  key: 'users' | 'ngos' | 'brands' | 'products' | 'eventsHeld' | 'volunteerHours' | 'donationVolume';
   label: string;
   format: (n: number) => string;
+}
+
+function formatHours(n: number): string {
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, '')}K+ saat`;
+  return `${n} saat`;
 }
 
 function formatCompact(n: number): string {
@@ -69,4 +74,5 @@ export function PublicStatsRow({
 export const STAT_FORMATTERS = {
   count: formatCompact,
   currency: formatCurrency,
+  hours: formatHours,
 };

@@ -76,7 +76,7 @@ export default function NotificationsPage() {
     body?: string;
     createdAt?: { toDate?: () => Date } | string | null;
     read?: boolean;
-    responseStatus?: 'positive' | 'negative';
+    responseStatus?: 'positive' | 'negative' | 'accepted' | 'rejected';
     /** notifyUser doc'u link'i TOP-LEVEL yazar (data içinde değil). */
     link?: string;
     data?: {
@@ -224,6 +224,35 @@ export default function NotificationsPage() {
     }
   };
 
+  // Acil durum kişisi daveti: Kabul / Reddet. Kabul edilirse davet edenin
+  // acil kişi kaydına ad + hangel puanı yazılır (server tarafı).
+  const handleEmergencyContactResponse = async (notif: NotifItem, accept: boolean) => {
+    if (!authUser || !db) return;
+    try {
+      const token = await authUser.getIdToken();
+      const res = await fetch('/api/emergency-contacts/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ requestId: notif.data?.requestId || notif.id, accept }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({ variant: 'destructive', title: 'İşlem başarısız', description: data?.message || 'Yanıt kaydedilemedi.' });
+        return;
+      }
+      await updateDoc(doc(db, COLLECTIONS.notifications, notif.id), {
+        read: true,
+        responseStatus: accept ? 'accepted' : 'rejected',
+      });
+      toast({
+        title: accept ? 'Kabul edildi 🧡' : 'Reddedildi',
+        description: accept ? 'Adın ve hangel puanın paylaşıldı.' : 'Davet reddedildi.',
+      });
+    } catch {
+      toast({ variant: 'destructive', title: 'Bağlantı hatası', description: 'Yanıt kaydedilemedi, tekrar deneyin.' });
+    }
+  };
+
   const resolveNotificationHref = (n: NotifItem): string | null => {
     switch (n.type) {
       case 'invitation':
@@ -364,6 +393,32 @@ export default function NotificationsPage() {
                           <Badge variant="secondary" className="text-[10px]">
                             {t('dashboard.notifications.emergencyHelpNo')}
                           </Badge>
+                        )}
+                        {/* Acil durum kişisi daveti — Kabul / Reddet */}
+                        {n.type === 'emergency-contact-invite' && !n.responseStatus && (
+                          <>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={(e) => { e.stopPropagation(); handleEmergencyContactResponse(n, true); }}
+                            >
+                              Kabul et
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={(e) => { e.stopPropagation(); handleEmergencyContactResponse(n, false); }}
+                            >
+                              Reddet
+                            </Button>
+                          </>
+                        )}
+                        {n.type === 'emergency-contact-invite' && n.responseStatus === 'accepted' && (
+                          <Badge className="bg-emerald-600 text-[10px]"><CheckCircle2 className="h-3 w-3 mr-1" /> Kabul edildi</Badge>
+                        )}
+                        {n.type === 'emergency-contact-invite' && n.responseStatus === 'rejected' && (
+                          <Badge variant="secondary" className="text-[10px]">Reddedildi</Badge>
                         )}
                         {n.type === 'contract-update' ? (
                           <Button variant="outline" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); openContract(n); }}>

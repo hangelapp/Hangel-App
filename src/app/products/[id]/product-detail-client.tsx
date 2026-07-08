@@ -744,11 +744,6 @@ export function ProductDetailClient({ id }: { id: string }) {
           {/* 7b. Diğer satıcılar — aynı ürünü (GTIN/MPN) satan mağazalar, bağış oranıyla */}
           <ProductOtherSellers product={product} />
 
-          {/* 7d. Bu Marka Başka Mağazalarda — aynı marka (Nike), farklı mağazalar,
-              bağış oranı karşılaştırması. `ProductOtherSellers`tan farkı: ürün-özdeşliği
-              (GTIN) değil, marka-özdeşliği (productBrandKey) üzerinden çalışır. */}
-          <ProductBrandOtherStores product={product} />
-
           {/* 8b. Ürün künyesi / özellikler */}
           {(product.gtin || product.mpn || product.category) && (
             <div className="rounded-2xl border bg-card p-4">
@@ -791,8 +786,15 @@ export function ProductDetailClient({ id }: { id: string }) {
 
         {/* Aşağıdaki bölümler masaüstünde grid'in ALTINDA tam genişlik (Trendyol). */}
 
+        {/* 7d. Bu Ürün Başka Mağazalarda — yatay ürün şeridi, fiyat + indirim +
+            bağış oranıyla. Birlikte Alınanlar'ın ÜSTÜNDE: kullanıcı tek sayfada
+            en uygun mağazayı görür, başka sayfaya gitmeden karşılaştırır. */}
+        <div className="p-4 pb-0">
+          <ProductBrandOtherStores product={product} />
+        </div>
+
         {/* 7c. Birlikte Alınanlar — aynı mağazadan tamamlayıcı ürünler (tek teslimat) */}
-        <div className="p-4 pt-0 lg:pt-4">
+        <div className="p-4 pt-4">
           <ProductBoughtTogether product={product} />
         </div>
 

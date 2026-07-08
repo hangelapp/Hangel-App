@@ -32,6 +32,13 @@ export const runtime = 'nodejs';
 
 const BodySchema = z.object({
   signal: z.enum(['visit', 'action']).default('visit'),
+  // Oturum (giriş/çıkış) logu için opsiyonel alanlar. Client oturum başına sabit
+  // bir sessionId üretir; ilk ping → session oluşur (createdAt = giriş), sonraki
+  // ping'ler → lastActiveAt günceller. Süre = lastActiveAt - createdAt.
+  sessionId: z.string().min(6).max(128).optional(),
+  deviceName: z.string().max(120).optional(),
+  browserName: z.string().max(120).optional(),
+  deviceType: z.string().max(40).optional(),
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -56,10 +63,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   let signal: StreakSignal;
+  let sessionMeta: { sessionId?: string; deviceName?: string; browserName?: string; deviceType?: string };
   try {
     // Body opsiyonel — gövdesiz POST = 'visit'.
     const raw = await req.json().catch(() => ({}));
-    signal = BodySchema.parse(raw ?? {}).signal;
+    const parsed = BodySchema.parse(raw ?? {});
+    signal = parsed.signal;
+    sessionMeta = { sessionId: parsed.sessionId, deviceName: parsed.deviceName, browserName: parsed.browserName, deviceType: parsed.deviceType };
   } catch (e) {
     const message =
       e instanceof z.ZodError ? e.issues[0]?.message ?? 'Geçersiz veri.' : 'Body okunamadı.';
@@ -69,6 +79,31 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const db = getAdminFirestore();
   const userRef = db.collection(COLLECTIONS.users).doc(uid);
   const today = istanbulDayKey();
+
+  // Oturum (giriş/çıkış) logu — best-effort, seri yanıtını bloklamaz.
+  // Aktiviteler sayfası "Giriş/Çıkış" tabı users/{uid}/sessions'tan okur.
+  if (sessionMeta.sessionId) {
+    try {
+      const { FieldValue } = await import('firebase-admin/firestore');
+      const sessRef = userRef.collection('sessions').doc(sessionMeta.sessionId);
+      const sessSnap = await sessRef.get();
+      if (sessSnap.exists) {
+        // Var olan oturum → son aktiviteyi tazele (çıkış/online süresi için).
+        await sessRef.set({ lastActiveAt: FieldValue.serverTimestamp() }, { merge: true });
+      } else {
+        // Yeni oturum → giriş anı (createdAt) + cihaz bilgisi.
+        await sessRef.set({
+          createdAt: FieldValue.serverTimestamp(),
+          lastActiveAt: FieldValue.serverTimestamp(),
+          deviceName: sessionMeta.deviceName || '',
+          browserName: sessionMeta.browserName || '',
+          deviceType: sessionMeta.deviceType || '',
+        });
+      }
+    } catch (e) {
+      console.warn('[streak/ping] session log failed', e instanceof Error ? e.message : String(e));
+    }
+  }
 
   let tr: { next: StreakState; freezeUsed: boolean };
   try {
