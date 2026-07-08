@@ -75,14 +75,18 @@ const getPublicStats = unstable_cache(
     };
   },
   ['public-stats'],
-  { revalidate: 3600 },
+  // MALİYET (2026-07-08): market + social-impact + about/press bu cache'li stats'a
+  // bağlı. İçindeki donations/events/volunteerCompletions limitsiz getDocs'ları
+  // günde 4 kez (6 saat) hesaplansın yeter — istatistikler saatlik değişmez.
+  // 1 saat → 6 saat = Firestore okuma hacmi ~6x azalır (maliyet tavanı).
+  { revalidate: 21600 },
 );
 
 export async function GET() {
   try {
     const stats = await getPublicStats();
     return NextResponse.json(stats, {
-      headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600' },
+      headers: { 'Cache-Control': 'public, max-age=21600, s-maxage=21600' },
     });
   } catch (error) {
     return NextResponse.json(

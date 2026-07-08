@@ -11,10 +11,17 @@ runConfig:
   # + Envoy 'connection termination' veriyordu. minInstances:0 ile bu geri gelebilir;
   # olursa çözüm minInstances:1'e dönmek DEĞİL (pahalı), memoryMiB'ı düşürüp
   # (512-1024) 1 warm instance tutmak — çok daha ucuz. Önce maliyeti kesiyoruz.
+  # SERT MALİYET TAVANI (2026-07-08, kullanıcı isteği "aşmayı engelle"):
+  # Google Cloud harcamayı belirli bir tutarda OTOMATİK kesemez (bütçe yalnız
+  # uyarır). Maliyeti FİZİKSEL sınırlamanın gerçek yolu instance sayısını
+  # kısmaktır: maxInstances:1 → aynı anda en fazla 1 sunucu → App Engine/Cloud Run
+  # instance-saat maliyeti patlayamaz (paralel N instance × saat ücreti olamaz).
+  # Trafik artarsa site YAVAŞLAR (istekler kuyruğa girer) ama ÇÖKMEZ ve maliyet
+  # tavanlı kalır. minInstances:0 → idle'da sıfır maliyet.
   minInstances: 0
-  maxInstances: 4      # Runaway scale tavanı (10→4): düşük-trafikli STK sitesi için yeter
-  concurrency: 80      # Instance başına daha çok istek → daha az instance (maliyet ↓)
-  memoryMiB: 2048      # SSR + Genkit için 2GB'da kal (riske girme); asıl fatura Firestore okuması, memory değil
+  maxInstances: 1      # SERT TAVAN: paralel instance yok → maliyet patlaması fiziksel olarak imkansız
+  concurrency: 80      # Tek instance daha çok eşzamanlı isteği karşılasın (site yavaşlamasın)
+  memoryMiB: 2048      # SSR + Genkit runtime için 2GB'da kal (1024 OOM riski → site çöker); asıl fren maxInstances:1
   cpu: 1
   timeoutSeconds: 120  # Yavaş Firestore aggregation için
 
