@@ -55,16 +55,18 @@ const PostCard = ({ post }: { post: Post }) => (
                 </div>
             )}
         </CardContent>
+        {/* Salt GÖSTERGE: beğeni/yorum sayısı (buton değil — tıklanınca işlem
+            olmadığı için buton görünümü ölü-buton hissi veriyordu). */}
         <CardFooter className="flex justify-start gap-0 border-t p-0">
-            <Button variant="ghost" className="flex-1 h-12 text-sm gap-2 text-muted-foreground">
+            <span className="flex-1 flex h-12 items-center justify-center gap-2 text-sm text-muted-foreground">
                 <Heart className="h-4 w-4" />
                 {post.likes} Beğeni
-            </Button>
+            </span>
             <div className="w-px h-6 bg-border self-center" />
-            <Button variant="ghost" className="flex-1 h-12 text-sm gap-2 text-muted-foreground">
+            <span className="flex-1 flex h-12 items-center justify-center gap-2 text-sm text-muted-foreground">
                 <MessageSquare className="h-4 w-4" />
                 {post.comments} Yorum
-            </Button>
+            </span>
         </CardFooter>
     </Card>
 );

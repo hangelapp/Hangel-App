@@ -404,7 +404,17 @@ export default function QrPaymentPage() {
                             }} aria-label="hangel kodunu kopyala">
                                 <Copy className="h-5 w-5" />
                             </Button>
-                             <Button variant="ghost" size="icon" className="h-9 w-9 text-primary hover:bg-primary/10" aria-label="hangel kodunu paylaş">
+                             <Button variant="ghost" size="icon" className="h-9 w-9 text-primary hover:bg-primary/10" onClick={async () => {
+                                const text = 'hangel kodum: h-123456';
+                                try {
+                                    if (typeof navigator !== 'undefined' && navigator.share) {
+                                        await navigator.share({ title: 'hangel kodum', text });
+                                    } else {
+                                        await navigator.clipboard.writeText(text);
+                                        toast({ title: 'hangel kodu kopyalandı!', description: 'Paylaşmak için yapıştırabilirsin.' });
+                                    }
+                                } catch { /* kullanıcı paylaşımı iptal etti — sessiz */ }
+                            }} aria-label="hangel kodunu paylaş">
                                 <Share2 className="h-5 w-5" />
                             </Button>
                         </div>
@@ -428,7 +438,22 @@ export default function QrPaymentPage() {
                             <Label htmlFor="phone-number" className="font-bold">Telefon Numarası</Label>
                             <div className="relative flex items-center">
                                 <Input id="phone-number" type="tel" placeholder="5XX XXX XX XX" className="pr-12 h-12 rounded-xl border-2" />
-                                <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 text-primary" aria-label="Rehberden seç">
+                                <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 text-primary" onClick={async () => {
+                                    // Contact Picker API (destekleyen mobil tarayıcı) → seçilen numarayı input'a yaz.
+                                    const nav = navigator as Navigator & { contacts?: { select: (p: string[], o: { multiple: boolean }) => Promise<Array<{ tel?: string[] }>> } };
+                                    if (nav.contacts?.select) {
+                                        try {
+                                            const picked = await nav.contacts.select(['tel'], { multiple: false });
+                                            const tel = picked?.[0]?.tel?.[0];
+                                            if (tel) {
+                                                const input = document.getElementById('phone-number') as HTMLInputElement | null;
+                                                if (input) { input.value = tel; input.dispatchEvent(new Event('input', { bubbles: true })); }
+                                            }
+                                        } catch { /* kullanıcı iptal etti — sessiz */ }
+                                    } else {
+                                        toast({ title: 'Rehber erişimi desteklenmiyor', description: 'Numarayı elle yazabilirsin. (Bu özellik yalnız bazı mobil tarayıcılarda çalışır.)' });
+                                    }
+                                }} aria-label="Rehberden seç">
                                     <Contact className="h-6 w-6" />
                                 </Button>
                             </div>
