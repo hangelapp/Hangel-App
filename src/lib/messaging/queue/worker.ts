@@ -78,7 +78,7 @@ function rateConfigForDriver(driver: string) {
   return { perSecond: perSec, perMinute: perMin };
 }
 
-export async function workerTick(opts: { batch?: number; workerId?: string } = {}): Promise<WorkerTickResult> {
+export async function workerTick(opts: { batch?: number; workerId?: string; campaignId?: string } = {}): Promise<WorkerTickResult> {
   const db = getAdminFirestore();
   const batchSize = opts.batch ?? DEFAULT_BATCH;
   const workerId = opts.workerId ?? `w_${Math.random().toString(36).slice(2, 10)}`;
@@ -92,9 +92,13 @@ export async function workerTick(opts: { batch?: number; workerId?: string } = {
     const na = (d.data() as { nextAttemptAt?: Timestamp }).nextAttemptAt;
     return na instanceof Timestamp ? na.toMillis() : 0;
   };
-  const pendingSnap = await db
+  // campaignId verilirse tick o kampanyaya KISITLI çalışır (panelden kampanya-bazlı
+  // drip). İki eşitlik filtresi index birleştirmeyle çalışır — composite index gerekmez.
+  let pendingQuery: FirebaseFirestore.Query = db
     .collection(COLLECTIONS.messageJobs)
-    .where('status', '==', 'pending')
+    .where('status', '==', 'pending');
+  if (opts.campaignId) pendingQuery = pendingQuery.where('campaignId', '==', opts.campaignId);
+  const pendingSnap = await pendingQuery
     .limit(Math.max(batchSize * 4, 200))
     .get();
   const candidateDocs = pendingSnap.docs

@@ -27,6 +27,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { workerTick } from '@/lib/messaging/queue/worker';
+import { reclaimExpiredLeases } from '@/lib/messaging/queue/reclaim';
+import { getEmailProviderForNgo } from '@/lib/messaging/providers/email/ngo-provider';
 import type { CampaignStatus } from '@/lib/messaging/types';
 
 export const runtime = 'nodejs';
@@ -42,6 +45,9 @@ interface CampaignDoc {
   bodyTemplate?: string;
   body?: string;
   status?: CampaignStatus;
+  // Workspace SMTP kampanyası: alıcılar messageJobs kuyruğunda, Resend'e GİTMEZ.
+  mailWorkspace?: boolean;
+  ngoId?: string | null;
 }
 
 interface RecipientDoc {
@@ -137,19 +143,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ errorCode: 'BAD_ID', message: 'Geçersiz kampanya id.' }, { status: 400 });
   }
 
-  // Provider konfigürasyonu önden doğrula — yoksa sessizce başarısız olmasın.
-  const apiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.RESEND_FROM_EMAIL;
-  const fromName = process.env.RESEND_FROM_NAME;
-  if (!apiKey || !fromEmail) {
-    return NextResponse.json(
-      { errorCode: 'MAIL_NOT_CONFIGURED', message: 'E-posta gönderimi şu anda yapılandırılmamış.' },
-      { status: 503 },
-    );
-  }
-  const from = `${fromName ?? 'hangel'} <${fromEmail}>`;
-  const replyTo = fromEmail;
-
   const db = getAdminFirestore();
   const campRef = db.collection(COLLECTIONS.campaigns).doc(id);
 
@@ -164,17 +157,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
   const campaign = (campSnap.data() ?? {}) as CampaignDoc;
 
-  const subject = (campaign.subject ?? '').trim();
-  const bodyTemplateRaw = campaign.bodyTemplate ?? campaign.body ?? '';
-  if (!subject || !bodyTemplateRaw) {
-    return NextResponse.json(
-      { errorCode: 'CAMPAIGN_INCOMPLETE', message: 'Kampanyanın konusu ve gövdesi olmalı.' },
-      { status: 400 },
-    );
-  }
-
-  const recipientsCol = campRef.collection(COLLECTIONS.recipients);
-
   // İsteğe bağlı { count }: otomatik drip her çağrıda 1 gönderir. Üst sınır MAX_PER_REQUEST.
   let perCall = MAX_PER_REQUEST;
   try {
@@ -185,6 +167,89 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   } catch {
     /* gövde yok/parse edilemedi → varsayılan MAX_PER_REQUEST */
   }
+
+  // ── Workspace SMTP kampanyası (mailWorkspace=true) ──────────────────────────
+  // Alıcılar enqueueCampaign ile messageJobs kuyruğuna alınmıştır (recipient
+  // status='queued', job status='pending'). Bu kampanyalar Resend'e ASLA gitmez
+  // (yanlış gönderici + ücret). Eskiden bu route yalnız 'pending' recipient
+  // sayıyordu → 0 bulup kampanyayı YANLIŞLIKLA 'completed' işaretliyordu; şimdi
+  // job kuyruğunu bu kampanyaya kısıtlı worker tick ile işler, kalanı job
+  // sayısından hesaplar. Hız sınırı (1/dk) rateLimiter'da zorlanır.
+  if (campaign.mailWorkspace === true) {
+    // Gönderim başlamadan SMTP credential'ı doğrula: şifre çözülemiyorsa job'ları
+    // deneme hakkı yakmadan net hata dön (kullanıcı yeniden bağlanmalı).
+    let wsProvider = null;
+    try {
+      wsProvider = await getEmailProviderForNgo(campaign.ngoId ?? '__platform');
+    } catch {
+      wsProvider = null;
+    }
+    if (!wsProvider) {
+      return NextResponse.json(
+        {
+          errorCode: 'WORKSPACE_NOT_CONNECTED',
+          message: 'Workspace bağlantısı geçersiz — "Bağlantıyı Kaldır" deyip Google uygulama şifresiyle yeniden bağlanın.',
+        },
+        { status: 409 },
+      );
+    }
+
+    // Çökmüş bir tick'ten kalan takılı lease'leri kurtar (best-effort).
+    await reclaimExpiredLeases().catch(() => null);
+    const tick = await workerTick({ batch: perCall, campaignId: id });
+
+    // Kalan = bu kampanyanın hâlâ kuyrukta (pending) + işlemde (leased) job'ları.
+    const [pendingCnt, leasedCnt] = await Promise.all([
+      db.collection(COLLECTIONS.messageJobs).where('campaignId', '==', id).where('status', '==', 'pending').count().get(),
+      db.collection(COLLECTIONS.messageJobs).where('campaignId', '==', id).where('status', '==', 'leased').count().get(),
+    ]);
+    const wsRemaining = pendingCnt.data().count + leasedCnt.data().count;
+
+    // stats.sent / stats.failed worker persistResult'ta artar — burada YALNIZ
+    // queued ve status senkronlanır (çift sayım yok).
+    const wsUpdate: Record<string, unknown> = {
+      'stats.queued': wsRemaining,
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    if (wsRemaining === 0) {
+      wsUpdate.status = 'completed' satisfies CampaignStatus;
+      wsUpdate.completedAt = FieldValue.serverTimestamp();
+    } else {
+      wsUpdate.status = 'sending' satisfies CampaignStatus;
+    }
+    try {
+      await campRef.update(wsUpdate);
+    } catch {
+      /* yutulur — gönderim gerçekleşti; stats yazımı best-effort */
+    }
+
+    return NextResponse.json({ sent: tick.successes, failed: tick.failures, remaining: wsRemaining });
+  }
+
+  // ── Resend yolu (eski taslak/outreach kampanyaları) ─────────────────────────
+  // Provider konfigürasyonu önden doğrula — yoksa sessizce başarısız olmasın.
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL;
+  const fromName = process.env.RESEND_FROM_NAME;
+  if (!apiKey || !fromEmail) {
+    return NextResponse.json(
+      { errorCode: 'MAIL_NOT_CONFIGURED', message: 'E-posta gönderimi şu anda yapılandırılmamış.' },
+      { status: 503 },
+    );
+  }
+  const from = `${fromName ?? 'hangel'} <${fromEmail}>`;
+  const replyTo = fromEmail;
+
+  const subject = (campaign.subject ?? '').trim();
+  const bodyTemplateRaw = campaign.bodyTemplate ?? campaign.body ?? '';
+  if (!subject || !bodyTemplateRaw) {
+    return NextResponse.json(
+      { errorCode: 'CAMPAIGN_INCOMPLETE', message: 'Kampanyanın konusu ve gövdesi olmalı.' },
+      { status: 400 },
+    );
+  }
+
+  const recipientsCol = campRef.collection(COLLECTIONS.recipients);
 
   // Bu istekte işlenecek pending alıcılar (domain ısıtma → en çok MAX_PER_REQUEST).
   let pendingSnap;

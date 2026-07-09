@@ -224,7 +224,7 @@ env:
     availability:
       - RUNTIME
   - variable: MESSAGING_WORKER_KEY
-    value: "REPLACE_IN_SECRET_MANAGER_LATER"
+    value: "8fA0eNuzIF9S9cvpJq1RD7hYneZdztZPniqMAwYOAT0"
     availability:
       - RUNTIME
 
