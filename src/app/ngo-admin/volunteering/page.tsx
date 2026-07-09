@@ -204,6 +204,8 @@ function ListingsTab({
         requirements: values.requirements,
         participationCondition: values.participationCondition,
         hasPreTraining: values.hasPreTraining,
+        meetUrl: values.meetUrl?.trim() || '',
+        urgent: values.urgent,
       };
 
       if (editing) {
@@ -323,6 +325,8 @@ function ListingsTab({
         requirements: editing.requirements ?? [],
         participationCondition: editing.participationCondition ?? '',
         hasPreTraining: editing.hasPreTraining ?? false,
+        meetUrl: editing.meetUrl ?? '',
+        urgent: editing.urgent ?? false,
       }
     : undefined;
 

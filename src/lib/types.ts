@@ -233,6 +233,8 @@ export type Volunteering = {
       coordinates?: { lat: number; lon: number }; // Yön tarifi + hava durumu için
     };
     participationCondition?: string; // Katılım koşulu (varsa)
+    meetUrl?: string; // Online gönüllülük için Google Meet linki (onaylı gönüllü "Katıl" ile açar)
+    urgent?: boolean; // ACİL gönüllülük (afet/acil) — kart/detayda kırmızı şerit + öne çıkar
     organizerLogoUrl?: string; // Organize eden STK logosu (Live Activity + yaka kartı)
     commitment: string;
     volunteerCount: {

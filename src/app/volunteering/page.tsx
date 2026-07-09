@@ -239,6 +239,12 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
         <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm transition-all hover:shadow-md hover:border-primary/30 h-full">
             <Link href={`/volunteering/${opp.id}`} className="block group h-full">
                 <CardContent className="p-4 flex flex-col gap-3 h-full">
+                    {/* ACİL (afet/acil) → kırmızı rozet, en üstte */}
+                    {opp.urgent && (
+                        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-red-600 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-white">
+                            🚨 Acil
+                        </span>
+                    )}
                     {/* Üst: STK + başlık (güçlü hiyerarşi) | eşleşme halkası */}
                     <div className="flex items-start gap-3">
                         {ngo && (
@@ -333,6 +339,10 @@ export default function VolunteeringPage() {
         [db],
     );
     const { data: oppsData, isLoading } = useCollection<Volunteering>(oppsQuery);
+
+    // Global Afet Modu (süper-admin /settings/afet) → açıkken üstte kırmızı acil şerit.
+    const disasterRef = useMemoFirebase(() => (db ? doc(db, 'settings', 'disaster') : null), [db]);
+    const { data: disaster } = useDoc<{ active?: boolean; message?: string }>(disasterRef);
 
     // Kullanıcının kendi başvuruları → ilan kartında durum rozeti (entityId → status).
     const myAppsQuery = useMemoFirebase(
@@ -561,6 +571,13 @@ export default function VolunteeringPage() {
   return (
     <div className="space-y-4 animate-in fade-in-0">
       <div className="p-4 space-y-4">
+        {/* Global Afet Modu şeridi (süper-admin açtıysa) */}
+        {disaster?.active && (
+          <div className="flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-white shadow-lg shadow-red-600/20">
+            <span className="text-lg">🚨</span>
+            <span className="text-sm font-bold">{disaster.message || 'Acil gönüllülük çağrısı — desteğine şimdi ihtiyaç var.'}</span>
+          </div>
+        )}
         <div className="space-y-3 sticky top-[calc(3rem+var(--sat))] bg-background/95 backdrop-blur-xl z-10 py-2">
           <h1 className="text-2xl font-bold font-headline">{t('volunteeringPage.title')}</h1>
           <div className="flex gap-2">
@@ -601,6 +618,16 @@ export default function VolunteeringPage() {
               tam sığar: flex-1 ile eşit bölünür (yatay kaydırma YOK); etiketler
               gerekirse truncate olur. Temizle (aktifse) kompakt X ikonu. */}
           <div className="flex w-full items-center gap-1.5">
+              {/* Online quick-filter — tek dokunuşla uzaktan gönüllülükler */}
+              <Button
+                variant={locationTypeFilter.includes('Online') ? 'default' : 'outline'}
+                size="sm"
+                aria-pressed={locationTypeFilter.includes('Online')}
+                className="h-9 shrink-0 rounded-full gap-1 px-3"
+                onClick={() => setLocationTypeFilter(locationTypeFilter.includes('Online') ? locationTypeFilter.filter(x => x !== 'Online') : ['Online'])}
+              >
+                <Globe className="h-3.5 w-3.5" /> Online
+              </Button>
               <FilterButton className="flex-1" title={t('volunteering_root.filterSensitivity')} options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />
               <FilterButton className="flex-1" title={t('volunteering_root.filterSkills')} options={skillOptions} selected={skillFilter} onSelectedChange={setSkillFilter} />
               <FilterButton className="flex-1" title={t('volunteering_root.filterLocation')} options={cityOptions} selected={cityFilter} onSelectedChange={setCityFilter} />

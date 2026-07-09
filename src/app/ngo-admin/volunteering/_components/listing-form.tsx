@@ -47,6 +47,8 @@ export type ListingFormValues = {
   requirements: string[];
   participationCondition: string;
   hasPreTraining: boolean;
+  meetUrl: string;
+  urgent: boolean;
 };
 
 const EMPTY: ListingFormValues = {
@@ -74,6 +76,8 @@ const EMPTY: ListingFormValues = {
   requirements: [],
   participationCondition: '',
   hasPreTraining: false,
+  meetUrl: '',
+  urgent: false,
 };
 
 // Kanonik seçenekler — rozet motoru socialArea'yı normalize eder (resolveBadgeArea).
@@ -330,6 +334,27 @@ export function ListingForm({ initialValues, onSubmit, onCancel, submitting }: P
             </label>
           </div>
         </div>
+
+        {/* Online gönüllülük → Google Meet linki (onaylı gönüllü "Katıl" ile açar) */}
+        {values.locationType === 'Online' && (
+          <div className="space-y-2">
+            <Label htmlFor="listing-meet">Google Meet linki (online)</Label>
+            <Input
+              id="listing-meet"
+              placeholder="https://meet.google.com/xxx-xxxx-xxx"
+              value={values.meetUrl}
+              onChange={(e) => update('meetUrl', e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">Onaylanan gönüllüler ilan sayfasından bu linkle &quot;Online gönüllülüğe katıl&quot; der.</p>
+          </div>
+        )}
+
+        {/* ACİL gönüllülük (afet/acil) → kart/detayda kırmızı şerit + öne çıkar */}
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <Checkbox checked={values.urgent} onCheckedChange={(c) => update('urgent', c === true)} />
+          <span className="font-semibold text-red-600 dark:text-red-400">🚨 ACİL gönüllülük</span>
+          <span className="text-xs text-muted-foreground">(afet/acil — listede öne çıkar, kırmızı şerit)</span>
+        </label>
 
         <div className="space-y-2">
           <Label htmlFor="listing-req">Gereksinimler / Belgeler</Label>

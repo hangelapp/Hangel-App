@@ -1,7 +1,7 @@
 'use client';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, CalendarPlus, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock, Wallet, Nfc, Star, IdCard } from 'lucide-react';
+import { ArrowLeft, Calendar, CalendarPlus, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock, Wallet, Nfc, Star, IdCard, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { openExternalUrl } from '@/lib/capacitor';
 import { DualCountdown } from '@/components/events/event-countdown';
@@ -615,6 +615,14 @@ export default function VolunteeringDetailPage() {
                 {/* ───── SOL KOLON: özet + içerik ───── */}
                 <div className="space-y-12 min-w-0">
 
+                    {/* ACİL (afet/acil) çağrısı → kırmızı şerit */}
+                    {(opportunity as Volunteering & { urgent?: boolean }).urgent && (
+                        <div className="flex items-center gap-2 rounded-2xl bg-red-600/10 px-4 py-3 text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
+                            <span className="text-lg">🚨</span>
+                            <span className="text-sm font-bold">Acil gönüllülük çağrısı — desteğine şimdi ihtiyaç var.</span>
+                        </div>
+                    )}
+
                     {/* Profil uygunluğu — profil doluysa dolan bar; boşsa/düşükse
                         "profilini tamamla → daha iyi eşleşme" nudge'ı (her ilanda çalışır). */}
                     {authUser && hasProfile ? (
@@ -819,6 +827,17 @@ export default function VolunteeringDetailPage() {
                     {isApproved && (
                         <section className="space-y-4">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Onaylı gönüllü araçların</h2>
+                        {/* Online gönüllülük → Google Meet ile buradan katıl (onaylı + meetUrl). */}
+                        {locType === 'Online' && opportunity.meetUrl && (
+                            <a
+                                href={opportunity.meetUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-4 text-base font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
+                            >
+                                <Video className="h-5 w-5" /> Online gönüllülüğe katıl
+                            </a>
+                        )}
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
                         <AskManagerButton orgId={opportunity.ngoId} subject={`${opportunity.title} — gönüllülük hakkında`} />
                         <Button

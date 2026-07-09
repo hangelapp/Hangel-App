@@ -44,6 +44,7 @@ import {
   Store,
   Library,
   RefreshCw,
+  Siren,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -173,6 +174,9 @@ function resolveWebPath(sound: NotificationSound): string | null {
 // Her item süper-admin ana sayfa pattern'ına göre: renkli icon + description.
 // href varsa Link olarak başka sayfaya navigate, yoksa bu sayfada inline render.
 const SETTINGS_SECTIONS = [
+  { id: 'disaster', label: 'Afet Modu (AFAD)', icon: Siren, color: 'bg-red-600',
+    href: '/super-admin/settings/afet',
+    description: 'Afet/acil modu — açıkken tüm gönüllülük ekranlarında acil çağrı şeridi görünür. (AFAD API entegrasyonu için anahtar sonra bağlanır.)' },
   { id: 'feed', label: 'Ürün Feed & Listeleme', icon: Library, color: 'bg-sky-600',
     href: '/super-admin/feed',
     description: 'Marka feed\'lerinden ürünleri çek (ingest) ve markaların marka/ürün listeleme modunu yönet.' },
