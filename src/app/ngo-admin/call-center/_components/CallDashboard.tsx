@@ -155,7 +155,8 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
 
   // GERÇEK WebRTC çevirici — SIP/TURN credential'ları auth korumalı endpoint'ten
   // gelir (tenant-özel sipUsername fallback'i sunucuda çözülür; bundle'da YOK).
-  const { creds, loading: credsLoading } = useSantralCredentials();
+  // ngoId geçilir ki süper-admin izlediği STK'nın tenant credential'ını alsın.
+  const { creds, loading: credsLoading, error: credsError } = useSantralCredentials(ngoId);
   const sip = useSipPhone({
     wssUrl: creds?.wssUrl || null,
     username: creds?.sipUsername || null,
@@ -397,10 +398,12 @@ export function CallDashboard({ ngoId, ccDoc }: CallDashboardProps) {
               Santral yapılandırması yükleniyor…
             </div>
           ) : !sip.ready ? (
-            /* GATE: credential yok → dialer pasif, panel kırılmaz. */
+            /* GATE: credential yok → dialer pasif, panel kırılmaz. Gerçek sebep
+               (yetki, sunucu, yapılandırma) gösterilir ki teşhis edilebilsin. */
             <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-              Santral henüz hazır değil (WSS/SIP yapılandırması eksik). Geçit bağlanınca
-              tarayıcıdan gerçek arama yapabilirsiniz.
+              {credsError
+                ? `Santral kullanılamıyor: ${credsError}`
+                : 'Santral henüz hazır değil (WSS/SIP yapılandırması eksik). Geçit bağlanınca tarayıcıdan gerçek arama yapabilirsiniz.'}
             </div>
           ) : (
             <>

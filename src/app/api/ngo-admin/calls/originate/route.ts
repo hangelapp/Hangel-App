@@ -203,9 +203,16 @@ export async function POST(req: NextRequest) {
     .where('ngoId', '==', targetNgoId)
     .limit(500)
     .get();
+  // Bayat oturumlar limiti KİLİTLEMESİN: geçit çöker/webhook hiç gelmezse
+  // 'ringing' doc'lar sonsuza dek kalır ve limit kalıcı dolu görünürdü
+  // (2026-07-09: VM kapalıyken 2 takılı ringing tüm aramaları blokladı).
+  // 2 saatten eski ringing/in-progress oturumları aktif saymıyoruz.
+  const staleCutoffMs = Date.now() - 2 * 60 * 60 * 1000;
   const activeCount = ngoSnap.docs.filter((d) => {
-    const s = (d.data() as { status?: string }).status;
-    return s === 'ringing' || s === 'in-progress';
+    const data = d.data() as { status?: string; createdAt?: { toMillis?: () => number } };
+    if (data.status !== 'ringing' && data.status !== 'in-progress') return false;
+    const createdMs = data.createdAt?.toMillis?.();
+    return typeof createdMs !== 'number' || createdMs > staleCutoffMs;
   }).length;
   if (activeCount >= CONCURRENT_LIMIT) {
     return NextResponse.json(

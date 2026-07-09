@@ -27,7 +27,7 @@ export interface UseSantralCredentialsResult {
   error: string | null;
 }
 
-export function useSantralCredentials(): UseSantralCredentialsResult {
+export function useSantralCredentials(ngoId?: string): UseSantralCredentialsResult {
   const { user } = useUser();
   const [creds, setCreds] = useState<SantralCredentials | null>(null);
   const [loading, setLoading] = useState(false);
@@ -49,7 +49,10 @@ export function useSantralCredentials(): UseSantralCredentialsResult {
     void (async () => {
       try {
         const idToken = await user.getIdToken();
-        const res = await fetch('/api/ngo-admin/call-center/sip-credentials', {
+        // ngoId: süper-admin izlediği STK'nın tenant credential'ı için; endpoint
+        // ngo-admin'lerde bu parametreyi yok sayar (kendi STK'sına kilitli).
+        const qs = ngoId ? `?ngoId=${encodeURIComponent(ngoId)}` : '';
+        const res = await fetch(`/api/ngo-admin/call-center/sip-credentials${qs}`, {
           method: 'GET',
           headers: { authorization: `Bearer ${idToken}` },
           cache: 'no-store',
@@ -88,7 +91,7 @@ export function useSantralCredentials(): UseSantralCredentialsResult {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, ngoId]);
 
   return { creds, loading, error };
 }

@@ -36,9 +36,20 @@ async function authorize(req: NextRequest): Promise<CallerContext | null> {
     const decoded = (await getAdminAuth().verifyIdToken(idToken)) as { uid: string; role?: string; email?: string };
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
-    const d = snap.data() as { role?: string; managedNgoId?: string };
+    const d = snap.data() as { role?: string; managedNgoId?: string; superAdminPermissions?: unknown };
+    // Super-admin'de managedNgoId olmayabilir (platform hesabı, STK panelini
+    // ?id= ile geziyor) — eskiden burada reddedilip panel 'Santral hazır değil'
+    // gösteriyordu; status/settings route'ları ise kabul ediyordu (tutarsızlık).
+    const isSuper = d.role === 'super-admin'
+      || (Array.isArray(d.superAdminPermissions) && d.superAdminPermissions.length > 0);
+    if (isSuper) {
+      // Süper-admin izlediği STK'nın tenant credential'ını isteyebilir (?ngoId=).
+      const qNgoId = (new URL(req.url).searchParams.get('ngoId') || '').trim();
+      return { uid: decoded.uid, ngoId: qNgoId || d.managedNgoId || '__platform', role: 'super-admin', email: decoded.email };
+    }
     if (!d?.managedNgoId) return null;
-    if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
+    if (d.role !== 'ngo-admin') return null;
+    // ngo-admin YALNIZ kendi STK'sının credential'ını alır — ?ngoId= dikkate alınmaz.
     return { uid: decoded.uid, ngoId: d.managedNgoId, role: d.role, email: decoded.email };
   } catch {
     return null;
