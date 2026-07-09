@@ -155,21 +155,34 @@ function realCategoryOf(p: CanonicalProduct): string {
 const NO_SCROLLBAR =
   '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
-// "En yüksek sınıf ama o sınıf içinde rotasyon": metriğe göre sırala, EN YÜKSEK
-// metrikli havuzu (count×3) al, KARIŞTIR, count döndür. Böylece hep en yüksek
-// %/tutar/indirim sınıfı görünür ama her girişte o sınıftan farklı ürünler gelir
-// (kullanıcı: "her girişte random olmasın; ama o %'lik sınıfta random değişsin").
+// EN YÜKSEK metrik ÖNCE — kademeli (tier) sıralama, yalnız EŞİT değerli ürünler
+// kendi içinde karışır. Böylece "en yüksek yüzdeyle/tutarla/indirimle olanlar önce
+// listelenir" (kullanıcı isteği) ama aynı değerli ürünler her girişte rotasyonla
+// değişir. Tutar (₺) sürekli olduğundan neredeyse tam-sıralı; %/indirim tam sayı
+// olduğundan tier'lar oluşur (ör. %6'lar önce, içlerinde rotasyon; sonra %5'ler…).
 function topRotate<T>(items: T[], metric: (x: T) => number, count = 21): T[] {
-  const scored = items
-    .map((x) => ({ x, m: metric(x) }))
-    .filter((s) => s.m > 0)
-    .sort((a, b) => b.m - a.m);
-  const pool = scored.slice(0, Math.max(count, count * 3)).map((s) => s.x);
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+  const groups = new Map<number, T[]>();
+  for (const x of items) {
+    const m = metric(x);
+    if (!(m > 0)) continue;
+    const key = Math.round(m * 100) / 100; // 2 ondalık — float gürültüsünü engelle
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(x);
   }
-  return pool.slice(0, count);
+  const keys = Array.from(groups.keys()).sort((a, b) => b - a); // en yüksek metrik önce
+  const out: T[] = [];
+  for (const k of keys) {
+    const g = groups.get(k)!;
+    for (let i = g.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [g[i], g[j]] = [g[j], g[i]]; // yalnız aynı değerli grup içinde karıştır
+    }
+    for (const x of g) {
+      out.push(x);
+      if (out.length >= count) return out;
+    }
+  }
+  return out;
 }
 
 // Reklam banner'ı yapılacak SABİT markalar (sırayla). Katalogda + çalışan
