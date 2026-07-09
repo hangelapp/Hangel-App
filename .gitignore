@@ -112,4 +112,8 @@ android/app/upload_certificate.pem
 /.apphosting/.hangelorg-sa.json
 .hangelorg-sa.json
 /new-app
+# Kök geçici/debug scriptleri (paralel oturum crawler'ları) — repoya/build'e girmesin
+/_*.ts
+/_*.mjs
 .old-sa.json
+.hangelorg-service-account.json
