@@ -22,6 +22,7 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { resolveRecipients } from '@/lib/messaging/resolver';
 import { enqueueCampaign } from '@/lib/messaging/queue/enqueue';
+import { cityMatches } from '@/lib/city-match';
 import { isMailConfigured } from '@/lib/mail/credential-crypto';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { Query } from 'firebase-admin/firestore';
@@ -60,13 +61,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Super-admin yetkisi gerekli.' }, { status: 403 });
   }
 
-  if (!isMailConfigured()) {
-    return NextResponse.json(
-      { errorCode: 'MAIL_NOT_CONFIGURED', message: 'Workspace mail özelliği şu anda kullanılamıyor.' },
-      { status: 503 },
-    );
-  }
-
   let body: Body;
   try {
     body = await req.json();
@@ -76,6 +70,16 @@ export async function POST(req: Request) {
 
   const source = (body.source === 'inline' || body.source === 'vakif' || body.source === 'dernek') ? body.source : 'outreach';
   const dryRun = body.dryRun === true;
+
+  // Mail-config kontrolü YALNIZ gerçek gönderimde gerekir. dryRun ("Kaç alıcı?")
+  // sadece alıcı sayar → mail altyapısı kapalı olsa bile çalışmalı (buton hata
+  // vermesin). Eskiden burada 503 dönüp sayım butonunu da patlatıyordu.
+  if (!dryRun && !isMailConfigured()) {
+    return NextResponse.json(
+      { errorCode: 'MAIL_NOT_CONFIGURED', message: 'Workspace mail özelliği şu anda kullanılamıyor.' },
+      { status: 503 },
+    );
+  }
 
   const db = getAdminFirestore();
 
@@ -110,27 +114,25 @@ export async function POST(req: Request) {
     }
   } else if (source === 'vakif') {
     // registryVakiflar — e-posta alanı ePosta; il (şehir) kodda süzülür.
-    const cityFilter = (body.filter?.city ?? '').trim().toLocaleLowerCase('tr');
     const snap = await db.collection('registryVakiflar').limit(MAX_RECIPIENTS * 4).get();
     for (const d of snap.docs) {
       const data = d.data() as { ePosta?: string; name?: string; il?: string };
       const email = (data.ePosta ?? '').trim().toLowerCase();
       if (!EMAIL_RE.test(email) || collected.has(email)) continue;
-      if (cityFilter && (data.il ?? '').trim().toLocaleLowerCase('tr') !== cityFilter) continue;
+      if (!cityMatches(body.filter?.city, data.il)) continue;
       collected.set(email, { email, name: data.name });
       if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
     }
   } else if (source === 'dernek') {
     // registryDernekler — resmi kütükte e-posta neredeyse hiç yok; yalnız ePosta
     // alanı OLAN kayıtları çek (orderBy alanı olmayanları eler). Çoğu zaman boş döner.
-    const cityFilter = (body.filter?.city ?? '').trim().toLocaleLowerCase('tr');
     try {
       const snap = await db.collection('registryDernekler').orderBy('ePosta').limit(MAX_RECIPIENTS).get();
       for (const d of snap.docs) {
         const data = d.data() as { ePosta?: string; name?: string; il?: string };
         const email = (data.ePosta ?? '').trim().toLowerCase();
         if (!EMAIL_RE.test(email) || collected.has(email)) continue;
-        if (cityFilter && (data.il ?? '').trim().toLocaleLowerCase('tr') !== cityFilter) continue;
+        if (!cityMatches(body.filter?.city, data.il)) continue;
         collected.set(email, { email, name: data.name });
         if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
       }
@@ -142,13 +144,12 @@ export async function POST(req: Request) {
     let q: Query = db.collection(COLLECTIONS.outreachContacts);
     if (filter.type) q = q.where('type', '==', filter.type);
     const snap = await q.limit(MAX_RECIPIENTS * 4).get();
-    const cityFilter = (filter.city ?? '').trim().toLocaleLowerCase('tr');
     for (const d of snap.docs) {
       const data = d.data() as { email?: string; name?: string; city?: string; status?: string };
       if (data.status && data.status !== 'active') continue;
       const email = (data.email ?? '').trim().toLowerCase();
       if (!EMAIL_RE.test(email) || collected.has(email)) continue;
-      if (cityFilter && (data.city ?? '').trim().toLocaleLowerCase('tr') !== cityFilter) continue;
+      if (!cityMatches(filter.city, data.city)) continue;
       collected.set(email, { email, name: data.name });
       if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
     }
