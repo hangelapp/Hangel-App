@@ -22,6 +22,8 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { useAutosave } from '@/hooks/use-autosave';
+import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -252,6 +254,8 @@ export default function ManageProfilePage() {
   // Formu kurum başına BİR kez doldur — canlı doc her snapshot'ta güncellenince
   // effect yeniden çalışıp kullanıcının girdiği değerleri ezmesin (adres bug'ı).
   const hydratedIdRef = useRef<string | null>(null);
+  // Otomatik kayıt yalnız form Firestore'dan dolduktan SONRA aktifleşir.
+  const [hydrated, setHydrated] = useState(false);
 
   const isTurkey = country === 'Türkiye';
 
@@ -285,9 +289,14 @@ export default function ManageProfilePage() {
     setName(d.name || '');
     setShortName(d.shortName || '');
     setShortLink(((d as { shortLink?: string }).shortLink) || '');
-    setNgoType(d.ngoType || 'dernek');
+    // ALAN UYUŞMAZLIĞI FIX (2026-07-09): süper-admin edit + herkese açık profil
+    // Kuruluş Türü'nü `type` ('Vakıf'), İktisadi'yi `economicEnterpriseStatus`
+    // alanından okur; bu form ise ngoType/economicEntity yazıyordu → "seçtiğim
+    // gibi görünmüyor". Okumada iki alandan dolu olana düş; yazmada İKİSİNİ de yaz.
+    const typeToSlug: Record<string, string> = { 'Dernek': 'dernek', 'Vakıf': 'vakif', 'Spor Kulübü': 'spor-kulubu', 'Özel İzinli': 'ozel-izinli' };
+    setNgoType(d.ngoType || typeToSlug[(d as { type?: string }).type || ''] || 'dernek');
     setFoundedYear(d.foundedYear || '');
-    setEconomicEntity(d.economicEntity || 'yok');
+    setEconomicEntity(d.economicEntity || (d as { economicEnterpriseStatus?: string }).economicEnterpriseStatus || 'yok');
     setPurpose(d.purpose || 'both');
     setAboutText(d.about || '');
     setSelectedFeds(d.sportsFederations || []);
@@ -323,6 +332,9 @@ export default function ManageProfilePage() {
     setRepFullName(d.representative?.fullName || '');
     setRepTitle(d.representative?.title || '');
     setRepEmail(d.representative?.email || '');
+    // Form doldu — otomatik kayıt bundan sonra devreye girer (hydration'ın
+    // kendisi baseline sayılır, kayıt tetiklemez; useAutosave auto modu).
+    setHydrated(true);
   }, [activeEntity]);
 
   // Otomatik kayıt için SAF persist — Kaydet'teki updateDoc bloğunun birebir aynısı.
@@ -339,9 +351,14 @@ export default function ManageProfilePage() {
       name,
       shortName,
       shortLink: shortLink.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/(^-|-$)/g, ''),
+      // ALAN UYUŞMAZLIĞI FIX: iki alan ailesini de yaz — süper-admin edit +
+      // herkese açık profil `type`/`economicEnterpriseStatus` okur, eski
+      // yüzeyler ngoType/economicEntity. İkisi de dolu olursa her ekran doğru gösterir.
       ngoType,
+      type: ({ 'dernek': 'Dernek', 'vakif': 'Vakıf', 'spor-kulubu': 'Spor Kulübü', 'ozel-izinli': 'Özel İzinli' } as Record<string, string>)[ngoType] || ngoType,
       foundedYear,
       economicEntity,
+      economicEnterpriseStatus: economicEntity,
       purpose,
       about: aboutText,
       sportsFederations: selectedFeds,
@@ -385,12 +402,16 @@ export default function ManageProfilePage() {
     });
   };
 
-  // NOT: Bu sayfada OTOMATİK KAYIT KALDIRILDI (2026-07-09). Sebep: il/ilçe/
-  // ngoType/economicEntity Select'leri markDirty çağırmıyordu (yarı-bağlı) ve
-  // persistProfile TÜM alanları state'ten yazdığı için, bir metin alanı autosave'i
-  // tetiklediğinde boş state'teki il/ngoType/econ Firestore'daki iyi veriyi null'la
-  // EZİYORDU ("kaydettim ama güncellemede sıfırlandı" bug'ı; STK profilleri yüksek
-  // riskli veri). Manuel Kaydet (handleSave) tam payload'ı doğru yazıyor.
+  // Otomatik kayıt v2 (2026-07-09): İLK sürüm yarı-bağlıydı (bazı Select'ler
+  // markDirty çağırmıyordu) ve boş state'le null-wipe yapmıştı → kaldırılmıştı.
+  // Yeni mimari GÜVENLİ: `auto` modu — form hydration'la dolduktan sonra
+  // (enabled=hydrated) HERHANGİ bir alan değişimi otomatik kaydı tetikler;
+  // tek tek bağlama yok → unutulan-Select deliği imkansız, state daima dolu.
+  const { status: autosaveStatus } = useAutosave(
+    persistProfile,
+    [name, shortName, shortLink, ngoType, foundedYear, economicEntity, purpose, aboutText, selectedFeds, beneficiaries, sdgs, memberships, sector, university, donationCategories, country, city, district, neighborhood, street, email, phoneCode, phone, instagram, twitter, linkedin, youtube, logoFile, activityCertificate, charterFile, repFullName, repTitle, repEmail],
+    { delayMs: 1200, enabled: hydrated, auto: true },
+  );
 
   const handleFileUpload = async (file: File, kind: 'logo' | 'activityCertificate' | 'charter') => {
       if (!activeEntity) {
@@ -555,6 +576,7 @@ export default function ManageProfilePage() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <AutosaveIndicator status={autosaveStatus} />
             <Button type="button" onClick={openPreview} variant="outline" size="sm" className="gap-1.5">
               <Eye className="h-4 w-4" /> <span className="hidden sm:inline">Önizle</span>
             </Button>
