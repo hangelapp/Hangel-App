@@ -9,13 +9,15 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, CreditCard, CheckCircle2, Clock } from 'lucide-react';
+import { ArrowLeft, CreditCard, Clock } from 'lucide-react';
 
 const PROVIDERS = [
   {
+    // 2026-07-09: 'live' etiketi yanıltıcıydı — kod hazır ama prod'da NKOLAY_*
+    // credential'ları yok, PAYMENT_DRIVER default 'mock' (ödeme simüle edilir).
     name: 'N-Kolay',
-    status: 'live' as const,
-    description: 'Mevcut entegrasyon — Türk Lirası ödemeleri için ana sağlayıcı. Webhook + 3D Secure.',
+    status: 'ready' as const,
+    description: 'Entegrasyon kodu hazır (webhook + 3D Secure) — N-Kolay üyelik anahtarları girilince canlıya alınır. Şu an ödemeler simülasyon modunda.',
     integrationPath: 'src/lib/payment/nkolay/',
   },
   {
@@ -62,9 +64,9 @@ export default function PaymentProvidersPage() {
                   <p className="text-xs text-muted-foreground mt-0.5">{p.description}</p>
                 </div>
               </div>
-              {p.status === 'live' ? (
-                <Badge className="bg-green-600 hover:bg-green-600 shrink-0">
-                  <CheckCircle2 className="h-3 w-3 mr-1" /> Canlı
+              {p.status === 'ready' ? (
+                <Badge className="bg-amber-500 hover:bg-amber-500 shrink-0">
+                  <Clock className="h-3 w-3 mr-1" /> Anahtar bekliyor
                 </Badge>
               ) : (
                 <Badge variant="outline" className="shrink-0">
