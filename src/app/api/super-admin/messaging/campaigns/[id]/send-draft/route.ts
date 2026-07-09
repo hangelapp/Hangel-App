@@ -178,12 +178,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (campaign.mailWorkspace === true) {
     // Gönderim başlamadan SMTP credential'ı doğrula: şifre çözülemiyorsa job'ları
     // deneme hakkı yakmadan net hata dön (kullanıcı yeniden bağlanmalı).
-    let wsProvider = null;
-    try {
-      wsProvider = await getEmailProviderForNgo(campaign.ngoId ?? '__platform');
-    } catch {
-      wsProvider = null;
-    }
+    const wsProvider = await getEmailProviderForNgo(campaign.ngoId ?? '__platform').catch(() => null);
     if (!wsProvider) {
       return NextResponse.json(
         {
