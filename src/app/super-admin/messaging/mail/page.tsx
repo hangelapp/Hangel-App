@@ -272,10 +272,30 @@ export default function EasyMailPage() {
 
   const contentReady = subject.trim().length > 0 && hasVisibleText(bodyHtml);
   const audienceReady = spec !== null && (isUsersAudience ? recipientCount !== null : manualEmails.length > 0);
-  // "Geçmiş tarih" kontrolü render'da değil doSend'de yapılır (react-hooks/purity).
-  const scheduleReady = scheduleMode === 'now' || scheduledAt.length > 0;
   const needsTypeConfirm = (recipientCount ?? 0) >= 1000;
-  const canSend = contentReady && audienceReady && scheduleReady && !sending;
+
+  // Eksikler — butonları SESSİZCE kilitleme yerine ne eksikse açıkça göster/söyle.
+  const missingItems = useMemo(() => {
+    const items: string[] = [];
+    if (!subject.trim()) items.push('Konu boş');
+    if (!hasVisibleText(bodyHtml)) items.push('Mesaj gövdesi boş');
+    if (audience === 'city' && cities.length === 0) items.push('En az bir şehir ekle');
+    if (audience === 'manual' && manualEmails.length === 0) items.push('En az bir e-posta adresi ekle');
+    if (isUsersAudience && counting) items.push('Alıcı sayısı hesaplanıyor…');
+    if (isUsersAudience && !counting && countError) items.push('Alıcı sayısı alınamadı — kitleyi yeniden seç');
+    if (scheduleMode === 'later' && !scheduledAt) items.push('Gönderim zamanı seç');
+    return items;
+  }, [subject, bodyHtml, audience, cities.length, manualEmails.length, isUsersAudience, counting, countError, scheduleMode, scheduledAt]);
+
+  // Tıklamada eksikleri toast'la — buton hiçbir zaman "sessiz ölü" olmasın.
+  const tryOpenConfirm = () => {
+    if (missingItems.length > 0) {
+      toast({ variant: 'destructive', title: 'Eksik var', description: missingItems[0] });
+      return;
+    }
+    setConfirmInput('');
+    setConfirmOpen(true);
+  };
 
   const addCity = useCallback(() => {
     const c = cityInput.trim();
@@ -287,7 +307,9 @@ export default function EasyMailPage() {
   }, [cityInput, cities, toast]);
 
   const sendTest = async () => {
-    if (!contentReady) { toast({ variant: 'destructive', title: 'Önce içerik', description: 'Konu ve mesaj gövdesini doldur.' }); return; }
+    if (!testTo.trim()) { toast({ variant: 'destructive', title: 'Test adresi boş', description: 'Test mailinin gideceği e-posta adresini yaz.' }); return; }
+    if (!subject.trim()) { toast({ variant: 'destructive', title: 'Konu boş', description: '2. adımda maile bir konu yaz.' }); return; }
+    if (!hasVisibleText(bodyHtml)) { toast({ variant: 'destructive', title: 'Mesaj boş', description: '2. adımda mesaj gövdesini yaz.' }); return; }
     setTestSending(true);
     try {
       await messagingFetch('/api/super-admin/messaging/test-email', {
@@ -643,8 +665,14 @@ export default function EasyMailPage() {
                   variant="ghost"
                   size="sm"
                   className="rounded-xl text-xs"
-                  disabled={!contentReady}
-                  onClick={() => { setTplName(subject.trim()); setTplSaveOpen(true); }}
+                  onClick={() => {
+                    if (!contentReady) {
+                      toast({ variant: 'destructive', title: 'Önce içerik', description: 'Şablon için önce konu ve mesajı yaz.' });
+                      return;
+                    }
+                    setTplName(subject.trim());
+                    setTplSaveOpen(true);
+                  }}
                 >
                   <Save className="mr-1.5 h-3.5 w-3.5" /> Şablon olarak kaydet
                 </Button>
@@ -685,7 +713,7 @@ export default function EasyMailPage() {
                   className="h-9 w-56 rounded-lg font-mono text-xs"
                   aria-label="Test e-posta adresi"
                 />
-                <Button type="button" variant="outline" size="sm" className="rounded-lg" onClick={() => void sendTest()} disabled={testSending || !contentReady}>
+                <Button type="button" variant="outline" size="sm" className="rounded-lg" onClick={() => void sendTest()} disabled={testSending}>
                   {testSending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Send className="mr-1.5 h-3.5 w-3.5" />}
                   Önce kendine test gönder
                 </Button>
@@ -722,12 +750,21 @@ export default function EasyMailPage() {
                 )}
               </div>
 
+              {missingItems.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {missingItems.map((m) => (
+                    <span key={m} className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
+                      <AlertTriangle className="h-3 w-3" /> {m}
+                    </span>
+                  ))}
+                </div>
+              )}
               <Button
                 type="button"
                 size="lg"
                 className="h-14 w-full rounded-2xl text-base font-black"
-                disabled={!canSend}
-                onClick={() => { setConfirmInput(''); setConfirmOpen(true); }}
+                disabled={sending}
+                onClick={tryOpenConfirm}
               >
                 {sending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Send className="mr-2 h-5 w-5" />}
                 {recipientCount !== null && audienceReady
