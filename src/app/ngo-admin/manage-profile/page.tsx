@@ -22,8 +22,6 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
-import { useAutosave } from '@/hooks/use-autosave';
-import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -387,8 +385,12 @@ export default function ManageProfilePage() {
     });
   };
 
-  // Sessiz otomatik kayıt — Kaydet butonları ve toast'ları aynen kalır.
-  const { status: autosaveStatus, markDirty } = useAutosave(persistProfile, [name, shortName, shortLink, ngoType, foundedYear, economicEntity, purpose, aboutText, selectedFeds, beneficiaries, sdgs, memberships, sector, university, donationCategories, country, city, district, neighborhood, street, email, phoneCode, phone, instagram, twitter, linkedin, youtube, logoFile, activityCertificate, charterFile, repFullName, repTitle, repEmail], { delayMs: 1000 });
+  // NOT: Bu sayfada OTOMATİK KAYIT KALDIRILDI (2026-07-09). Sebep: il/ilçe/
+  // ngoType/economicEntity Select'leri markDirty çağırmıyordu (yarı-bağlı) ve
+  // persistProfile TÜM alanları state'ten yazdığı için, bir metin alanı autosave'i
+  // tetiklediğinde boş state'teki il/ngoType/econ Firestore'daki iyi veriyi null'la
+  // EZİYORDU ("kaydettim ama güncellemede sıfırlandı" bug'ı; STK profilleri yüksek
+  // riskli veri). Manuel Kaydet (handleSave) tam payload'ı doğru yazıyor.
 
   const handleFileUpload = async (file: File, kind: 'logo' | 'activityCertificate' | 'charter') => {
       if (!activeEntity) {
@@ -411,7 +413,6 @@ export default function ManageProfilePage() {
         if (kind === 'logo') setLogoFile(url);
         else if (kind === 'activityCertificate') setActivityCertificate(url);
         else setCharterFile(url);
-        markDirty();
 
         // Super-admin "Arşiv" sekmesine kurum evrakı olarak ayna (best-effort).
         const docType = kind === 'logo' ? t('ngo_admin_manage_profile.docTypeLogo') : kind === 'activityCertificate' ? t('ngo_admin_manage_profile.docTypeActivity') : (ngoType === 'vakif' ? t('ngo_admin_manage_profile.docTypeVakif') : t('ngo_admin_manage_profile.docTypeCharter'));
@@ -488,7 +489,6 @@ export default function ManageProfilePage() {
   };
 
   const toggleFed = (fed: string) => {
-    markDirty();
     if (selectedFeds.includes(fed)) {
         setSelectedFeds(selectedFeds.filter(f => f !== fed));
     } else if (selectedFeds.length < 3) {
@@ -555,7 +555,6 @@ export default function ManageProfilePage() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <AutosaveIndicator status={autosaveStatus} />
             <Button type="button" onClick={openPreview} variant="outline" size="sm" className="gap-1.5">
               <Eye className="h-4 w-4" /> <span className="hidden sm:inline">Önizle</span>
             </Button>
