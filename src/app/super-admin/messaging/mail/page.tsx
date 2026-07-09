@@ -23,7 +23,9 @@ import Link from 'next/link';
 import {
   Mail, Users, Building2, MapPin, ClipboardList, Send, Loader2,
   CheckCircle2, ArrowLeft, Clock, FlaskConical, X, AlertTriangle,
+  FileText, Save, MousePointerClick, Eye as EyeIcon, Inbox,
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,8 +37,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { doc, collection, query, orderBy, limit, setDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { messagingFetch } from '@/lib/messaging/client';
 import { render, extractVariables } from '@/lib/messaging/template';
@@ -89,6 +91,42 @@ interface CampaignDocLite {
   schedule?: { mode?: string };
 }
 
+interface TemplateRow {
+  id: string;
+  name?: string;
+  channel?: string;
+  subject?: string;
+  body?: string;
+  active?: boolean;
+}
+
+type TSLike = { toDate?: () => Date } | null | undefined;
+
+interface RecipientRow {
+  id: string;
+  channelAddress?: string;
+  status?: string;
+  sentAt?: TSLike;
+  deliveredAt?: TSLike;
+  openedAt?: TSLike;
+  clickedAt?: TSLike;
+  clickedLink?: string;
+}
+
+function fmtTs(v: TSLike): string {
+  const d = v?.toDate?.();
+  return d ? d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+}
+
+// Alıcının ulaştığı EN İLERİ aşama: Gönderildi → İletildi → Açıldı → Link tıklandı.
+function recipientStage(r: RecipientRow): { label: string; cls: string; icon: React.ElementType; at: TSLike } {
+  if (r.clickedAt) return { label: 'Link tıklandı', cls: 'bg-primary/10 text-primary', icon: MousePointerClick, at: r.clickedAt };
+  if (r.openedAt) return { label: 'Açıldı', cls: 'bg-emerald-100 text-emerald-700', icon: EyeIcon, at: r.openedAt };
+  if (r.deliveredAt) return { label: 'İletildi', cls: 'bg-blue-100 text-blue-700', icon: Inbox, at: r.deliveredAt };
+  if (r.status === 'failed') return { label: 'Başarısız', cls: 'bg-red-100 text-red-700', icon: AlertTriangle, at: r.sentAt };
+  return { label: 'Gönderildi', cls: 'bg-muted text-muted-foreground', icon: Send, at: r.sentAt };
+}
+
 /* ── Sayfa ───────────────────────────────────────────────────────────────── */
 
 export default function EasyMailPage() {
@@ -114,6 +152,59 @@ export default function EasyMailPage() {
   const [bodyHtml, setBodyHtml] = useState('');
   const [fromName, setFromName] = useState('hangel');
   const [fromEmail, setFromEmail] = useState('merhaba@hangel.org');
+
+  // Şablonlar — mevcut messageTemplates koleksiyonu (yalnız email + aktif olanlar).
+  const tplQuery = useMemoFirebase(
+    () => (db ? query(collection(db, COLLECTIONS.messageTemplates), orderBy('updatedAt', 'desc'), limit(50)) : null),
+    [db],
+  );
+  const { data: tplRows } = useCollection<TemplateRow>(tplQuery);
+  const emailTemplates = useMemo(
+    () => (tplRows ?? []).filter((t) => t.channel === 'email' && t.active !== false),
+    [tplRows],
+  );
+  const [selectedTplId, setSelectedTplId] = useState('');
+  const [tplSaveOpen, setTplSaveOpen] = useState(false);
+  const [tplName, setTplName] = useState('');
+  const [tplSaving, setTplSaving] = useState(false);
+
+  const applyTemplate = (id: string) => {
+    setSelectedTplId(id);
+    const t = emailTemplates.find((x) => x.id === id);
+    if (!t) return;
+    setSubject(t.subject ?? '');
+    setBodyHtml(t.body ?? '');
+    toast({ title: 'Şablon yüklendi', description: t.name || 'Şablon içeriği dolduruldu — düzenleyebilirsin.' });
+  };
+
+  const saveAsTemplate = async () => {
+    if (!db) return;
+    const name = tplName.trim() || subject.trim();
+    if (!name) { toast({ variant: 'destructive', title: 'İsim gerekli', description: 'Şablona bir ad ver.' }); return; }
+    setTplSaving(true);
+    try {
+      const id = `tpl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      await setDoc(doc(db, COLLECTIONS.messageTemplates, id), {
+        name,
+        channel: 'email',
+        useCase: 'marketing',
+        language: 'tr',
+        active: true,
+        subject: subject.trim(),
+        body: bodyHtml,
+        variables: extractVariables(`${subject} ${bodyHtml}`),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      setTplSaveOpen(false);
+      setTplName('');
+      toast({ title: 'Şablon kaydedildi 🧡', description: `"${name}" — bir dahaki gönderimde seçebilirsin.` });
+    } catch {
+      toast({ variant: 'destructive', title: 'Kaydedilemedi', description: 'Şablon kaydedilirken hata oluştu.' });
+    } finally {
+      setTplSaving(false);
+    }
+  };
 
   // 3) Gönder
   const [testTo, setTestTo] = useState('');
@@ -270,6 +361,22 @@ export default function EasyMailPage() {
   );
   const { data: camp } = useDoc<CampaignDocLite>(campRef);
 
+  // Anlık gönderim akışı: gönderilen alıcılar SIRAYLA (en yeni üstte). orderBy(sentAt)
+  // henüz gönderilmemişleri doğal olarak dışarıda bırakır; Resend webhook'ları
+  // iletildi/açıldı/tıklandı alanlarını yazdıkça satır durumu CANLI güncellenir.
+  const feedQuery = useMemoFirebase(
+    () =>
+      db && sentCampaignId
+        ? query(
+            collection(db, COLLECTIONS.campaigns, sentCampaignId, 'recipients'),
+            orderBy('sentAt', 'desc'),
+            limit(30),
+          )
+        : null,
+    [db, sentCampaignId],
+  );
+  const { data: feedRows } = useCollection<RecipientRow>(feedQuery);
+
   if (sentCampaignId) {
     const stats = camp?.stats ?? {};
     const total = camp?.recipients?.afterConsentFilter ?? camp?.recipients?.totalUnique
@@ -328,6 +435,54 @@ export default function EasyMailPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Anlık gönderim akışı — kim, hangi aşamada (Gönderildi→İletildi→Açıldı→Tıklandı) */}
+        {!sentScheduled && (
+          <Card className="rounded-3xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-black uppercase tracking-wide text-muted-foreground">
+                Anlık gönderim akışı
+              </CardTitle>
+              <CardDescription className="text-[11px]">
+                Gönderildi → İletildi → Açıldı → Link tıklandı · durumlar anlık güncellenir (en yeni üstte)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {(feedRows ?? []).length === 0 ? (
+                <p className="px-5 py-6 text-center text-sm text-muted-foreground">
+                  İlk mailler birkaç saniye içinde burada görünecek…
+                </p>
+              ) : (
+                <ul className="divide-y">
+                  {(feedRows ?? []).map((r) => {
+                    const st = recipientStage(r);
+                    const StIcon = st.icon;
+                    return (
+                      <li key={r.id} className="flex items-center gap-3 px-5 py-2.5">
+                        <span className="min-w-0 flex-1 break-all font-mono text-xs">{r.channelAddress || '—'}</span>
+                        {r.clickedLink && (
+                          <a
+                            href={r.clickedLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hidden max-w-[140px] truncate text-[10px] text-primary underline sm:block"
+                            title={r.clickedLink}
+                          >
+                            {r.clickedLink}
+                          </a>
+                        )}
+                        <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{fmtTs(st.at)}</span>
+                        <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${st.cls}`}>
+                          <StIcon className="h-3 w-3" /> {st.label}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   }
@@ -464,6 +619,37 @@ export default function EasyMailPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              {/* Şablon: seç → doldurur; mevcut içeriği şablon olarak kaydet */}
+              <div className="flex flex-wrap items-center gap-2">
+                <Select value={selectedTplId} onValueChange={applyTemplate}>
+                  <SelectTrigger className="h-9 w-full rounded-xl sm:w-72" aria-label="Şablon seç">
+                    <span className="flex items-center gap-1.5 text-sm">
+                      <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                      <SelectValue placeholder="Şablondan başla (isteğe bağlı)" />
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {emailTemplates.length === 0 ? (
+                      <div className="px-3 py-2 text-xs text-muted-foreground">Henüz e-posta şablonu yok</div>
+                    ) : (
+                      emailTemplates.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>{t.name || t.subject || t.id}</SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-xl text-xs"
+                  disabled={!contentReady}
+                  onClick={() => { setTplName(subject.trim()); setTplSaveOpen(true); }}
+                >
+                  <Save className="mr-1.5 h-3.5 w-3.5" /> Şablon olarak kaydet
+                </Button>
+              </div>
+
               <Input
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
@@ -625,6 +811,36 @@ export default function EasyMailPage() {
             >
               {sending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
               {scheduleMode === 'later' ? 'Zamanla' : 'Gönder'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Şablon olarak kaydet */}
+      <AlertDialog open={tplSaveOpen} onOpenChange={setTplSaveOpen}>
+        <AlertDialogContent className="rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Şablon olarak kaydet</AlertDialogTitle>
+            <AlertDialogDescription>
+              Mevcut konu + gövde şablon kütüphanesine eklenir; sonraki gönderimlerde tek tıkla seçersin.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={tplName}
+            onChange={(e) => setTplName(e.target.value)}
+            placeholder="Şablon adı — örn. Aylık bülten"
+            className="rounded-xl"
+            maxLength={80}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Vazgeç</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-xl"
+              disabled={tplSaving}
+              onClick={(e) => { e.preventDefault(); void saveAsTemplate(); }}
+            >
+              {tplSaving ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Save className="mr-1.5 h-4 w-4" />}
+              Kaydet
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
