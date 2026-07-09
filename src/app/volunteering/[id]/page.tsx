@@ -659,6 +659,46 @@ export default function VolunteeringDetailPage() {
                         </button>
                     ) : null}
 
+                    {/* Başvuru durum takipçisi — Başvuruldu → Onaylandı → Tamamlandı → Değerlendirme */}
+                    {hasApplied && (
+                        <section className="space-y-3">
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Başvuru durumun</h2>
+                            {(() => {
+                                const rejected = applicationStatus === 'Reddedildi';
+                                const steps = [
+                                    { key: 'applied', label: 'Başvuruldu', done: true, current: false, rejected: false },
+                                    { key: 'approved', label: rejected ? 'Kabul edilmedi' : 'Onaylandı', done: isApproved, current: false, rejected },
+                                    { key: 'completed', label: 'Tamamlandı', done: Boolean(approvedCompletion), current: false, rejected: false },
+                                    { key: 'evaluated', label: 'Değerlendirme', done: false, current: Boolean(approvedCompletion), rejected: false },
+                                ];
+                                return (
+                                    <div className="flex items-start">
+                                        {steps.map((s, i) => (
+                                            <div key={s.key} className="flex flex-1 flex-col items-center text-center">
+                                                <div className="flex w-full items-center">
+                                                    <div className={`h-0.5 flex-1 ${i === 0 ? 'opacity-0' : steps[i - 1].done ? 'bg-emerald-500' : 'bg-border'}`} />
+                                                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                                                        s.rejected ? 'bg-destructive text-white'
+                                                            : s.done ? 'bg-emerald-500 text-white'
+                                                                : s.current ? 'bg-primary text-white'
+                                                                    : 'bg-muted text-muted-foreground'}`}>
+                                                        {s.rejected ? '✕' : s.done ? '✓' : i + 1}
+                                                    </span>
+                                                    <div className={`h-0.5 flex-1 ${i === steps.length - 1 ? 'opacity-0' : s.done ? 'bg-emerald-500' : 'bg-border'}`} />
+                                                </div>
+                                                <span className={`mt-1.5 text-[11px] font-semibold leading-tight ${
+                                                    s.rejected ? 'text-destructive'
+                                                        : s.done ? 'text-foreground'
+                                                            : s.current ? 'text-primary'
+                                                                : 'text-muted-foreground'}`}>{s.label}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })()}
+                        </section>
+                    )}
+
                     {/* Açıklama — büyük, okunur özet */}
                     <section className="space-y-4">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Genel bakış</h2>
