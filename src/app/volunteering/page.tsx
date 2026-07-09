@@ -4,7 +4,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, MapPin, Calendar, ChevronDown, ArrowDownUp, Map as MapIcon, X, Clock, Award, Bus, Star, Globe } from 'lucide-react';
+import { Filter, Search, MapPin, ChevronDown, ArrowDownUp, Map as MapIcon, X, Clock, Award, Bus, Star, Globe } from 'lucide-react';
 import { VolunteeringMapDialog } from '@/components/volunteering/volunteering-map-dialog';
 import { useTranslation } from '@/components/providers/language-provider';
 import { ngos } from '@/lib/data';
