@@ -10,7 +10,10 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useUser } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { useUser, useFirestore } from '@/firebase';
+import { COLLECTIONS } from '@/firebase/collections';
+import { setQrOnboard, suppressStartupPopups } from '@/lib/onboarding/qr-onboarding';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle2, XCircle, LogIn, CalendarCheck, PartyPopper } from 'lucide-react';
 
@@ -19,9 +22,11 @@ type State = 'init' | 'working' | 'success' | 'already' | 'error' | 'login';
 
 export function EventAction({ eventId, mode }: { eventId: string; mode: Mode }) {
   const { user, isUserLoading } = useUser();
+  const db = useFirestore();
   const [state, setState] = useState<State>('init');
   const [msg, setMsg] = useState('');
   const ran = useRef(false);
+  const qrOnboardRan = useRef(false);
 
   useEffect(() => {
     if (isUserLoading || ran.current) return;
@@ -53,8 +58,39 @@ export function EventAction({ eventId, mode }: { eventId: string; mode: Mode }) 
     })();
   }, [user, isUserLoading, mode, eventId]);
 
+  // QR onboarding: giriş yoksa ve QR "kayit" akışıysa, login'e YÖNLENDİRMEDEN ÖNCE
+  // onboarding marker'larını + pendingRsvp'yi kur. Böylece kayıttan sonra kullanıcı
+  // etkinlik detayına düşer, popup'lar bastırılır ve RSVP otomatik tamamlanır.
+  // Yalnızca client'ta ve bir kez çalışır; checkin akışı bu bloktan etkilenmez.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (isUserLoading || user || mode !== 'kayit') return;
+    if (qrOnboardRan.current) return;
+    qrOnboardRan.current = true;
+    (async () => {
+      // gelirModeli tespiti best-effort: etkinlik dokümanının tags'i okunur.
+      let gelirModeli = false;
+      try {
+        const snap = await getDoc(doc(db, COLLECTIONS.events, eventId));
+        const data = snap.data() as { tags?: unknown } | undefined;
+        gelirModeli = !!data && Array.isArray(data.tags) && data.tags.includes('gelir-modeli-konferansi');
+      } catch {
+        /* tespit başarısız → gelirModeli başlangıç değeri (false) kalır */
+      }
+      // Marker'lar HER ZAMAN kurulur (gelirModeli tespiti başarısız olsa bile).
+      setQrOnboard({ eventId, gelirModeli, stage: 'event' });
+      suppressStartupPopups();
+      try { sessionStorage.setItem('hangel:pendingRsvp', eventId); } catch { /* yut */ }
+    })();
+  }, [user, isUserLoading, mode, eventId, db]);
+
   const title = mode === 'kayit' ? 'Etkinliğe Kayıt' : 'Etkinlik Check-in';
   const nextPath = `/e/${eventId}/${mode}`;
+  // QR "kayit" akışında kanonik kayıt/giriş girişine yönlendir; kayıttan sonra
+  // onComplete hook'u QR kullanıcılarını etkinlik detayına taşır.
+  const loginHref = mode === 'kayit'
+    ? `/login/selection?next=${encodeURIComponent(`/events/${eventId}`)}`
+    : `/login?next=${encodeURIComponent(nextPath)}`;
 
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-gradient-to-b from-primary/10 to-background px-6">
@@ -73,7 +109,7 @@ export function EventAction({ eventId, mode }: { eventId: string; mode: Mode }) 
             <h1 className="text-xl font-bold">{title}</h1>
             <p className="mt-2 text-sm text-muted-foreground">Devam etmek için hangel hesabınla giriş yap.</p>
             <Button asChild className="mt-5 w-full">
-              <Link href={`/login?next=${encodeURIComponent(nextPath)}`}>Giriş Yap</Link>
+              <Link href={loginHref}>Giriş Yap</Link>
             </Button>
           </>
         )}

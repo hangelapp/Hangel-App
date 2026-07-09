@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { trackOnboardingStep } from '@/lib/onboarding-analytics';
+import { takeNgoSelectionNext } from '@/lib/onboarding/qr-onboarding';
 
 type NgoType = NGO['type'] | 'Tümü';
 
@@ -364,7 +365,13 @@ export default function NgoSelectionPage() {
         // Radikal onboarding kısaltma: ngo-selection ZORUNLU adım. Sonrası
         // opsiyonel. Direkt /timeline'a yönlendiriyoruz — kullanıcı orada
         // banner ile profil tamamlama daveti görür.
-        if (isOnboarding) {
+        // QR-etkinlik akışı bir sonraki yolu belirlediyse (ör. '/market') oraya git.
+        const qrNext = takeNgoSelectionNext();
+        if (qrNext) {
+            trackOnboardingStep(db, 'ngo_selection', 'complete', { count: selectedNgos.length });
+            try { localStorage.removeItem('onboardingStep'); } catch { /* noop */ }
+            router.push(qrNext);
+        } else if (isOnboarding) {
             trackOnboardingStep(db, 'ngo_selection', 'complete', { count: selectedNgos.length });
             try { localStorage.removeItem('onboardingStep'); } catch { /* noop */ }
             router.push('/timeline');

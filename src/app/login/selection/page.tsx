@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { IndividualForm } from './_components/IndividualForm';
 import { CorporateForm } from './_components/CorporateForm';
+import { getQrOnboard } from '@/lib/onboarding/qr-onboarding';
 
 // P2-6c: God-page (1174 LoC) refactored into _components/.
 // page.tsx is now a thin router. Auth-critical flows (handleCheckEmail,
@@ -55,7 +56,16 @@ const FormRenderer = () => {
                                 <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
                             </TabsList>
                             <TabsContent value="individual" className="pt-4">
-                                <IndividualForm onComplete={(isNewUser) => router.push(isNewUser ? '/welcome' : nextPath)} />
+                                <IndividualForm onComplete={(isNewUser) => {
+                                    // Yeni kayıt olan kullanıcılara "hoş geldin sıralı popart"ı (onboarding
+                                    // turu) gösterme — kullanıcı isteği. Tur anahtarını 'done' işaretle.
+                                    if (isNewUser) { try { localStorage.setItem('hangel_onboarding_v1_done', '1'); } catch { /* yut */ } }
+                                    // QR-etkinlik akışı: kayıttan sonra ÖNCE etkinlik detayına git
+                                    // (hoş geldin/welcome yerine). Marker yoksa mevcut davranış aynı.
+                                    const qr = getQrOnboard();
+                                    if (qr) { router.push(`/events/${qr.eventId}`); return; }
+                                    router.push(isNewUser ? '/welcome' : nextPath);
+                                }} />
                             </TabsContent>
                             <TabsContent value="corporate" className="pt-4">
                                 <CorporateForm initialEntity={entity} />

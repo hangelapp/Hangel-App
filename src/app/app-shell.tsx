@@ -84,6 +84,7 @@ import { useToast } from '@/hooks/use-toast';
 import { OnboardingTour } from '@/components/onboarding/onboarding-tour';
 import { useOnboardingTour } from '@/components/onboarding/use-onboarding-tour';
 import { RewardLiveProvider } from '@/components/rewards/reward-live-provider';
+import { getQrOnboard, updateQrOnboardStage, clearQrOnboard, setNgoSelectionNext } from '@/lib/onboarding/qr-onboarding';
 
 const group1Items: SideNavItem[] = [
   { href: '/timeline', label: 'nav.timeline', icon: 'layout-grid' },
@@ -502,6 +503,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // volunteerInfo verisine sahip olduğu için tamamlanmış sayılır.
     useEffect(() => {
         if (isUserLoading || !authUser || !isMounted || !userData) return;
+        // QR-etkinlik onboarding akışı aktifse GATE'i devre dışı bırak — kullanıcı
+        // önce etkinlik detayını görmeli, STK seçimini akışın kendisi yönetir.
+        if (getQrOnboard()) return;
         // Süper-admin / STK-admin asla gate'lenmez.
         if (isSuperAdmin || isNgoAdmin) return;
         // Yalnızca bireysel kullanıcı (role 'user' veya tanımsız) gate'lenir.
@@ -533,6 +537,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // 2'den az olduğu durumda app içi her sayfada bir kez gösterilir.
     useEffect(() => {
         if (isUserLoading || !authUser || !isMounted || !userData) return;
+        if (getQrOnboard()) return; // QR akışı kendi STK seçim adımını yönetir
         if (isSuperAdmin || isNgoAdmin) return; // sadece bireysel kullanıcı
         if (ngoPromptShownRef.current) return;
         // Onboarding gate kendi yönlendirmesini yapıyorsa popup gösterme
@@ -548,6 +553,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             setShowNgoSelectionPrompt(true);
         }
     }, [authUser, isUserLoading, isMounted, userData, isSuperAdmin, isNgoAdmin, pathname]);
+
+    // QR-etkinlik onboarding: kullanıcı etkinlik DETAYINA ulaşıp oradan ÇIKINCA
+    // sıradaki adıma geç. Gelir-modeli konferansı ise "STK yöneticisi misiniz?"
+    // sayfasına; değilse doğrudan bağışçı (STK) seçimine (sonra market). Tüm bu
+    // davranış yalnız QR marker'ı aktifken çalışır → normal kullanıcı etkilenmez.
+    const qrReachedEventRef = useRef(false);
+    useEffect(() => {
+        if (!isMounted || !authUser) return;
+        const st = getQrOnboard();
+        if (!st || st.stage !== 'event') return;
+        const eventPath = `/events/${st.eventId}`;
+        if (pathname === eventPath) {
+            qrReachedEventRef.current = true; // etkinlik detayına ulaştı
+            return;
+        }
+        if (!qrReachedEventRef.current) return; // henüz etkinliğe ulaşmadı — bekle
+        // Etkinlik detayından çıktı → sıradaki adım.
+        if (st.gelirModeli) {
+            updateQrOnboardStage('ngo-question');
+            router.push('/onboarding/stk-yonetici');
+        } else {
+            clearQrOnboard();
+            try { localStorage.setItem('onboardingStep', 'ngo-selection'); } catch { /* yut */ }
+            setNgoSelectionNext('/market');
+            router.push('/settings/ngo-selection');
+        }
+    }, [pathname, isMounted, authUser, router]);
 
     if (!isMounted) {
         return <div className="min-h-dvh bg-background">{children}</div>;
