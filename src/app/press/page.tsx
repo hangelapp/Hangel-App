@@ -366,7 +366,7 @@ export default function PressPage() {
     return (
         <div className="min-h-screen bg-[#f5f5f7] font-sans selection:bg-primary/30">
             {/* Nav */}
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5 pt-[env(safe-area-inset-top)]">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5 pt-[var(--sat)]">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-6xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
@@ -378,7 +378,7 @@ export default function PressPage() {
                 </div>
             </header>
 
-            <main className="pt-[calc(6rem+env(safe-area-inset-top))]">
+            <main className="pt-[calc(6rem+var(--sat))]">
                 {/* Hero */}
                 <section className="container mx-auto px-4 pt-16 pb-24 text-center space-y-6">
                     {cms.subtitle && (

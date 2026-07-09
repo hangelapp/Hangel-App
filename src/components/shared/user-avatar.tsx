@@ -5,6 +5,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { COLLECTIONS } from '@/firebase/collections';
+import { UserRound } from "lucide-react";
 
 export function UserAvatar({ className }: { className?: string }) {
   const { user, isUserLoading } = useUser();
@@ -23,21 +24,12 @@ export function UserAvatar({ className }: { className?: string }) {
 
   const avatarUrl = userData?.avatarUrl || user?.photoURL || undefined;
 
-  const getInitials = () => {
-    if (user?.displayName) {
-      return user.displayName.split(' ').map(n => n[0]).join('').toUpperCase();
-    }
-    if (user?.email) {
-      return user.email[0].toUpperCase();
-    }
-    return 'U';
-  };
-
   return (
     <Avatar className={className}>
       <AvatarImage src={avatarUrl} alt={user?.displayName || 'Kullanıcı'} className="object-cover" />
-      <AvatarFallback className="bg-primary/10 text-primary font-bold">
-        {getInitials()}
+      {/* Foto yoksa iOS Kişiler tarzı kişi silüeti (baş harf değil). */}
+      <AvatarFallback className="bg-muted">
+        <UserRound className="h-[55%] w-[55%] text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
       </AvatarFallback>
     </Avatar>
   );

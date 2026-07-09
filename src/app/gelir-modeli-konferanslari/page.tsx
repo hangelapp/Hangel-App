@@ -409,14 +409,14 @@ export default function IncomeModelConferencePage() {
       {/* Mobil sticky kayıt CTA — reklamdan gelen ziyaretçi her zaman görür (dönüşüm) */}
       <div
         className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/90 backdrop-blur-lg px-4 py-3 sm:hidden"
-        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+        style={{ paddingBottom: 'calc(0.75rem + var(--sab))' }}
       >
         <Button asChild size="lg" className="w-full h-12 rounded-full font-bold shadow-lg shadow-primary/20">
           <Link href="#takvim">Şehrini Seç, Ücretsiz Kayıt Ol 🧡</Link>
         </Button>
       </div>
       {/* Header */}
-      <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border pt-[env(safe-area-inset-top)]">
+      <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border pt-[var(--sat)]">
         <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
           <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium text-muted-foreground">
             <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
@@ -431,7 +431,7 @@ export default function IncomeModelConferencePage() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-white pt-[calc(7rem+env(safe-area-inset-top))] pb-16">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-white pt-[calc(7rem+var(--sat))] pb-16">
         <div className="mx-auto max-w-3xl px-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <Link
             href="/gelir-modeli-konferanslari/sunum"

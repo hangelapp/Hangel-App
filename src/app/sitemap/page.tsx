@@ -272,7 +272,7 @@ export default function SitemapPage() {
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             {/* Nav */}
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5 pt-[env(safe-area-inset-top)]">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5 pt-[var(--sat)]">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-4xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
@@ -282,7 +282,7 @@ export default function SitemapPage() {
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 pt-[calc(8rem+env(safe-area-inset-top))] pb-32 max-w-4xl space-y-12">
+            <main className="container mx-auto px-4 pt-[calc(8rem+var(--sat))] pb-32 max-w-4xl space-y-12">
                 <div className="text-left space-y-4">
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">{t('sitemapPage.heroTitle')}</h1>
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium">{t('sitemapPage.heroSubtitle')}</p>

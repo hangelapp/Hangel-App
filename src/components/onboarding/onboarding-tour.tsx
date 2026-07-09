@@ -177,8 +177,8 @@ export function OnboardingTour({ open, onComplete }: OnboardingTourProps) {
         'animate-in fade-in-0 duration-300 ease-spring',
       )}
       style={{
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingTop: 'var(--sat)',
+        paddingBottom: 'var(--sab)',
       }}
     >
       {/* Üst çubuk: logo + Geç */}

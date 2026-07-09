@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
 import { COLLECTIONS } from '@/firebase/collections';
+import { UserRound } from "lucide-react";
 
 export function UserNav() {
   const { user } = useUser();
@@ -30,17 +31,6 @@ export function UserNav() {
   useEffect(() => { setImageBroken(false); }, [avatarUrl]);
 
   if (!user) return null;
-
-  const getInitials = () => {
-    const source = userData?.name || user.displayName;
-    if (source) {
-      return source.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
-    }
-    if (user.email) {
-      return user.email[0].toUpperCase();
-    }
-    return 'U';
-  };
 
   const handleClick = () => {
     if (pathname !== '/profile') {
@@ -67,8 +57,9 @@ export function UserNav() {
             crossOrigin="anonymous"
           />
         )}
-        <AvatarFallback className="bg-primary/10 text-primary font-bold">
-          {getInitials()}
+        {/* Foto yoksa iOS Kişiler tarzı kişi silüeti (baş harf değil). */}
+        <AvatarFallback className="bg-muted">
+          <UserRound className="h-[55%] w-[55%] text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
         </AvatarFallback>
       </Avatar>
     </Button>

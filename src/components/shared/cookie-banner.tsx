@@ -48,7 +48,7 @@ export function CookieBanner() {
             role="dialog"
             aria-label={policyTitle}
             className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50 animate-in slide-in-from-bottom-4"
-            style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+            style={{ bottom: 'calc(1rem + var(--sab))' }}
         >
             <div className="bg-card border rounded-2xl shadow-2xl p-4 backdrop-blur-xl">
                 <div className="flex items-start gap-3">

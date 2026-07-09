@@ -123,7 +123,7 @@ function showCelebrationBanner(title?: string, message?: string): void {
   wrap.setAttribute('aria-live', 'polite');
   // Konteyner: üst-orta, güvenli alan boşluğu, en üstte (konfeti ile aynı katman üstü).
   wrap.style.cssText =
-    'position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:50%;transform:translateX(-50%);' +
+    'position:fixed;top:calc(var(--sat, 0px) + 14px);left:50%;transform:translateX(-50%);' +
     'z-index:2147483647;pointer-events:none;max-width:min(92vw,420px);width:max-content;padding:0 16px;';
 
   const card = document.createElement('div');

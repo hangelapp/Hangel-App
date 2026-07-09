@@ -649,7 +649,7 @@ export default function EventDetailPage() {
                                 {evLoc.type !== 'Online' && weather && weather.length > 0 && (
                                     <div className="py-4 px-4 sm:px-6">
                                         <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3">Hava durumu</p>
-                                        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
+                                        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 pl-[max(1rem,var(--sal))] pr-[max(1rem,var(--sar))]">
                                             {weather.map((d) => (
                                                 <div key={d.date} className="flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl border border-border bg-card min-w-[88px] shrink-0 text-center">
                                                     <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{formatDateTime(d.date).split(',')[0]}</span>

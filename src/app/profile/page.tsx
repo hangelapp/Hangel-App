@@ -188,6 +188,18 @@ export default function ProfilePage() {
     // Üst turuncu banttaki QR okutucu (başka cihazdaki giriş QR'ını okutmak için).
     const [qrScanOpen, setQrScanOpen] = useState(false);
 
+    // Aktif sekmeyi kaydırma alanında görünür konuma getir — deep-link ile
+    // (?tab=badges-certificates) gelindiğinde aktif sekme ekran dışında kalmasın.
+    const tabsScrollRef = React.useRef<HTMLDivElement>(null);
+    const centerActiveTab = React.useCallback((smooth = false) => {
+        requestAnimationFrame(() => {
+            tabsScrollRef.current
+                ?.querySelector<HTMLElement>('[role="tab"][data-state="active"]')
+                ?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: smooth ? 'smooth' : 'auto' });
+        });
+    }, []);
+    useEffect(() => { centerActiveTab(); }, [centerActiveTab]);
+
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
         return doc(db, COLLECTIONS.users, authUser.uid);
@@ -590,15 +602,25 @@ export default function ProfilePage() {
                     <UserAvatar className="w-24 h-24 mb-4" />
                     <h1 className="text-3xl font-bold break-words max-w-full">{currentUser.name}</h1>
                 </div>
-                <Tabs defaultValue={initialTab} className="w-full">
-                    <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex sm:justify-center">
-                        <TabsList className="inline-flex h-auto w-max gap-1 p-1 sm:w-auto">
-                            <TabsTrigger value="impact" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabImpact')}</TabsTrigger>
-                            <TabsTrigger value="about" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabAbout')}</TabsTrigger>
-                            <TabsTrigger value="volunteering" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabVolunteering')}</TabsTrigger>
-                            <TabsTrigger value="connections" className="min-h-[44px] whitespace-nowrap text-xs">{t('profilePage.tabConnections')}</TabsTrigger>
-                            <TabsTrigger value="badges-certificates" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabBadges')}</TabsTrigger>
-                            <TabsTrigger value="story" className="min-h-[44px] whitespace-nowrap text-xs">{t('dashboard.profile.tabStory')}</TabsTrigger>
+                <Tabs defaultValue={initialTab} onValueChange={() => centerActiveTab(true)} className="w-full">
+                    {/* iOS segmented-control: yatay kaydırılabilir pill bar.
+                        - w-max + mx-auto: sığıyorsa ortalanır, taşıyorsa soldan
+                          itibaren kaydırılır (eski sm:justify-center taşan içeriğin
+                          sol ucunu erişilmez kesiyordu → "tab'ların bir kısmı
+                          görünmüyor" hatasının kökü).
+                        - mask-image kenar solması: devamı olduğunu gösterir.
+                        - Aktif sekme mount'ta ve seçimde görünüme kaydırılır. */}
+                    <div
+                        ref={tabsScrollRef}
+                        className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,transparent,black_1rem,black_calc(100%_-_1rem),transparent)]"
+                    >
+                        <TabsList className="flex h-auto w-max mx-auto gap-0.5 rounded-full bg-muted p-1">
+                            <TabsTrigger value="impact" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('dashboard.profile.tabImpact')}</TabsTrigger>
+                            <TabsTrigger value="about" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('dashboard.profile.tabAbout')}</TabsTrigger>
+                            <TabsTrigger value="volunteering" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('dashboard.profile.tabVolunteering')}</TabsTrigger>
+                            <TabsTrigger value="connections" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('profilePage.tabConnections')}</TabsTrigger>
+                            <TabsTrigger value="badges-certificates" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('dashboard.profile.tabBadges')}</TabsTrigger>
+                            <TabsTrigger value="story" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('dashboard.profile.tabStory')}</TabsTrigger>
                         </TabsList>
                     </div>
                     

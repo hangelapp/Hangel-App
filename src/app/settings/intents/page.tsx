@@ -36,6 +36,7 @@ export default function IntentsSettingsPage() {
   const [selected, setSelected] = useState<Set<IntentKey>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     if (!user) return;

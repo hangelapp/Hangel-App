@@ -97,6 +97,9 @@ export default function ProfileSettingsPage() {
   // dahil) açık formu EZMESİN — yoksa "cinsiyet kaydettim, yenileyince gitti"
   // yarışı olur: kullanıcının yeni değeri eski snapshot'la geri yazılır.
   const hydratedRef = useRef(false);
+  // Autosave kapısı: form state Firestore'dan dolduktan SONRA açılır —
+  // hydration öncesi boş state'in otomatik kayıtla iyi veriyi ezmesini önler.
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const onboardingStep = localStorage.getItem('onboardingStep');

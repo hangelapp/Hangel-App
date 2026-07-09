@@ -111,7 +111,7 @@ export default function SuperAdminLayout({
   return (
     <div className="min-h-screen w-full">
       <div className="flex flex-col">
-        <header className="flex min-h-14 items-center gap-4 border-b bg-background/95 px-4 lg:min-h-[60px] lg:px-6 sticky top-0 z-50 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+        <header className="flex min-h-14 items-center gap-4 border-b bg-background/95 px-4 lg:min-h-[60px] lg:px-6 sticky top-0 z-50 backdrop-blur-xl pt-[var(--sat)]">
             <Button onClick={handleBackClick} variant="ghost" size="icon" className="h-9 w-9" aria-label="Geri">
               <ArrowLeft className="h-5 w-5" />
             </Button>

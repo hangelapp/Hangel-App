@@ -37,10 +37,14 @@ const FormRenderer = () => {
     // (CorporateForm authUser?.uid'i applications doc'una yazıyor).
 
     return (
-        <div className="min-h-dvh bg-secondary flex items-start justify-center p-4 pt-8">
+        // Üst boşluk cihaza göre: status bar/notch yüksekliği (--sat) + sabit
+        // 0.75rem. Çentikli telefonlarda kart status bar'ın (saat/pil) altına
+        // girmez; çentiksiz modellerde eski sabit pt-8'in yarattığı gereksiz
+        // büyük boşluk kalkar. Alt tarafta da home-indicator payı bırakılır.
+        <div className="min-h-dvh bg-secondary flex items-start justify-center px-4 pt-[calc(var(--sat)+0.75rem)] pb-[calc(var(--sab)+1rem)]">
             <div className="w-full max-w-sm">
                 <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
-                    <CardHeader className="text-center pt-10 pb-6">
+                    <CardHeader className="text-center pt-8 pb-5">
                         <HangelLogo className="text-3xl mx-auto mb-2" />
                         <CardTitle className="text-3xl font-black tracking-tighter">Merhaba</CardTitle>
                     </CardHeader>

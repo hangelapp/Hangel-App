@@ -22,7 +22,7 @@ export function LeaderboardMyRank({ me, totalShown, unit }: MyRankProps) {
 
   if (!me) {
     return (
-      <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-20 lg:bottom-4 rounded-3xl border border-border/60 bg-card/95 p-4 shadow-glass-prominent backdrop-blur-md">
+      <div className="sticky bottom-[calc(4.5rem+var(--sab))] z-20 lg:bottom-4 rounded-3xl border border-border/60 bg-card/95 p-4 shadow-glass-prominent backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
             <TrendingUp className="h-5 w-5" />

@@ -27,7 +27,7 @@ export default function AssociationContactPage() {
 
     return (
         <div className="min-h-screen bg-background font-sans">
-            <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border pt-[env(safe-area-inset-top)]">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border pt-[var(--sat)]">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
@@ -37,7 +37,7 @@ export default function AssociationContactPage() {
                 </div>
             </header>
 
-            <main className="pt-[calc(8rem+env(safe-area-inset-top))] pb-24">
+            <main className="pt-[calc(8rem+var(--sat))] pb-24">
                 <div className="container mx-auto px-6 max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-20">
                     <div className="space-y-12">
                         <div className="space-y-4">

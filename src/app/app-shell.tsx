@@ -617,7 +617,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (isLoggedOut && isGuestDiscoveryPage && !isPublicPage && !isNgoSitePage) {
         return (
             <div className="min-h-dvh overflow-x-hidden bg-background">
-                <header className="sticky top-0 z-30 flex h-12 items-center justify-between gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-lg" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+                <header className="sticky top-0 z-30 flex h-12 items-center justify-between gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-lg" style={{ paddingTop: 'var(--sat)' }}>
                     <Link href="/" aria-label="hangel ana sayfa">
                         <HangelLogo className="text-xl" href={null} />
                     </Link>
@@ -663,9 +663,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                    <div className="flex h-full flex-col overflow-y-auto glass-scroll">
                         {/* safe-area: iOS status bar (saat/sinyal/pil) menü
                             başlığıyla çakışmasın diye üst padding'e
-                            env(safe-area-inset-top) eklenir; logo ve X buton
+                            var(--sat) eklenir; logo ve X buton
                             status bar'ın ALTINDA kalır ve X rahat tıklanır. */}
-                        <div className="px-4 pb-4 border-b border-glass-black-8 dark:border-glass-white-8 sticky top-0 z-10 glass" style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}>
+                        <div className="px-4 pb-4 border-b border-glass-black-8 dark:border-glass-white-8 sticky top-0 z-10 glass" style={{ paddingTop: 'calc(1rem + var(--sat))' }}>
                             <div className="flex justify-between items-center mb-6">
                                 <Link href="/timeline" onClick={() => setDrawerOpen(false)} aria-label="hangel ana akış">
                                     <HangelLogo className="text-2xl" href={null} />
@@ -709,7 +709,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 min-w-0 + overflow-x-hidden: hiçbir geniş alt içerik (uzun metin,
                 geniş grid/satır) sayfayı viewport'tan geniş yapıp yatay kaydırma
                 yaratamaz. */}
-            <main className="flex-1 min-w-0 overflow-x-hidden" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
+            <main className="flex-1 min-w-0 overflow-x-hidden" style={{ paddingTop: 'calc(3rem + var(--sat))', paddingBottom: 'calc(5rem + var(--sab))' }}>
               <ProfileNudgeBanner />
               <AutoBreadcrumb />
               {children}

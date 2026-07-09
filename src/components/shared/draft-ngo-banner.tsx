@@ -33,7 +33,7 @@ export function DraftNgoBanner() {
     <div
       role="alert"
       className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-4 sm:left-auto sm:right-4 sm:max-w-md"
-      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+      style={{ bottom: 'calc(1rem + var(--sab))' }}
     >
       <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 shadow-2xl backdrop-blur-xl dark:border-amber-800 dark:bg-amber-950/60">
         <div className="flex items-start gap-3">

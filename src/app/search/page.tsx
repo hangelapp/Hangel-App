@@ -97,7 +97,7 @@ function GlobalSearchPageInner() {
 
     return (
         <div className="min-h-dvh bg-background">
-            <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b pt-[env(safe-area-inset-top)]">
+            <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b pt-[var(--sat)]">
                 <div className="container mx-auto px-3 h-14 flex items-center gap-2 max-w-3xl">
                     <Button onClick={() => router.back()} variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label={t('search.backAria')}>
                         <ArrowLeft className="h-5 w-5" />

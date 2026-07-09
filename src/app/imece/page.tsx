@@ -11,7 +11,7 @@ import { useTranslation } from '@/components/providers/language-provider';
 
 const ImpactSection = ({ title, subtitle, description, theme = 'light', className, children, id }: { title: string; subtitle?: string; description?: string; theme?: 'light' | 'dark'; className?: string; children?: React.ReactNode; id?: string }) => (
   <section id={id} className={cn(
-    'relative min-h-[80vh] flex flex-col items-center justify-center pt-[calc(6rem+env(safe-area-inset-top))] pb-16 text-center overflow-hidden border-b border-black/5',
+    'relative min-h-[80vh] flex flex-col items-center justify-center pt-[calc(6rem+var(--sat))] pb-16 text-center overflow-hidden border-b border-black/5',
     theme === 'dark' ? 'bg-[#042654] text-white' : 'bg-white text-[#1d1d1f]',
     className,
   )}>
@@ -49,7 +49,7 @@ export default function ImecePage() {
   const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-background">
-      <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b pt-[env(safe-area-inset-top)]">
+      <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b pt-[var(--sat)]">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
           <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label={t('marketing.imece.headerBack')}>
             <ArrowLeft className="h-5 w-5" />

@@ -62,7 +62,7 @@ export function VerifyEmailBanner() {
         <>
             <div
                 className="fixed left-0 right-0 z-40 lg:left-64 bg-amber-50 border-b border-amber-200 text-amber-900 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-100 shadow-sm"
-                style={{ top: "calc(3rem + env(safe-area-inset-top))" }}
+                style={{ top: "calc(3rem + var(--sat))" }}
             >
                 <div className="max-w-5xl mx-auto px-3 h-9 flex items-center gap-2 text-xs sm:text-sm">
                     <MailWarning className="h-3.5 w-3.5 shrink-0" />

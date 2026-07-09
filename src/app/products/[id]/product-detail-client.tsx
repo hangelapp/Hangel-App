@@ -382,7 +382,7 @@ export function ProductDetailClient({ id }: { id: string }) {
   const mainImage = images[activeIdx] || images[0] || null;
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto bg-secondary/30 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:pb-[calc(8rem+env(safe-area-inset-bottom))]">
+    <div className="flex h-full flex-col overflow-y-auto bg-secondary/30 pb-[calc(9rem+var(--sab))] sm:pb-[calc(8rem+var(--sab))]">
       {/* 1. Üst bar — geri + paylaş + favori (Trendyol detay başlığı) */}
       <div className="sticky top-12 z-20 flex items-center justify-between border-b bg-background px-2 py-2">
         <Button asChild variant="ghost" size="icon" className="h-10 w-10 rounded-xl" aria-label="Geri">
@@ -828,7 +828,7 @@ export function ProductDetailClient({ id }: { id: string }) {
       {/* 7. Sabit alt CTA — "Ürüne Git" (affiliate deeplink, login gating korunur) */}
       <div
         className="fixed bottom-0 left-0 right-0 z-30 border-t bg-background/95 px-4 py-3 backdrop-blur-lg"
-        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+        style={{ paddingBottom: 'calc(0.75rem + var(--sab))' }}
       >
         <div className="mx-auto flex w-full max-w-3xl items-center gap-3 lg:max-w-6xl">
           <div className="hidden shrink-0 sm:block">

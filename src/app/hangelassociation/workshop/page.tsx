@@ -19,7 +19,7 @@ import { useAssociationContent } from '@/hooks/use-site-content';
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border pt-[env(safe-area-inset-top)]">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border pt-[var(--sat)]">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.push('/hangelassociation')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
@@ -79,7 +79,7 @@ export default function AssociationWorkshopPage() {
             <AssociationHeader currentPage="workshop" />
 
             <MetricSection
-                className="pt-[calc(8rem+env(safe-area-inset-top))]"
+                className="pt-[calc(8rem+var(--sat))]"
                 title={get('workshop.title', 'Sınırları Aşan Diyalog.')}
                 stat="54"
                 subtitle={get('workshop.subtitle', 'Farklı ülkeden vizyoner katılımcı.')}

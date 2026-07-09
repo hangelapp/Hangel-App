@@ -4,10 +4,15 @@
 
 @layer base {
   :root {
-    --sat: env(safe-area-inset-top);
-    --sar: env(safe-area-inset-right);
-    --sab: env(safe-area-inset-bottom);
-    --sal: env(safe-area-inset-left);
+    /* Safe-area: env() (iOS + modern Android WebView) ile Capacitor 8
+       SystemBars'ın Android 15+ edge-to-edge'de enjekte ettiği
+       --safe-area-inset-* değişkenlerinin max'ı. Eski WebView'lerde env()
+       0 döndüğü için tek başına env() bazı telefonlarda status bar'ın
+       (saat/pil) içerik tarafından kapanmasına yol açıyordu. */
+    --sat: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+    --sar: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+    --sab: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+    --sal: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
     --background: #f5f5f7;
     --foreground: #1d1d1f;
 

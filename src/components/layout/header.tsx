@@ -66,7 +66,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   return (
       <header
         className={cn(
-          'fixed top-0 left-0 right-0 z-30 mx-auto lg:left-64 pt-[env(safe-area-inset-top)]',
+          'fixed top-0 left-0 right-0 z-30 mx-auto lg:left-64 pt-[var(--sat)]',
           'transition-[background-color,backdrop-filter,border-color] duration-300 ease-spring',
           // Adaptive: scroll'da glass yoğunlaşır, üst durumda neredeyse şeffaf.
           isScrolled

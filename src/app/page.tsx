@@ -193,7 +193,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
     const { language, changeLanguage, t } = useTranslation();
     const { user, isUserLoading } = useUser();
     return (
-        <header className="fixed top-0 inset-x-0 z-30 bg-background/80 backdrop-blur-md border-b border-border pt-[env(safe-area-inset-top)]">
+        <header className="fixed top-0 inset-x-0 z-30 bg-background/80 backdrop-blur-md border-b border-border pt-[var(--sat)]">
             <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
                 <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="md:hidden h-11 w-11" onClick={onMenuClick} aria-label={t('a11y.openMenu')}>
@@ -593,7 +593,7 @@ export default function LoginPage() {
             </Sheet>
             <Header onMenuClick={() => setIsMenuOpen(true)} />
             <main>
-                <section className="min-h-screen flex flex-col px-6 pt-[calc(6rem+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))] bg-background border-b border-border">
+                <section className="min-h-screen flex flex-col px-6 pt-[calc(6rem+var(--sat))] pb-[calc(4rem+var(--sab))] bg-background border-b border-border">
                     <div className="flex-1 flex flex-col justify-center items-center text-center">
                         <h2 className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-medium text-muted-foreground max-w-2xl md:max-w-4xl text-balance leading-tight">{get('home.heroSubtitle', 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.')}</h2>
                         <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight text-foreground max-w-xl md:max-w-4xl text-balance mt-3">{get('home.heroTitle', 'yok öyle yalnız başına mücadele etmek.')}</h1>

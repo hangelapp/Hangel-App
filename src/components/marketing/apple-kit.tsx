@@ -83,7 +83,7 @@ export function MarketingNav({
   backLabel?: string;
 }) {
   return (
-    <header className="fixed top-0 inset-x-0 z-[100] bg-card/80 backdrop-blur-xl border-b border-border pt-[env(safe-area-inset-top)]">
+    <header className="fixed top-0 inset-x-0 z-[100] bg-card/80 backdrop-blur-xl border-b border-border pt-[var(--sat)]">
       <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
         <Link
           href="/"

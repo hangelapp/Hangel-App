@@ -42,7 +42,7 @@ export default function CustomWebPage() {
 
     return (
         <div className="min-h-screen bg-white font-sans">
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5 pt-[env(safe-area-inset-top)]">
+            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5 pt-[var(--sat)]">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                         <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
@@ -51,7 +51,7 @@ export default function CustomWebPage() {
                 </div>
             </header>
 
-            <main className="pt-[calc(6rem+env(safe-area-inset-top))] pb-24">
+            <main className="pt-[calc(6rem+var(--sat))] pb-24">
                 <section className="container mx-auto px-6 max-w-3xl space-y-8">
                     <div className="space-y-4 text-center">
                         {page.subtitle && (

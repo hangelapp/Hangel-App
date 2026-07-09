@@ -49,7 +49,7 @@ export function OfflineBanner() {
 
   if (!isOnline) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-destructive px-4 py-2 text-center text-sm text-destructive-foreground pt-[env(safe-area-inset-top)]">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-destructive px-4 py-2 text-center text-sm text-destructive-foreground pt-[var(--sat)]">
         <div className="flex items-center justify-center gap-2">
           <WifiOff className="h-4 w-4" />
           <span>İnternet bağlantısı yok</span>
@@ -65,7 +65,7 @@ export function OfflineBanner() {
 
   if (isSyncing) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500 px-4 py-2 text-center text-sm text-white pt-[env(safe-area-inset-top)]">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500 px-4 py-2 text-center text-sm text-white pt-[var(--sat)]">
         <div className="flex items-center justify-center gap-2">
           <RefreshCw className="h-4 w-4 animate-spin" />
           <span>Senkronlanıyor… ({queueSize})</span>
@@ -76,7 +76,7 @@ export function OfflineBanner() {
 
   if (showSyncedToast) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-600 px-4 py-2 text-center text-sm text-white pt-[env(safe-area-inset-top)]">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-600 px-4 py-2 text-center text-sm text-white pt-[var(--sat)]">
         Çevrimiçi olundu, bekleyen işlemler tamamlandı.
       </div>
     );

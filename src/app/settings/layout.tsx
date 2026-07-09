@@ -19,7 +19,7 @@ export default function SettingsLayout({
   return (
     <div className="mx-auto w-full max-w-3xl">
       {children}
-      <footer className="pt-8 pb-[calc(5rem+env(safe-area-inset-bottom))] text-center text-[10px] text-muted-foreground space-y-1">
+      <footer className="pt-8 pb-[calc(5rem+var(--sab))] text-center text-[10px] text-muted-foreground space-y-1">
         <p>© 2024 hangel teknoloji ve sosyal etki anonim şirketi. Tüm hakları saklıdır.</p>
       </footer>
     </div>

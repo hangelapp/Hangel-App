@@ -147,7 +147,7 @@ export function DetailColumns({
  *
  * LAYOUT SÖZLEŞMESİ: Bu bar `sticky bottom-0` olduğundan, içerik bar'ın
  * altına kaymasın diye SAYFA içerik kapsayıcısı yeterli alt padding
- * vermelidir. Bar yüksekliği ~60px (py-4) + `env(safe-area-inset-bottom)`
+ * vermelidir. Bar yüksekliği ~60px (py-4) + `var(--sab)`
  * olduğundan, çağıran sayfa en az `pb-32` (~128px) bırakmalıdır
  * (örn. volunteering/[id]/page.tsx). Bu pay kısaltılırsa uzun sekme
  * içeriklerinde son satır bar'ın arkasında kalır.
@@ -165,7 +165,7 @@ export function DetailStickyBar({
         'sticky bottom-0 z-10 mt-auto border-t border-border bg-background/80 px-5 md:px-8 py-4 backdrop-blur-xl',
         className,
       )}
-      style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+      style={{ paddingBottom: 'calc(1rem + var(--sab))' }}
     >
       <div className="mx-auto max-w-5xl">{children}</div>
     </div>

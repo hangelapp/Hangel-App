@@ -16,7 +16,7 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
     const { t } = useTranslation();
     return (
-        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border pt-[env(safe-area-inset-top)]">
+        <header className="fixed top-0 inset-x-0 z-[100] bg-background/80 backdrop-blur-md border-b border-border pt-[var(--sat)]">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
                     <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('association.back')}
@@ -76,7 +76,7 @@ export default function AssociationEventsPage() {
         <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="events" />
 
-            <section className="pt-[calc(8rem+env(safe-area-inset-top))] pb-20 px-6 text-center space-y-4 bg-muted">
+            <section className="pt-[calc(8rem+var(--sat))] pb-20 px-6 text-center space-y-4 bg-muted">
                 <h1 className="text-3xl sm:text-5xl md:text-8xl font-bold tracking-tight text-foreground">{t('associationEvents.heroTitle')}</h1>
                 <p className="text-lg sm:text-xl md:text-3xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
                     {t('associationEvents.heroDesc')}
