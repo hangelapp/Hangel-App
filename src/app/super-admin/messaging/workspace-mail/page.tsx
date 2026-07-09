@@ -10,6 +10,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +44,7 @@ function parseEmails(raw: string): string[] {
 export default function PlatformWorkspaceMailPage() {
   const { toast } = useToast();
   const { user } = useUser();
+  const router = useRouter();
 
   const [conn, setConn] = useState<Connection | null>(null);
 
@@ -231,8 +233,11 @@ export default function PlatformWorkspaceMailPage() {
         else toast({ variant: 'destructive', title: 'Gönderim başarısız', description: typeof data?.message === 'string' ? data.message : undefined });
         return;
       }
-      toast({ title: 'Toplu mail kuyruğa alındı', description: `${data.queued ?? 0} alıcı — dakikada 1 mail gider.${data.capped ? ' (üst sınır uygulandı)' : ''}` });
+      toast({ title: 'Toplu mail kuyruğa alındı 🧡', description: `${data.queued ?? 0} alıcı — dakikada 1 mail gider.${data.capped ? ' (üst sınır uygulandı)' : ''} Canlı izleme açılıyor…` });
       setSubject(''); setMessageBody(''); setPreview(null);
+      // Kampanya CANLI izleme sayfasına götür: kuyruktaki/gönderilen/başarısız
+      // sayıları + alıcı listesi Firestore listener ile anlık akar.
+      if (data.campaignId) router.push(`/super-admin/messaging/campaigns/${data.campaignId}`);
     } catch { toast({ variant: 'destructive', title: 'Bağlantı hatası' }); }
     finally { setSending(false); }
   };
@@ -241,10 +246,14 @@ export default function PlatformWorkspaceMailPage() {
     <div className="container mx-auto max-w-3xl space-y-6 p-4 md:p-6">
       <div className="flex items-center gap-2">
         <Link href="/super-admin/messaging" className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-6 w-6" /></Link>
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold font-headline">Workspace Toplu Mail</h1>
           <p className="text-sm text-muted-foreground">hangel kendi Workspace adresinden outreach datasına toplu mail gönderir (dakikada 1).</p>
         </div>
+        {/* Kuyruk/gönderim CANLI izleme — kampanya listesi (anlık Firestore). */}
+        <Button asChild variant="outline" size="sm" className="shrink-0 rounded-xl">
+          <Link href="/super-admin/messaging/campaigns">Kampanyaları İzle</Link>
+        </Button>
       </div>
 
       {conn && conn.configured === false && (
