@@ -49,7 +49,7 @@ env:
   # STK Workspace toplu mail — per-STK SMTP App Password'ları AES-256-GCM ile
   # şifreleyen master anahtar (Secret Manager, App Hosting'e grant verildi).
   - variable: MAIL_CRED_ENC_KEY
-    value: "REPLACE_IN_SECRET_MANAGER_LATER"
+    value: "PXAa7RNTzyZwmPNPWFrP2BSd3qJ37SUW9YnkDOiE+ls="
     availability:
       - RUNTIME
   # WhatsApp Cloud API (Meta Business)
