@@ -30,8 +30,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   eslint: {
-    // 0 problems baseline; CI also enforces.
-    ignoreDuringBuilds: false,
+    // Build sırasında `eslint .` tüm repoyu tarıyordu (yavaş → App Hosting build
+    // timeout riski). Lint zaten PRE-PUSH hook'unda (değişen dosyalar) zorunlu, o
+    // yüzden build'de tekrar çalıştırmak gereksiz. Build'i hızlandırmak için kapalı.
+    ignoreDuringBuilds: true,
   },
   async headers() {
     return [
