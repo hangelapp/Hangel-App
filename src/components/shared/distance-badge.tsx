@@ -10,7 +10,7 @@
  * target koordinatı yoksa hiçbir şey çizmez (adresin yanında sessizce görünmez).
  */
 import { useEffect, useState, useCallback } from 'react';
-import { MapPin, Loader2 } from 'lucide-react';
+import { MapPin, Loader2, Car, Footprints } from 'lucide-react';
 import { getCurrentPositionUnified } from '@/lib/native-geolocation';
 import { distanceSummary, formatKm, formatMinutes, type LatLon } from '@/lib/geo-distance';
 import { cn } from '@/lib/utils';
@@ -48,7 +48,8 @@ export function DistanceBadge({
   const hasTarget = Number.isFinite(target?.lat) && Number.isFinite(target?.lon);
   const [coords, setCoords] = useState<LatLon | null>(null);
   const [status, setStatus] = useState<Status>('unknown');
-  const [result, setResult] = useState<string | null>(null);
+  // Sürüş mesafesi (km) + sürüş süresi (dk). Yürüyüş süresi km'den türetilir (5 km/sa).
+  const [dist, setDist] = useState<{ km: number; driveMin: number } | null>(null);
 
   const request = useCallback(async () => {
     setStatus('loading');
@@ -91,12 +92,12 @@ export function DistanceBadge({
         if (r.ok) {
           const j = await r.json() as { km?: number; minutes?: number };
           if (active && typeof j.km === 'number' && typeof j.minutes === 'number') {
-            setResult(`${formatKm(j.km)} · ${formatMinutes(j.minutes, false)}`);
+            setDist({ km: j.km, driveMin: j.minutes });
             return;
           }
         }
       } catch { /* OSRM başarısız → tahmine düş */ }
-      if (active) setResult(distanceSummary(coords, { lat: tLat, lon: tLon }).text);
+      if (active) { const s = distanceSummary(coords, { lat: tLat, lon: tLon }); setDist({ km: s.km, driveMin: s.minutes }); }
     })();
     return () => { active = false; };
   }, [status, coords, hasTarget, target]);
@@ -104,12 +105,25 @@ export function DistanceBadge({
   if (!hasTarget) return null;
 
   if (status === 'ready' && coords) {
-    // Gerçek sürüş (OSRM) hazırsa onu, değilse anında kuş-uçuşu tahmini göster.
-    const text = result ?? distanceSummary(coords, { lat: target!.lat as number, lon: target!.lon as number }).text;
+    // OSRM sürüş hazırsa onu; değilse kuş-uçuşu tahmin. Yürüyüş ~5 km/sa'ten türetilir.
+    const d = dist ?? (() => { const s = distanceSummary(coords, { lat: target!.lat as number, lon: target!.lon as number }); return { km: s.km, driveMin: s.minutes }; })();
+    const walkMin = Math.max(1, Math.round((d.km / 5) * 60));
+    // İkonlar TEK RENK (nötr); mesafe/süre vurgulu. İki satır: araba + yürüyen.
     return (
-      <span className={cn('inline-flex items-center gap-1 text-xs font-semibold text-primary', className)}>
-        <MapPin className="h-3.5 w-3.5" /> {text} uzakta
-      </span>
+      <div className={cn('flex flex-col gap-1', className)}>
+        <span className="inline-flex items-center gap-1.5 text-sm text-foreground/80">
+          <Car className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="font-semibold tabular-nums">{formatKm(d.km)}</span>
+          <span className="text-muted-foreground">·</span>
+          <span className="font-semibold tabular-nums">{formatMinutes(d.driveMin, false)}</span>
+        </span>
+        <span className="inline-flex items-center gap-1.5 text-sm text-foreground/80">
+          <Footprints className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="font-semibold tabular-nums">{formatKm(d.km)}</span>
+          <span className="text-muted-foreground">·</span>
+          <span className="font-semibold tabular-nums">{formatMinutes(walkMin, false)}</span>
+        </span>
+      </div>
     );
   }
 

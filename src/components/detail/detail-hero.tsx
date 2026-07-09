@@ -95,10 +95,8 @@ export function DetailHero({
   ctaSlot,
   className,
 }: DetailHeroProps) {
-  const safeImage =
-    imageUrl && imageUrl.trim().length > 0
-      ? imageUrl
-      : 'https://placehold.co/600x800/eee/aaa?text=hangel';
+  // Kapak görseli yoksa "hangel" yazan placeholder yerine sade nötr gradient (Apple-temiz).
+  const hasImage = Boolean(imageUrl && imageUrl.trim().length > 0);
 
   // Oran verildiyse aspect kutusu; verilmediyse geniş bant (responsive yükseklik).
   const frameSizing = aspect
@@ -115,14 +113,18 @@ export function DetailHero({
       )}
       style={frameSizing.style}
     >
-      <Image
-        src={safeImage}
-        alt={imageAlt}
-        fill
-        className="object-cover"
-        priority={priority}
-        sizes={sizes}
-      />
+      {hasImage ? (
+        <Image
+          src={imageUrl as string}
+          alt={imageAlt}
+          fill
+          className="object-cover"
+          priority={priority}
+          sizes={sizes}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-muted via-muted to-primary/10" />
+      )}
 
       {/*
         GÜÇLÜ gradient scrim — beyaz künye okunabilirliği için.

@@ -4,7 +4,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, MapPin, Calendar, ChevronDown, ArrowDownUp, Map as MapIcon, X } from 'lucide-react';
+import { Filter, Search, MapPin, Calendar, ChevronDown, ArrowDownUp, Map as MapIcon, X, Clock, Award, Bus, Star, Globe } from 'lucide-react';
 import { VolunteeringMapDialog } from '@/components/volunteering/volunteering-map-dialog';
 import { useTranslation } from '@/components/providers/language-provider';
 import { ngos } from '@/lib/data';
@@ -199,6 +199,23 @@ function computeMatch(opp: Volunteering, profile: MatchingUserProfile) {
     };
 }
 
+// Apple Watch tarzı eşleşme halkası — %değer dolan yay + ortada yüzde.
+const MatchRing = ({ value }: { value: number }) => {
+    const r = 18, c = 2 * Math.PI * r;
+    const v = Math.max(0, Math.min(100, value));
+    const off = c - (v / 100) * c;
+    const tone = v >= 75 ? 'text-emerald-500' : v >= 50 ? 'text-amber-500' : 'text-primary';
+    return (
+        <div className="relative h-12 w-12 shrink-0" aria-label={`Profil uygunluğu %${v}`}>
+            <svg viewBox="0 0 44 44" className="h-12 w-12 -rotate-90">
+                <circle cx="22" cy="22" r={r} className="fill-none stroke-muted" strokeWidth="4" />
+                <circle cx="22" cy="22" r={r} className={`fill-none ${tone} transition-all duration-700 ease-out`} stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={off} />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-black text-foreground">%{v}</span>
+        </div>
+    );
+};
+
 const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
     opp: Volunteering;
     profile: MatchingUserProfile;
@@ -216,75 +233,70 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
     const daysRemaining = differenceInDays(parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
     const countdownText = daysRemaining > 0 ? t('volunteering_root.remainingDays').replace('{days}', String(daysRemaining)) : (daysRemaining === 0 ? t('volunteering_root.lastDay') : t('volunteering_root.expired'));
 
+    const providesBadge = Array.isArray(opp.earnedBadges) && opp.earnedBadges.length > 0;
+
     return (
-        <Card className="overflow-hidden border border-border/60 shadow-sm transition-all hover:shadow-md hover:border-primary/30 h-full">
+        <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm transition-all hover:shadow-md hover:border-primary/30 h-full">
             <Link href={`/volunteering/${opp.id}`} className="block group h-full">
-                <CardContent className="p-3 flex flex-col justify-between h-full">
-                    <div>
-                        <div className="flex items-start justify-between gap-x-2 gap-y-1">
-                            <div className="flex items-center gap-x-2.5 gap-y-1 flex-1 min-w-0">
-                                {ngo && (
-                                    <Avatar className="h-10 w-10 border shrink-0">
-                                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
-                                        <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium text-muted-foreground break-words leading-tight">{opp.organization}</p>
-                                    <h3 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors line-clamp-2">{opp.title}</h3>
-                                    {appStatus && (
-                                        <span className={`inline-flex items-center gap-x-1 mt-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-                                            appStatus === 'Onaylandı' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
-                                                : appStatus === 'Reddedildi' ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'
-                                                    : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300'}`}>
-                                            {appStatus === 'Onaylandı' ? '✓ Onaylandı' : appStatus === 'Reddedildi' ? 'Kabul edilmedi' : 'Başvuruldu'}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                            {/* Sağ üst köşe: İncele butonu — mercan (primary) tema token'ı,
-                                hardcoded renk/inline-style yerine; koyu temada otomatik uyumlu. */}
-                            <span className="shrink-0 inline-flex items-center justify-center rounded-full px-3 py-1.5 min-h-[28px] text-xs font-bold text-primary border border-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                {t('volunteering_root.reviewBtn')}
-                            </span>
+                <CardContent className="p-4 flex flex-col gap-3 h-full">
+                    {/* Üst: STK + başlık (güçlü hiyerarşi) | eşleşme halkası */}
+                    <div className="flex items-start gap-3">
+                        {ngo && (
+                            <Avatar className="h-9 w-9 border shrink-0">
+                                <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
+                                <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                        )}
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[11px] font-medium text-muted-foreground truncate">{opp.organization}</p>
+                            <h3 className="font-bold text-base leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-2">{opp.title}</h3>
                         </div>
-
-                        <div className="flex items-center justify-between text-xs text-muted-foreground mt-2 flex-wrap gap-x-2 gap-y-1">
-                            <div className="flex items-center gap-x-2 gap-y-1 flex-wrap min-w-0">
-                                <span className="flex items-center gap-x-1 min-w-0"><MapPin size={12} className="shrink-0" /> <span className="truncate">{opp.location.city} ({opp.location.type})</span></span>
-                                <span className="flex items-center gap-x-1 min-w-0"><Calendar size={12} className="shrink-0" /> <span className="truncate">{opp.commitment}</span></span>
-                            </div>
-                            <div className="flex items-center gap-x-1.5 gap-y-1 shrink-0">
-                                <span className="font-bold text-primary text-xs">{opp.points} {t('volunteering_root.points')}</span>
-                                {isCompleted ? (
-                                    <Badge variant="secondary" className="text-xs font-bold">
-                                        Tamamlandı
-                                    </Badge>
-                                ) : (
-                                    <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-xs font-bold">
-                                        {countdownText}
-                                    </Badge>
-                                )}
-                            </div>
-                        </div>
-
                         {hasProfile && (
-                            <div
-                                className="mt-2 space-y-1"
-                                title={`${t('volunteering_root.breakdownAbility')}: ${match.breakdown.ability.matched}/${match.breakdown.ability.total} • ${t('volunteering_root.breakdownSensitivity')}: ${match.breakdown.interest.matched}/${match.breakdown.interest.total} • ${t('volunteering_root.breakdownLocation')}: ${match.breakdown.location}`}
-                            >
-                                <div className="flex justify-between text-xs uppercase tracking-wider">
-                                    <span className="font-bold text-muted-foreground">{t('volunteering_root.profileEligibility')}</span>
-                                    <span className="font-black text-primary">%{matchPercentage}</span>
-                                </div>
-                                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
-                                        style={{ width: `${matchPercentage}%` }}
-                                    />
-                                </div>
+                            <div title={`${t('volunteering_root.breakdownAbility')}: ${match.breakdown.ability.matched}/${match.breakdown.ability.total} • ${t('volunteering_root.breakdownSensitivity')}: ${match.breakdown.interest.matched}/${match.breakdown.interest.total} • ${t('volunteering_root.breakdownLocation')}: ${match.breakdown.location}`}>
+                                <MatchRing value={matchPercentage} />
                             </div>
                         )}
+                    </div>
+
+                    {/* Tek yer satırı — Online ilan belirgin rozetle işaretlenir */}
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        {opp.location.type === 'Online' ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+                                <Globe size={13} className="shrink-0" /> Online / Uzaktan
+                            </span>
+                        ) : (
+                            <>
+                                <MapPin size={14} className="shrink-0" />
+                                <span className="truncate">{opp.location.city} · {opp.location.type}</span>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Etki önizleme — kullanıcı ne kazanır */}
+                    {(opp.hours?.total > 0 || opp.providesCertificate || providesBadge || opp.amenities?.transport) && (
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-foreground/70">
+                            {opp.hours?.total > 0 && <span className="inline-flex items-center gap-1"><Clock size={13} className="text-primary" /> {opp.hours.total} saat</span>}
+                            {opp.providesCertificate && <span className="inline-flex items-center gap-1"><Award size={13} className="text-primary" /> Sertifikalı</span>}
+                            {providesBadge && <span className="inline-flex items-center gap-1"><Star size={13} className="text-primary" /> Rozet</span>}
+                            {opp.amenities?.transport && <span className="inline-flex items-center gap-1"><Bus size={13} className="text-primary" /> Ulaşım desteği</span>}
+                        </div>
+                    )}
+
+                    {/* Alt: tek durum (başvuru → o, yoksa geri sayım) + puan */}
+                    <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+                        {appStatus ? (
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${
+                                appStatus === 'Onaylandı' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
+                                    : appStatus === 'Reddedildi' ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300'
+                                        : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300'}`}>
+                                {appStatus === 'Onaylandı' ? '✓ Onaylandı' : appStatus === 'Reddedildi' ? 'Kabul edilmedi' : 'Başvuruldu'}
+                            </span>
+                        ) : isCompleted ? (
+                            <Badge variant="secondary" className="text-xs font-bold">Tamamlandı</Badge>
+                        ) : (
+                            <span className={`text-xs font-semibold ${daysRemaining < 0 ? 'text-red-600 dark:text-red-400' : daysRemaining <= 3 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>{countdownText}</span>
+                        )}
+                        <span className="text-xs font-bold text-primary shrink-0">{opp.points} {t('volunteering_root.points')}</span>
                     </div>
                 </CardContent>
             </Link>
@@ -300,7 +312,7 @@ export default function VolunteeringPage() {
     const [interestFilter, setInterestFilter] = useState<string[]>([]);
     const [skillFilter, setSkillFilter] = useState<string[]>([]);
     const [cityFilter, setCityFilter] = useState<string[]>([]);
-    const [sortBy, setSortBy] = useState<'points' | 'deadline'>('points');
+    const [sortBy, setSortBy] = useState<'match' | 'points' | 'deadline' | 'newest'>('match');
     const [mapOpen, setMapOpen] = useState(false);
     const [filterOpen, setFilterOpen] = useState(false);
     // Detaylı filtre paneli state'leri (yukarıdaki interest/skill/city ile paylaşımlı)
@@ -308,6 +320,8 @@ export default function VolunteeringPage() {
     const [taskTypeFilter, setTaskTypeFilter] = useState<string[]>([]);
     const [locationTypeFilter, setLocationTypeFilter] = useState<string[]>([]);
     const [certificateOnly, setCertificateOnly] = useState(false);
+    // Liste üstü sekmeler: Tümü / Başvurularım / Onaylananlar (yalnız dolu olanlar çıkar).
+    const [listTab, setListTab] = useState<'all' | 'applied' | 'approved'>('all');
 
     // PERF: ilk 100 ilanı yükle (createdAt'e göre sıralı), client-side
     // filtreleme yine çalışır ama Firestore'dan tüm collection inmez.
@@ -333,6 +347,16 @@ export default function VolunteeringPage() {
         }
         return map;
     }, [myApps]);
+
+    // Başvurduğu / onaylandığı ilanlar (arama/filtre bağımsız; kendi başvuru görünümü).
+    const appliedOpps = useMemo(
+        () => (oppsData || []).filter(o => appStatusByEntity[o.id]),
+        [oppsData, appStatusByEntity],
+    );
+    const approvedOpps = useMemo(
+        () => (oppsData || []).filter(o => appStatusByEntity[o.id] === 'Onaylandı'),
+        [oppsData, appStatusByEntity],
+    );
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
@@ -509,33 +533,35 @@ export default function VolunteeringPage() {
             );
         }
 
-        // Mevcut sıralama kriteri (puan / son tarih) — match eşitliğinde tie-breaker.
-        const baseCompare = (a: Volunteering, b: Volunteering) => {
-            if (sortBy === 'deadline') {
-                const ad = differenceInDays(parse(a.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
-                const bd = differenceInDays(parse(b.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
-                return ad - bd;
-            }
-            return b.points - a.points;
+        // Sıralama kriterleri. Not: 'match' seçiliyken profil yoksa tüm match=0
+        // olur → puan tie-break ile eski (puan) davranışı korunur (güvenli default).
+        const dd = (o: Volunteering) => {
+            try { return differenceInDays(parse(o.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date()); }
+            catch { return 9999; }
         };
-
-        // Kullanıcının gönüllü profili varsa: Profil Uygunluğu (match %) AZALAN
-        // öncelikli; eşitlikte mevcut puan/son tarih kriteri korunur.
-        // Profil yoksa: mevcut sıralama aynen kalır.
-        if (hasVolunteerProfile) {
-            return filtered.sort((a, b) => {
-                const diff = (matchPercentById[b.id] ?? 0) - (matchPercentById[a.id] ?? 0);
-                return diff !== 0 ? diff : baseCompare(a, b);
-            });
-        }
-
-        return filtered.sort(baseCompare);
+        const cAt = (o: Volunteering): number => {
+            const c = (o as Volunteering & { createdAt?: { toMillis?: () => number; seconds?: number } | string }).createdAt;
+            if (c && typeof c === 'object') {
+                if (typeof c.toMillis === 'function') { try { return c.toMillis(); } catch { /* ignore */ } }
+                if (typeof c.seconds === 'number') return c.seconds * 1000;
+            }
+            if (typeof c === 'string') { const t = Date.parse(c); if (!Number.isNaN(t)) return t; }
+            return 0;
+        };
+        const byPoints = (a: Volunteering, b: Volunteering) => b.points - a.points;
+        const byMatch = (a: Volunteering, b: Volunteering) => (matchPercentById[b.id] ?? 0) - (matchPercentById[a.id] ?? 0);
+        const primary =
+            sortBy === 'points' ? byPoints
+            : sortBy === 'deadline' ? (a: Volunteering, b: Volunteering) => dd(a) - dd(b)
+            : sortBy === 'newest' ? (a: Volunteering, b: Volunteering) => cAt(b) - cAt(a)
+            : byMatch;
+        return filtered.sort((a, b) => { const d = primary(a, b); return d !== 0 ? d : byPoints(a, b); });
     }, [oppsData, interestFilter, skillFilter, cityFilter, socialAreaFilter, taskTypeFilter, locationTypeFilter, certificateOnly, searchTerm, sortBy, hasVolunteerProfile, matchPercentById]);
 
   return (
     <div className="space-y-4 animate-in fade-in-0">
       <div className="p-4 space-y-4">
-        <div className="space-y-3 sticky top-[calc(3rem+env(safe-area-inset-top))] bg-background/95 backdrop-blur-xl z-10 py-2">
+        <div className="space-y-3 sticky top-[calc(3rem+var(--sat))] bg-background/95 backdrop-blur-xl z-10 py-2">
           <h1 className="text-2xl font-bold font-headline">{t('volunteeringPage.title')}</h1>
           <div className="flex gap-2">
               <div className="relative flex-grow min-w-0">
@@ -564,8 +590,10 @@ export default function VolunteeringPage() {
                   <DropdownMenuContent align="end">
                       <DropdownMenuLabel>{t('volunteering_root.sortHeader')}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
+                      <DropdownMenuCheckboxItem checked={sortBy === 'match'} onCheckedChange={() => setSortBy('match')}>Profil uygunluğu</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={sortBy === 'points'} onCheckedChange={() => setSortBy('points')}>{t('volunteering_root.sortByPoints')}</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={sortBy === 'deadline'} onCheckedChange={() => setSortBy('deadline')}>{t('volunteering_root.sortByDeadline')}</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={sortBy === 'newest'} onCheckedChange={() => setSortBy('newest')}>En yeni</DropdownMenuCheckboxItem>
                   </DropdownMenuContent>
               </DropdownMenu>
           </div>
@@ -602,22 +630,42 @@ export default function VolunteeringPage() {
           </div>
         </div>
 
+        {/* Liste üstü sekmeler — kullanıcı başvurduysa "Başvurularım", onay varsa
+            "Onaylananlar" çıkar. Kendi başvuru görünümü (arama/filtre bağımsız). */}
+        {appliedOpps.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {[
+              { key: 'all' as const, label: 'Tümü', count: filteredOpps.length, show: true },
+              { key: 'applied' as const, label: 'Başvurularım', count: appliedOpps.length, show: true },
+              { key: 'approved' as const, label: 'Onaylananlar', count: approvedOpps.length, show: approvedOpps.length > 0 },
+            ].filter(tab => tab.show).map(tab => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setListTab(tab.key)}
+                className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${listTab === tab.key ? 'bg-primary text-white shadow-sm' : 'bg-muted text-muted-foreground hover:bg-muted/70'}`}
+              >
+                {tab.label} <span className="opacity-70">({tab.count})</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <div id="imece-all-listings" className="space-y-3 scroll-mt-32">
-          {isLoading ? (
-              [...Array(3)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)
-          ) : filteredOpps.length > 0 ? (
-              filteredOpps.map(opp => (
-                  <OpportunityCard
-                      key={opp.id}
-                      opp={opp}
-                      profile={matchingProfile}
-                      hasProfile={hasVolunteerProfile}
-                      appStatus={appStatusByEntity[opp.id]}
-                  />
-              ))
-          ) : (
-              <p className="text-center py-20 text-muted-foreground">{t('volunteering_root.noListings')}</p>
-          )}
+          {(() => {
+            const shown = listTab === 'applied' ? appliedOpps : listTab === 'approved' ? approvedOpps : filteredOpps;
+            if (isLoading) return [...Array(3)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />);
+            if (shown.length === 0) return <p className="text-center py-20 text-muted-foreground">{listTab === 'all' ? t('volunteering_root.noListings') : 'Bu sekmede henüz ilan yok.'}</p>;
+            return shown.map(opp => (
+                <OpportunityCard
+                    key={opp.id}
+                    opp={opp}
+                    profile={matchingProfile}
+                    hasProfile={hasVolunteerProfile}
+                    appStatus={appStatusByEntity[opp.id]}
+                />
+            ));
+          })()}
         </div>
       </div>
       <VolunteeringMapDialog open={mapOpen} onOpenChange={setMapOpen} items={filteredOpps} />

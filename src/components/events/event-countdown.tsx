@@ -6,7 +6,7 @@
  * başladıktan sonra bitişe geri sayar; ikisinde de aynı gün+sa+dk+sn biçiminde.
  * Bittiğinde "sona erdi" gösterir.
  */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { eventStart, eventPhase, countdownParts, type EventLike } from '@/lib/event-time';
 
@@ -24,28 +24,19 @@ function UnitBoxes({ ms, live, size = 'md', className }: {
     { v: minutes, label: 'dk' },
     { v: seconds, label: 'sn' },
   ];
-  const numCls = size === 'lg' ? 'text-2xl sm:text-3xl' : size === 'sm' ? 'text-base' : 'text-xl sm:text-2xl';
-  const boxCls = size === 'lg' ? 'min-w-[3rem] px-2 py-1.5' : size === 'sm' ? 'min-w-[2.25rem] px-1 py-0.5' : 'min-w-[2.75rem] px-1.5 py-1';
+  // Apple-temiz: kenarlık/kutu YOK — büyük tabular sayı + altında minik etiket,
+  // birimler boşlukla ayrılır (iki nokta yok). Canlıda yalnız kırmızı metin vurgusu.
+  const numCls = size === 'lg' ? 'text-3xl sm:text-4xl' : size === 'sm' ? 'text-lg' : 'text-2xl';
+  const gapCls = size === 'lg' ? 'gap-5 sm:gap-7' : size === 'sm' ? 'gap-3' : 'gap-4';
   return (
-    <div className={cn('inline-flex items-stretch gap-1.5', className)}>
-      {units.map((u, i) => (
-        <React.Fragment key={u.label}>
-          <div
-            className={cn(
-              'flex flex-col items-center justify-center rounded-lg border tabular-nums',
-              boxCls,
-              live ? 'border-red-500/25 bg-red-500/10' : 'border-primary/20 bg-primary/5',
-            )}
-          >
-            <span className={cn('font-mono font-black leading-none', numCls, live ? 'text-red-600' : 'text-foreground')}>
-              {String(u.v).padStart(2, '0')}
-            </span>
-            <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">{u.label}</span>
-          </div>
-          {i < units.length - 1 && (
-            <span className={cn('self-center font-black', numCls, live ? 'text-red-500/40' : 'text-primary/30')}>:</span>
-          )}
-        </React.Fragment>
+    <div className={cn('inline-flex items-start', gapCls, className)}>
+      {units.map((u) => (
+        <div key={u.label} className="flex flex-col items-center">
+          <span className={cn('font-semibold leading-none tabular-nums tracking-tight', numCls, live ? 'text-red-600 dark:text-red-400' : 'text-foreground')}>
+            {String(u.v).padStart(2, '0')}
+          </span>
+          <span className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">{u.label}</span>
+        </div>
       ))}
     </div>
   );
@@ -133,7 +124,7 @@ export function DualCountdown({ start, startTime, end, endTime, className }: { s
   const showProgress = !ended && (live || (startMs - now) <= PRELIVE_PROGRESS_WINDOW);
 
   return (
-    <div className={cn('rounded-2xl border p-4', live ? 'border-red-500/25 bg-red-500/5' : ended ? 'border-border bg-muted/30' : 'border-primary/20 bg-primary/5', className)}>
+    <div className={cn('rounded-2xl p-4', live ? 'bg-red-500/[0.06]' : ended ? 'bg-muted/40' : 'bg-primary/[0.04]', className)}>
       <div className="mb-2 flex items-center gap-2">
         {live ? (
           <>

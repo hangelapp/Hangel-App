@@ -60,13 +60,20 @@ export default function UsersPage() {
   const filteredUsers = useMemo(() => {
     if (!users) return [];
     const lower = searchTerm.toLowerCase();
+    // Telefon araması: iki tarafı da SADECE rakamlara indir + baştaki 90/0'ı kırp.
+    // Böylece "0530 476 43 11", "+90 530…", "05304764311" hepsi kayıtlı
+    // "5304764311" ile eşleşir (telefonlar normalize/boşluksuz saklanıyor).
+    const phoneDigits = (s?: string | null) =>
+      (s || '').replace(/\D/g, '').replace(/^90/, '').replace(/^0/, '');
+    const termDigits = phoneDigits(searchTerm);
     const matched = !searchTerm
       ? [...users]
       : users.filter(u =>
         (u.name || '').toLowerCase().includes(lower) ||
         (u.personalInfo?.email || '').toLowerCase().includes(lower) ||
         (u.username || '').toLowerCase().includes(lower) ||
-        (u.personalInfo?.phone || '').includes(lower),
+        (u.personalInfo?.phone || '').includes(lower) ||
+        (termDigits.length >= 4 && phoneDigits(u.personalInfo?.phone).includes(termDigits)),
       );
 
     // En yeni kullanıcı en üstte: createdAt → joinDate → fallback (eklenme sırası)

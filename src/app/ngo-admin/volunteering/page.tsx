@@ -126,6 +126,7 @@ function ListingsTab({
   ngoName,
   ngoLogoUrl,
   isLoading,
+  onCompleted,
 }: {
   opportunities: VolunteeringWithStatus[];
   applicationCounts: Map<string, number>;
@@ -133,6 +134,7 @@ function ListingsTab({
   ngoName: string;
   ngoLogoUrl?: string;
   isLoading: boolean;
+  onCompleted?: () => void;
 }) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -245,9 +247,12 @@ function ListingsTab({
         status: 'Tamamlandı' satisfies ListingStatus,
         completedAt: serverTimestamp(),
       });
+      // İlan tamamlandı → "Tamamlanan" sekmesine geçir ki yönetici gönüllülerini
+      // hemen puanlayıp yorumlasın (puanlama akışı o sekmede — CompletionScoringDialog).
+      onCompleted?.();
       toast({
         title: t('ngo_admin_volunteering.toast.completedTitle'),
-        description: t('ngo_admin_volunteering.toast.completedDesc'),
+        description: 'İlan tamamlandı. Şimdi "Tamamlanan" sekmesinden gönüllülerini puanla ve yorumla.',
       });
     } catch (err) {
       console.error('[ngo-admin/volunteering] complete failed', err);
@@ -880,6 +885,8 @@ function VolunteeringPage() {
   const { data: opps, isLoading: oppsLoading } = useCollection<VolunteeringWithStatus>(oppsQuery);
 
   const opportunities = useMemo(() => opps ?? [], [opps]);
+  // Tamamla sonrası "Tamamlanan" sekmesine geçmek için kontrollü sekme.
+  const [activeTab, setActiveTab] = useState('listings');
   const opportunityIds = useMemo(() => opportunities.map((o) => o.id), [opportunities]);
 
   const appsQuery = useMemoFirebase(() => {
@@ -965,7 +972,7 @@ function VolunteeringPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="listings" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="listings">{t('ngo_admin_volunteering.tabs.listings')}</TabsTrigger>
           <TabsTrigger value="applications">
@@ -984,6 +991,7 @@ function VolunteeringPage() {
             ngoName={ngoName}
             ngoLogoUrl={ngoLogoUrl}
             isLoading={oppsLoading}
+            onCompleted={() => setActiveTab('completed')}
           />
         </TabsContent>
         <TabsContent value="applications" className="mt-4">

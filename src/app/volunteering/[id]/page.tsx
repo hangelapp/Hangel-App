@@ -615,16 +615,41 @@ export default function VolunteeringDetailPage() {
                 {/* ───── SOL KOLON: özet + içerik ───── */}
                 <div className="space-y-12 min-w-0">
 
-                    {/* Profil uygunluğu — dolan progress bar */}
-                    {authUser && hasProfile && (
+                    {/* Profil uygunluğu — profil doluysa dolan bar; boşsa/düşükse
+                        "profilini tamamla → daha iyi eşleşme" nudge'ı (her ilanda çalışır). */}
+                    {authUser && hasProfile ? (
                         <div className="space-y-3">
                             <div className="flex justify-between items-baseline">
-                                <span className="text-sm font-semibold text-muted-foreground tracking-tight">Profil uygunluğun: %{matchPercentage}</span>
+                                <span className="text-sm font-semibold text-muted-foreground tracking-tight">Profil uygunluğun</span>
                                 <span className={`text-2xl font-bold tracking-tight ${matchTone.text}`}>%{matchPercentage}</span>
                             </div>
                             <Progress value={matchPercentage} className="h-2 rounded-full" />
+                            {matchPercentage < 50 && (
+                                <button
+                                    type="button"
+                                    onClick={() => router.push('/settings/volunteer')}
+                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                                >
+                                    <Star className="h-4 w-4" /> Profilini güncelle → daha yüksek eşleşme
+                                </button>
+                            )}
                         </div>
-                    )}
+                    ) : authUser ? (
+                        <button
+                            type="button"
+                            onClick={() => router.push('/settings/volunteer')}
+                            className="flex w-full items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-5 text-left transition-colors hover:bg-primary/10"
+                        >
+                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                <Star className="h-5 w-5" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span className="block font-bold text-foreground">Profilini tamamla, sana en uygun ilanları görelim</span>
+                                <span className="block text-sm text-muted-foreground">Yetenek, ilgi ve müsaitlik bilgini gir → bu ilana <span className="font-semibold text-primary">profil uygunluğun</span> otomatik hesaplansın.</span>
+                            </span>
+                            <span className="shrink-0 text-xl font-bold text-primary">→</span>
+                        </button>
+                    ) : null}
 
                     {/* Açıklama — büyük, okunur özet */}
                     <section className="space-y-4">
@@ -671,7 +696,7 @@ export default function VolunteeringDetailPage() {
                     {isPhysical && weather && weather.length > 0 && (
                         <section className="space-y-4">
                             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Hava durumu</h2>
-                            <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-1 pl-[max(0.25rem,env(safe-area-inset-left))] pr-[max(0.25rem,env(safe-area-inset-right))]">
+                            <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-1 pl-[max(0.25rem,var(--sal))] pr-[max(0.25rem,var(--sar))]">
                                 {weather.map((d) => (
                                     <div key={d.date} className="flex flex-col items-center gap-1.5 px-4 py-4 rounded-2xl border border-border bg-card min-w-[96px] shrink-0 text-center">
                                         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{safeFormatDateTime(d.date).split(',')[0]}</span>
@@ -841,6 +866,21 @@ export default function VolunteeringDetailPage() {
                             >
                                 <Star className="h-5 w-5 shrink-0" />
                                 <span className="text-[11px] text-center leading-tight break-words">Değerlendir</span>
+                            </Button>
+                        )}
+                        {/* Gönüllülük tamamlanıp onaylanınca: sertifika kazanıldı → Sertifikam
+                            (profil sertifika sekmesini açar). */}
+                        {approvedCompletion && (
+                            <Button
+                                size="lg"
+                                variant="secondary"
+                                onClick={() => router.push('/profile?tab=badges-certificates')}
+                                className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0"
+                                aria-label="Sertifikam"
+                                title="Sertifikam"
+                            >
+                                <Award className="h-5 w-5 shrink-0" />
+                                <span className="text-[11px] text-center leading-tight break-words">Sertifikam</span>
                             </Button>
                         )}
                         {approvedCompletion && (
