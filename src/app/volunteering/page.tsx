@@ -4,7 +4,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, MapPin, ChevronDown, ArrowDownUp, Map as MapIcon, X, Clock, Award, Bus, Star, Globe } from 'lucide-react';
+import { Filter, Search, MapPin, ChevronDown, ArrowDownUp, Map as MapIcon, X, Clock, Award, Bus, Star, Globe, Trophy, Sparkles } from 'lucide-react';
 import { VolunteeringMapDialog } from '@/components/volunteering/volunteering-map-dialog';
 import { useTranslation } from '@/components/providers/language-provider';
 import { ngos } from '@/lib/data';
@@ -279,12 +279,13 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
                     </div>
 
                     {/* Etki önizleme — kullanıcı ne kazanır */}
-                    {(opp.hours?.total > 0 || opp.providesCertificate || providesBadge || opp.amenities?.transport) && (
+                    {(opp.hours?.total > 0 || opp.providesCertificate || providesBadge || opp.amenities?.transport || opp.microTask) && (
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-foreground/70">
                             {opp.hours?.total > 0 && <span className="inline-flex items-center gap-1"><Clock size={13} className="text-primary" /> {opp.hours.total} saat</span>}
                             {opp.providesCertificate && <span className="inline-flex items-center gap-1"><Award size={13} className="text-primary" /> Sertifikalı</span>}
                             {providesBadge && <span className="inline-flex items-center gap-1"><Star size={13} className="text-primary" /> Rozet</span>}
                             {opp.amenities?.transport && <span className="inline-flex items-center gap-1"><Bus size={13} className="text-primary" /> Ulaşım desteği</span>}
+                            {opp.microTask && <span className="inline-flex items-center gap-1 font-bold text-primary">⚡ Mikro · 5 dk</span>}
                         </div>
                     )}
 
@@ -578,6 +579,20 @@ export default function VolunteeringPage() {
             <span className="text-sm font-bold">{disaster.message || 'Acil gönüllülük çağrısı — desteğine şimdi ihtiyaç var.'}</span>
           </div>
         )}
+        {/* Onboarding CTA — profil boşsa 1 dk'da tamamlatıp eşleşmeyi aç */}
+        {authUser && !hasVolunteerProfile && (
+          <Link
+            href="/onboarding/volunteer"
+            className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 transition-colors hover:bg-primary/10"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold text-foreground">Profilini 1 dakikada tamamla</span>
+              <span className="block text-xs text-muted-foreground">Sana en uygun gönüllülükleri eşleştirelim.</span>
+            </span>
+            <span className="shrink-0 text-lg font-bold text-primary">→</span>
+          </Link>
+        )}
         <div className="space-y-3 sticky top-[calc(3rem+var(--sat))] bg-background/95 backdrop-blur-xl z-10 py-2">
           <h1 className="text-2xl font-bold font-headline">{t('volunteeringPage.title')}</h1>
           <div className="flex gap-2">
@@ -599,6 +614,9 @@ export default function VolunteeringPage() {
                     {activeFilterCount}
                   </span>
                 )}
+              </Button>
+              <Button asChild variant="outline" size="icon" className="h-11 w-11 shrink-0" title="Lider Tablosu">
+                <Link href="/volunteering/leaderboard" aria-label="Lider Tablosu"><Trophy size={20} /></Link>
               </Button>
               <DropdownMenu>
                   <DropdownMenuTrigger asChild>

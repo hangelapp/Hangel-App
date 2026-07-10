@@ -235,6 +235,8 @@ export type Volunteering = {
     participationCondition?: string; // Katılım koşulu (varsa)
     meetUrl?: string; // Online gönüllülük için Google Meet linki (onaylı gönüllü "Katıl" ile açar)
     urgent?: boolean; // ACİL gönüllülük (afet/acil) — kart/detayda kırmızı şerit + öne çıkar
+    microTask?: boolean; // Mikro-gönüllülük (5 dk uzaktan: form/anket/araştırma) — kart/filtre rozeti
+    requiredDocuments?: string[]; // Yöneticinin istediği belgeler (GBT/adli sicil, sertifika, mezuniyet, TC) — ilanda gösterilir
     organizerLogoUrl?: string; // Organize eden STK logosu (Live Activity + yaka kartı)
     commitment: string;
     volunteerCount: {

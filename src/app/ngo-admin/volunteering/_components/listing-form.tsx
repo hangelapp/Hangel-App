@@ -49,7 +49,12 @@ export type ListingFormValues = {
   hasPreTraining: boolean;
   meetUrl: string;
   urgent: boolean;
+  microTask: boolean;
+  requiredDocuments: string[];
 };
+
+// Yöneticinin talep edebileceği belgeler (güvenlik doğrulaması — çocuk/yaşlıyla çalışma vb.)
+export const REQUIRED_DOC_OPTIONS = ['Adli Sicil (GBT)', 'Sertifika', 'Mezuniyet Belgesi', 'TC Kimlik', 'Sağlık Raporu'] as const;
 
 const EMPTY: ListingFormValues = {
   title: '',
@@ -78,6 +83,8 @@ const EMPTY: ListingFormValues = {
   hasPreTraining: false,
   meetUrl: '',
   urgent: false,
+  microTask: false,
+  requiredDocuments: [],
 };
 
 // Kanonik seçenekler — rozet motoru socialArea'yı normalize eder (resolveBadgeArea).
@@ -355,6 +362,29 @@ export function ListingForm({ initialValues, onSubmit, onCancel, submitting }: P
           <span className="font-semibold text-red-600 dark:text-red-400">🚨 ACİL gönüllülük</span>
           <span className="text-xs text-muted-foreground">(afet/acil — listede öne çıkar, kırmızı şerit)</span>
         </label>
+
+        {/* Mikro-gönüllülük (5 dk uzaktan: form/anket/araştırma) */}
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <Checkbox checked={values.microTask} onCheckedChange={(c) => update('microTask', c === true)} />
+          <span className="font-semibold text-primary">⚡ Mikro-gönüllülük</span>
+          <span className="text-xs text-muted-foreground">(5 dk uzaktan: form/anket/araştırma)</span>
+        </label>
+
+        {/* İstenen belgeler — güvenlik doğrulaması (çocuk/yaşlıyla çalışma vb.) */}
+        <div className="space-y-2">
+          <Label>İstenen belgeler (opsiyonel)</Label>
+          <div className="flex flex-wrap gap-4">
+            {REQUIRED_DOC_OPTIONS.map((docName) => (
+              <label key={docName} className="flex items-center gap-2 text-sm cursor-pointer">
+                <Checkbox
+                  checked={values.requiredDocuments.includes(docName)}
+                  onCheckedChange={(c) => update('requiredDocuments', c === true ? [...values.requiredDocuments, docName] : values.requiredDocuments.filter((d) => d !== docName))}
+                /> {docName}
+              </label>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">Gönüllüden istenecek belgeler; ilan detayında gönüllülere gösterilir.</p>
+        </div>
 
         <div className="space-y-2">
           <Label htmlFor="listing-req">Gereksinimler / Belgeler</Label>

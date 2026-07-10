@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Users,
   Sparkles,
+  TrendingUp,
   BarChart3,
   Banknote,
   Newspaper,
@@ -120,6 +121,7 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayemiz', icon: Sparkles },
       { href: '/ngo-admin/certificates', label: 'Sertifikalarımız', icon: Award },
       { href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck },
+      { href: '/ngo-admin/sroi', label: 'SROI Etki Panosu', icon: TrendingUp },
     ],
   },
   {

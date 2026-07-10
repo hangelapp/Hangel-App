@@ -206,6 +206,8 @@ function ListingsTab({
         hasPreTraining: values.hasPreTraining,
         meetUrl: values.meetUrl?.trim() || '',
         urgent: values.urgent,
+        microTask: values.microTask,
+        requiredDocuments: values.requiredDocuments,
       };
 
       if (editing) {
@@ -327,6 +329,8 @@ function ListingsTab({
         hasPreTraining: editing.hasPreTraining ?? false,
         meetUrl: editing.meetUrl ?? '',
         urgent: editing.urgent ?? false,
+        microTask: editing.microTask ?? false,
+        requiredDocuments: editing.requiredDocuments ?? [],
       }
     : undefined;
 

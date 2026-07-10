@@ -699,6 +699,28 @@ export default function VolunteeringDetailPage() {
                         </section>
                     )}
 
+                    {/* Mikro-gönüllülük rozeti (5 dk uzaktan) */}
+                    {opportunity.microTask && (
+                        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
+                            ⚡ Mikro-gönüllülük · 5 dk uzaktan
+                        </span>
+                    )}
+
+                    {/* İstenen belgeler (güvenlik doğrulaması) */}
+                    {Array.isArray(opportunity.requiredDocuments) && opportunity.requiredDocuments.length > 0 && (
+                        <section className="space-y-2">
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">İstenen belgeler</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {opportunity.requiredDocuments.map((d) => (
+                                    <span key={d} className="inline-flex items-center gap-1.5 rounded-lg border bg-muted/40 px-2.5 py-1 text-xs font-medium">
+                                        <IdCard className="h-3.5 w-3.5 text-muted-foreground" /> {d}
+                                    </span>
+                                ))}
+                            </div>
+                            <p className="text-xs text-muted-foreground">Başvurun onaylandığında bu belgeler istenebilir.</p>
+                        </section>
+                    )}
+
                     {/* Açıklama — büyük, okunur özet */}
                     <section className="space-y-4">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Genel bakış</h2>
