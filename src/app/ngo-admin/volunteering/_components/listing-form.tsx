@@ -51,10 +51,13 @@ export type ListingFormValues = {
   urgent: boolean;
   microTask: boolean;
   requiredDocuments: string[];
+  accessibilityTags: string[];
 };
 
 // Yöneticinin talep edebileceği belgeler (güvenlik doğrulaması — çocuk/yaşlıyla çalışma vb.)
 export const REQUIRED_DOC_OPTIONS = ['Adli Sicil (GBT)', 'Sertifika', 'Mezuniyet Belgesi', 'TC Kimlik', 'Sağlık Raporu'] as const;
+// Erişilebilirlik / kapsayıcılık etiketleri
+export const ACCESSIBILITY_OPTIONS = ['Engelli-dostu', 'İşaret dili', 'Uzaktan uygun', 'Yaşlı-dostu', 'Aile-dostu', 'İlk kez gönüllü'] as const;
 
 const EMPTY: ListingFormValues = {
   title: '',
@@ -85,6 +88,7 @@ const EMPTY: ListingFormValues = {
   urgent: false,
   microTask: false,
   requiredDocuments: [],
+  accessibilityTags: [],
 };
 
 // Kanonik seçenekler — rozet motoru socialArea'yı normalize eder (resolveBadgeArea).
@@ -384,6 +388,21 @@ export function ListingForm({ initialValues, onSubmit, onCancel, submitting }: P
             ))}
           </div>
           <p className="text-xs text-muted-foreground">Gönüllüden istenecek belgeler; ilan detayında gönüllülere gösterilir.</p>
+        </div>
+
+        {/* Erişilebilirlik / kapsayıcılık etiketleri — filtre + ilanda gösterilir */}
+        <div className="space-y-2">
+          <Label>Erişilebilirlik & kapsayıcılık (opsiyonel)</Label>
+          <div className="flex flex-wrap gap-4">
+            {ACCESSIBILITY_OPTIONS.map((tag) => (
+              <label key={tag} className="flex items-center gap-2 text-sm cursor-pointer">
+                <Checkbox
+                  checked={values.accessibilityTags.includes(tag)}
+                  onCheckedChange={(c) => update('accessibilityTags', c === true ? [...values.accessibilityTags, tag] : values.accessibilityTags.filter((x) => x !== tag))}
+                /> {tag}
+              </label>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-2">

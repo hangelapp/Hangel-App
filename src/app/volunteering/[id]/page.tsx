@@ -721,6 +721,17 @@ export default function VolunteeringDetailPage() {
                         </section>
                     )}
 
+                    {/* Erişilebilirlik / kapsayıcılık etiketleri */}
+                    {Array.isArray(opportunity.accessibilityTags) && opportunity.accessibilityTags.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                            {opportunity.accessibilityTags.map((tag) => (
+                                <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                                    ♿ {tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Açıklama — büyük, okunur özet */}
                     <section className="space-y-4">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Genel bakış</h2>

@@ -237,6 +237,7 @@ export type Volunteering = {
     urgent?: boolean; // ACİL gönüllülük (afet/acil) — kart/detayda kırmızı şerit + öne çıkar
     microTask?: boolean; // Mikro-gönüllülük (5 dk uzaktan: form/anket/araştırma) — kart/filtre rozeti
     requiredDocuments?: string[]; // Yöneticinin istediği belgeler (GBT/adli sicil, sertifika, mezuniyet, TC) — ilanda gösterilir
+    accessibilityTags?: string[]; // Erişilebilirlik/kapsayıcılık (Engelli-dostu, İşaret dili, Uzaktan uygun, Yaşlı-dostu, Aile-dostu) — filtre + ilanda gösterilir
     organizerLogoUrl?: string; // Organize eden STK logosu (Live Activity + yaka kartı)
     commitment: string;
     volunteerCount: {

@@ -208,6 +208,7 @@ function ListingsTab({
         urgent: values.urgent,
         microTask: values.microTask,
         requiredDocuments: values.requiredDocuments,
+        accessibilityTags: values.accessibilityTags,
       };
 
       if (editing) {
@@ -331,6 +332,7 @@ function ListingsTab({
         urgent: editing.urgent ?? false,
         microTask: editing.microTask ?? false,
         requiredDocuments: editing.requiredDocuments ?? [],
+        accessibilityTags: editing.accessibilityTags ?? [],
       }
     : undefined;
 

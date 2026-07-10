@@ -675,6 +675,23 @@ export default function VolunteeringPage() {
           </div>
         </div>
 
+        {/* Gönüllülük kısayolları — yeni bölümlere erişim (Lider Tablosu header'da Trophy butonu) */}
+        <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {[
+            { href: '/volunteering/challenges', label: '🎯 Meydan Okumalar' },
+            { href: '/volunteering/skills', label: '⭐ Becerilerim' },
+            { href: '/volunteering/reference', label: '📄 Referanslarım' },
+          ].map((s) => (
+            <Link
+              key={s.href}
+              href={s.href}
+              className="shrink-0 rounded-full border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+            >
+              {s.label}
+            </Link>
+          ))}
+        </div>
+
         {/* Liste üstü sekmeler — kullanıcı başvurduysa "Başvurularım", onay varsa
             "Onaylananlar" çıkar. Kendi başvuru görünümü (arama/filtre bağımsız). */}
         {appliedOpps.length > 0 && (
