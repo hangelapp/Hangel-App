@@ -170,8 +170,8 @@ export default function VolunteerOnboardingPage() {
     <div
       className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4"
       style={{
-        paddingTop: 'max(1rem, env(safe-area-inset-top))',
-        paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+        paddingTop: 'max(1rem, var(--sat))',
+        paddingBottom: 'max(1rem, var(--sab))',
       }}
     >
       {/* Üst çubuk: geri + ilerleme + atla */}
