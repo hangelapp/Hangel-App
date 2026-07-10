@@ -43,6 +43,7 @@ export async function buildDeckPptxBuffer(slides: Slide[]): Promise<Buffer> {
       if (s.eyebrow) slide.addText(s.eyebrow, { x: M, y: 1.5, w: W - 2 * M, h: 0.5, fontSize: 18, bold: true, color: C.WHITE, charSpacing: 3 });
       slide.addText(s.title, { x: M, y: 2.0, w: W - 2 * M, h: 3.2, fontSize: 52, bold: true, color: C.WHITE, lineSpacingMultiple: 0.95, valign: 'top' });
       if (s.sub) slide.addText(s.sub, { x: M, y: 5.4, w: W - 2 * M, h: 0.8, fontSize: 24, color: C.WHITE });
+      if (s.foot) slide.addText(s.foot, { x: M, y: H - 0.95, w: W - 2 * M, h: 0.7, fontSize: 12, color: C.WHITE, transparency: 25 });
       wm(slide, C.WHITE);
     } else if (s.kind === 'section') {
       slide.background = { color: C.CORAL };

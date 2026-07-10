@@ -208,6 +208,9 @@ export default function ConferenceDeckPage() {
               <p className="mb-6 text-sm font-bold uppercase tracking-[0.2em] text-white/80">{slide.eyebrow}</p>
               <h1 className="whitespace-pre-line text-5xl font-black leading-[0.98] tracking-tighter sm:text-7xl lg:text-8xl">{slide.title}</h1>
               <p className="mt-6 text-xl font-bold tracking-tight text-white/90 sm:text-3xl">{slide.sub}</p>
+              {slide.foot && (
+                <p className="mt-10 max-w-2xl text-xs font-medium leading-snug text-white/70 sm:text-sm">{slide.foot}</p>
+              )}
             </>
           )}
 

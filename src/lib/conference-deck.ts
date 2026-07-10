@@ -8,7 +8,7 @@
  */
 
 export type Slide =
-  | { kind: 'title'; eyebrow: string; title: string; sub: string }
+  | { kind: 'title'; eyebrow: string; title: string; sub: string; foot?: string }
   | { kind: 'section'; num: string; name: string }
   | { kind: 'body'; eyebrow?: string; title: string; lines: string[] }
   // row: true → rakamlar tek yatay satırda (mobilde de yan yana).
@@ -50,7 +50,7 @@ export const SLIDE_KIND_LABEL: Record<SlideKind, string> = {
 };
 
 export const DEFAULT_SLIDES: Slide[] = [
-  { kind: 'title', eyebrow: 'Sivil Toplum Kuruluşlarında', title: 'Gelir Modeli\nOluşturma ve\nSürdürülebilirlik', sub: 'Sosyal Etki İçin Yeni Nesil Modeller' },
+  { kind: 'title', eyebrow: 'Sivil Toplum Kuruluşlarında', title: 'Gelir Modeli\nOluşturma ve\nSürdürülebilirlik', sub: 'Sosyal Etki İçin Yeni Nesil Modeller', foot: 'Bu proje, İç İşleri Bakanlığı Sivil Toplum Kuruluşları Genel Müdürlüğü tarafından desteklenmektedir.' },
 
   { kind: 'section', num: '01', name: 'Social Business Global' },
   { kind: 'body', eyebrow: 'Social Business Global', title: 'Sosyal etki odaklı\nbir yapı', lines: ['Sosyal sorunlara girişimcilik bakışıyla, sosyal inovasyonla; yenilikçi ve kalıcı çözümler üretmek amacıyla çalışmalar yürütüyoruz.'] },
