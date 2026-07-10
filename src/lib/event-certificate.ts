@@ -17,6 +17,80 @@ export const HANGEL_ORANGE: [number, number, number] = [0xf3, 0x47, 0x23];
 
 const HANGEL_LOGO_PATH = '/icon-512.png';
 
+// ── Gelir Modeli konferansları özel sertifikası ──────────────────────────────
+// Bu konferanslar Social Business Global (Uluslararası Sosyal Fayda Derneği)
+// tarafından, T.C. İçişleri Bakanlığı Sivil Toplumla İlişkiler GM desteğiyle
+// düzenleniyor → sertifika sol-üstte 3 kurum logosu + iki teşekkür paragrafı
+// taşır (hangel logosu / DÜZENLEYEN bloğu YOK). Etkinlik adı "gelir modeli"
+// içerince otomatik bu düzene geçilir (çağıranlar değişmez).
+const GM_LOGO_SBG = '/partners/social-business-global.png';
+const GM_LOGO_MUHUR = '/partners/icisleri-muhur.png';
+const GM_LOGO_STIGM = '/partners/icisleri-stigm.png';
+const GM_PROJECT = 'Sivil Toplum Kuruluşlarında Gelir Modeli Oluşturma ve Sürdürülebilirlik Eğitim Konferansları';
+const isGelirModeli = (name?: string): boolean => /gelir\s*modeli/i.test(name || '');
+
+/** Türkçe datif (yönelme) eki: "Ali HAYIRDOĞAN" → "Ali HAYIRDOĞAN'a". Basit ünlü
+ *  uyumu (a/e) + ünlüyle bitişte 'y' kaynaştırma. Özel ad → kesme işaretiyle. */
+function turkishDative(name: string): string {
+  const s = (name || '').trim();
+  if (!s) return s;
+  const lower = s.toLocaleLowerCase('tr');
+  const vowels = 'aeıioöuü';
+  let last = '';
+  for (let i = lower.length - 1; i >= 0; i--) { if (vowels.includes(lower[i])) { last = lower[i]; break; } }
+  const back = 'aıou'.includes(last); // kalın ünlü → 'a', ince → 'e'
+  const suffix = back ? 'a' : 'e';
+  const endsVowel = vowels.includes(lower[lower.length - 1]);
+  return `${s}'${endsVowel ? 'y' : ''}${suffix}`;
+}
+
+/** Düz metni ~maxChars genişlikte satırlara böler (SVG <text> sarmadığı için). */
+function wrapText(text: string, maxChars: number): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let cur = '';
+  for (const w of words) {
+    if (!cur) cur = w;
+    else if ((cur + ' ' + w).length <= maxChars) cur += ' ' + w;
+    else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+/** Kalın/normal karışık metni sararak satır başına {text,bold} run dizisi üretir. */
+function wrapRich(segments: { text: string; bold?: boolean }[], maxChars: number): { text: string; bold: boolean }[][] {
+  type Tok = { text: string; bold: boolean; space: boolean };
+  const toks: Tok[] = [];
+  for (const seg of segments) {
+    for (const p of seg.text.split(/(\s+)/)) {
+      if (p === '') continue;
+      toks.push({ text: p, bold: !!seg.bold, space: /^\s+$/.test(p) });
+    }
+  }
+  const lines: Tok[][] = [];
+  let cur: Tok[] = []; let len = 0;
+  for (const t of toks) {
+    if (t.space) { if (cur.length) { cur.push(t); len += t.text.length; } continue; }
+    if (len + t.text.length > maxChars && cur.length) {
+      while (cur.length && cur[cur.length - 1].space) len -= (cur.pop() as Tok).text.length;
+      lines.push(cur); cur = []; len = 0;
+    }
+    cur.push(t); len += t.text.length;
+  }
+  if (cur.length) { while (cur.length && cur[cur.length - 1].space) cur.pop(); lines.push(cur); }
+  // aynı ağırlıktaki ardışık token'ları birleştir
+  return lines.map((line) => {
+    const runs: { text: string; bold: boolean }[] = [];
+    for (const t of line) {
+      const last = runs[runs.length - 1];
+      if (last && last.bold === t.bold) last.text += t.text;
+      else runs.push({ text: t.text, bold: t.bold });
+    }
+    return runs;
+  });
+}
+
 /**
  * Verilen URL'i fetch edip data URI (base64) olarak döner.
  * jsPDF.addImage data URI bekliyor.
@@ -165,10 +239,14 @@ export async function buildEventCertificateJpeg(input: EventCertificateInput): P
   const code = input.code || buildCertCode({ country: input.country, kind: 'event', idSeed: certificateId });
   const verify = verifyUrl || certVerifyUrl(code);
   const verifyShort = verify.replace(/^https?:\/\//, '');
-  const [logoUri, qrUri, orgLogoUri] = await Promise.all([
-    typeof window !== 'undefined' ? urlToDataUri(HANGEL_LOGO_PATH) : Promise.resolve(null),
+  const gm = isGelirModeli(eventName);
+  const [logoUri, qrUri, orgLogoUri, sbgUri, muhurUri, stigmUri] = await Promise.all([
+    gm ? Promise.resolve(null) : (typeof window !== 'undefined' ? urlToDataUri(HANGEL_LOGO_PATH) : Promise.resolve(null)),
     generateQrDataUri(verify, 600),
     input.logoUrl ? urlToDataUri(input.logoUrl) : Promise.resolve(null),
+    gm ? urlToDataUri(GM_LOGO_SBG) : Promise.resolve(null),
+    gm ? urlToDataUri(GM_LOGO_MUHUR) : Promise.resolve(null),
+    gm ? urlToDataUri(GM_LOGO_STIGM) : Promise.resolve(null),
   ]);
   const roleLabel = roleLabelTr(role);
   const phrase = `${eventName} etkinliğinde ${roleCertificatePhraseTr(role)}.`;
@@ -181,37 +259,77 @@ export async function buildEventCertificateJpeg(input: EventCertificateInput): P
   // Uzun metinleri tek satıra sığacak şekilde kırp (SVG <text> sarmaz).
   const fit = (s: string, max: number) => (s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s);
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${PX_W}" height="${PX_H}" viewBox="0 0 ${PX_W} ${PX_H}">
-  <style>text{font-family:${FONT};}</style>
-  <rect width="${PX_W}" height="${PX_H}" fill="#ffffff"/>
+  // ── Ortak parçalar (her iki tasarımda da) ──
+  const frame = `<rect width="${PX_W}" height="${PX_H}" fill="#ffffff"/>
   <rect x="18" y="18" width="${PX_W - 36}" height="${PX_H - 36}" rx="20" fill="none" stroke="${CORAL}" stroke-width="1.5"/>
-  <rect x="25" y="25" width="${PX_W - 50}" height="${PX_H - 50}" rx="15" fill="none" stroke="${CORAL}" stroke-opacity="0.2" stroke-width="1"/>
+  <rect x="25" y="25" width="${PX_W - 50}" height="${PX_H - 50}" rx="15" fill="none" stroke="${CORAL}" stroke-opacity="0.2" stroke-width="1"/>`;
 
-  ${logoUri ? `<image x="60" y="46" width="34" height="34" href="${logoUri}" xlink:href="${logoUri}"/>` : ''}
+  const rolePill = `<rect x="${PX_W - 60 - 150}" y="46" width="150" height="33" rx="16" fill="${CORAL}"/>
+  <text x="${PX_W - 60 - 75}" y="68" font-size="12" font-weight="700" letter-spacing="0.7" fill="#ffffff" text-anchor="middle">${escXml(fit(roleLabel, 22))}</text>`;
+
+  // Etkinlik saati (eventDate ISO'da saat taşıyorsa) — mockup'ta tarih altında gösterilir.
+  const timeStr = /T\d{2}:\d{2}/.test(eventDate)
+    ? (() => { try { return new Date(eventDate).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; } })()
+    : '';
+  const footer = `<text x="60" y="${PX_H - (timeStr ? 92 : 76)}" font-size="11" font-weight="700" letter-spacing="2" fill="#aeaeb2">TARİH</text>
+  <text x="60" y="${PX_H - (timeStr ? 72 : 56)}" font-size="15" font-weight="600" fill="#515154">${escXml(formatTrDate(eventDate))}</text>
+  ${timeStr ? `<text x="60" y="${PX_H - 52}" font-size="15" font-weight="600" fill="#515154">${escXml(timeStr)}</text>` : ''}
+  ${qrUri ? `<image x="${PX_W - 54 - 40}" y="${PX_H - 54 - 44}" width="54" height="54" href="${qrUri}" xlink:href="${qrUri}"/>
+  <text x="${PX_W - 40 - 27}" y="${PX_H - 30}" font-size="8" fill="#aeaeb2" text-anchor="middle">${escXml(fit(verifyShort, 32))}</text>` : ''}
+  <text x="${PX_W / 2}" y="${PX_H - 28}" font-size="12" font-weight="700" fill="${CORAL}" text-anchor="middle">hangel.org</text>
+  <text x="${PX_W / 2}" y="${PX_H - 13}" font-size="9" fill="#c7c7cc" text-anchor="middle">Sertifika Kodu: ${escXml(code)}</text>`;
+
+  // ── Gelir Modeli tasarımı: 3 logo + iki teşekkür paragrafı (DÜZENLEYEN yok) ──
+  const renderPlain = (lines: string[], y0: number, lh: number, attrs: string) =>
+    lines.map((ln, i) => `<text x="${PX_W / 2}" y="${y0 + i * lh}" ${attrs} text-anchor="middle">${escXml(ln)}</text>`).join('\n  ');
+  const renderRich = (lines: { text: string; bold: boolean }[][], y0: number, lh: number, attrs: string) =>
+    lines.map((runs, i) => `<text x="${PX_W / 2}" y="${y0 + i * lh}" ${attrs} text-anchor="middle">${runs.map((r) => `<tspan font-weight="${r.bold ? 700 : 400}">${escXml(r.text)}</tspan>`).join('')}</text>`).join('\n  ');
+
+  const nameDative = turkishDative(userName || 'Katılımcı');
+  const gmPhrase = `"${GM_PROJECT}"na katılımı nedeniyle kendisine takdim edilmiştir.`;
+  const gmSeg1 = [
+    { text: 'Uluslararası Sosyal Fayda Derneği tarafından yürütülen ve İçişleri Bakanlığı Sivil Toplumla İlişkiler Genel Müdürlüğü tarafından desteklenen ' },
+    { text: `"${GM_PROJECT}"`, bold: true },
+    { text: ' projesine katılımınıza teşekkür eder.' },
+  ];
+  const gmPara2 = 'Sivil toplum kuruluşlarının kurumsal kapasitesinin güçlendirilmesine ve sürdürülebilir gelir modellerinin geliştirilmesine sunduğunuz katkı ve ilginiz için teşekkür eder, çalışmalarınızda başarılar dileriz.';
+  const gmPhraseLines = wrapText(gmPhrase, 82);
+  const gmP1Lines = wrapRich(gmSeg1, 98);
+  const gmP2Lines = wrapText(gmPara2, 100);
+  const gmPhraseY = 266;
+  const gmP1Y = gmPhraseY + gmPhraseLines.length * 18 + 16;
+  const gmP2Y = gmP1Y + gmP1Lines.length * 17 + 12;
+
+  const gmBody = `${sbgUri ? `<image x="60" y="48" width="90" height="42" href="${sbgUri}" xlink:href="${sbgUri}" preserveAspectRatio="xMidYMid meet"/>` : ''}
+  ${muhurUri ? `<image x="158" y="46" width="46" height="46" href="${muhurUri}" xlink:href="${muhurUri}" preserveAspectRatio="xMidYMid meet"/>` : ''}
+  ${stigmUri ? `<image x="214" y="46" width="46" height="46" href="${stigmUri}" xlink:href="${stigmUri}" preserveAspectRatio="xMidYMid meet"/>` : ''}
+  ${rolePill}
+  <text x="${PX_W / 2}" y="146" font-size="15" font-weight="800" letter-spacing="4.5" fill="${CORAL}" text-anchor="middle">${escXml(certTitleTr(role))}</text>
+  <rect x="${PX_W / 2 - 26}" y="160" width="52" height="3" rx="1.5" fill="${CORAL}"/>
+  <text x="${PX_W / 2}" y="190" font-size="13" font-weight="600" fill="#86868b" text-anchor="middle">Bu belge</text>
+  <text x="${PX_W / 2}" y="232" font-size="40" font-weight="800" letter-spacing="-1" fill="${INK}" text-anchor="middle">${escXml(fit(nameDative, 34))}</text>
+  ${renderPlain(gmPhraseLines, gmPhraseY, 18, 'font-size="12.5" font-weight="600" fill="#515154"')}
+  ${renderRich(gmP1Lines, gmP1Y, 17, 'font-size="11.5" fill="#6e6e73"')}
+  ${renderPlain(gmP2Lines, gmP2Y, 17, 'font-size="11.5" fill="#6e6e73"')}`;
+
+  // ── Klasik tasarım (diğer tüm etkinlikler) ──
+  const classicBody = `${logoUri ? `<image x="60" y="46" width="34" height="34" href="${logoUri}" xlink:href="${logoUri}"/>` : ''}
   <text x="${logoUri ? 105 : 60}" y="71" font-size="25" font-weight="800" letter-spacing="-0.7" fill="${CORAL}">hangel</text>
-
-  <rect x="${PX_W - 60 - 150}" y="48" width="150" height="32" rx="16" fill="${CORAL}"/>
-  <text x="${PX_W - 60 - 75}" y="69" font-size="12" font-weight="700" letter-spacing="0.7" fill="#ffffff" text-anchor="middle">${escXml(fit(roleLabel, 22))}</text>
-
+  ${rolePill}
   <text x="${PX_W / 2}" y="186" font-size="14" font-weight="800" letter-spacing="4" fill="${CORAL}" text-anchor="middle">${escXml(certTitleTr(role))}</text>
   <rect x="${PX_W / 2 - 25}" y="200" width="50" height="3" rx="1.5" fill="${CORAL}"/>
-
   <text x="${PX_W / 2}" y="240" font-size="13" font-weight="500" fill="#86868b" text-anchor="middle">Bu belge</text>
   <text x="${PX_W / 2}" y="290" font-size="44" font-weight="800" letter-spacing="-1.1" fill="${INK}" text-anchor="middle">${escXml(fit(userName || 'Katılımcı', 34))}</text>
   <text x="${PX_W / 2}" y="326" font-size="16" font-weight="500" fill="#515154" text-anchor="middle">${escXml(fit(phrase, 78))}</text>
-
   ${orgLogoUri ? `<image x="${PX_W / 2 - 18}" y="350" width="36" height="36" href="${orgLogoUri}" xlink:href="${orgLogoUri}" preserveAspectRatio="xMidYMid meet"/>` : ''}
   <text x="${PX_W / 2}" y="410" font-size="11" font-weight="700" letter-spacing="2.4" fill="#aeaeb2" text-anchor="middle">DÜZENLEYEN</text>
-  <text x="${PX_W / 2}" y="432" font-size="17" font-weight="700" fill="${CORAL_DARK}" text-anchor="middle">${escXml(fit(organizerName || 'hangel', 50))}</text>
+  <text x="${PX_W / 2}" y="432" font-size="17" font-weight="700" fill="${CORAL_DARK}" text-anchor="middle">${escXml(fit(organizerName || 'hangel', 50))}</text>`;
 
-  <text x="60" y="${PX_H - 76}" font-size="11" font-weight="700" letter-spacing="2" fill="#aeaeb2">TARİH</text>
-  <text x="60" y="${PX_H - 56}" font-size="15" font-weight="500" fill="#515154">${escXml(formatTrDate(eventDate))}</text>
-
-  ${qrUri ? `<image x="${PX_W - 54 - 40}" y="${PX_H - 54 - 44}" width="54" height="54" href="${qrUri}" xlink:href="${qrUri}"/>
-  <text x="${PX_W - 40 - 27}" y="${PX_H - 30}" font-size="8" fill="#aeaeb2" text-anchor="middle">${escXml(fit(verifyShort, 32))}</text>` : ''}
-
-  <text x="${PX_W / 2}" y="${PX_H - 28}" font-size="12" font-weight="700" fill="${CORAL}" text-anchor="middle">hangel.org</text>
-  <text x="${PX_W / 2}" y="${PX_H - 13}" font-size="9" fill="#c7c7cc" text-anchor="middle">Sertifika Kodu: ${escXml(code)}</text>
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${PX_W}" height="${PX_H}" viewBox="0 0 ${PX_W} ${PX_H}">
+  <style>text{font-family:${FONT};}</style>
+  ${frame}
+  ${gm ? gmBody : classicBody}
+  ${footer}
 </svg>`;
 
   const jpeg = await rasterizeSvgToJpeg(svg, PX_W, PX_H, 2);
