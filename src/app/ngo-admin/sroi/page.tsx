@@ -214,7 +214,7 @@ function SroiDashboard() {
     let donationTRY = 0;
     for (const d of donations ?? []) {
       if (!PAID_STATUSES.has(typeof d.status === 'string' ? d.status : '')) continue;
-      let share = 0;
+      let share: number;
       const entry = Array.isArray(d.ngoSplit)
         ? d.ngoSplit.find((s) => s.ngoId === entityId)
         : undefined;
