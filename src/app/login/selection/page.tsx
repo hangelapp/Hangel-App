@@ -73,7 +73,28 @@ const FormRenderer = () => {
                                     // QR-etkinlik akışı: kayıttan sonra ÖNCE etkinlik detayına git
                                     // (hoş geldin/welcome yerine). Marker yoksa mevcut davranış aynı.
                                     const qr = getQrOnboard();
-                                    if (qr) { router.push(`/events/${qr.eventId}`); return; }
+                                    if (qr) {
+                                        // GARANTİLİ RSVP: `pendingRsvp` sessionStorage'da tutulduğu için auth
+                                        // redirect'inde kaybolabiliyor (kullanıcı kaydoluyor ama etkinliğe
+                                        // KAYDOLMUŞ görünmüyordu). qrOnboard.eventId localStorage'da güvenilir →
+                                        // RSVP'yi burada doğrudan POST et (idempotent; etkinlik sayfası yedek).
+                                        void (async () => {
+                                            try {
+                                                const { getAuth } = await import('firebase/auth');
+                                                const u = getAuth().currentUser;
+                                                if (u) {
+                                                    const token = await u.getIdToken();
+                                                    await fetch(`/api/events/${qr.eventId}/rsvp`, {
+                                                        method: 'POST',
+                                                        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+                                                        body: JSON.stringify({ action: 'going' }),
+                                                    });
+                                                }
+                                            } catch { /* best-effort; etkinlik sayfasındaki pendingRsvp yedeği devrede */ }
+                                        })();
+                                        router.push(`/events/${qr.eventId}`);
+                                        return;
+                                    }
                                     router.push(isNewUser ? '/welcome' : nextPath);
                                 }} />
                             </TabsContent>
