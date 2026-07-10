@@ -377,3 +377,16 @@ html.a11y-screen-reader-mode [role="button"] {
   min-height: 48px;
   min-width: 48px;
 }
+
+@layer utilities {
+  /* Scrollbar'ı gizle, kaydırma davranışı korunur. Tek kaynak — bileşenlerde
+     [scrollbar-width:none] [&::-webkit-scrollbar]:hidden arbitrary zinciri
+     yerine bunu kullan. */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

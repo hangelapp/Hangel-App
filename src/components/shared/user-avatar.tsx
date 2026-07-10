@@ -6,10 +6,12 @@ import { doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { COLLECTIONS } from '@/firebase/collections';
 import { UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function UserAvatar({ className }: { className?: string }) {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
+  const [imageBroken, setImageBroken] = useState(false);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -18,15 +20,29 @@ export function UserAvatar({ className }: { className?: string }) {
 
   const { data: userData } = useDoc<{ avatarUrl?: string }>(userDocRef);
 
+  const avatarUrl = userData?.avatarUrl || user?.photoURL || undefined;
+
+  // URL değiştiğinde "kırık görsel" durumunu sıfırla.
+  useEffect(() => { setImageBroken(false); }, [avatarUrl]);
+
   if (isUserLoading) {
     return <div className={cn("w-9 h-9 rounded-full bg-muted animate-pulse", className)} />;
   }
 
-  const avatarUrl = userData?.avatarUrl || user?.photoURL || undefined;
+  const showImage = !!avatarUrl && !imageBroken;
 
   return (
     <Avatar className={className}>
-      <AvatarImage src={avatarUrl} alt={user?.displayName || 'Kullanıcı'} className="object-cover" />
+      {showImage && (
+        <AvatarImage
+          src={avatarUrl}
+          alt={user?.displayName || 'Kullanıcı'}
+          className="object-cover"
+          onError={() => setImageBroken(true)}
+          referrerPolicy="no-referrer"
+          crossOrigin="anonymous"
+        />
+      )}
       {/* Foto yoksa iOS Kişiler tarzı kişi silüeti (baş harf değil). */}
       <AvatarFallback className="bg-muted">
         <UserRound className="h-[55%] w-[55%] text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />

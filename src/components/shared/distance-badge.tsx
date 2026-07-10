@@ -38,6 +38,9 @@ function writeCache(c: LatLon) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ...c, ts: Date.now() })); } catch { /* yoksay */ }
 }
 
+// OSRM yanıtı da kuş-uçuşu tahmini de aynı {km, driveMin} biçimine iner.
+const toDist = (s: { km: number; minutes: number }) => ({ km: s.km, driveMin: s.minutes });
+
 export function DistanceBadge({
   target,
   className,
@@ -97,7 +100,7 @@ export function DistanceBadge({
           }
         }
       } catch { /* OSRM başarısız → tahmine düş */ }
-      if (active) { const s = distanceSummary(coords, { lat: tLat, lon: tLon }); setDist({ km: s.km, driveMin: s.minutes }); }
+      if (active) setDist(toDist(distanceSummary(coords, { lat: tLat, lon: tLon })));
     })();
     return () => { active = false; };
   }, [status, coords, hasTarget, target]);
@@ -106,23 +109,23 @@ export function DistanceBadge({
 
   if (status === 'ready' && coords) {
     // OSRM sürüş hazırsa onu; değilse kuş-uçuşu tahmin. Yürüyüş ~5 km/sa'ten türetilir.
-    const d = dist ?? (() => { const s = distanceSummary(coords, { lat: target!.lat as number, lon: target!.lon as number }); return { km: s.km, driveMin: s.minutes }; })();
+    const d = dist ?? toDist(distanceSummary(coords, { lat: target!.lat as number, lon: target!.lon as number }));
     const walkMin = Math.max(1, Math.round((d.km / 5) * 60));
     // İkonlar TEK RENK (nötr); mesafe/süre vurgulu. İki satır: araba + yürüyen.
+    const rows = [
+      { key: 'drive', icon: Car, minutes: d.driveMin },
+      { key: 'walk', icon: Footprints, minutes: walkMin },
+    ];
     return (
       <div className={cn('flex flex-col gap-1', className)}>
-        <span className="inline-flex items-center gap-1.5 text-sm text-foreground/80">
-          <Car className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <span className="font-semibold tabular-nums">{formatKm(d.km)}</span>
-          <span className="text-muted-foreground">·</span>
-          <span className="font-semibold tabular-nums">{formatMinutes(d.driveMin, false)}</span>
-        </span>
-        <span className="inline-flex items-center gap-1.5 text-sm text-foreground/80">
-          <Footprints className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <span className="font-semibold tabular-nums">{formatKm(d.km)}</span>
-          <span className="text-muted-foreground">·</span>
-          <span className="font-semibold tabular-nums">{formatMinutes(walkMin, false)}</span>
-        </span>
+        {rows.map(({ key, icon: Icon, minutes }) => (
+          <span key={key} className="inline-flex items-center gap-1.5 text-sm text-foreground/80">
+            <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="font-semibold tabular-nums">{formatKm(d.km)}</span>
+            <span className="text-muted-foreground">·</span>
+            <span className="font-semibold tabular-nums">{formatMinutes(minutes, false)}</span>
+          </span>
+        ))}
       </div>
     );
   }

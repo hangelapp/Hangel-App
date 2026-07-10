@@ -166,6 +166,17 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
     </AccordionItem>
 );
 
+// Profil sekmeleri — tek kaynak: hem TabsTrigger render'ı hem deep-link
+// (?tab=...) doğrulaması buradan türetilir.
+const PROFILE_TAB_ITEMS = [
+    { value: 'impact', labelKey: 'dashboard.profile.tabImpact' },
+    { value: 'about', labelKey: 'dashboard.profile.tabAbout' },
+    { value: 'volunteering', labelKey: 'dashboard.profile.tabVolunteering' },
+    { value: 'connections', labelKey: 'profilePage.tabConnections' },
+    { value: 'badges-certificates', labelKey: 'dashboard.profile.tabBadges' },
+    { value: 'story', labelKey: 'dashboard.profile.tabStory' },
+] as const;
+
 export default function ProfilePage() {
     const { t } = useTranslation();
     const [_profileUrl, setProfileUrl] = useState('');
@@ -173,9 +184,8 @@ export default function ProfilePage() {
     const searchParams = useSearchParams();
     // Deep-link sekme desteği: /profile?tab=badges-certificates gibi (örn. passport
     // sertifika linki). Geçerli sekme değilse "impact"e düş.
-    const PROFILE_TABS = ['impact', 'about', 'volunteering', 'connections', 'badges-certificates', 'story'] as const;
     const requestedTab = searchParams.get('tab');
-    const initialTab = requestedTab && (PROFILE_TABS as readonly string[]).includes(requestedTab) ? requestedTab : 'impact';
+    const initialTab = requestedTab && PROFILE_TAB_ITEMS.some(item => item.value === requestedTab) ? requestedTab : 'impact';
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
     const [filters, setFilters] = useState<string[]>([]);
     const { toast } = useToast();
@@ -612,15 +622,18 @@ export default function ProfilePage() {
                         - Aktif sekme mount'ta ve seçimde görünüme kaydırılır. */}
                     <div
                         ref={tabsScrollRef}
-                        className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,transparent,black_1rem,black_calc(100%_-_1rem),transparent)]"
+                        className="-mx-4 overflow-x-auto px-4 no-scrollbar [mask-image:linear-gradient(to_right,transparent,black_1rem,black_calc(100%_-_1rem),transparent)]"
                     >
                         <TabsList className="flex h-auto w-max mx-auto gap-0.5 rounded-full bg-muted p-1">
-                            <TabsTrigger value="impact" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('dashboard.profile.tabImpact')}</TabsTrigger>
-                            <TabsTrigger value="about" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('dashboard.profile.tabAbout')}</TabsTrigger>
-                            <TabsTrigger value="volunteering" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('dashboard.profile.tabVolunteering')}</TabsTrigger>
-                            <TabsTrigger value="connections" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('profilePage.tabConnections')}</TabsTrigger>
-                            <TabsTrigger value="badges-certificates" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('dashboard.profile.tabBadges')}</TabsTrigger>
-                            <TabsTrigger value="story" className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm">{t('dashboard.profile.tabStory')}</TabsTrigger>
+                            {PROFILE_TAB_ITEMS.map(({ value, labelKey }) => (
+                                <TabsTrigger
+                                    key={value}
+                                    value={value}
+                                    className="min-h-[44px] whitespace-nowrap rounded-full px-3.5 text-xs font-semibold data-[state=active]:shadow-sm"
+                                >
+                                    {t(labelKey)}
+                                </TabsTrigger>
+                            ))}
                         </TabsList>
                     </div>
                     

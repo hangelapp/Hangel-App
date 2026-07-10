@@ -27,6 +27,19 @@ if [ -z "$CHANGED" ]; then
 fi
 
 COUNT=$(printf '%s\n' "$CHANGED" | wc -l | tr -d ' ')
+
+# Ham env(safe-area-inset-*) YASAK — Android 15/16 edge-to-edge'de bazı
+# WebView'lerde 0 döner (status bar içerikle kapanır). Tek kaynak:
+# globals.css'teki --sat/--sar/--sab/--sal (max(env, Capacitor SystemBars)).
+RAW_ENV=$(printf '%s\n' "$CHANGED" | xargs grep -ln 'env(safe-area-inset' 2>/dev/null || true)
+if [ -n "$RAW_ENV" ]; then
+  echo "❌ PUSH DURDURULDU — ham env(safe-area-inset-*) kullanımı bulundu:"
+  printf '%s\n' "$RAW_ENV" | sed 's/^/   /'
+  echo "   Bunun yerine var(--sat) / var(--sar) / var(--sab) / var(--sal) kullan"
+  echo "   (globals.css'te tanımlı; Android 15+ WebView'lerde env() tek başına 0 dönebiliyor)."
+  exit 1
+fi
+
 echo "pre-push: eslint ERROR kontrolü ($COUNT değişen src dosyası)…"
 
 # --quiet = yalnızca ERROR'lar (warning'ler build'i kırmaz, gösterilmez).

@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-07-10";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "1cfcf426",
+    "date": "2026-07-10",
+    "subject": "referans: /passport davet et kartı (davet linki ?ref=user:<uid> + kopyala); capture invitedBy ile hazırdı"
+  },
+  {
+    "hash": "0856f1ce",
+    "date": "2026-07-10",
+    "subject": "settings/ngo-admin: paralel oturum UI güncellemeleri (build yeşil 402/402)"
+  },
+  {
     "hash": "0e465a96",
     "date": "2026-07-10",
     "subject": "gönüllülük: başvuru durum timeline'ı (Başvuruldu→Onaylandı→Tamamlandı→Değerlendirme)"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "5d30a99e",
     "date": "2026-07-08",
     "subject": "fix: sertifika/rozet incele-indir çalışmıyor + outreach il 'Afyon 3 sonuç'"
-  },
-  {
-    "hash": "56dace08",
-    "date": "2026-07-08",
-    "subject": "perf(cost): sert maliyet tavanı — maxInstances 4→1 + stats cache 1sa→6sa"
-  },
-  {
-    "hash": "64157e38",
-    "date": "2026-07-08",
-    "subject": "perf(cost): Firestore Read Ops faturasını kes — aşırı okuma kaynaklarını düzelt"
   }
 ];
