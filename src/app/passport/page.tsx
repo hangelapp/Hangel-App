@@ -17,7 +17,7 @@ import { Capacitor } from '@capacitor/core';
 import { openExternalUrl } from '@/lib/capacitor';
 import { Share } from '@capacitor/share';
 import {
-  Award, Loader2, Calendar, Heart, Clock, Sparkles, ExternalLink, Share2, Wallet, RefreshCw,
+  Award, Loader2, Calendar, Heart, Clock, Sparkles, ExternalLink, Share2, Wallet, RefreshCw, Copy, Gift,
 } from 'lucide-react';
 
 import { useUser } from '@/firebase';
@@ -170,6 +170,36 @@ export default function PassportPage() {
           <StatCard icon={Sparkles} label={t('passportPage.campaigns')} value={formatNum(data.totalCampaigns)} color="text-violet-600 bg-violet-50" />
           <StatCard icon={Heart} label={t('passportPage.donations')} value={formatTry(data.totalDonationsTry)} color="text-rose-600 bg-rose-50" />
         </div>
+
+        {/* Arkadaşını davet et — davet linki (?ref=user:<uid>). Kayıt formu invitedBy
+            olarak yakalar; ödül puanı (davet eden +50 / edilen +25) sonraki adımda
+            güvenli Cloud Function ile ilk-eylemde verilecek. */}
+        {user?.uid && (
+          <Card className="border-none shadow-sm bg-primary/5 rounded-2xl">
+            <CardContent className="p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Gift className="h-5 w-5 text-primary" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Arkadaşını davet et</h2>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Davet linkinle gelen arkadaşının ilk gönüllülüğünde ikinize de etki puanı 🧡 (davet eden <span className="font-bold text-primary">+50</span>, davet edilen <span className="font-bold text-primary">+25</span>).
+              </p>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="w-full rounded-lg gap-1.5"
+                onClick={() => {
+                  const url = `${window.location.origin}/login/selection?ref=user:${user.uid}`;
+                  navigator.clipboard?.writeText(url)
+                    .then(() => toast({ title: 'Davet linkin kopyalandı 🧡', description: url }))
+                    .catch(() => toast({ variant: 'destructive', title: 'Kopyalanamadı' }));
+                }}
+              >
+                <Copy className="h-4 w-4" /> Davet linkini kopyala
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Rozetler */}
         <section>
