@@ -3,9 +3,10 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, ShieldCheck, ShieldAlert, Loader2, Eye, Calendar, MapPin, Users, Network, HandCoins } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, ShieldCheck, ShieldAlert, Loader2, Eye, Calendar, MapPin, Users, Network, HandCoins, Building2 } from 'lucide-react';
 import { useNgoRealtimeStats } from '@/hooks/use-ngo-stats';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { StkManagerDialog } from '@/components/onboarding/stk-manager-dialog';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, useCollection } from '@/firebase';
 import { doc, collection, serverTimestamp, runTransaction, increment } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -37,8 +38,12 @@ type UserNgoSelectionData = {
 
 export default function NgoSelectionPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { t } = useTranslation();
     const { toast } = useToast();
+    // "STK yöneticisiyim" kütük formu — buton ya da gelir-modeli QR akışında (?stk=1) açılır.
+    const [stkDialogOpen, setStkDialogOpen] = useState(false);
+    useEffect(() => { if (searchParams?.get('stk') === '1') setStkDialogOpen(true); }, [searchParams]);
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
 
@@ -400,6 +405,16 @@ export default function NgoSelectionPage() {
                 </Button>
             </div>
 
+            {/* STK yöneticileri için: kendi dernek/vakfını kütük numarasıyla ekle. */}
+            <Button
+                variant="outline"
+                onClick={() => setStkDialogOpen(true)}
+                className="w-full justify-center gap-2 rounded-2xl border-primary/30 bg-primary/5 py-6 font-bold text-primary hover:bg-primary/10 sm:w-auto"
+            >
+                <Building2 className="h-5 w-5" />
+                STK yöneticisiyim — STK’mı ekle
+            </Button>
+
             {/* Onboarding: önerilen STK'lar + "Hepsini geç". Sürtünmesiz akış —
                 kullanıcı sıfırdan listeden seçmek yerine tek tık "Takip et" yapar
                 ya da hepsini geçip doğrudan ana akışa girer. */}
@@ -758,6 +773,17 @@ export default function NgoSelectionPage() {
                     )}
                 </DialogContent>
             </Dialog>
+
+            {/* STK yöneticisi kütük formu — eklenen STK bağışçı seçimine de eklenir. */}
+            <StkManagerDialog
+                open={stkDialogOpen}
+                onOpenChange={setStkDialogOpen}
+                onAdded={(ngoId) => {
+                    setPreselectNgo(ngoId);
+                    setSelectedNgos((prev) => (prev.includes(ngoId) ? prev : [...prev, ngoId]));
+                    setStkDialogOpen(false);
+                }}
+            />
         </div>
     );
 }

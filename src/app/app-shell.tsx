@@ -84,7 +84,7 @@ import { useToast } from '@/hooks/use-toast';
 import { OnboardingTour } from '@/components/onboarding/onboarding-tour';
 import { useOnboardingTour } from '@/components/onboarding/use-onboarding-tour';
 import { RewardLiveProvider } from '@/components/rewards/reward-live-provider';
-import { getQrOnboard, updateQrOnboardStage, clearQrOnboard, setNgoSelectionNext } from '@/lib/onboarding/qr-onboarding';
+import { getQrOnboard, clearQrOnboard, setNgoSelectionNext } from '@/lib/onboarding/qr-onboarding';
 
 const group1Items: SideNavItem[] = [
   { href: '/timeline', label: 'nav.timeline', icon: 'layout-grid' },
@@ -569,17 +569,39 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             return;
         }
         if (!qrReachedEventRef.current) return; // henüz etkinliğe ulaşmadı — bekle
-        // Etkinlik detayından çıktı → sıradaki adım.
-        if (st.gelirModeli) {
-            updateQrOnboardStage('ngo-question');
-            router.push('/onboarding/stk-yonetici');
-        } else {
-            clearQrOnboard();
-            try { localStorage.setItem('onboardingStep', 'ngo-selection'); } catch { /* yut */ }
-            setNgoSelectionNext('/market');
-            router.push('/settings/ngo-selection');
-        }
+        // Etkinlik detayından çıktı → bağışçı (STK) seçim ekranına.
+        clearQrOnboard();
+        try { localStorage.setItem('onboardingStep', 'ngo-selection'); } catch { /* yut */ }
+        setNgoSelectionNext('/market');
+        // Gelir-modeli konferansından geldiyse ngo-selection'da "STK yöneticisiyim"
+        // mini formu otomatik açılsın (?stk=1). Değilse düz STK seçimi.
+        router.push(st.gelirModeli ? '/settings/ngo-selection?stk=1' : '/settings/ngo-selection');
     }, [pathname, isMounted, authUser, router]);
+
+    // STK yöneticisinin yönettiği STK bilgileri eksikse (taslak / documentsComplete
+    // değil) HER GİRİŞTE (oturum başına bir kez) nazik uyarı + tamamlama sayfasına
+    // yönlendirme. Zorunlu DEĞİL — kullanıcı ayrılabilir. Sadece managedNgoId olanı etkiler.
+    const managedNgoId = (userData as { managedNgoId?: string } | undefined)?.managedNgoId;
+    const managedNgoRef = useMemoFirebase(
+        () => (db && managedNgoId ? doc(db, COLLECTIONS.ngos, managedNgoId) : null),
+        [db, managedNgoId],
+    );
+    const { data: managedNgo } = useDoc<{ documentsComplete?: boolean; status?: string; name?: string }>(managedNgoRef);
+    const stkNudgeShownRef = useRef(false);
+    useEffect(() => {
+        if (!isMounted || !authUser || !userData || stkNudgeShownRef.current) return;
+        if (!managedNgoId || !managedNgo) return;
+        const incomplete = managedNgo.documentsComplete !== true || managedNgo.status === 'taslak';
+        if (!incomplete) return;
+        // Zaten STK panelinde / auth / STK seçim akışındaysa yönlendirme yapma.
+        if (pathname.startsWith('/ngo-admin') || pathname.startsWith('/login') || pathname.startsWith('/settings/ngo-selection')) return;
+        stkNudgeShownRef.current = true;
+        toast({
+            title: 'STK bilgileriniz eksik',
+            description: 'STK profilinizi tamamlayın — bağışçı güvenini ve görünürlüğü artırır.',
+        });
+        router.push('/ngo-admin');
+    }, [isMounted, authUser, userData, managedNgoId, managedNgo, pathname, router, toast]);
 
     if (!isMounted) {
         return <div className="min-h-dvh bg-background">{children}</div>;
