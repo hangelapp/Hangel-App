@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-07-10";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "5cb67ec5",
+    "date": "2026-07-10",
+    "subject": "gönüllülük kümesi 2: erişilebilirlik etiketleri + beceri rozetleri + takım meydan-okuma + referans mektubu + kısayol şeridi (build 408/408)"
+  },
+  {
+    "hash": "7f84b1c9",
+    "date": "2026-07-10",
+    "subject": "gönüllülük kümesi: doküman-isteme + mikro-gönüllülük + lider tablosu + SROI panosu + onboarding sihirbazı + referans davet UI (build 405/405)"
+  },
+  {
+    "hash": "0a6831e2",
+    "date": "2026-07-10",
+    "subject": "refactor(simplify): /simplify bulgularının uygulanması"
+  },
+  {
     "hash": "1cfcf426",
     "date": "2026-07-10",
     "subject": "referans: /passport davet et kartı (davet linki ?ref=user:<uid> + kopyala); capture invitedBy ile hazırdı"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "bf765897",
     "date": "2026-07-09",
     "subject": "fix(mail): MAIL_CRED_ENC_KEY kuruldu — Workspace toplu mail gönderimi açıldı"
-  },
-  {
-    "hash": "2b7d22fc",
-    "date": "2026-07-09",
-    "subject": "fix(mail+city): 'Kaç alıcı?' hatası + Afyon/il eksik listeleme kökten"
-  },
-  {
-    "hash": "760dd5f8",
-    "date": "2026-07-09",
-    "subject": "fix(icon-buttons): çalışmayan ikon butonları düzelt (271 buton tarandı)"
-  },
-  {
-    "hash": "5d30a99e",
-    "date": "2026-07-08",
-    "subject": "fix: sertifika/rozet incele-indir çalışmıyor + outreach il 'Afyon 3 sonuç'"
   }
 ];

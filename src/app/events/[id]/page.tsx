@@ -45,7 +45,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useToast } from '@/hooks/use-toast';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { COLLECTIONS } from '@/firebase/collections';
-import { eventPhase } from '@/lib/event-time';
+import { eventPhase, eventStart, eventEnd } from '@/lib/event-time';
 import { DetailHero } from '@/components/detail/detail-hero';
 
 type WeatherDay = { date: string; tempMax: number; tempMin: number; label: string; emoji: string };
@@ -228,6 +228,66 @@ export default function EventDetailPage() {
     (!!eventOrganizerId && (ud.managedNgoId === eventOrganizerId || ud.managedClubId === eventOrganizerId))
   );
 
+  // Kilit ekranı canlı etkinliği (iOS Live Activity) — hem RSVP anında hem
+  // etkinlik günü sayfa açılışında (aşağıdaki effect) başlatılır. iOS,
+  // activity'leri ~8-12 saat sonra kendiliğinden sonlandırdığı için YALNIZ
+  // "Katıl" anında başlatmak, erken katılanlarda etkinlik günü kilit ekranında
+  // hiçbir şey göstermiyordu. Native plugin aynı etkinlik için tekilleştirme
+  // yapmadığından localStorage guard'ı 12 saat içinde ikinci bir activity
+  // açılmasını (kilit ekranında çift kart) önler. Web/Android'de no-op.
+  const launchLiveActivity = async () => {
+    if (!event || !resolvedEventId) return;
+    const guardKey = `hangel:liveActivity:${resolvedEventId}`;
+    try {
+      const last = Number(localStorage.getItem(guardKey) || 0);
+      if (Date.now() - last < 12 * 3600_000) return;
+    } catch { /* yok say */ }
+    // Başlangıç + bitiş tarihini epoch'a çevir → widget'ta otomatik geri sayım
+    // (başlamadan önce) ve etkinlik akış-line'ı (sırasında). Push gerekmez.
+    const toEpoch = (s?: string): number => {
+      if (!s) return 0;
+      let d = parse(s, 'yyyy-MM-dd HH:mm', new Date());
+      if (isNaN(d.getTime())) d = parse(s, 'yyyy-MM-dd', new Date());
+      return isNaN(d.getTime()) ? 0 : d.getTime();
+    };
+    const eventStartEpoch = toEpoch(event.startDate);
+    const eventEndEpoch = toEpoch(event.endDate);
+    const _role = getUserEventRole(event.contributors, authUser?.uid);
+    const _roleLabel = _role === 'participant'
+      ? 'Katılımcı'
+      : (roleLabelTr(_role).charAt(0) + roleLabelTr(_role).slice(1).toLocaleLowerCase('tr'));
+    // Fiziksel etkinlikte hava durumu — Live Activity başlığında gösterilir (best-effort).
+    let weatherEmoji = ''; let weatherTemp = '';
+    const _loc = typeof event.location === 'string' ? null : event.location;
+    if (_loc && _loc.type === 'Fiziksel' && _loc.city) {
+      try {
+        const wr = await fetch(`/api/weather?city=${encodeURIComponent(_loc.city)}&district=${encodeURIComponent(_loc.district || '')}&days=7`);
+        if (wr.ok) {
+          const wj = await wr.json() as { days?: Array<{ date: string; emoji: string; tempMax: number }> };
+          const dayKey = (event.startDate || '').slice(0, 10);
+          const day = wj.days?.find(d => d.date === dayKey) || wj.days?.[0];
+          if (day) { weatherEmoji = day.emoji || ''; weatherTemp = `${day.tempMax}°`; }
+        }
+      } catch { /* hava durumu best-effort */ }
+    }
+    const activityId = await startEventCountdownActivity({
+      eventTitle: event.name || 'Etkinlik',
+      location: typeof event.location === 'string'
+        ? event.location
+        : (event.location?.address || event.location?.city || ''),
+      eventId: resolvedEventId,
+      eventStartEpoch,
+      eventEndEpoch,
+      statusLabel: _roleLabel,
+      weatherEmoji,
+      weatherTemp,
+      organizerLogoUrl: event.organizerLogoUrl || '',
+    });
+    if (activityId) {
+      try { localStorage.setItem(guardKey, String(Date.now())); } catch { /* yok say */ }
+    }
+  };
+
   const submitRsvp = async (action: 'going' | 'cancel') => {
     // ADIM 7 — Misafir/Keşfet: anonim kullanıcı eylem anında giriş'e davet edilir.
     // BUGFIX 2026-06-19: anonim kullanıcı "Katıl"a basıp giriş yapınca /events
@@ -266,50 +326,8 @@ export default function EventDetailPage() {
           : undefined,
       });
       // Katılımda telefon ekranında canlı etkinlik (Live Activity) başlat (iOS native; web no-op).
-      if (data.status === 'going' && resolvedEventId) {
-        // Etkinlik başlangıç tarihini epoch'a çevir → widget Text(timerInterval:) ile
-        // cihazda kendiliğinden geri sayar (push gerekmez).
-        // Başlangıç + bitiş tarihini epoch'a çevir → widget'ta otomatik geri sayım
-        // (başlamadan önce) ve etkinlik akış-line'ı (sırasında). Push gerekmez.
-        const toEpoch = (s?: string): number => {
-          if (!s) return 0;
-          let d = parse(s, 'yyyy-MM-dd HH:mm', new Date());
-          if (isNaN(d.getTime())) d = parse(s, 'yyyy-MM-dd', new Date());
-          return isNaN(d.getTime()) ? 0 : d.getTime();
-        };
-        const eventStartEpoch = toEpoch(event?.startDate);
-        const eventEndEpoch = toEpoch(event?.endDate);
-        const _role = getUserEventRole(event?.contributors, authUser?.uid);
-        const _roleLabel = _role === 'participant'
-          ? 'Katılımcı'
-          : (roleLabelTr(_role).charAt(0) + roleLabelTr(_role).slice(1).toLocaleLowerCase('tr'));
-        // Fiziksel etkinlikte hava durumu — Live Activity başlığında gösterilir (best-effort).
-        let weatherEmoji = ''; let weatherTemp = '';
-        const _loc = typeof event?.location === 'string' ? null : event?.location;
-        if (_loc && _loc.type === 'Fiziksel' && _loc.city) {
-          try {
-            const wr = await fetch(`/api/weather?city=${encodeURIComponent(_loc.city)}&district=${encodeURIComponent(_loc.district || '')}&days=7`);
-            if (wr.ok) {
-              const wj = await wr.json() as { days?: Array<{ date: string; emoji: string; tempMax: number }> };
-              const dayKey = (event?.startDate || '').slice(0, 10);
-              const day = wj.days?.find(d => d.date === dayKey) || wj.days?.[0];
-              if (day) { weatherEmoji = day.emoji || ''; weatherTemp = `${day.tempMax}°`; }
-            }
-          } catch { /* hava durumu best-effort */ }
-        }
-        void startEventCountdownActivity({
-          eventTitle: event?.name || 'Etkinlik',
-          location: typeof event?.location === 'string'
-            ? event.location
-            : (event?.location?.address || event?.location?.city || ''),
-          eventId: resolvedEventId,
-          eventStartEpoch,
-          eventEndEpoch,
-          statusLabel: _roleLabel,
-          weatherEmoji,
-          weatherTemp,
-          organizerLogoUrl: event?.organizerLogoUrl || '',
-        });
+      if (data.status === 'going') {
+        void launchLiveActivity();
       }
     } catch (err) {
       const e = err as { message?: string };
@@ -333,6 +351,24 @@ export default function EventDetailPage() {
     // submitRsvp kasıtlı bağımlılık dışı (her render'da yeniden oluşur; ref guard tek sefer garantiler).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUser, resolvedEventId, isGoing]);
+
+  // Etkinlik günü: "going" katılımcı sayfayı açınca kilit ekranı canlı
+  // etkinliğini (yeniden) başlat — RSVP anında açılan activity iOS tarafından
+  // saatler içinde sonlandırıldığından erken katılanlarda etkinlik günü
+  // görünmüyordu. Pencere: başlangıçtan 12 saat öncesi → bitiş.
+  const liveActivityRef = useRef(false);
+  useEffect(() => {
+    if (liveActivityRef.current || !isGoing || !authUser || !event || !resolvedEventId) return;
+    const startMs = eventStart(event)?.getTime();
+    if (!startMs) return;
+    const endMs = eventEnd(event)?.getTime() ?? startMs + 3 * 3600_000;
+    const now = Date.now();
+    if (now < startMs - 12 * 3600_000 || now > endMs) return;
+    liveActivityRef.current = true;
+    void launchLiveActivity();
+    // launchLiveActivity kasıtlı bağımlılık dışı (her render'da yeniden oluşur; ref guard tek sefer garantiler).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isGoing, authUser, event, resolvedEventId]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && event) {
