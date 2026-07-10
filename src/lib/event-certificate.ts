@@ -177,6 +177,7 @@ export async function buildEventCertificateJpeg(input: EventCertificateInput): P
     ...(input.partnerLogoUrls || []).slice(0, 3).map((u) => (u ? urlToDataUri(u) : Promise.resolve(null))),
   ]);
   const partners = partnerLogoUris.filter((u): u is string => Boolean(u));
+  const hasPartners = partners.length > 0;
   const roleLabel = roleLabelTr(role);
   const phrase = `${eventName} etkinliğinde ${roleCertificatePhraseTr(role)}.`;
 
@@ -198,8 +199,24 @@ export async function buildEventCertificateJpeg(input: EventCertificateInput): P
       ? `<image x="60" y="40" width="48" height="48" href="${orgLogoUri}" xlink:href="${orgLogoUri}" preserveAspectRatio="xMidYMid meet"/>`
       : `<text x="60" y="72" font-size="18" font-weight="800" letter-spacing="-0.4" fill="${INK}">${escXml(fit(organizerName || '', 28))}</text>`}
 
-  <rect x="${PX_W - 60 - 150}" y="48" width="150" height="32" rx="16" fill="${CORAL}"/>
-  <text x="${PX_W - 60 - 75}" y="69" font-size="12" font-weight="700" letter-spacing="0.7" fill="#ffffff" text-anchor="middle">${escXml(fit(roleLabel, 22))}</text>
+  ${hasPartners
+      ? (() => {
+        // SAĞ ÜST KÖŞE: partner/otorite logoları (gelir-modeli → İçişleri Bak. STİGM + mühür).
+        // Sağa hizalı bir sıra; üstünde küçük "İŞ BİRLİĞİ İLE" etiketi. Rol rozeti
+        // çakışmayı önlemek için başlığın üstüne (ortaya) taşınır (aşağıda).
+        const lw = 48, gap = 16, right = PX_W - 60;
+        const total = partners.length * lw + (partners.length - 1) * gap;
+        let x0 = right - total;
+        const imgs = partners.map((u) => { const t = `<image x="${x0.toFixed(1)}" y="50" width="${lw}" height="48" href="${u}" xlink:href="${u}" preserveAspectRatio="xMidYMid meet"/>`; x0 += lw + gap; return t; }).join('');
+        return `<text x="${right}" y="44" font-size="8" font-weight="700" letter-spacing="2" fill="#aeaeb2" text-anchor="end">İŞ BİRLİĞİ İLE</text>${imgs}`;
+      })()
+      : `<rect x="${PX_W - 60 - 150}" y="48" width="150" height="32" rx="16" fill="${CORAL}"/>
+  <text x="${PX_W - 60 - 75}" y="69" font-size="12" font-weight="700" letter-spacing="0.7" fill="#ffffff" text-anchor="middle">${escXml(fit(roleLabel, 22))}</text>`}
+
+  ${hasPartners
+      ? `<rect x="${PX_W / 2 - 70}" y="120" width="140" height="30" rx="15" fill="${CORAL}"/>
+  <text x="${PX_W / 2}" y="140" font-size="12" font-weight="700" letter-spacing="0.7" fill="#ffffff" text-anchor="middle">${escXml(fit(roleLabel, 22))}</text>`
+      : ''}
 
   <text x="${PX_W / 2}" y="186" font-size="14" font-weight="800" letter-spacing="4" fill="${CORAL}" text-anchor="middle">${escXml(certTitleTr(role))}</text>
   <rect x="${PX_W / 2 - 25}" y="200" width="50" height="3" rx="1.5" fill="${CORAL}"/>
@@ -207,13 +224,6 @@ export async function buildEventCertificateJpeg(input: EventCertificateInput): P
   <text x="${PX_W / 2}" y="240" font-size="13" font-weight="500" fill="#86868b" text-anchor="middle">Bu belge</text>
   <text x="${PX_W / 2}" y="290" font-size="44" font-weight="800" letter-spacing="-1.1" fill="${INK}" text-anchor="middle">${escXml(fit(userName || 'Katılımcı', 34))}</text>
   <text x="${PX_W / 2}" y="326" font-size="16" font-weight="500" fill="#515154" text-anchor="middle">${escXml(fit(phrase, 78))}</text>
-
-  ${partners.length ? (() => {
-    const lw = 54, gap = 26, total = partners.length * lw + (partners.length - 1) * gap;
-    let x0 = PX_W / 2 - total / 2;
-    const imgs = partners.map((u) => { const t = `<image x="${x0.toFixed(1)}" y="360" width="${lw}" height="46" href="${u}" xlink:href="${u}" preserveAspectRatio="xMidYMid meet"/>`; x0 += lw + gap; return t; }).join('');
-    return `<text x="${PX_W / 2}" y="350" font-size="10" font-weight="700" letter-spacing="2.2" fill="#aeaeb2" text-anchor="middle">İŞ BİRLİĞİ İLE</text>${imgs}`;
-  })() : ''}
 
   <text x="60" y="${PX_H - 76}" font-size="11" font-weight="700" letter-spacing="2" fill="#aeaeb2">TARİH</text>
   <text x="60" y="${PX_H - 56}" font-size="15" font-weight="500" fill="#515154">${escXml(formatTrDate(eventDate))}</text>
