@@ -15,7 +15,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
 import { isNativeApp } from '@/lib/capacitor';
-import { generateEventCertificate, eventCertificateFileName } from '@/lib/event-certificate';
+import { generateEventCertificate, eventCertificateFileName, partnerLogosForEventName } from '@/lib/event-certificate';
 import { generateVolunteerCertificate } from '@/lib/volunteer-certificate';
 import { celebrate } from '@/lib/celebrate';
 
@@ -144,6 +144,9 @@ export function CertificatesTab() {
             certificateId,
             code: cert.code,
             logoUrl: cert.logoUrl,
+            // Gelir Modeli konferansları: organizatör (Social Business Global) logosunun
+            // yanında T.C. İçişleri Bakanlığı Sivil Toplumla İlişkiler GM logoları.
+            partnerLogoUrls: partnerLogosForEventName(cert.title),
         });
     };
 

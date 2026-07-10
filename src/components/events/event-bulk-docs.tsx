@@ -23,7 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { IdCard, Award, Loader2, Printer, Download, Share2 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { buildEventCertificateJpeg } from '@/lib/event-certificate';
+import { buildEventCertificateJpeg, partnerLogosForEventName } from '@/lib/event-certificate';
 import { buildVolunteerCertificateJpeg } from '@/lib/volunteer-certificate';
 
 type Attendee = { name?: string; email?: string; userId?: string };
@@ -134,7 +134,7 @@ function certInputFor(kind: OrgKind, a: Attendee, ev: EventInfo, ngoName: string
   if (kind === 'volunteer') {
     return { taskTitle: ev.name || '', organizerName: ngoName, userName: a.name || 'Gönüllü', date: ev.date || '', certificateId: seed, logoUrl } as const;
   }
-  return { eventName: ev.name || '', eventDate: ev.date || '', userName: a.name || 'Katılımcı', organizerName: ngoName, role: 'participant' as const, certificateId: seed, logoUrl } as const;
+  return { eventName: ev.name || '', eventDate: ev.date || '', userName: a.name || 'Katılımcı', organizerName: ngoName, role: 'participant' as const, certificateId: seed, logoUrl, partnerLogoUrls: partnerLogosForEventName(ev.name) } as const;
 }
 
 async function buildCertSheetHtml(kind: OrgKind, list: Attendee[], ev: EventInfo, ngoName: string, logoUrl?: string): Promise<{ html: string; jpegs: string[] }> {
