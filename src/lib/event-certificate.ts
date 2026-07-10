@@ -15,13 +15,7 @@ export const CERT_WIDTH_MM = 210;
 export const CERT_HEIGHT_MM = 148;
 export const HANGEL_ORANGE: [number, number, number] = [0xf3, 0x47, 0x23];
 
-// Gelir Modeli konferansı sertifikalarında organizatör (Social Business Global)
-// logosunun yanında gösterilen partner kurum logoları — public/partners/ altında.
-export const GELIR_MODELI_PARTNER_LOGOS = ['/partners/icisleri-stigm.png', '/partners/icisleri-muhur.png'];
-/** Etkinlik adına göre partner logo listesi (gelir-modeli konferansları → İçişleri Bak. STİGM). */
-export function partnerLogosForEventName(name?: string): string[] | undefined {
-  return /gelir\s*modeli/i.test(name || '') ? GELIR_MODELI_PARTNER_LOGOS : undefined;
-}
+const HANGEL_LOGO_PATH = '/icon-512.png';
 
 /**
  * Verilen URL'i fetch edip data URI (base64) olarak döner.
@@ -98,8 +92,7 @@ export type EventCertificateInput = {
   code?: string;
   country?: string;
   city?: string;
-  logoUrl?: string; // düzenleyen kurum logosu — sertifikanın SOL ÜST köşesinde gösterilir
-  partnerLogoUrls?: string[]; // ek/partner kurum logoları (ör. gelir-modeli: İçişleri Bak. Sivil Toplumla İlişkiler GM) — organizatör logosunun yanında bir şeritte gösterilir
+  logoUrl?: string; // düzenleyen kurum logosu (sertifikada gösterilir)
 };
 
 /**
@@ -167,17 +160,16 @@ export async function buildEventCertificateJpeg(input: EventCertificateInput): P
   // Sistem font yığını → Türkçe ğ/ş/ı/İ/ç/ö/ü glyph'leri doğru render edilir.
   // Apple marka kimliği: temiz, bol boşluk, ince coral çerçeve, hangel paleti.
   const CORAL = '#f34723';
+  const CORAL_DARK = '#c5391b';
   const INK = '#1f1f1f';
   const code = input.code || buildCertCode({ country: input.country, kind: 'event', idSeed: certificateId });
   const verify = verifyUrl || certVerifyUrl(code);
   const verifyShort = verify.replace(/^https?:\/\//, '');
-  const [qrUri, orgLogoUri, ...partnerLogoUris] = await Promise.all([
+  const [logoUri, qrUri, orgLogoUri] = await Promise.all([
+    typeof window !== 'undefined' ? urlToDataUri(HANGEL_LOGO_PATH) : Promise.resolve(null),
     generateQrDataUri(verify, 600),
     input.logoUrl ? urlToDataUri(input.logoUrl) : Promise.resolve(null),
-    ...(input.partnerLogoUrls || []).slice(0, 3).map((u) => (u ? urlToDataUri(u) : Promise.resolve(null))),
   ]);
-  const partners = partnerLogoUris.filter((u): u is string => Boolean(u));
-  const hasPartners = partners.length > 0;
   const roleLabel = roleLabelTr(role);
   const phrase = `${eventName} etkinliğinde ${roleCertificatePhraseTr(role)}.`;
 
@@ -195,28 +187,11 @@ export async function buildEventCertificateJpeg(input: EventCertificateInput): P
   <rect x="18" y="18" width="${PX_W - 36}" height="${PX_H - 36}" rx="20" fill="none" stroke="${CORAL}" stroke-width="1.5"/>
   <rect x="25" y="25" width="${PX_W - 50}" height="${PX_H - 50}" rx="15" fill="none" stroke="${CORAL}" stroke-opacity="0.2" stroke-width="1"/>
 
-  ${orgLogoUri
-      ? `<image x="60" y="40" width="48" height="48" href="${orgLogoUri}" xlink:href="${orgLogoUri}" preserveAspectRatio="xMidYMid meet"/>`
-      : `<text x="60" y="72" font-size="18" font-weight="800" letter-spacing="-0.4" fill="${INK}">${escXml(fit(organizerName || '', 28))}</text>`}
+  ${logoUri ? `<image x="60" y="46" width="34" height="34" href="${logoUri}" xlink:href="${logoUri}"/>` : ''}
+  <text x="${logoUri ? 105 : 60}" y="71" font-size="25" font-weight="800" letter-spacing="-0.7" fill="${CORAL}">hangel</text>
 
-  ${hasPartners
-      ? (() => {
-        // SAĞ ÜST KÖŞE: partner/otorite logoları (gelir-modeli → İçişleri Bak. STİGM + mühür).
-        // Sağa hizalı bir sıra; üstünde küçük "İŞ BİRLİĞİ İLE" etiketi. Rol rozeti
-        // çakışmayı önlemek için başlığın üstüne (ortaya) taşınır (aşağıda).
-        const lw = 48, gap = 16, right = PX_W - 60;
-        const total = partners.length * lw + (partners.length - 1) * gap;
-        let x0 = right - total;
-        const imgs = partners.map((u) => { const t = `<image x="${x0.toFixed(1)}" y="50" width="${lw}" height="48" href="${u}" xlink:href="${u}" preserveAspectRatio="xMidYMid meet"/>`; x0 += lw + gap; return t; }).join('');
-        return `<text x="${right}" y="44" font-size="8" font-weight="700" letter-spacing="2" fill="#aeaeb2" text-anchor="end">İŞ BİRLİĞİ İLE</text>${imgs}`;
-      })()
-      : `<rect x="${PX_W - 60 - 150}" y="48" width="150" height="32" rx="16" fill="${CORAL}"/>
-  <text x="${PX_W - 60 - 75}" y="69" font-size="12" font-weight="700" letter-spacing="0.7" fill="#ffffff" text-anchor="middle">${escXml(fit(roleLabel, 22))}</text>`}
-
-  ${hasPartners
-      ? `<rect x="${PX_W / 2 - 70}" y="120" width="140" height="30" rx="15" fill="${CORAL}"/>
-  <text x="${PX_W / 2}" y="140" font-size="12" font-weight="700" letter-spacing="0.7" fill="#ffffff" text-anchor="middle">${escXml(fit(roleLabel, 22))}</text>`
-      : ''}
+  <rect x="${PX_W - 60 - 150}" y="48" width="150" height="32" rx="16" fill="${CORAL}"/>
+  <text x="${PX_W - 60 - 75}" y="69" font-size="12" font-weight="700" letter-spacing="0.7" fill="#ffffff" text-anchor="middle">${escXml(fit(roleLabel, 22))}</text>
 
   <text x="${PX_W / 2}" y="186" font-size="14" font-weight="800" letter-spacing="4" fill="${CORAL}" text-anchor="middle">${escXml(certTitleTr(role))}</text>
   <rect x="${PX_W / 2 - 25}" y="200" width="50" height="3" rx="1.5" fill="${CORAL}"/>
@@ -224,6 +199,10 @@ export async function buildEventCertificateJpeg(input: EventCertificateInput): P
   <text x="${PX_W / 2}" y="240" font-size="13" font-weight="500" fill="#86868b" text-anchor="middle">Bu belge</text>
   <text x="${PX_W / 2}" y="290" font-size="44" font-weight="800" letter-spacing="-1.1" fill="${INK}" text-anchor="middle">${escXml(fit(userName || 'Katılımcı', 34))}</text>
   <text x="${PX_W / 2}" y="326" font-size="16" font-weight="500" fill="#515154" text-anchor="middle">${escXml(fit(phrase, 78))}</text>
+
+  ${orgLogoUri ? `<image x="${PX_W / 2 - 18}" y="350" width="36" height="36" href="${orgLogoUri}" xlink:href="${orgLogoUri}" preserveAspectRatio="xMidYMid meet"/>` : ''}
+  <text x="${PX_W / 2}" y="410" font-size="11" font-weight="700" letter-spacing="2.4" fill="#aeaeb2" text-anchor="middle">DÜZENLEYEN</text>
+  <text x="${PX_W / 2}" y="432" font-size="17" font-weight="700" fill="${CORAL_DARK}" text-anchor="middle">${escXml(fit(organizerName || 'hangel', 50))}</text>
 
   <text x="60" y="${PX_H - 76}" font-size="11" font-weight="700" letter-spacing="2" fill="#aeaeb2">TARİH</text>
   <text x="60" y="${PX_H - 56}" font-size="15" font-weight="500" fill="#515154">${escXml(formatTrDate(eventDate))}</text>
