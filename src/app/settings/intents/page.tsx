@@ -52,6 +52,7 @@ export default function IntentsSettingsPage() {
         }
       } finally {
         setLoading(false);
+        setHydrated(true);
       }
     })();
   }, [user]);
@@ -70,11 +71,10 @@ export default function IntentsSettingsPage() {
     if (!res.ok || !data.ok) throw new Error(data.message || t('welcome.saveError'));
   };
 
-  // Otomatik kayıt: seçim değişince 600 ms sonra sessizce yaz.
-  const { status: autosaveStatus, markDirty } = useAutosave(persist, [selected], { delayMs: 600 });
+  // Otomatik kayıt: hydration sonrası her seçim değişikliği 600 ms sonra sessizce yazılır.
+  const { status: autosaveStatus } = useAutosave(persist, [selected], { delayMs: 600, enabled: hydrated, auto: true });
 
   const toggle = (key: IntentKey) => {
-    markDirty();
     setSelected((prev) => {
       const next = new Set(prev);
       if (key === 'browse_only') {

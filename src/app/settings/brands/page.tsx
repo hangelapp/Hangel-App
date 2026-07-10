@@ -53,6 +53,7 @@ export default function FollowedBrandsPage() {
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc<{ followedBrands?: string[] }>(userDocRef);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   const [apiBrands, setApiBrands] = useState<Brand[]>([]);
   const [isApiLoading, setIsApiLoading] = useState(true);
@@ -62,9 +63,15 @@ export default function FollowedBrandsPage() {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
+  // Hydration TEK SEFER: snapshot her yenilendiğinde yeniden set etme —
+  // auto modda kendi yazımımızın echo'su yeni array referansı üretip
+  // sonsuz kayıt döngüsü tetiklerdi. userDocRef şartı: auth çözülmeden
+  // isLoading=false göründüğü için erken baseline'a (boş liste) izin verme.
   useEffect(() => {
+    if (hydrated || !userDocRef || isUserDataLoading) return;
     if (userData?.followedBrands) setSelectedBrands(userData.followedBrands);
-  }, [userData]);
+    setHydrated(true);
+  }, [hydrated, userDocRef, isUserDataLoading, userData]);
 
   useEffect(() => {
     fetch('/api/offers')
@@ -135,11 +142,10 @@ export default function FollowedBrandsPage() {
     if (!result.ok) throw result.error;
   };
 
-  // Otomatik kayıt: marka seçimi değişince 600 ms sonra sessizce yaz.
-  const { status: autosaveStatus, markDirty } = useAutosave(persist, [selectedBrands], { delayMs: 600 });
+  // Otomatik kayıt (v2 auto): hydration sonrası marka seçimi değişince 600 ms sonra sessizce yaz.
+  const { status: autosaveStatus } = useAutosave(persist, [selectedBrands], { delayMs: 600, enabled: hydrated, auto: true });
 
   const handleBrandSelect = (brandId: string) => {
-    markDirty();
     setSelectedBrands(prev =>
       prev.includes(brandId) ? prev.filter(id => id !== brandId) : [...prev, brandId],
     );

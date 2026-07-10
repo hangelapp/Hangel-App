@@ -15,7 +15,7 @@ import { AutosaveIndicator } from '@/components/shared/autosave-indicator';
 
 export default function LanguageSettingsPage() {
     const router = useRouter();
-    const { language, changeLanguage, t } = useTranslation();
+    const { language, changeLanguage, t, isHydrated } = useTranslation();
     const { toast } = useToast();
     const { user: authUser } = useUser();
     const db = useFirestore();
@@ -32,8 +32,9 @@ export default function LanguageSettingsPage() {
         if (!result.ok) throw result.error;
     };
 
-    // Otomatik kayıt: dil seçilince 600 ms sonra sessizce yaz.
-    const { status: autosaveStatus, markDirty } = useAutosave(persist, [language], { delayMs: 600 });
+    // Otomatik kayıt (auto mod): provider hydration bitince baseline alınır,
+    // sonrasında her dil değişimi 600 ms sonra sessizce yazılır.
+    const { status: autosaveStatus } = useAutosave(persist, [language], { delayMs: 600, enabled: isHydrated, auto: true });
 
     const handleSave = async () => {
         if (!userDocRef) {
@@ -77,7 +78,7 @@ export default function LanguageSettingsPage() {
                     <div 
                         key={lang.value} 
                         className="flex items-center justify-between p-4 hover:bg-accent cursor-pointer"
-                        onClick={() => { markDirty(); changeLanguage(lang.value); }}
+                        onClick={() => changeLanguage(lang.value)}
                     >
                         <div>
                             <p className="font-medium">{lang.label}</p>

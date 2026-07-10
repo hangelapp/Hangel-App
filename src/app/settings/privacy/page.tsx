@@ -137,19 +137,23 @@ export default function PrivacySettingsPage() {
     const [hideCertificates, setHideCertificates] = useState(false);
     const [hidePosts, setHidePosts] = useState(false);
     const [hideDonations, setHideDonations] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
 
     useEffect(() => {
-        if (userData?.twoFactorEnabled !== undefined) setTwoFactorEnabled(!!userData.twoFactorEnabled);
-        const p = userData?.privacySettings;
-        if (!p) return;
-        setIsPrivate(!!p.isPrivate);
-        setHideScore(!!p.hideScore);
-        setHideAbout(!!p.hideAbout);
-        setHideVolunteer(!!p.hideVolunteer);
-        setHideBadges(!!p.hideBadges);
-        setHideCertificates(!!p.hideCertificates);
-        setHidePosts(!!p.hidePosts);
-        setHideDonations(!!p.hideDonations);
+        if (!userData) return;
+        if (userData.twoFactorEnabled !== undefined) setTwoFactorEnabled(!!userData.twoFactorEnabled);
+        const p = userData.privacySettings;
+        if (p) {
+            setIsPrivate(!!p.isPrivate);
+            setHideScore(!!p.hideScore);
+            setHideAbout(!!p.hideAbout);
+            setHideVolunteer(!!p.hideVolunteer);
+            setHideBadges(!!p.hideBadges);
+            setHideCertificates(!!p.hideCertificates);
+            setHidePosts(!!p.hidePosts);
+            setHideDonations(!!p.hideDonations);
+        }
+        setHydrated(true);
     }, [userData]);
 
     // Ortak yazım — Kaydet butonu ile aynı alanları sessizce yazar.
@@ -165,8 +169,9 @@ export default function PrivacySettingsPage() {
         if (!result.ok) throw result.error;
     };
 
-    // Otomatik kayıt: anahtar değişince 600 ms sonra sessizce yaz.
-    const { status: autosaveStatus, markDirty } = useAutosave(persist, [isPrivate, hideScore, hideAbout, hideVolunteer, hideBadges, hideCertificates, hidePosts, hideDonations, twoFactorEnabled], { delayMs: 600 });
+    // Otomatik kayıt (v2 auto): hydration baseline sonrası herhangi bir anahtar
+    // değişince 600 ms sonra sessizce yaz — markDirty bağlamaya gerek yok.
+    const { status: autosaveStatus } = useAutosave(persist, [isPrivate, hideScore, hideAbout, hideVolunteer, hideBadges, hideCertificates, hidePosts, hideDonations, twoFactorEnabled], { delayMs: 600, enabled: hydrated, auto: true });
 
     const handleSave = async () => {
         if (!userDocRef || saving) return;
@@ -207,7 +212,7 @@ export default function PrivacySettingsPage() {
                 <CardHeader><CardTitle>{t('dashboard.settingsPrivacy.profileVisibilityTitle')}</CardTitle></CardHeader>
                 <CardContent className="p-0">
                     <SettingsItem label={t('dashboard.settingsPrivacy.privateProfileLabel')} description={t('dashboard.settingsPrivacy.privateProfileDesc')} icon={Lock} iconColor="bg-red-500">
-                        <Switch checked={isPrivate} onCheckedChange={(v) => { markDirty(); setIsPrivate(v); }} />
+                        <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
                     </SettingsItem>
                 </CardContent>
             </Card>
@@ -219,25 +224,25 @@ export default function PrivacySettingsPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideScoreLabel')} description={t('dashboard.settingsPrivacy.hideScoreDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideScore} onCheckedChange={(v) => { markDirty(); setHideScore(v); }} />
+                        <Switch checked={hideScore} onCheckedChange={setHideScore} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideAboutLabel')} description={t('dashboard.settingsPrivacy.hideAboutDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideAbout} onCheckedChange={(v) => { markDirty(); setHideAbout(v); }} />
+                        <Switch checked={hideAbout} onCheckedChange={setHideAbout} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideVolunteerLabel')} description={t('dashboard.settingsPrivacy.hideVolunteerDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideVolunteer} onCheckedChange={(v) => { markDirty(); setHideVolunteer(v); }} />
+                        <Switch checked={hideVolunteer} onCheckedChange={setHideVolunteer} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideBadgesLabel')} description={t('dashboard.settingsPrivacy.hideBadgesDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideBadges} onCheckedChange={(v) => { markDirty(); setHideBadges(v); }} />
+                        <Switch checked={hideBadges} onCheckedChange={setHideBadges} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideCertsLabel')} description={t('dashboard.settingsPrivacy.hideCertsDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideCertificates} onCheckedChange={(v) => { markDirty(); setHideCertificates(v); }} />
+                        <Switch checked={hideCertificates} onCheckedChange={setHideCertificates} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hidePostsLabel')} description={t('dashboard.settingsPrivacy.hidePostsDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hidePosts} onCheckedChange={(v) => { markDirty(); setHidePosts(v); }} />
+                        <Switch checked={hidePosts} onCheckedChange={setHidePosts} />
                     </SettingsItem>
                     <SettingsItem label={t('dashboard.settingsPrivacy.hideDonationsLabel')} description={t('dashboard.settingsPrivacy.hideDonationsDesc')} icon={Shield} iconColor="bg-green-500">
-                        <Switch checked={hideDonations} onCheckedChange={(v) => { markDirty(); setHideDonations(v); }} />
+                        <Switch checked={hideDonations} onCheckedChange={setHideDonations} />
                     </SettingsItem>
                 </CardContent>
             </Card>
@@ -259,7 +264,6 @@ export default function PrivacySettingsPage() {
                             id="2fa-switch"
                             checked={twoFactorEnabled}
                             onCheckedChange={(c) => {
-                                markDirty();
                                 setTwoFactorEnabled(c);
                                 toast({ title: t('dashboard.settingsPrivacy.twoFaToastTitle'), description: c ? t('dashboard.settingsPrivacy.twoFaToastOn') : t('dashboard.settingsPrivacy.twoFaToastOff') });
                             }}

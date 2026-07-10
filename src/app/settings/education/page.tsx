@@ -45,6 +45,7 @@ export default function EducationSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [clubSearch, setClubSearch] = useState('');
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     if (!user || !firestore) return;
@@ -54,6 +55,8 @@ export default function EducationSettingsPage() {
         const data = snap.data() as { volunteerInfo?: { education?: EducationEntry[]; clubMemberships?: string[] } } | undefined;
         setEducation(data?.volunteerInfo?.education ?? []);
         setClubMemberships(data?.volunteerInfo?.clubMemberships ?? []);
+        // Persist'in yazdığı alanlar dolduruldu → otomatik kayıt artık güvenle açılabilir.
+        setHydrated(true);
         // İlk 50 kulübü yükle (search ile filtreleyeceğiz)
         const clubsSnap = await getDocs(query(collection(firestore, COLLECTIONS.clubs), fsLimit(50)));
         const clubs: ClubLite[] = [];
@@ -80,15 +83,13 @@ export default function EducationSettingsPage() {
     );
   }, [availableClubs, clubSearch]);
 
-  const addEducation = () => { markDirty(); setEducation((prev) => [...prev, { level: '', school: '' }]); };
-  const removeEducation = (idx: number) => { markDirty(); setEducation((prev) => prev.filter((_, i) => i !== idx)); };
+  const addEducation = () => { setEducation((prev) => [...prev, { level: '', school: '' }]); };
+  const removeEducation = (idx: number) => { setEducation((prev) => prev.filter((_, i) => i !== idx)); };
   const updateEducation = (idx: number, patch: Partial<EducationEntry>) => {
-    markDirty();
     setEducation((prev) => prev.map((e, i) => (i === idx ? { ...e, ...patch } : e)));
   };
 
   const toggleClub = (clubId: string) => {
-    markDirty();
     setClubMemberships((prev) =>
       prev.includes(clubId) ? prev.filter((c) => c !== clubId) : [...prev, clubId],
     );
@@ -127,8 +128,8 @@ export default function EducationSettingsPage() {
     });
   };
 
-  // Otomatik kayıt: son değişiklikten 1.2 sn sonra sessizce yaz (toast yok).
-  const { status: autosaveStatus, markDirty } = useAutosave(persist, [education, clubMemberships], { delayMs: 1200 });
+  // Otomatik kayıt (v2 auto): hydration sonrası herhangi bir değişiklikte 1.2 sn sonra sessizce yaz (toast yok).
+  const { status: autosaveStatus } = useAutosave(persist, [education, clubMemberships], { delayMs: 1200, enabled: hydrated, auto: true });
 
   const save = async () => {
     if (!user || !firestore) return;

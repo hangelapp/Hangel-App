@@ -79,6 +79,7 @@ export default function SustainabilityPage() {
     const [kssAreas, setKssAreas] = useState<KssArea[]>([]);
     const [certificates, setCertificates] = useState<{ name: string; issuer: string; year: string }[]>([]);
     const [saving, setSaving] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
     // Formu kurum başına BİR kez doldur — canlı doc her snapshot'ta güncellenince
     // effect yeniden çalışıp kullanıcının girdiği değerleri ezmesin.
     const hydratedIdRef = useRef<string | null>(null);
@@ -94,6 +95,7 @@ export default function SustainabilityPage() {
         setReports(s.reports || []);
         setKssAreas(s.kssAreas || []);
         setCertificates(s.certificates || []);
+        setHydrated(true);
     }, [entity]);
 
     const persistSustainability = async () => {

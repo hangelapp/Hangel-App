@@ -85,7 +85,7 @@ export default function AnalyticsToolsPage() {
         });
     };
 
-    const { status: autosaveStatus, markDirty } = useAutosave(persistAnalytics, [gaId, metaPixelId, gtmId], { delayMs: 1000 });
+    const { status: autosaveStatus } = useAutosave(persistAnalytics, [gaId, metaPixelId, gtmId], { delayMs: 1000, enabled: hydrated, auto: true });
 
     const handleSave = async () => {
         if (!db || !ngoId) {
@@ -180,7 +180,7 @@ export default function AnalyticsToolsPage() {
                                         id="ga4-id"
                                         placeholder="G-XXXXXXXXXX"
                                         value={gaId}
-                                        onChange={(e) => { markDirty(); setGaId(e.target.value); }}
+                                        onChange={(e) => setGaId(e.target.value)}
                                         disabled={!isAdmin}
                                     />
                                 </div>
@@ -190,7 +190,7 @@ export default function AnalyticsToolsPage() {
                                         id="meta-pixel-id"
                                         placeholder="123456789012345"
                                         value={metaPixelId}
-                                        onChange={(e) => { markDirty(); setMetaPixelId(e.target.value); }}
+                                        onChange={(e) => setMetaPixelId(e.target.value)}
                                         disabled={!isAdmin}
                                     />
                                 </div>
@@ -201,7 +201,7 @@ export default function AnalyticsToolsPage() {
                                     id="gtm-id"
                                     placeholder="GTM-XXXXXXX"
                                     value={gtmId}
-                                    onChange={(e) => { markDirty(); setGtmId(e.target.value); }}
+                                    onChange={(e) => setGtmId(e.target.value)}
                                     disabled={!isAdmin}
                                 />
                             </div>

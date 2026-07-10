@@ -77,15 +77,24 @@ export default function NotificationSettingsPage() {
         return doc(db, COLLECTIONS.users, authUser.uid);
     }, [db, authUser]);
 
-    const { data: userData } = useDoc<{ notificationSettings?: NotificationSettings }>(userDocRef);
+    const { data: userData, isLoading: userDataLoading } = useDoc<{ notificationSettings?: NotificationSettings }>(userDocRef);
     const [settings, setSettings] = useState<NotificationSettings>(defaultSettings);
     const [saving, setSaving] = useState(false);
+    // Autosave v2: form Firestore'dan dolmadan otomatik kayıt KAPALI —
+    // default'ların kayıtlı ayarların üzerine yazılmasını önler.
+    const [hydrated, setHydrated] = useState(false);
 
     useEffect(() => {
+        // Tek seferlik hydration: useDoc canlı dinleyici olduğundan kendi
+        // yazmamızın yankısı formu yeniden doldurup autosave döngüsü kurmasın.
+        if (hydrated || !userDocRef || userDataLoading) return;
         if (userData?.notificationSettings) {
             setSettings({ ...defaultSettings, ...userData.notificationSettings });
         }
-    }, [userData]);
+        // Form doldu — otomatik kayıt bundan sonra devreye girer (hydration'ın
+        // kendisi baseline sayılır, kayıt tetiklemez; useAutosave auto modu).
+        setHydrated(true);
+    }, [hydrated, userDocRef, userDataLoading, userData]);
 
     const persist = async () => {
         if (!userDocRef) return;
@@ -93,10 +102,9 @@ export default function NotificationSettingsPage() {
         if (!result.ok) throw result.error;
     };
 
-    const { status: autosaveStatus, markDirty } = useAutosave(persist, [settings], { delayMs: 600 });
+    const { status: autosaveStatus } = useAutosave(persist, [settings], { delayMs: 600, enabled: hydrated, auto: true });
 
     const handleToggle = (id: string) => {
-        markDirty();
         setSettings(prev => ({ ...prev, [id]: !prev[id] }));
     };
 

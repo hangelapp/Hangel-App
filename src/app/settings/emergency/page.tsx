@@ -39,6 +39,7 @@ export default function EmergencySettingsPage() {
   const { t } = useTranslation();
   const [prefs, setPrefs] = useState<EmergencyPrefs>({});
   const [loading, setLoading] = useState(true);
+  const [hydrated, setHydrated] = useState(false);
   const [saving, setSaving] = useState(false);
   const [healthLoading, setHealthLoading] = useState(false);
   const isNative = Capacitor.isNativePlatform();
@@ -58,6 +59,10 @@ export default function EmergencySettingsPage() {
           emergencyAvailable: !!data?.personalInfo?.emergencyAvailable,
           disasterAlerts: !!data?.preferences?.disasterAlerts,
         });
+        // Form doldu — otomatik kayıt bundan sonra devreye girer (hydration'ın
+        // kendisi baseline sayılır, kayıt tetiklemez; useAutosave auto modu).
+        // Yükleme hatasında hydrated false kalır → boş form Firestore'u ezemez.
+        setHydrated(true);
       } catch (e) {
         // Sessiz boş form yerine: yükleme hatasını kullanıcıya bildir.
         toast({ variant: 'destructive', title: t('emergencyPage.loadError'), description: e instanceof Error ? e.message : t('common.unknownError') });

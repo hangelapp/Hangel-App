@@ -146,6 +146,9 @@ export default function AccessibilitySettingsPage() {
     const [undoTime, setUndoTime] = useState('10s');
 
     // --- Persistence ---
+    // Hydration bitmeden autosave devreye girmesin (boş/varsayılan state'in
+    // kayıtlı tercihlerin üzerine yazılmasını önler).
+    const [hydrated, setHydrated] = useState(false);
     useEffect(() => {
         const saved = localStorage.getItem('hangel-a11y-v3');
         if (saved) {
@@ -204,6 +207,7 @@ export default function AccessibilitySettingsPage() {
                 console.error("Settings load error:", e);
             }
         }
+        setHydrated(true);
     }, []);
 
     // Akıllı Erişilebilirlik: otomatik algılama tercihi + canlı ekran okuyucu durumu
@@ -331,18 +335,16 @@ export default function AccessibilitySettingsPage() {
         }
     };
 
-    // Otomatik kayıt: son değişiklikten 1 sn sonra sessizce yaz.
-    // İlk yükleme (localStorage hydration) dirty işaretlemediği için tetiklenmez.
-    const { status: autosaveStatus, markDirty } = useAutosave(persist, [
+    // Otomatik kayıt (auto mod): hydration sonrası HERHANGİ bir state değişimi
+    // son değişiklikten 1 sn sonra sessizce yazılır. İlk çalıştırma baseline'dır
+    // (hydration kayıt tetiklemez); markDirty bağlamaya gerek yok.
+    const { status: autosaveStatus } = useAutosave(persist, [
         highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, linkUnderline, screenReaderMode, separateText, showContrastInfo, reflowMode,
         reduceMotion, largeTouchTargets, longPressDuration, fullKeyboard, focusStrength, dragDropAlt, limitShortcuts,
         readingLevel, stepByStep, termConsistency, focusMode, termDefinitions, errorPrevention,
         screenReader, dynamicAnnouncements, mediaDescriptions, logicalOrder, audioFeedback, visualAlerts, muteAutoAudio, ignoreDecorative,
         timeoutWarnings, autoSave, disableTimeLimits, transactionConfirmation, undoSupport, undoTime,
-    ], { delayMs: 1000 });
-
-    // Kullanıcı kaynaklı değişiklik → dirty işaretle + state güncelle.
-    const dirty = <T,>(setter: (v: T) => void) => (v: T) => { markDirty(); setter(v); };
+    ], { delayMs: 1000, enabled: hydrated, auto: true });
 
     const handleSave = async () => {
         if (isSaving) return;

@@ -138,11 +138,12 @@ export default function ProfileSettingsPage() {
                 ...(userData.volunteerInfo || {})
             }
         }));
+        // Autosave kapısını AÇ: form state artık Firestore verisiyle dolu.
+        setHydrated(true);
     }
   }, [userData]);
 
   const handleChange = (section: string, field: string, value: unknown) => {
-    markDirty();
     setProfile(prev => {
         const newProfile = JSON.parse(JSON.stringify(prev));
         if (section === 'personalInfo' && field === 'address') {
@@ -176,7 +177,6 @@ export default function ProfileSettingsPage() {
   };
 
   const handleSocialChange = (field: string, value: string) => {
-    markDirty();
     setProfile(prev => {
         const newProfile = JSON.parse(JSON.stringify(prev));
         newProfile.personalInfo.social = {
@@ -191,7 +191,6 @@ export default function ProfileSettingsPage() {
     (profile.personalInfo.social as (User['personalInfo']['social'] & { custom?: { platform: string; url: string }[] }) | undefined)?.custom ?? [];
 
   const setCustomLinks = (links: { platform: string; url: string }[]) => {
-    markDirty();
     setProfile(prev => {
         const newProfile = JSON.parse(JSON.stringify(prev));
         newProfile.personalInfo.social = {
@@ -370,12 +369,14 @@ export default function ProfileSettingsPage() {
     return true;
   };
 
-  // Otomatik kayıt: son değişiklikten 1.2 sn sonra sessizce yaz.
-  // İlk yükleme (Firestore hydration) dirty işaretlemediği için tetiklenmez.
-  const { status: autosaveStatus, markDirty } = useAutosave(async () => {
+  // Otomatik kayıt (v2 auto): hydration sonrası HER profile değişikliği son
+  // değişiklikten 1.2 sn sonra sessizce yazılır. enabled=hydrated → boş
+  // state autosave'i tetikleyemez; auto=true → markDirty bağlama (ve
+  // unutulan-handler deliği) yok. İlk çalıştırma baseline'dır, kayıt yazmaz.
+  const { status: autosaveStatus } = useAutosave(async () => {
     const ok = await persistProfile(true);
     if (!ok) throw new Error('duplicate');
-  }, [profile], { delayMs: 1200 });
+  }, [profile], { delayMs: 1200, enabled: hydrated, auto: true });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -41,6 +41,8 @@ export default function VolunteerNgoSelectionPage() {
 
     const { data: userData, isLoading: isUserDataLoading } = useDoc<{ volunteerNgos?: string[] }>(userDocRef);
     const [selectedNgos, setSelectedNgos] = useState<string[]>([]);
+    // Otomatik kayıt hydration tamamlanmadan AÇILMAZ (boş state'in Firestore'u ezmesini önler).
+    const [hydrated, setHydrated] = useState(false);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<NgoType>('Tümü');
@@ -53,9 +55,13 @@ export default function VolunteerNgoSelectionPage() {
     // Yalnızca standalone "gönüllü STK'larını değiştir" ekranı olarak kullanılır; isOnboarding daima false.
     const [isOnboarding] = useState(false);
 
+    // Hydration BİR KEZ: sonrasında lokal state kaynak olur; snapshot echo'sunun
+    // devam eden seçimleri geri ezmesi (ve auto modda gereksiz yazma döngüsü) önlenir.
     useEffect(() => {
+        if (hydrated || isUserDataLoading) return;
         if (userData?.volunteerNgos) setSelectedNgos(userData.volunteerNgos);
-    }, [userData]);
+        setHydrated(true);
+    }, [userData, isUserDataLoading, hydrated]);
 
     // Sadece aktif STK'lar
     const activeNgos = useMemo(
@@ -118,11 +124,10 @@ export default function VolunteerNgoSelectionPage() {
         if (!result.ok) throw result.error;
     };
 
-    // Otomatik kayıt: seçim değişince 600 ms sonra sessizce yaz.
-    const { status: autosaveStatus, markDirty } = useAutosave(persist, [selectedNgos], { delayMs: 600 });
+    // Otomatik kayıt (auto mod): hydration sonrası her seçim değişikliği 600 ms sonra sessizce yazılır.
+    const { status: autosaveStatus } = useAutosave(persist, [selectedNgos], { delayMs: 600, enabled: hydrated, auto: true });
 
     const handleSelectNgo = (ngoId: string) => {
-        markDirty();
         setSelectedNgos(prev => prev.includes(ngoId) ? prev.filter(id => id !== ngoId) : [...prev, ngoId]);
     };
 

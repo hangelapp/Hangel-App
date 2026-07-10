@@ -73,6 +73,7 @@ export default function SettingsPage() {
   }, [activeId, activeKind, activeDoc]);
 
   const [settings, setSettings] = useState<Required<PanelSettings>>(defaultPanelSettings);
+  const [hydrated, setHydrated] = useState(false);
   const [saving, setSaving] = useState(false);
   const [requesting, setRequesting] = useState(false);
 
