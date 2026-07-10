@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from 'lucide-react';
@@ -31,6 +31,13 @@ const FormRenderer = () => {
     const entity = searchParams.get('entity') || 'NGO';
     const nextPath = resolveNext(searchParams.get('next'));
 
+    // Etkinlik-QR akışıyla gelen kullanıcı için Kurumsal tab'ini gizle (yalnız
+    // bireysel kayıt). localStorage client-only olduğundan mount sonrası okunur
+    // (hidrasyon uyuşmazlığını önler; kısa bir an iki tab görünür, sonra tekleşir).
+    const [qrFlow, setQrFlow] = useState(false);
+    useEffect(() => { setQrFlow(!!getQrOnboard()); }, []);
+    const effectiveTab = qrFlow ? 'individual' : tab;
+
     // BUG-18: Logged-in kullanıcılar da /login/selection'da bireysel + kurumsal
     // kayıt başvuru formlarını her zaman açabilmeli. Önceki redirect (PDF-3)
     // sadece action=register olmadığında atıyordu → kullanıcılar başvuru
@@ -50,11 +57,14 @@ const FormRenderer = () => {
                         <CardTitle className="text-3xl font-black tracking-tighter">Merhaba</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6 px-6 sm:px-8 pb-10">
-                        <Tabs value={tab} onValueChange={(val) => router.push(`/login/selection?tab=${val}&entity=${entity}`)}>
-                            <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
-                                <TabsTrigger value="individual" className="rounded-lg font-bold">Bireysel</TabsTrigger>
-                                <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
-                            </TabsList>
+                        <Tabs value={effectiveTab} onValueChange={(val) => { if (qrFlow) return; router.push(`/login/selection?tab=${val}&entity=${entity}`); }}>
+                            {/* Etkinlik-QR akışında Kurumsal tab gizli — yalnız bireysel kayıt. */}
+                            {!qrFlow && (
+                                <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
+                                    <TabsTrigger value="individual" className="rounded-lg font-bold">Bireysel</TabsTrigger>
+                                    <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
+                                </TabsList>
+                            )}
                             <TabsContent value="individual" className="pt-4">
                                 <IndividualForm onComplete={(isNewUser) => {
                                     // Yeni kayıt olan kullanıcılara "hoş geldin sıralı popart"ı (onboarding
@@ -67,9 +77,11 @@ const FormRenderer = () => {
                                     router.push(isNewUser ? '/welcome' : nextPath);
                                 }} />
                             </TabsContent>
-                            <TabsContent value="corporate" className="pt-4">
-                                <CorporateForm initialEntity={entity} />
-                            </TabsContent>
+                            {!qrFlow && (
+                                <TabsContent value="corporate" className="pt-4">
+                                    <CorporateForm initialEntity={entity} />
+                                </TabsContent>
+                            )}
                         </Tabs>
                     </CardContent>
                 </Card>
