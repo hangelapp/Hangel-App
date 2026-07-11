@@ -15,8 +15,9 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
 import { isNativeApp } from '@/lib/capacitor';
-import { generateEventCertificate, eventCertificateFileName } from '@/lib/event-certificate';
-import { generateVolunteerCertificate } from '@/lib/volunteer-certificate';
+import { saveAndShareFileNative } from '@/lib/native-file';
+import { generateEventCertificate, buildEventCertificateJpeg, eventCertificateFileName } from '@/lib/event-certificate';
+import { generateVolunteerCertificate, buildVolunteerCertificateJpeg } from '@/lib/volunteer-certificate';
 import { celebrate } from '@/lib/celebrate';
 
 // Sertifikalar: users/{uid}/certificates alt koleksiyonu. Etkinlik sertifikaları
@@ -150,39 +151,46 @@ export function CertificatesTab() {
     const certFileName = (cert: { title: string; id?: string }) =>
         eventCertificateFileName({ eventName: cert.title, certificateId: cert.id || cert.title });
 
-    // Blob → base64 (native Filesystem.writeFile için). FileReader webview'de çalışır.
-    const blobToBase64 = (blob: Blob): Promise<string> =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(((reader.result as string) || '').split(',')[1] || '');
-            reader.onerror = () => reject(reader.error);
-            reader.readAsDataURL(blob);
+    // Sertifikanın tek sayfalık JPEG görüntüsü (önizleme için) — PDF ile aynı görsel.
+    const buildCertJpeg = async (cert: CertInput): Promise<string> => {
+        const certificateId = cert.id || cert.title;
+        if (cert.kind === 'volunteer') {
+            const { jpeg } = await buildVolunteerCertificateJpeg({
+                taskTitle: cert.title,
+                organizerName: cert.organization,
+                userName: recipientName,
+                date: cert.date,
+                certificateId,
+                code: cert.code,
+                logoUrl: cert.logoUrl,
+            });
+            return jpeg;
+        }
+        const { jpeg } = await buildEventCertificateJpeg({
+            eventName: cert.title,
+            eventDate: cert.date,
+            userName: recipientName,
+            organizerName: cert.organization,
+            role: 'participant',
+            certificateId,
+            code: cert.code,
+            logoUrl: cert.logoUrl,
         });
+        return jpeg;
+    };
 
-    // Native: write to Documents/ + share; Web: blob indir.
+    // Native: Cache'e yaz + paylaşım sayfası (Documents Android 11+'ta yazılamaz,
+    // ayrıntı: src/lib/native-file.ts); Web: blob indir.
     const handleDownloadCertificate = async (cert: CertInput) => {
         try {
             const blob = await buildCertBlob(cert);
             const filename = certFileName(cert);
             if (isNativeApp()) {
-                const { Filesystem, Directory } = await import('@capacitor/filesystem');
-                const { Share } = await import('@capacitor/share');
-                const base64 = await blobToBase64(blob);
-                const written = await Filesystem.writeFile({
-                    path: filename,
-                    data: base64,
-                    directory: Directory.Documents,
+                await saveAndShareFileNative(blob, filename, {
+                    title: cert.title,
+                    text: `${cert.title} ${t('dashboard.badges.shareCertSuffix')}`,
+                    dialogTitle: t('dashboard.badges.saveOrShareDialog'),
                 });
-                try {
-                    await Share.share({
-                        title: cert.title,
-                        text: `${cert.title} ${t('dashboard.badges.shareCertSuffix')}`,
-                        url: written.uri,
-                        dialogTitle: t('dashboard.badges.saveOrShareDialog'),
-                    });
-                } catch {
-                    // user dismissed share — file is already saved
-                }
                 celebrate({ title: `Sertifikan hazır 🧡`, message: cert.title });
                 toast({ title: t('dashboard.badges.certSavedTitle'), description: `${filename} ${t('dashboard.badges.certSavedSuffix')}` });
                 return;
@@ -203,45 +211,24 @@ export function CertificatesTab() {
         }
     };
 
-    // Modal popup preview için cert PDF blob URL'i ve seçili cert.
-    const [previewState, setPreviewState] = useState<{ url: string; cert: CertInput } | null>(null);
+    // Önizleme modalı: sertifikanın JPEG görüntüsü (data URI) + seçili cert.
+    const [previewState, setPreviewState] = useState<{ jpeg: string; cert: CertInput } | null>(null);
 
-    // Native: write temp + open via Browser; Web: iframe preview modal.
+    // Önizleme HER platformda app-içi görsel diyaloğu. Native'de eskiden
+    // Browser.open(file://) kullanılıyordu — iOS/Android yalnız http(s) açar,
+    // her cihazda hata veriyordu. Görsel data-URI olduğu için dosya yazma,
+    // izin, revoke gerekmez.
     const handleViewCertificate = async (cert: CertInput) => {
         try {
-            const blob = await buildCertBlob(cert);
-            if (isNativeApp()) {
-                const { Filesystem, Directory } = await import('@capacitor/filesystem');
-                const { Browser } = await import('@capacitor/browser');
-                const filename = certFileName(cert);
-                const base64 = await blobToBase64(blob);
-                const written = await Filesystem.writeFile({
-                    path: filename,
-                    data: base64,
-                    directory: Directory.Cache,
-                });
-                await Browser.open({ url: written.uri });
-                return;
-            }
-            // Web: iframe modal preview (popup yerine in-app dialog).
-            const blobUrl = URL.createObjectURL(blob);
-            // Önceki blob'u serbest bırak (memory leak önle).
-            if (previewState?.url) {
-                try { URL.revokeObjectURL(previewState.url); } catch { /* ignore */ }
-            }
-            setPreviewState({ url: blobUrl, cert });
+            const jpeg = await buildCertJpeg(cert);
+            setPreviewState({ jpeg, cert });
         } catch (error) {
-            console.error('Certificate PDF view failed:', error);
+            console.error('Certificate preview failed:', error);
             toast({ variant: 'destructive', title: t('dashboard.badges.certOpenFailTitle'), description: t('dashboard.badges.certPdfFailDesc') });
         }
     };
 
-    const closePreview = () => {
-        if (previewState?.url) {
-            try { URL.revokeObjectURL(previewState.url); } catch { /* ignore */ }
-        }
-        setPreviewState(null);
-    };
+    const closePreview = () => setPreviewState(null);
 
     const buildShareText = (certTitle: string) => `${certTitle} ${t('dashboard.badges.shareCertEarned')}`;
     const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
@@ -359,9 +346,9 @@ export function CertificatesTab() {
                 ))
             )}
 
-            {/* Sertifika önizleme modal — popup yerine in-app dialog */}
+            {/* Sertifika önizleme modal — app-içi görsel (web + native aynı yol) */}
             <Dialog open={!!previewState} onOpenChange={(open) => { if (!open) closePreview(); }}>
-                <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col rounded-3xl overflow-hidden p-0">
+                <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] flex flex-col rounded-3xl overflow-hidden p-0">
                     <DialogHeader className="px-6 py-3 border-b flex flex-row items-center justify-between space-y-0 gap-3">
                         <DialogTitle className="text-base font-semibold truncate flex-1">
                             {previewState?.cert.title ?? ''}
@@ -370,12 +357,15 @@ export function CertificatesTab() {
                             <XIcon className="h-5 w-5" />
                         </Button>
                     </DialogHeader>
-                    {previewState?.url && (
-                        <iframe
-                            src={previewState.url}
-                            title={previewState.cert.title}
-                            className="flex-1 w-full border-0 bg-muted"
-                        />
+                    {previewState?.jpeg && (
+                        <div className="flex-1 min-h-0 overflow-auto bg-muted p-3 sm:p-6 flex items-center justify-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={previewState.jpeg}
+                                alt={previewState.cert.title}
+                                className="max-w-full h-auto rounded-lg shadow-lg"
+                            />
+                        </div>
                     )}
                     <DialogFooter className="px-6 py-3 border-t gap-2 sm:gap-2">
                         {previewState && (

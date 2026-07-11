@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Award, Download, Droplet, Eye, HandHeart, Loader2, Ticket, X as XIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { isNativeApp } from '@/lib/capacitor';
+import { saveAndShareFileNative } from '@/lib/native-file';
 import { generateEventCertificate } from '@/lib/event-certificate';
 import { generateVolunteerCertificate } from '@/lib/volunteer-certificate';
 import { buildCertCode, certVerifyUrl } from '@/lib/certificate-code';
@@ -96,9 +97,8 @@ const SAMPLE_CERTS: readonly SampleCert[] = [
  * Super-admin "Örnek Sertifikalar" önizleme sayfası.
  *
  * Üç sertifika türünün (gönüllülük / etkinlik / kan bağışı) gerçek üreticileriyle
- * üretilmiş ÖRNEK kopyalarını GÖRÜNTÜLER + İNDİRİR. İndirme/görüntüleme,
- * certificates-tab.tsx ile BİREBİR aynı iOS-güvenli akışı kullanır:
- * native → Filesystem.writeFile + Share/Browser; web → blob indir / iframe modal.
+ * üretilmiş ÖRNEK kopyalarını GÖRÜNTÜLER + İNDİRİR. Native akış tek kaynaktan:
+ * saveAndShareFileNative (Cache + paylaşım sayfası); web → blob indir / iframe modal.
  */
 export default function CertPreviewPage() {
     const { toast } = useToast();
@@ -108,37 +108,16 @@ export default function CertPreviewPage() {
     // Web önizleme modalı: oluşturulan blob URL'i + sertifika başlığı.
     const [previewState, setPreviewState] = useState<{ url: string; title: string; fileName: string; build: () => Promise<Blob> } | null>(null);
 
-    // Blob → base64 (native Filesystem.writeFile için).
-    const blobToBase64 = (blob: Blob): Promise<string> =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(((reader.result as string) || '').split(',')[1] || '');
-            reader.onerror = () => reject(reader.error);
-            reader.readAsDataURL(blob);
-        });
-
-    // Native: Documents'a yaz + paylaş; Web: blob indir.
+    // Native: Cache'e yaz + paylaşım sayfası (Documents Android 11+'ta yazılamaz,
+    // ayrıntı: src/lib/native-file.ts); Web: blob indir.
     const downloadBlob = async (blob: Blob, fileName: string, title: string) => {
         if (isNativeApp()) {
-            const { Filesystem, Directory } = await import('@capacitor/filesystem');
-            const { Share } = await import('@capacitor/share');
-            const base64 = await blobToBase64(blob);
-            const written = await Filesystem.writeFile({
-                path: fileName,
-                data: base64,
-                directory: Directory.Documents,
+            await saveAndShareFileNative(blob, fileName, {
+                title,
+                text: `${title} (örnek)`,
+                dialogTitle: 'Kaydet veya paylaş',
             });
-            try {
-                await Share.share({
-                    title,
-                    text: `${title} (örnek)`,
-                    url: written.uri,
-                    dialogTitle: 'Kaydet veya paylaş',
-                });
-            } catch {
-                // kullanıcı paylaşımı kapattı — dosya zaten kaydedildi
-            }
-            toast({ title: 'Sertifika kaydedildi', description: `${fileName} Belgeler klasörüne kaydedildi.` });
+            toast({ title: 'Sertifikan hazır', description: 'Paylaşım sayfasından kaydedebilir veya gönderebilirsin.' });
             return;
         }
         const url = URL.createObjectURL(blob);
@@ -170,15 +149,12 @@ export default function CertPreviewPage() {
         try {
             const blob = await cert.build();
             if (isNativeApp()) {
-                const { Filesystem, Directory } = await import('@capacitor/filesystem');
-                const { Browser } = await import('@capacitor/browser');
-                const base64 = await blobToBase64(blob);
-                const written = await Filesystem.writeFile({
-                    path: cert.fileName,
-                    data: base64,
-                    directory: Directory.Cache,
+                // Browser.open(file://) iOS/Android'de ÇALIŞMAZ (yalnız http/https) —
+                // paylaşım sayfası üzerinden aç/kaydet. Ayrıntı: src/lib/native-file.ts
+                await saveAndShareFileNative(blob, cert.fileName, {
+                    title: cert.label,
+                    dialogTitle: 'Sertifikayı aç veya kaydet',
                 });
-                await Browser.open({ url: written.uri });
                 return;
             }
             const blobUrl = URL.createObjectURL(blob);

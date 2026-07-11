@@ -27,6 +27,7 @@ import { useUser } from '@/firebase';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { useToast } from '@/hooks/use-toast';
 import { isNativeApp } from '@/lib/capacitor';
+import { saveAndShareFileNative } from '@/lib/native-file';
 import { generateOrgImpactCertificate, type OrgImpactMetrics } from '@/lib/org-impact-certificate';
 import { buildCertCode } from '@/lib/certificate-code';
 
@@ -58,15 +59,6 @@ interface CertRow {
 const TRY = (n: number) => Math.round(Number.isFinite(n) ? n : 0).toLocaleString('tr-TR');
 const HRS = (n: number) => (Math.round((Number.isFinite(n) ? n : 0) * 10) / 10).toLocaleString('tr-TR');
 const CNT = (n: number) => Math.round(Number.isFinite(n) ? n : 0).toLocaleString('tr-TR');
-
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(((reader.result as string) || '').split(',')[1] || '');
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
 
 function slugifyFileName(orgName: string, periodLabel: string): string {
   const base = `${orgName}-${periodLabel}-etki-sertifikasi`
@@ -197,16 +189,13 @@ export default function OrgCertificatesPage() {
         const blob = await buildBlob(metrics, periodLabel, ym, code);
         const filename = slugifyFileName(orgName || 'kurum', periodLabel);
         if (isNativeApp()) {
-          const { Filesystem, Directory } = await import('@capacitor/filesystem');
-          const { Share } = await import('@capacitor/share');
-          const base64 = await blobToBase64(blob);
-          const written = await Filesystem.writeFile({ path: filename, data: base64, directory: Directory.Documents });
-          try {
-            await Share.share({ title: `${orgName} ${periodLabel}`, url: written.uri, dialogTitle: 'Sertifikayı kaydet veya paylaş' });
-          } catch {
-            /* paylaşım iptal edildi — dosya zaten kaydedildi */
-          }
-          toast({ title: 'Sertifika kaydedildi', description: `${filename} cihazına indirildi.` });
+          // Cache'e yaz + paylaşım sayfası — Documents Android 11+'ta yazılamaz,
+          // ayrıntı: src/lib/native-file.ts
+          await saveAndShareFileNative(blob, filename, {
+            title: `${orgName} ${periodLabel}`,
+            dialogTitle: 'Sertifikayı kaydet veya paylaş',
+          });
+          toast({ title: 'Sertifikan hazır', description: 'Paylaşım sayfasından kaydedebilir veya gönderebilirsin.' });
           return;
         }
         const url = URL.createObjectURL(blob);
@@ -233,12 +222,13 @@ export default function OrgCertificatesPage() {
       try {
         const blob = await buildBlob(metrics, periodLabel, ym, code);
         if (isNativeApp()) {
-          const { Filesystem, Directory } = await import('@capacitor/filesystem');
-          const { Browser } = await import('@capacitor/browser');
+          // Browser.open(file://) iOS/Android'de ÇALIŞMAZ (yalnız http/https) —
+          // paylaşım sayfası üzerinden aç/kaydet. Ayrıntı: src/lib/native-file.ts
           const filename = slugifyFileName(orgName || 'kurum', periodLabel);
-          const base64 = await blobToBase64(blob);
-          const written = await Filesystem.writeFile({ path: filename, data: base64, directory: Directory.Cache });
-          await Browser.open({ url: written.uri });
+          await saveAndShareFileNative(blob, filename, {
+            title: `${orgName} — ${periodLabel}`,
+            dialogTitle: 'Sertifikayı aç veya kaydet',
+          });
           return;
         }
         const url = URL.createObjectURL(blob);

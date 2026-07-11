@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { isNativeApp } from "@/lib/capacitor";
+import { saveAndShareFileNative } from "@/lib/native-file";
 import {
   badgeFileName,
   certificateUrl,
@@ -83,19 +84,11 @@ export function BadgeCardPreview({
       const filename = badgeFileName(certificate);
 
       if (isNativeApp()) {
-        // Native: Documents'a yaz + share sheet
-        const { Filesystem, Directory } = await import("@capacitor/filesystem");
-        const { Share } = await import("@capacitor/share");
-        const base64 = await blobToBase64(blob);
-        const written = await Filesystem.writeFile({
-          path: filename,
-          data: base64,
-          directory: Directory.Documents,
-        });
-        await Share.share({
+        // Native: Cache'e yaz + paylaşım sayfası (Documents Android 11+'ta
+        // yazılamaz, ayrıntı: src/lib/native-file.ts)
+        await saveAndShareFileNative(blob, filename, {
           title: "hangel yaka kartı",
           text: certificate.title,
-          url: written.uri,
           dialogTitle: "Yaka kartını paylaş",
         });
       } else {
@@ -134,18 +127,9 @@ export function BadgeCardPreview({
         setLoading("share");
         const blob = await buildBlob();
         const filename = badgeFileName(certificate);
-        const { Filesystem, Directory } = await import("@capacitor/filesystem");
-        const { Share } = await import("@capacitor/share");
-        const base64 = await blobToBase64(blob);
-        const written = await Filesystem.writeFile({
-          path: filename,
-          data: base64,
-          directory: Directory.Cache,
-        });
-        await Share.share({
+        await saveAndShareFileNative(blob, filename, {
           title: "hangel yaka kartı",
           text,
-          url: written.uri,
           dialogTitle: "Yaka kartını paylaş",
         });
       } catch (err) {
@@ -301,20 +285,4 @@ export function BadgeCardPreview({
       </Dialog>
     </div>
   );
-}
-
-/**
- * Blob → pure base64 string (data URI prefix'siz). Capacitor Filesystem bekliyor.
- */
-async function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      const idx = result.indexOf(",");
-      resolve(idx >= 0 ? result.slice(idx + 1) : result);
-    };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
 }
