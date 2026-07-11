@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-11";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "8dc9c64e",
+    "date": "2026-07-11",
+    "subject": "feat(santral): Etkinlik + Gönüllü Katılımcıları sekmeleri (Adım 1 — çekirdek)"
+  },
+  {
     "hash": "a52f5f0a",
     "date": "2026-07-11",
     "subject": "feat(sertifika): Instagram Hikâyesi + LinkedIn'e Ekle + Etki Transkripti linki + arama/sıralama"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "4b439788",
     "date": "2026-07-10",
     "subject": "gönüllülük: kart redesign + Başvurulanlar/Onaylananlar tab + sıralama + online filtre + profil nudge + tamamlanma(puanla+Sertifikam) + Meet katıl + acil/afet bayrağı + AFAD afet modu (süper-admin)"
-  },
-  {
-    "hash": "acecf044",
-    "date": "2026-07-10",
-    "subject": "fix(lint): volunteering sayfasında kullanılmayan Calendar import'unu kaldır"
   }
 ];

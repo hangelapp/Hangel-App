@@ -62,6 +62,7 @@ type Person = {
   sourceLabel: string;   // hangi etkinlik/görev
   sourceRefId: string;   // eventId veya applicationId
   when: string;          // tarih (görsel)
+  attended?: boolean;    // check-in yaptı mı (etkinlik yoklaması)
 };
 
 /** STK'nın etkinliklerindeki 'going' RSVP'lerden telefonlu katılımcıları topla. */
@@ -79,7 +80,12 @@ async function collectEventParticipants(ngoId: string): Promise<Person[]> {
   const seenUidPerEvent = new Set<string>();
   for (const [eventId, evSnap] of eventsById) {
     const ev = evSnap.data() as { name?: string; startDate?: string; date?: string };
-    const rsvps = await evSnap.ref.collection(COLLECTIONS.eventRsvps).where('status', '==', 'going').get();
+    const [rsvps, checkins] = await Promise.all([
+      evSnap.ref.collection(COLLECTIONS.eventRsvps).where('status', '==', 'going').get(),
+      evSnap.ref.collection(COLLECTIONS.eventCheckins).get(),
+    ]);
+    // Bu etkinliğe check-in yapmış uid'ler → "geldi" yoklaması (otomatik).
+    const checkedInUids = new Set(checkins.docs.map((c) => (c.data() as { uid?: string }).uid || c.id));
     const uids = rsvps.docs.map((r) => r.id);
     if (uids.length === 0) continue;
     // users docs → name/phone/email
@@ -93,7 +99,8 @@ async function collectEventParticipants(ngoId: string): Promise<Person[]> {
         | { name?: string; personalInfo?: { email?: string; phone?: string } }
         | undefined;
       const phone = normalizePhoneTr(u?.personalInfo?.phone || '');
-      if (!phone) { people.push({ name: (u?.name || '').trim(), phone: '', email: (u?.personalInfo?.email || '').trim() || null, sourceLabel: ev.name || 'Etkinlik', sourceRefId: eventId, when: ev.startDate || ev.date || '' }); continue; }
+      const attended = checkedInUids.has(ud.id);
+      if (!phone) { people.push({ name: (u?.name || '').trim(), phone: '', email: (u?.personalInfo?.email || '').trim() || null, sourceLabel: ev.name || 'Etkinlik', sourceRefId: eventId, when: ev.startDate || ev.date || '', attended }); continue; }
       people.push({
         name: (u?.name || '').trim() || 'Katılımcı',
         phone,
@@ -101,6 +108,7 @@ async function collectEventParticipants(ngoId: string): Promise<Person[]> {
         sourceLabel: ev.name || 'Etkinlik',
         sourceRefId: eventId,
         when: ev.startDate || ev.date || '',
+        attended,
       });
     }
   }
@@ -163,15 +171,18 @@ export async function POST(req: NextRequest) {
   const skippedNoPhone = people.length - withPhone.length;
 
   // Telefona göre tekilleştir; aynı kişi birden çok etkinlikten gelirse
-  // kaynaklar birleştirilir.
-  const byPhone = new Map<string, Person & { sources: { label: string; refId: string; when: string }[] }>();
+  // kaynaklar birleştirilir. attendedAuto: kişi HERHANGİ bir etkinliğe
+  // check-in yaptıysa true (otomatik yoklama).
+  const byPhone = new Map<string, Person & { sources: { label: string; refId: string; when: string; attended: boolean }[]; attendedAuto: boolean }>();
   for (const p of withPhone) {
     const cur = byPhone.get(p.phone);
+    const srcEntry = { label: p.sourceLabel, refId: p.sourceRefId, when: p.when, attended: !!p.attended };
     if (cur) {
-      cur.sources.push({ label: p.sourceLabel, refId: p.sourceRefId, when: p.when });
+      cur.sources.push(srcEntry);
+      if (p.attended) cur.attendedAuto = true;
       if (!cur.email && p.email) cur.email = p.email;
     } else {
-      byPhone.set(p.phone, { ...p, sources: [{ label: p.sourceLabel, refId: p.sourceRefId, when: p.when }] });
+      byPhone.set(p.phone, { ...p, sources: [srcEntry], attendedAuto: !!p.attended });
     }
   }
 
@@ -192,14 +203,19 @@ export async function POST(req: NextRequest) {
     for (const p of slice) {
       const existing = existingByPhone.get(p.phone);
       const sourcesPayload = p.sources.slice(0, 50); // makul sınır
+      // Otomatik yoklama: check-in varsa attendance='attended' yazılır. Manuel
+      // işaret (attendanceManual) varsa ONA dokunulmaz (yönetici override üstün).
+      const autoAttendance = source === 'event' && p.attendedAuto ? { attendance: 'attended' } : {};
       if (existing) {
-        // NOT/DURUM/attempts KORUNUR — yalnız kaynak + iletişim tazelenir.
+        // NOT/DURUM/attempts/attendanceManual KORUNUR — yalnız kaynak + iletişim
+        // + otomatik yoklama tazelenir.
         const ref = db.collection(CONTACTS).doc(existing.id);
         batch.set(ref, {
           name: p.name,
           ...(p.email ? { email: p.email } : {}),
           participantSources: FieldValue.arrayUnion(source),
           [`participantRefs.${source}`]: sourcesPayload,
+          ...autoAttendance,
           updatedAt: FieldValue.serverTimestamp(),
         }, { merge: true });
         matched++;
@@ -215,6 +231,7 @@ export async function POST(req: NextRequest) {
           attempts: 0,
           participantSources: [source],
           participantRefs: { [source]: sourcesPayload },
+          ...autoAttendance,
           createdAt: FieldValue.serverTimestamp(),
         });
         created++;

@@ -56,6 +56,8 @@ interface ParticipantRow {
   attempts: number;
   lastDisposition: string | null;
   lastAttemptAt: string | null;
+  attendance: 'attended' | 'absent' | null; // yoklama: geldi/gelmedi/işaretsiz
+  assignedToName: string | null;            // sorumlu (Adım 3)
   sources: { label: string; refId: string; when: string }[];
 }
 
@@ -82,9 +84,12 @@ export async function GET(req: NextRequest) {
     const data = d.data() as {
       name?: string; phone?: string; email?: string;
       attempts?: number; lastDisposition?: string; lastAttemptAt?: unknown;
+      attendance?: string; attendanceManual?: string; assignedToName?: string;
       participantRefs?: Record<string, { label?: string; refId?: string; when?: string }[]>;
     };
     const refs = data.participantRefs?.[source] || [];
+    // Manuel yoklama (yönetici işareti) otomatik check-in'in ÜSTÜNDE.
+    const att = data.attendanceManual || data.attendance;
     return {
       id: d.id,
       name: (data.name || '').trim() || 'Katılımcı',
@@ -93,6 +98,8 @@ export async function GET(req: NextRequest) {
       attempts: typeof data.attempts === 'number' ? data.attempts : 0,
       lastDisposition: data.lastDisposition || null,
       lastAttemptAt: tsToIso(data.lastAttemptAt),
+      attendance: att === 'attended' ? 'attended' : att === 'absent' ? 'absent' : null,
+      assignedToName: data.assignedToName || null,
       sources: refs.map((r) => ({ label: r.label || '', refId: r.refId || '', when: r.when || '' })),
     };
   });
