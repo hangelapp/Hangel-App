@@ -3,10 +3,12 @@
 // hangel A6 yaka kartı önizleme + indir + paylaş kartı.
 // Why:
 // - Tek satırda 3 aksiyon (Önizle / İndir / Paylaş) — kart altına yapışır.
-// - Önizleme: PDF'i blob'dan object URL'e çevirip <iframe> içinde göster.
-//   Native uygulamada iframe rendering sorunlu olabilir → "yeni sekmede aç" fallback.
-// - İndir: Web → <a download>; Native → Capacitor Filesystem + Share.
-// - Paylaş: Native → @capacitor/share; Web → navigator.share || WhatsApp/Email fallback.
+// - Önizleme: Web → PDF blob'u <iframe> ile app-içi dialog'da. Native →
+//   sistem aç/kaydet sayfası (saveAndShareFileNative): Android WebView PDF'i
+//   satır içi GÖSTEREMEZ (iframe boş kalıyordu), iOS'ta da Quick Look önizleme
+//   sunar; ayrıca yaka kartının ARKA yüzü de görünür (iframe ilk sayfada kalır).
+// - İndir/Paylaş: Web → <a download> / navigator.share; Native → Cache +
+//   paylaşım sayfası (ayrıntı: src/lib/native-file.ts).
 
 import { useCallback, useEffect, useState } from "react";
 import { Download, Eye, Loader2, Share2, ExternalLink, MessageSquare, Mail } from "lucide-react";
@@ -62,6 +64,16 @@ export function BadgeCardPreview({
     try {
       setLoading("preview");
       const blob = await buildBlob();
+      if (isNativeApp()) {
+        // Android WebView iframe'de PDF gösteremiyor → sistem aç/kaydet
+        // sayfası (iOS'ta Quick Look önizlemesi de sunar).
+        await saveAndShareFileNative(blob, badgeFileName(certificate), {
+          title: "hangel yaka kartı",
+          text: certificate.title,
+          dialogTitle: "Yaka kartını aç veya kaydet",
+        });
+        return;
+      }
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       const url = URL.createObjectURL(blob);
       setPreviewUrl(url);

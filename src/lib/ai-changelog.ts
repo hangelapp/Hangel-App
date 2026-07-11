@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-11";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "ac9ede7d",
+    "date": "2026-07-11",
+    "subject": "fix(sertifika): app'lerde önizleme/indirme hatası — file:// Browser.open ve Android Documents yazımı kaldırıldı"
+  },
+  {
     "hash": "a82e7155",
     "date": "2026-07-11",
     "subject": "sertifika: gelir-modeli konferansları için özel tasarım (mockup'a göre)"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "2a8dfd5e",
     "date": "2026-07-09",
     "subject": "chore(build): kök stray debug scriptlerini repodan çıkar + tsconfig/gitignore ile dışla"
-  },
-  {
-    "hash": "fdf57012",
-    "date": "2026-07-09",
-    "subject": "fix(market): şeritler en yükseğe göre sıralı + Apple banner gerçek ürün görselli"
   }
 ];
