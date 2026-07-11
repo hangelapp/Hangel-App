@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-11";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "200c9367",
+    "date": "2026-07-11",
+    "subject": "fix(sertifika): buton sırasındaki tasarımsal kayma — 'Görüntüle'→'İncele' + taşmaya dayanıklı eşit butonlar"
+  },
+  {
     "hash": "7b838b9e",
     "date": "2026-07-11",
     "subject": "feat(gönüllülük): Meydan Okumalar (ngo-admin) + Etki Transkripti sayfaları — menü linkleri 404 vermesin"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "bf906286",
     "date": "2026-07-10",
     "subject": "feat(onboarding): etkinlik-QR akışı — popup/çerez bastır, etkinlik detay → STK seçimi, gelir-modeli STK yönetici kaydı"
-  },
-  {
-    "hash": "c07ec5d8",
-    "date": "2026-07-09",
-    "subject": "fix(mobile): safe-area her cihazda güvenilir + kayıt sayfası uyumlu üst boşluk + profil tab/avatar/alt bar iyileştirmeleri"
   }
 ];

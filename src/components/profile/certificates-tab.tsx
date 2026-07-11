@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { X as XIcon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Milestone, FileText, LogIn, Download, Share2, MessageCircle, Linkedin, Mail, Instagram, Eye } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Milestone, FileText, LogIn, Download, Share2, MessageCircle, Linkedin, Mail, Instagram, Eye, ScrollText, Search, ArrowDownUp } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -14,10 +16,12 @@ import { doc, collection, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
-import { isNativeApp } from '@/lib/capacitor';
-import { saveAndShareFileNative } from '@/lib/native-file';
+import { isNativeApp, openExternalUrl } from '@/lib/capacitor';
+import { saveAndShareFileNative, downloadDataUrlSmart } from '@/lib/native-file';
 import { generateEventCertificate, buildEventCertificateJpeg, eventCertificateFileName } from '@/lib/event-certificate';
 import { generateVolunteerCertificate, buildVolunteerCertificateJpeg } from '@/lib/volunteer-certificate';
+import { buildCertificateStoryJpeg } from '@/lib/certificate-story';
+import { buildCertCode, certVerifyUrl } from '@/lib/certificate-code';
 import { celebrate } from '@/lib/celebrate';
 
 // Sertifikalar: users/{uid}/certificates alt koleksiyonu. Etkinlik sertifikaları
@@ -255,9 +259,57 @@ export function CertificatesTab() {
         const text = encodeURIComponent(`${buildShareText(certTitle)}${shareUrl}`);
         window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
     };
-    const shareLinkedIn = async (certTitle: string) => {
-        if (await nativeShare(certTitle)) return;
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer');
+    // LinkedIn "Add to Profile" — sertifikayı kullanıcının LinkedIn profilindeki
+    // "Lisanslar ve Sertifikalar" bölümüne ekleten resmi derin link. certUrl,
+    // PDF'teki QR ile AYNI doğrulama sayfasına (/c/{kod}) gider.
+    const linkedInAdd = (cert: CertInput) => {
+        const code = cert.code || buildCertCode({
+            kind: cert.kind === 'volunteer' ? 'volunteer' : 'event',
+            idSeed: cert.id || cert.title,
+        });
+        const params = new URLSearchParams({
+            startTask: 'CERTIFICATION_NAME',
+            name: cert.title,
+            organizationName: cert.organization || 'hangel',
+            certUrl: certVerifyUrl(code),
+            certId: code,
+        });
+        const year = (cert.date || '').slice(0, 4);
+        const month = Number((cert.date || '').slice(5, 7));
+        if (/^\d{4}$/.test(year)) params.set('issueYear', year);
+        if (month >= 1 && month <= 12) params.set('issueMonth', String(month));
+        void openExternalUrl(`https://www.linkedin.com/profile/add?${params.toString()}`);
+    };
+
+    // Instagram hikâyesi: sertifikayı 9:16 marka kimlikli görsele çevirip
+    // paylaşım sayfasına ver (native) / indir (web). Kullanıcı Instagram'da
+    // "Hikâyene ekle" ile paylaşır — salt metin kopyalamaktan çok daha etkili.
+    const [storyBusyId, setStoryBusyId] = useState<string | null>(null);
+    const shareInstagramStory = async (cert: CertInput) => {
+        setStoryBusyId(cert.id || cert.title);
+        try {
+            const certJpeg = await buildCertJpeg(cert);
+            const story = await buildCertificateStoryJpeg({
+                certJpegDataUri: certJpeg,
+                title: cert.title,
+                organization: cert.organization,
+                date: cert.date,
+                userName: recipientName,
+            });
+            await downloadDataUrlSmart(story, `hangel-sertifika-hikaye-${(cert.id || 'sertifika').toString().slice(0, 24)}.jpg`, {
+                title: cert.title,
+                text: `${cert.title} ${t('dashboard.badges.shareCertSuffix')}`,
+                dialogTitle: 'Instagram hikâyesi olarak paylaş',
+            });
+            if (!isNativeApp()) {
+                toast({ title: 'Hikâye görseli indirildi', description: "Instagram'da hikâyene ekleyerek paylaşabilirsin." });
+            }
+        } catch (error) {
+            console.error('Certificate story failed:', error);
+            toast({ variant: 'destructive', title: t('dashboard.badges.shareFailTitle'), description: t('dashboard.badges.certPdfFailDesc') });
+        } finally {
+            setStoryBusyId(null);
+        }
     };
     const shareEmail = async (certTitle: string) => {
         if (await nativeShare(certTitle)) return;
@@ -265,18 +317,20 @@ export function CertificatesTab() {
         const bodyText = encodeURIComponent(`${buildShareText(certTitle)}${shareUrl}`);
         window.open(`mailto:?subject=${subject}&body=${bodyText}`, '_blank', 'noopener,noreferrer');
     };
-    const shareInstagram = async (certTitle: string) => {
-        if (await nativeShare(certTitle)) return;
-        try {
-            if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                await navigator.clipboard.writeText(`${buildShareText(certTitle)}${shareUrl}`);
-            }
-            toast({ title: t('dashboard.badges.textCopiedTitle'), description: t('dashboard.badges.textCopiedDesc') });
-        } catch {
-            toast({ variant: 'destructive', title: t('dashboard.badges.shareFailTitle'), description: t('dashboard.badges.shareCopyError') });
-        }
-        window.open('https://www.instagram.com', '_blank', 'noopener,noreferrer');
-    };
+    // Arama + sıralama — sertifika sayısı artınca listeyi yönetilebilir tutar.
+    const [certQuery, setCertQuery] = useState('');
+    const [certSort, setCertSort] = useState<'newest' | 'oldest' | 'org'>('newest');
+    const visibleCertificates = useMemo(() => {
+        const q = certQuery.trim().toLocaleLowerCase('tr');
+        const list = q
+            ? certificates.filter(c => `${c.title} ${c.organization}`.toLocaleLowerCase('tr').includes(q))
+            : [...certificates];
+        return list.sort((a, b) => {
+            if (certSort === 'org') return (a.organization || '').localeCompare(b.organization || '', 'tr');
+            const cmp = (b.date || '').localeCompare(a.date || '');
+            return certSort === 'newest' ? cmp : -cmp;
+        });
+    }, [certificates, certQuery, certSort]);
 
     return (
         <div className="mt-8 space-y-4">
@@ -293,7 +347,46 @@ export function CertificatesTab() {
                     <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">{t('dashboard.badges.certificatesPlaceholder')}</p>
                 </div>
             ) : (
-                certificates.map(cert => (
+                <>
+                {/* Etki Transkripti — tüm gönüllülük geçmişi tek belgede */}
+                <Button asChild variant="outline" className="w-full rounded-xl min-h-[44px]">
+                    <Link href="/volunteering/transcript">
+                        <ScrollText className="h-4 w-4 mr-2 shrink-0" />
+                        <span className="text-sm font-semibold">Tümünü tek transkriptte gör</span>
+                    </Link>
+                </Button>
+
+                {/* Arama + sıralama — 4+ sertifikada görünür */}
+                {certificates.length >= 4 && (
+                    <div className="flex items-center gap-2">
+                        <div className="relative flex-1 min-w-0">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                            <Input
+                                value={certQuery}
+                                onChange={(e) => setCertQuery(e.target.value)}
+                                placeholder="Sertifika veya kuruluş ara"
+                                className="pl-9 rounded-xl min-h-[44px]"
+                                aria-label="Sertifika ara"
+                            />
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon" className="rounded-xl min-h-[44px] min-w-[44px] shrink-0" aria-label="Sırala">
+                                    <ArrowDownUp className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setCertSort('newest')}>Yeniden eskiye{certSort === 'newest' ? ' ✓' : ''}</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setCertSort('oldest')}>Eskiden yeniye{certSort === 'oldest' ? ' ✓' : ''}</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setCertSort('org')}>Kuruluşa göre (A-Z){certSort === 'org' ? ' ✓' : ''}</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                )}
+                {visibleCertificates.length === 0 && (
+                    <p className="text-center text-sm text-muted-foreground py-8">"{certQuery}" ile eşleşen sertifika yok.</p>
+                )}
+                {visibleCertificates.map(cert => (
                     <Card key={cert.id} className="rounded-2xl">
                         {/* Mobil okunurluk: başlık KESİLMEZ (truncate yok) — hangi sertifika
                             olduğu ayırt edilebilir kalır; aksiyonlar etiketli ayrı sırada. */}
@@ -330,14 +423,18 @@ export function CertificatesTab() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            disabled={storyBusyId === (cert.id || cert.title)}
+                                            onClick={() => shareInstagramStory(cert)}
+                                        >
+                                            <Instagram className="mr-2 h-4 w-4" />
+                                            {storyBusyId === (cert.id || cert.title) ? 'Hikâye hazırlanıyor…' : 'Instagram Hikâyesi'}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => linkedInAdd(cert)}>
+                                            <Linkedin className="mr-2 h-4 w-4" /> LinkedIn'e Ekle
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => shareWhatsApp(cert.title)}>
                                             <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => shareInstagram(cert.title)}>
-                                            <Instagram className="mr-2 h-4 w-4" /> Instagram
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => shareLinkedIn(cert.title)}>
-                                            <Linkedin className="mr-2 h-4 w-4" /> LinkedIn
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => shareEmail(cert.title)}>
                                             <Mail className="mr-2 h-4 w-4" /> {t('dashboard.badges.shareEmail')}
@@ -347,7 +444,8 @@ export function CertificatesTab() {
                             </div>
                         </CardContent>
                     </Card>
-                ))
+                ))}
+                </>
             )}
 
             {/* Sertifika önizleme modal — app-içi görsel (web + native aynı yol) */}
