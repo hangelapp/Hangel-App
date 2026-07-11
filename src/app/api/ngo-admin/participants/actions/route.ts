@@ -8,6 +8,8 @@
  *   - action='broadcast':  { ids: string[], channel: 'sms'|'mail', message, subject? }
  *       Seçili katılımcılara toplu SMS/e-posta — mevcut messaging/send (kotalı)
  *       altyapısına proxy'ler.
+ *   - action='assign':     { ids: string[], assignedToUid: string|null, assignedToName?: string }
+ *       "Bu kişiyi ara" sorumlusu — ekip üyesini katılımcıya atar (null = kaldır).
  *
  * KVKK: yalnız caller'ın managedNgoId'sine ait santralContacts kayıtları.
  */
@@ -54,7 +56,7 @@ export async function POST(req: NextRequest) {
   if (!ctx) {
     return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'NGO admin yetkisi gerekli.' }, { status: 403 });
   }
-  let body: { action?: string; ids?: unknown; value?: string; channel?: string; message?: string; subject?: string };
+  let body: { action?: string; ids?: unknown; value?: string; channel?: string; message?: string; subject?: string; assignedToUid?: string | null; assignedToName?: string };
   try { body = await req.json(); } catch { body = {}; }
 
   const ids = Array.isArray(body.ids) ? body.ids.filter((x): x is string => typeof x === 'string' && !!x) : [];
@@ -122,6 +124,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ errorCode: data.errorCode || 'SEND_FAILED', message: data.message || 'Gönderim başarısız.', recipientsTargeted: recipients.length }, { status: res.status });
     }
     return NextResponse.json({ ...data, recipientsTargeted: recipients.length });
+  }
+
+  // ── Sorumlu atama ─────────────────────────────────────────────────────────
+  if (body.action === 'assign') {
+    const assignedToUid = typeof body.assignedToUid === 'string' && body.assignedToUid ? body.assignedToUid : null;
+    const assignedToName = typeof body.assignedToName === 'string' ? body.assignedToName.trim() : '';
+    // assignedToUid verildiyse gerçekten bu STK'nın ekip üyesi mi? (yetki sızıntısı önle)
+    if (assignedToUid) {
+      const memberSnap = await db.collection(COLLECTIONS.users).doc(assignedToUid).get();
+      const m = memberSnap.data() as { managedNgoId?: string } | undefined;
+      const ownsOrg = m?.managedNgoId === ctx.ngoId;
+      let invited = ownsOrg;
+      if (!invited) {
+        const inv = await db.collection(COLLECTIONS.userInvitations)
+          .where('inviteeUserId', '==', assignedToUid)
+          .where('ngoId', '==', ctx.ngoId)
+          .limit(1).get();
+        invited = !inv.empty && inv.docs[0].data().status !== 'revoked';
+      }
+      if (!invited) {
+        return NextResponse.json({ errorCode: 'NOT_TEAM_MEMBER', message: 'Sorumlu bu kuruluşun ekip üyesi olmalı.' }, { status: 400 });
+      }
+    }
+    const owned = await loadOwnedContacts(ctx.ngoId, ids);
+    let updated = 0;
+    for (let i = 0; i < owned.length; i += 400) {
+      const batch = db.batch();
+      for (const d of owned.slice(i, i + 400)) {
+        batch.set(d.ref, {
+          assignedToUid: assignedToUid ?? FieldValue.delete(),
+          assignedToName: assignedToUid ? (assignedToName || 'Ekip üyesi') : FieldValue.delete(),
+          updatedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
+        updated++;
+      }
+      await batch.commit();
+    }
+    return NextResponse.json({ updated });
   }
 
   return NextResponse.json({ errorCode: 'BAD_ACTION', message: 'Bilinmeyen aksiyon.' }, { status: 400 });

@@ -28,11 +28,13 @@ import {
 } from '@/components/ui/dialog';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import {
   Phone, RefreshCw, Search, Loader2, Users, AlertCircle, ChevronRight, Calendar, HeartHandshake,
   MessageSquare, MessageCircle, Mail, Download, CheckCircle2, XCircle, Send, MoreVertical, Smartphone,
+  UserPlus, UserX,
 } from 'lucide-react';
 
 type Source = 'event' | 'volunteer';
@@ -97,6 +99,9 @@ export function ParticipantsPanel({ source }: { source: Source }) {
   const [msgBody, setMsgBody] = useState('');
   const [sending, setSending] = useState(false);
 
+  // Ekip üyeleri (sorumlu atama için)
+  const [team, setTeam] = useState<{ userId: string; name: string }[]>([]);
+
   const load = useCallback(async (query = '') => {
     if (!user) return;
     setLoading(true);
@@ -117,6 +122,42 @@ export function ParticipantsPanel({ source }: { source: Source }) {
   }, [user, source]);
 
   useEffect(() => { void load(); }, [load]);
+
+  // Ekip üyelerini bir kez çek (sorumlu atama menüsü için).
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/ngo-admin/users/managers', { headers: { authorization: `Bearer ${token}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (active && Array.isArray(data.managers)) {
+          setTeam(data.managers.map((m: { userId: string; name: string }) => ({ userId: m.userId, name: m.name })));
+        }
+      } catch { /* ekip yoksa atama menüsü sadece 'kaldır' gösterir */ }
+    })();
+    return () => { active = false; };
+  }, [user]);
+
+  const assign = async (ids: string[], member: { userId: string; name: string } | null) => {
+    if (!user || ids.length === 0) return;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/ngo-admin/participants/actions', {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'assign', ids, assignedToUid: member?.userId ?? null, assignedToName: member?.name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || 'Atama başarısız.');
+      setRows((prev) => prev.map((r) => ids.includes(r.id) ? { ...r, assignedToName: member?.name ?? null } : r));
+      toast({ title: member ? 'Sorumlu atandı' : 'Sorumlu kaldırıldı', description: member ? `${member.name} → ${ids.length} kişi` : undefined });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Atama başarısız', description: e instanceof Error ? e.message : 'Hata.' });
+    }
+  };
 
   const handleSync = async () => {
     if (!user) return;
@@ -269,6 +310,26 @@ export function ParticipantsPanel({ source }: { source: Source }) {
                 <Button onClick={() => markAttendance(Array.from(selected), 'absent')} size="sm" variant="outline" className="rounded-lg h-9">
                   <XCircle className="h-3.5 w-3.5 mr-1.5 text-red-500" /> Gelmedi
                 </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline" className="rounded-lg h-9">
+                      <UserPlus className="h-3.5 w-3.5 mr-1.5" /> Sorumlu Ata
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {team.length === 0 ? (
+                      <DropdownMenuItem disabled>Ekip üyesi yok</DropdownMenuItem>
+                    ) : team.map((m) => (
+                      <DropdownMenuItem key={m.userId} onClick={() => assign(Array.from(selected), m)}>
+                        <UserPlus className="mr-2 h-4 w-4" /> {m.name}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => assign(Array.from(selected), null)}>
+                      <UserX className="mr-2 h-4 w-4" /> Sorumluyu kaldır
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </>
           )}
@@ -365,6 +426,29 @@ export function ParticipantsPanel({ source }: { source: Source }) {
                           <DropdownMenuItem onClick={() => markAttendance([p.id], p.attendance === 'absent' ? 'clear' : 'absent')}>
                             <XCircle className="mr-2 h-4 w-4 text-red-500" /> {p.attendance === 'absent' ? 'Yoklamayı kaldır' : 'Gelmedi işaretle'}
                           </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>
+                              <UserPlus className="mr-2 h-4 w-4" /> {p.assignedToName ? `Sorumlu: ${p.assignedToName}` : 'Sorumlu ata'}
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                              {team.length === 0 ? (
+                                <DropdownMenuItem disabled>Ekip üyesi yok</DropdownMenuItem>
+                              ) : team.map((m) => (
+                                <DropdownMenuItem key={m.userId} onClick={() => assign([p.id], m)}>
+                                  <UserPlus className="mr-2 h-4 w-4" /> {m.name}
+                                </DropdownMenuItem>
+                              ))}
+                              {p.assignedToName && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => assign([p.id], null)}>
+                                    <UserX className="mr-2 h-4 w-4" /> Sorumluyu kaldır
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuSubContent>
+                          </DropdownMenuSub>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
