@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-11";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "a30f0d34",
+    "date": "2026-07-11",
+    "subject": "feat(santral): Katılımcılar Adım 3 — görev/sorumlu atama"
+  },
+  {
     "hash": "0084ba64",
     "date": "2026-07-11",
     "subject": "feat(santral): Katılımcılar Adım 2 — toplu SMS/e-posta + WhatsApp + yoklama + CSV"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "0856f1ce",
     "date": "2026-07-10",
     "subject": "settings/ngo-admin: paralel oturum UI güncellemeleri (build yeşil 402/402)"
-  },
-  {
-    "hash": "0e465a96",
-    "date": "2026-07-10",
-    "subject": "gönüllülük: başvuru durum timeline'ı (Başvuruldu→Onaylandı→Tamamlandı→Değerlendirme)"
   }
 ];

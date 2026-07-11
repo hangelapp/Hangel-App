@@ -85,6 +85,26 @@ function sanitizeNumber(input: string): string {
 }
 
 /**
+ * Ham WSS/SIP bağlantı hatasını kullanıcıya anlaşılır Türkçe mesaja çevirir.
+ * En sık senaryo: geçidin TLS sertifikası geçersiz/erişilemez → tarayıcı WSS
+ * handshake'ini kapatır (kod 1006). Kullanıcı "başarısız" yerine ne yapacağını
+ * bilsin (yeniden deneniyor).
+ */
+function friendlyConnError(err: unknown): string {
+  const raw = (err instanceof Error ? err.message : String(err || '')).toLowerCase();
+  if (raw.includes('1006') || raw.includes('websocket') || raw.includes('transport') || raw.includes('closed')) {
+    return 'Santral geçidine bağlanılamadı (güvenli bağlantı kurulamadı). Yeniden deneniyor…';
+  }
+  if (raw.includes('cert') || raw.includes('tls') || raw.includes('ssl')) {
+    return 'Santral güvenlik sertifikası doğrulanamadı. Yeniden deneniyor…';
+  }
+  if (raw.includes('register') || raw.includes('401') || raw.includes('403')) {
+    return 'Santral kimlik doğrulaması başarısız. Ayarları kontrol edin.';
+  }
+  return 'Santral bağlantı hatası. Yeniden deneniyor…';
+}
+
+/**
  * STK santral paneli için tarayıcı SIP.js telefonu.
  *
  * Config tam değilse `ready=false`, `state='unconfigured'` döner ve hiçbir
@@ -103,6 +123,12 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
   const [muted, setMuted] = useState(false);
   const [remoteIdentity, setRemoteIdentity] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Bağlantı koptuğunda otomatik yeniden-deneme sayacı; artışı effect'i yeniden
+  // tetikler (backoff aşağıda). Santral geçidi geri gelince panel kendiliğinden
+  // bağlanır — kullanıcı sayfayı yenilemek zorunda kalmaz.
+  const [retryTick, setRetryTick] = useState(0);
+  const retryCountRef = useRef(0);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const uaRef = useRef<UserAgentType | null>(null);
@@ -248,12 +274,22 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
         registerer = reg;
         await reg.register();
         if (!mountedRef.current) return;
+        retryCountRef.current = 0; // başarılı bağlantı → backoff sıfırlanır
         setState('registered');
         setError(null);
       } catch (err) {
         if (!mountedRef.current) return;
-        setError(err instanceof Error ? err.message : 'Santral bağlantı hatası.');
+        setError(friendlyConnError(err));
         setState('failed');
+        // Otomatik yeniden-deneme: 3s, 6s, 12s, 24s… (maks 30s). Geçit geri
+        // gelince kendiliğinden bağlanır. Timer unmount/yeniden-init'te temizlenir.
+        const n = retryCountRef.current;
+        const delay = Math.min(3000 * 2 ** n, 30000);
+        retryCountRef.current = n + 1;
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = setTimeout(() => {
+          if (mountedRef.current) setRetryTick((t) => t + 1);
+        }, delay);
       }
     })();
 
@@ -280,7 +316,11 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
       void uaRef.current?.stop().catch(() => undefined);
       uaRef.current = null;
     };
-  }, [ready, wssUrl, username, password, domain, iceServersKey, wireSession, stopTick]);
+    // retryTick artışı → başarısız bağlantıdan sonra effect yeniden çalışır (backoff).
+  }, [ready, wssUrl, username, password, domain, iceServersKey, wireSession, stopTick, retryTick]);
+
+  // Unmount'ta bekleyen retry timer'ını temizle.
+  useEffect(() => () => { if (retryTimerRef.current) clearTimeout(retryTimerRef.current); }, []);
 
   const call = useCallback(
     async (number: string) => {
