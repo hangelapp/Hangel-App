@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-11";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "665ee48c",
+    "date": "2026-07-11",
+    "subject": "fix(santral): WSS 1006 — domain santral.hangel.org'a birleştir + otomatik yeniden-bağlanma"
+  },
+  {
     "hash": "a30f0d34",
     "date": "2026-07-11",
     "subject": "feat(santral): Katılımcılar Adım 3 — görev/sorumlu atama"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "1cfcf426",
     "date": "2026-07-10",
     "subject": "referans: /passport davet et kartı (davet linki ?ref=user:<uid> + kopyala); capture invitedBy ile hazırdı"
-  },
-  {
-    "hash": "0856f1ce",
-    "date": "2026-07-10",
-    "subject": "settings/ngo-admin: paralel oturum UI güncellemeleri (build yeşil 402/402)"
   }
 ];

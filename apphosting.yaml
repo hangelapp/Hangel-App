@@ -93,8 +93,13 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  # DİKKAT: Bu kullanıcı adı, sunucudaki Asterisk WebRTC endpoint'inin auth
+  # username'i (infra/santral: TENANT1_WEBRTC_USER=sosyalfayda-100) ile BİREBİR
+  # aynı olmalı; aksi halde SIP REGISTER 401 döner. Şifre de santral.env'deki
+  # TENANT1_WEBRTC_PWD ile aynı olmalı (aşağıdaki placeholder sunucuda üretilen
+  # gerçek şifreyle güncellenecek).
   - variable: NEXT_PUBLIC_SANTRAL_SIP_USER
-    value: "santral-web"
+    value: "sosyalfayda-100"
     availability:
       - BUILD
       - RUNTIME
