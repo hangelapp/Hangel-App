@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { normalizePhoneTr } from '@/lib/santral/normalize-phone';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 
@@ -80,43 +81,8 @@ function findKey(columns: string[], candidates: string[]): string | null {
   return null;
 }
 
-/**
- * TR phone normalize → E.164 (+90XXXXXXXXXX). Geçerli ise +90 ile başlayan
- * 13 haneli string döner, değilse null.
- */
-function normalizePhone(raw: string): string | null {
-  if (!raw) return null;
-  const digits = raw.replace(/[^0-9+]/g, '');
-  if (!digits) return null;
-
-  // +90 ile başlıyorsa: tam 13 karakter olmalı (+ + 12 rakam = +90 + 10)
-  if (digits.startsWith('+90')) {
-    const rest = digits.slice(3);
-    if (rest.length === 10 && /^[1-9]/.test(rest)) return `+90${rest}`;
-    return null;
-  }
-  // + ile başlayan ama 90 değil → yabancı; bu görev TR için, reddet
-  if (digits.startsWith('+')) return null;
-
-  const onlyDigits = digits.replace(/^0+/, (m) => (m.length > 1 ? '0' : m));
-  // 11 hane ve 0 ile başlıyor (0XXX XXX XXXX) → 0'ı at, +90 ekle
-  if (onlyDigits.length === 11 && onlyDigits.startsWith('0')) {
-    const rest = onlyDigits.slice(1);
-    if (/^[1-9]/.test(rest)) return `+90${rest}`;
-    return null;
-  }
-  // 10 hane (XXX XXX XXXX) → direkt +90 ekle
-  if (onlyDigits.length === 10 && /^[1-9]/.test(onlyDigits)) {
-    return `+90${onlyDigits}`;
-  }
-  // 12 hane ve 90 ile başlıyor (90XXX...) → + ekle
-  if (onlyDigits.length === 12 && onlyDigits.startsWith('90')) {
-    const rest = onlyDigits.slice(2);
-    if (/^[1-9]/.test(rest)) return `+90${rest}`;
-    return null;
-  }
-  return null;
-}
+// TR phone normalize → E.164. Ortak kaynak (katılımcı senkronu da kullanır).
+const normalizePhone = normalizePhoneTr;
 
 function isValidEmail(raw: string): boolean {
   if (!raw) return false;

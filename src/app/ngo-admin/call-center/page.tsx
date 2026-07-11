@@ -15,7 +15,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks } from 'lucide-react';
+import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks, Calendar, HeartHandshake } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -24,6 +24,7 @@ import { CallDashboard } from './_components/CallDashboard';
 import { CallCenterSettings } from './_components/CallCenterSettings';
 import { CommunicationHub } from './_components/CommunicationHub';
 import { CallLists } from './_components/CallLists';
+import { ParticipantsPanel } from './_components/ParticipantsPanel';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 export interface CallCenterExtension {
@@ -195,6 +196,14 @@ export default function NgoCallCenterPage() {
             <PhoneCall className="h-4 w-4" /> Çağrı Merkezi
             {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
           </TabsTrigger>
+          <TabsTrigger value="etkinlik-katilimcilari" className="flex items-center gap-1.5">
+            <Calendar className="h-4 w-4" /> Etkinlik Katılımcıları
+            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
+          </TabsTrigger>
+          <TabsTrigger value="gonullu-katilimcilari" className="flex items-center gap-1.5">
+            <HeartHandshake className="h-4 w-4" /> Gönüllü Katılımcıları
+            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
+          </TabsTrigger>
           <TabsTrigger value="listeler" className="flex items-center gap-1.5">
             <ListChecks className="h-4 w-4" /> Arama Listeleri
             {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
@@ -269,7 +278,25 @@ export default function NgoCallCenterPage() {
           )}
         </TabsContent>
 
-        {/* Sekme 3 — Arama Listeleri (yalnızca onaylı STK) */}
+        {/* Etkinlik Katılımcıları — RSVP'lerden senkron; tek-tuş arama + not */}
+        <TabsContent value="etkinlik-katilimcilari" className="mt-4">
+          {isApproved && ccDoc ? (
+            <ParticipantsPanel source="event" />
+          ) : (
+            <LockedNotice title="Etkinlik Katılımcıları kilitli" status={status} />
+          )}
+        </TabsContent>
+
+        {/* Gönüllü Katılımcıları — gönüllü başvurularından senkron */}
+        <TabsContent value="gonullu-katilimcilari" className="mt-4">
+          {isApproved && ccDoc ? (
+            <ParticipantsPanel source="volunteer" />
+          ) : (
+            <LockedNotice title="Gönüllü Katılımcıları kilitli" status={status} />
+          )}
+        </TabsContent>
+
+        {/* Sekme — Arama Listeleri (yalnızca onaylı STK) */}
         <TabsContent value="listeler" className="mt-4">
           {isApproved && ccDoc ? (
             <CallLists ngoId={ngoId} />
