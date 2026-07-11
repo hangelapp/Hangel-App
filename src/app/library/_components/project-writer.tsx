@@ -38,6 +38,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { useIsNgoAdmin } from '@/hooks/use-is-ngo-admin';
+import { downloadBlobSmart } from '@/lib/native-file';
 
 const ENDPOINT = '/api/library/project';
 const ACCENT = 'bg-fuchsia-600 text-white';
@@ -146,14 +147,8 @@ export function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onO
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '') || 'proje-onerisi';
     const blob = new Blob([htmlString], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${slug}.doc`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // <a download> native WebView'de sessiz no-op — tek kapı: downloadBlobSmart.
+    void downloadBlobSmart(blob, `${slug}.doc`, { title: 'Proje önerisi', dialogTitle: 'Belgeyi kaydet veya paylaş' });
   };
 
   const canAdvance =

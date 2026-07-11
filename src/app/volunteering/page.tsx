@@ -327,6 +327,7 @@ export default function VolunteeringPage() {
     const [taskTypeFilter, setTaskTypeFilter] = useState<string[]>([]);
     const [locationTypeFilter, setLocationTypeFilter] = useState<string[]>([]);
     const [certificateOnly, setCertificateOnly] = useState(false);
+    const [accessFilter, setAccessFilter] = useState<string[]>([]);
     // Liste üstü sekmeler: Tümü / Başvurularım / Onaylananlar (yalnız dolu olanlar çıkar).
     const [listTab, setListTab] = useState<'all' | 'applied' | 'approved'>('all');
 
@@ -454,6 +455,7 @@ export default function VolunteeringPage() {
         socialAreaFilter.length +
         taskTypeFilter.length +
         locationTypeFilter.length +
+        accessFilter.length +
         (certificateOnly ? 1 : 0);
 
     const clearAllFilters = () => {
@@ -532,6 +534,9 @@ export default function VolunteeringPage() {
         if (locationTypeFilter.length > 0) {
             filtered = filtered.filter(opp => locationTypeFilter.includes(opp.location?.type));
         }
+        if (accessFilter.length > 0) {
+            filtered = filtered.filter(opp => Array.isArray(opp.accessibilityTags) && accessFilter.some(t => opp.accessibilityTags!.includes(t)));
+        }
         if (certificateOnly) {
             filtered = filtered.filter(opp => opp.providesCertificate);
         }
@@ -567,7 +572,7 @@ export default function VolunteeringPage() {
             : sortBy === 'newest' ? (a: Volunteering, b: Volunteering) => cAt(b) - cAt(a)
             : byMatch;
         return filtered.sort((a, b) => { const d = primary(a, b); return d !== 0 ? d : byPoints(a, b); });
-    }, [oppsData, interestFilter, skillFilter, cityFilter, socialAreaFilter, taskTypeFilter, locationTypeFilter, certificateOnly, searchTerm, sortBy, hasVolunteerProfile, matchPercentById]);
+    }, [oppsData, interestFilter, skillFilter, cityFilter, socialAreaFilter, taskTypeFilter, locationTypeFilter, accessFilter, certificateOnly, searchTerm, sortBy, hasVolunteerProfile, matchPercentById]);
 
   return (
     <div className="space-y-4 animate-in fade-in-0">
@@ -649,6 +654,7 @@ export default function VolunteeringPage() {
               <FilterButton className="flex-1" title={t('volunteering_root.filterSensitivity')} options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />
               <FilterButton className="flex-1" title={t('volunteering_root.filterSkills')} options={skillOptions} selected={skillFilter} onSelectedChange={setSkillFilter} />
               <FilterButton className="flex-1" title={t('volunteering_root.filterLocation')} options={cityOptions} selected={cityFilter} onSelectedChange={setCityFilter} />
+              <FilterButton className="flex-1" title="Erişilebilirlik" options={['Engelli-dostu', 'İşaret dili', 'Uzaktan uygun', 'Yaşlı-dostu', 'Aile-dostu', 'İlk kez gönüllü']} selected={accessFilter} onSelectedChange={setAccessFilter} />
               <Button
                 variant="outline"
                 size="sm"
@@ -667,7 +673,7 @@ export default function VolunteeringPage() {
                       className="h-9 w-9 shrink-0 rounded-full"
                       aria-label={t('volunteering_root.clearFilters')}
                       title={t('volunteering_root.clearFilters')}
-                      onClick={() => { setInterestFilter([]); setSkillFilter([]); setCityFilter([]); }}
+                      onClick={() => { setInterestFilter([]); setSkillFilter([]); setCityFilter([]); setAccessFilter([]); }}
                   >
                       <X className="h-4 w-4" />
                   </Button>
@@ -680,6 +686,7 @@ export default function VolunteeringPage() {
           {[
             { href: '/volunteering/challenges', label: '🎯 Meydan Okumalar' },
             { href: '/volunteering/skills', label: '⭐ Becerilerim' },
+            { href: '/volunteering/transcript', label: '📜 Etki Transkripti' },
             { href: '/volunteering/reference', label: '📄 Referanslarım' },
           ].map((s) => (
             <Link

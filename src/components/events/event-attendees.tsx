@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Users, Download, Loader2, Printer, Share2 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { downloadBlobSmart } from '@/lib/native-file';
 
 interface Attendee { name: string; email: string }
 interface AttendeesResponse { event: { name: string; date: string; location: string }; attendees: Attendee[] }
@@ -130,14 +131,11 @@ export function EventAttendees({ eventId, label = 'Katılımcılar', endpoint }:
     try {
       const blob = await buildPdfBlob();
       if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${docFileNameBase(data)}-katilimci-listesi.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      // <a download> native WebView'de sessiz no-op — tek kapı: downloadBlobSmart.
+      await downloadBlobSmart(blob, `${docFileNameBase(data)}-katilimci-listesi.pdf`, {
+        title: `${data.event.name} — Katılımcı Listesi`,
+        dialogTitle: 'Listeyi kaydet veya paylaş',
+      });
     } catch (e) {
       toast({ variant: 'destructive', title: 'İndirilemedi', description: e instanceof Error ? e.message : '' });
     } finally {
@@ -161,13 +159,12 @@ export function EventAttendees({ eventId, label = 'Katılımcılar', endpoint }:
       } else if (nav.share) {
         await nav.share({ title: `${data.event.name} — Katılımcı Listesi`, text: `${data.event.name} katılımcı imza listesi` });
       } else {
-        // Paylaşım yok → indir.
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = fileName;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 4000);
-        toast({ title: 'Paylaşım desteklenmiyor', description: 'Belge indirildi; dosyayı paylaşabilirsiniz.' });
+        // Paylaşım yok → tek kapı (native'de paylaşım sayfası, web'de indirme).
+        await downloadBlobSmart(blob, fileName, {
+          title: `${data.event.name} — Katılımcı Listesi`,
+          text: `${data.event.name} katılımcı imza listesi`,
+          dialogTitle: 'Listeyi paylaş',
+        });
       }
     } catch (e) {
       // Kullanıcı paylaşımı iptal ettiyse sessiz geç.

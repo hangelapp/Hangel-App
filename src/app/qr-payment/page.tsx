@@ -34,6 +34,7 @@ import { Badge } from '@/components/ui/badge';
 import { HangelLogo } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLLECTIONS } from '@/firebase/collections';
+import { downloadBlobSmart } from '@/lib/native-file';
 
 const donationTransactions = [
     { id: '1', type: 'expense', brand: 'Doğa Dostu Giyim', purchaseAmount: '250.00', donationAmount: '25.00', ngo: ['TEMA Vakfı', 'LÖSEV'], date: '2024-07-21', time: '14:32' },
@@ -216,7 +217,8 @@ export default function QrPaymentPage() {
       pdf.setTextColor(140, 140, 140);
       pdf.text('hangel.org', pageW / 2, y + 10, { align: 'center' });
 
-      pdf.save(`hangel-dekont-${tx.id}.pdf`);
+      // pdf.save() anchor'la indirir — native WebView'de sessiz no-op. Tek kapı: downloadBlobSmart.
+      await downloadBlobSmart(pdf.output('blob'), `hangel-dekont-${tx.id}.pdf`, { title: 'hangel dekont', dialogTitle: 'Dekontu kaydet veya paylaş' });
       toast({ title: 'Dekont İndirildi', description: 'PDF dekontunuz başarıyla indirildi.' });
     } catch (error) {
       console.error('Receipt PDF failed:', error);

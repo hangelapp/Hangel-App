@@ -16,6 +16,7 @@ import {
   Users,
   Sparkles,
   TrendingUp,
+  Trophy,
   BarChart3,
   Banknote,
   Newspaper,
@@ -136,6 +137,7 @@ const NGO_MENU: MenuGroup[] = [
     items: [
       { href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: Globe },
       { href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: HeartHandshake, scope: 'volunteer' },
+      { href: '/ngo-admin/challenges', label: 'Meydan Okumalar', icon: Trophy, scope: 'volunteer' },
       { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: BarChart3 },
     ],
   },

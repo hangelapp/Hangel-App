@@ -22,6 +22,7 @@ import { BookRatingStars } from '../_components/books';
 import { cn } from '@/lib/utils';
 import { isAllowedImageHost } from '@/lib/image-host';
 import { ListenButton } from '@/components/shared/listen-button';
+import { downloadBlobSmart } from '@/lib/native-file';
 
 // Bir içeriği ilk kez "okudum" işaretleyince verilen etki puanı (kötüye kullanım
 // engellemek için yalnızca daha önce ödüllenmemiş içeriklerde verilir).
@@ -195,18 +196,12 @@ export default function LibraryItemPage() {
   };
 
   // Şablonu Word (.doc) olarak indir — içerik HTML'i Word uyumlu blob'a sarılır.
-  const handleDownloadWord = () => {
+  const handleDownloadWord = async () => {
     const safe = sanitizeHtml(item.content);
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>${item.title}</title></head><body><h1>${item.title}</h1>${safe}</body></html>`;
     const blob = new Blob(['﻿', html], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${slug}.doc`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    // <a download> native WebView'de sessiz no-op — tek kapı: downloadBlobSmart.
+    await downloadBlobSmart(blob, `${slug}.doc`, { title: item.title, dialogTitle: 'Belgeyi kaydet veya paylaş' });
     toast({ title: t('librarySlug.downloadingTitle'), description: `"${item.title}" ${t('librarySlug.downloadingDescSuffix')}` });
   };
 

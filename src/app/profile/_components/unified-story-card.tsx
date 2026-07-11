@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Share2, Loader2 } from 'lucide-react';
+import { downloadBlobSmart } from '@/lib/native-file';
 
 type Entity = { id?: string; name?: string; avatarUrl?: string };
 
@@ -58,14 +59,11 @@ export function UnifiedStoryCard({ data }: { data: UnifiedStoryData }) {
         try {
             const blob = await renderAsImage();
             if (!blob) throw new Error('canvas-empty');
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `hangel-etki-hikayem-${Date.now()}.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            // <a download> native WebView'de sessiz no-op — tek kapı: downloadBlobSmart.
+            await downloadBlobSmart(blob, `hangel-etki-hikayem-${Date.now()}.png`, {
+                title: 'hangel etki hikayem',
+                dialogTitle: 'Hikayeni kaydet veya paylaş',
+            });
             toast({ title: 'İndirildi', description: 'Hikayen telefonuna kaydedildi.' });
         } catch {
             toast({ variant: 'destructive', title: 'İndirilemedi', description: 'Lütfen tekrar dene.' });
@@ -87,16 +85,13 @@ export function UnifiedStoryCard({ data }: { data: UnifiedStoryData }) {
                     text: `${data.name} — hangel'deki etki hikayem`,
                 });
             } else {
-                // Fallback: download
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `hangel-etki-hikayem-${Date.now()}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                toast({ title: 'Hikaye indirildi', description: 'Paylaşmak için galerine gidebilirsin.' });
+                // Fallback: native paylaşım sayfası / web indirme (tek kapı).
+                await downloadBlobSmart(blob, `hangel-etki-hikayem-${Date.now()}.png`, {
+                    title: 'hangel etki hikayem',
+                    text: `${data.name} — hangel'deki etki hikayem`,
+                    dialogTitle: 'Hikayeni paylaş',
+                });
+                toast({ title: 'Hikaye hazır', description: 'Paylaşım sayfasından kaydedebilir veya paylaşabilirsin.' });
             }
         } catch {
             toast({ variant: 'destructive', title: 'Paylaşılamadı', description: 'Lütfen tekrar dene.' });

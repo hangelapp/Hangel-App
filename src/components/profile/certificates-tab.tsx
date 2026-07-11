@@ -295,34 +295,36 @@ export function CertificatesTab() {
             ) : (
                 certificates.map(cert => (
                     <Card key={cert.id} className="rounded-2xl">
-                        <CardContent className="flex items-center justify-between gap-4 p-5">
-                            <div className="flex items-start gap-4 min-w-0">
-                                <div className="p-3 rounded-2xl bg-primary/10 shrink-0">
-                                    <FileText className="h-6 w-6 text-primary" />
+                        {/* Mobil okunurluk: başlık KESİLMEZ (truncate yok) — hangi sertifika
+                            olduğu ayırt edilebilir kalır; aksiyonlar etiketli ayrı sırada. */}
+                        <CardContent className="p-4 sm:p-5 space-y-3">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2.5 rounded-xl bg-primary/10 shrink-0">
+                                    <FileText className="h-5 w-5 text-primary" />
                                 </div>
-                                <div className="min-w-0">
-                                    <p className="font-bold text-sm leading-tight truncate">{cert.title}</p>
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-bold text-sm leading-snug break-words">{cert.title}</p>
                                     {(cert.organization || cert.date) && (
-                                        <p className="text-xs text-muted-foreground mt-1 truncate">
+                                        <p className="text-xs text-muted-foreground mt-1 break-words">
                                             {[cert.organization, cert.date].filter(Boolean).join(' · ')}
                                         </p>
                                     )}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                                <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleViewCertificate(cert)}>
-                                    <Eye className="h-4 w-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">{t('dashboard.badges.viewCta')}</span>
+                            <div className="flex items-center gap-2">
+                                <Button size="sm" variant="outline" className="rounded-xl flex-1 min-h-[44px]" onClick={() => handleViewCertificate(cert)}>
+                                    <Eye className="h-4 w-4 mr-1.5" />
+                                    <span className="text-xs font-semibold">{t('dashboard.badges.viewCta')}</span>
                                 </Button>
-                                <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleDownloadCertificate(cert)}>
-                                    <Download className="h-4 w-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">{t('dashboard.badges.downloadCta')}</span>
+                                <Button size="sm" variant="outline" className="rounded-xl flex-1 min-h-[44px]" onClick={() => handleDownloadCertificate(cert)}>
+                                    <Download className="h-4 w-4 mr-1.5" />
+                                    <span className="text-xs font-semibold">{t('dashboard.badges.downloadCta')}</span>
                                 </Button>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button size="sm" variant="outline" className="rounded-xl">
-                                            <Share2 className="h-4 w-4 sm:mr-2" />
-                                            <span className="hidden sm:inline">{t('dashboard.badges.shareCta')}</span>
+                                        <Button size="sm" variant="outline" className="rounded-xl flex-1 min-h-[44px]">
+                                            <Share2 className="h-4 w-4 mr-1.5" />
+                                            <span className="text-xs font-semibold">{t('dashboard.badges.shareCta')}</span>
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">

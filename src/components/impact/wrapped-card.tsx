@@ -14,6 +14,7 @@ import { Download, Share2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { downloadBlobSmart } from '@/lib/native-file';
 
 export interface WrappedCardData {
   name: string;
@@ -55,14 +56,11 @@ export function WrappedCard({ data }: { data: WrappedCardData }) {
     try {
       const blob = await renderAsBlob();
       if (!blob) throw new Error('canvas-empty');
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // <a download> native WebView'de sessiz no-op — tek kapı: downloadBlobSmart.
+      await downloadBlobSmart(blob, fileName, {
+        title: 'hangel etki hikayem',
+        dialogTitle: 'Etki hikayeni kaydet veya paylaş',
+      });
       toast({ title: 'İndirildi', description: 'Etki hikayen telefonuna kaydedildi.' });
     } catch {
       toast({ variant: 'destructive', title: 'İndirilemedi', description: 'Lütfen tekrar dene.' });
@@ -87,15 +85,12 @@ export function WrappedCard({ data }: { data: WrappedCardData }) {
           text: `${data.name} — ${data.periodLabel} hangel etki hikayem`,
         });
       } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast({ title: 'Hikaye indirildi', description: 'Paylaşmak için galerine gidebilirsin.' });
+        await downloadBlobSmart(blob, fileName, {
+          title: 'hangel etki hikayem',
+          text: `${data.name} — ${data.periodLabel} hangel etki hikayem`,
+          dialogTitle: 'Etki hikayeni paylaş',
+        });
+        toast({ title: 'Hikaye hazır', description: 'Paylaşım sayfasından kaydedebilir veya paylaşabilirsin.' });
       }
     } catch {
       toast({ variant: 'destructive', title: 'Paylaşılamadı', description: 'Lütfen tekrar dene.' });

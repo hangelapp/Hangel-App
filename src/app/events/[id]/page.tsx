@@ -47,6 +47,7 @@ import { useRequireAuth } from '@/hooks/use-require-auth';
 import { COLLECTIONS } from '@/firebase/collections';
 import { eventPhase, eventStart, eventEnd } from '@/lib/event-time';
 import { DetailHero } from '@/components/detail/detail-hero';
+import { downloadDataUrlSmart } from '@/lib/native-file';
 
 type WeatherDay = { date: string; tempMax: number; tempMin: number; label: string; emoji: string };
 
@@ -134,12 +135,11 @@ export default function EventDetailPage() {
 
       // JPEG 0.85 (0.92 yerine) → görsel kalite korunur, dosya boyutu küçülür.
       const dataUrl = out.toDataURL('image/jpeg', 0.85);
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = `yaka-karti-${event?.id || 'hangel'}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      // <a download> native WebView'de sessiz no-op — tek kapı: downloadDataUrlSmart.
+      await downloadDataUrlSmart(dataUrl, `yaka-karti-${event?.id || 'hangel'}.jpg`, {
+        title: 'hangel yaka kartı',
+        dialogTitle: 'Yaka kartını kaydet veya paylaş',
+      });
     } catch (err) {
       const e = err as { message?: string };
       toast({ variant: 'destructive', title: 'Yaka kartı oluşturulamadı', description: e?.message || 'Beklenmeyen bir hata oluştu.' });

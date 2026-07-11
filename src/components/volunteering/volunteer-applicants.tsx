@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Download, Loader2, Printer, Share2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { downloadBlobSmart } from '@/lib/native-file';
 
 export interface VolunteerApplicant { name: string; status?: string; date?: string }
 
@@ -94,11 +95,11 @@ export function VolunteerApplicants({ title, applicants }: { title: string; appl
     try {
       const blob = await buildPdfBlob();
       if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `${fileBase(title)}-basvuru-listesi.pdf`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      // <a download> native WebView'de sessiz no-op — tek kapı: downloadBlobSmart.
+      await downloadBlobSmart(blob, `${fileBase(title)}-basvuru-listesi.pdf`, {
+        title: `${title} — Başvuru Listesi`,
+        dialogTitle: 'Listeyi kaydet veya paylaş',
+      });
     } catch (e) {
       toast({ variant: 'destructive', title: 'İndirilemedi', description: e instanceof Error ? e.message : '' });
     } finally { setBusy(null); }
@@ -117,12 +118,12 @@ export function VolunteerApplicants({ title, applicants }: { title: string; appl
       } else if (nav.share) {
         await nav.share({ title: `${title} — Başvuru Listesi`, text: `${title} gönüllü başvuru listesi` });
       } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = fileName;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 4000);
-        toast({ title: 'Paylaşım desteklenmiyor', description: 'Belge indirildi; dosyayı paylaşabilirsiniz.' });
+        // Paylaşım yok → tek kapı (native'de paylaşım sayfası, web'de indirme).
+        await downloadBlobSmart(blob, fileName, {
+          title: `${title} — Başvuru Listesi`,
+          text: `${title} gönüllü başvuru listesi`,
+          dialogTitle: 'Listeyi paylaş',
+        });
       }
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') return;

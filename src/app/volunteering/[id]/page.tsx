@@ -44,6 +44,7 @@ import { socialImpactValueTRY, formatTRY, socialImpactExplanation } from '@/lib/
 import { extractListingHours } from '@/lib/volunteer/listing-impact';
 import { DetailHero } from '@/components/detail/detail-hero';
 import { DetailStickyBar } from '@/components/detail/detail-body';
+import { downloadDataUrlSmart } from '@/lib/native-file';
 
 type WeatherDay = { date: string; tempMax: number; tempMin: number; label: string; emoji: string };
 
@@ -382,12 +383,11 @@ export default function VolunteeringDetailPage() {
       ctx.textAlign = 'center';
       ctx.fillText('hangel — gönüllü yaka kartı', pageW / 2, startY + cardH + MM(8));
       const dataUrl = out.toDataURL('image/jpeg', 0.85);
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = `yaka-karti-${opportunity.id || 'hangel'}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      // <a download> native WebView'de sessiz no-op — tek kapı: downloadDataUrlSmart.
+      await downloadDataUrlSmart(dataUrl, `yaka-karti-${opportunity.id || 'hangel'}.jpg`, {
+        title: 'hangel yaka kartı',
+        dialogTitle: 'Yaka kartını kaydet veya paylaş',
+      });
     } catch (err) {
       const e = err as { message?: string };
       toast({ variant: 'destructive', title: 'Yaka kartı oluşturulamadı', description: e?.message || 'Beklenmeyen bir hata oluştu.' });

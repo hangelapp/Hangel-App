@@ -26,6 +26,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { downloadBlobSmart } from '@/lib/native-file';
 
 type Slot = { url: string; name: string } | null;
 interface JinglesDoc { santral?: Slot[]; cocuk?: Slot[]; muzik?: Slot[] }
@@ -565,14 +566,11 @@ async function exportStoryVideo(
   if (blob.size === 0) throw new Error('empty');
 
   const fileName = `hangel-etki-hikayem-${data.periodLabel.replace(/\s+/g, '-').toLowerCase()}.webm`;
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  // <a download> native WebView'de sessiz no-op — tek kapı: downloadBlobSmart.
+  await downloadBlobSmart(blob, fileName, {
+    title: 'hangel etki hikayem (video)',
+    dialogTitle: 'Videoyu kaydet veya paylaş',
+  });
 }
 
 function easeOut(t: number): number {

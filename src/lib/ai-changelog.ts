@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-11";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "22ace3f6",
+    "date": "2026-07-11",
+    "subject": "fix(yaka-kartı): native'de önizleme sistem aç/kaydet sayfasıyla — Android WebView iframe'de PDF gösteremiyor"
+  },
+  {
     "hash": "ac9ede7d",
     "date": "2026-07-11",
     "subject": "fix(sertifika): app'lerde önizleme/indirme hatası — file:// Browser.open ve Android Documents yazımı kaldırıldı"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "27868000",
     "date": "2026-07-09",
     "subject": "perf(build): in-build eslint'i kapat (ignoreDuringBuilds:true) → App Hosting build timeout riskini azalt"
-  },
-  {
-    "hash": "2a8dfd5e",
-    "date": "2026-07-09",
-    "subject": "chore(build): kök stray debug scriptlerini repodan çıkar + tsconfig/gitignore ile dışla"
   }
 ];

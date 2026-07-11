@@ -48,3 +48,39 @@ export async function saveAndShareFileNative(
     // kullanıcı paylaşım sayfasını kapattı — hata değil
   }
 }
+
+/**
+ * Blob indir — platform-farkında TEK kapı. Native'de Cache + paylaşım sayfası;
+ * web'de <a download>. `<a download>` (ve jsPDF `pdf.save()`, o da anchor
+ * kullanır) native WebView'de SESSİZCE hiçbir şey yapmaz — app'te "buton
+ * çalışmıyor" şikayetlerinin ana kaynağı. Yeni indirme yazarken bunu kullan.
+ */
+export async function downloadBlobSmart(
+  blob: Blob,
+  filename: string,
+  opts: { title?: string; text?: string; dialogTitle?: string } = {},
+): Promise<void> {
+  const { isNativeApp } = await import('@/lib/capacitor');
+  if (isNativeApp()) {
+    await saveAndShareFileNative(blob, filename, opts);
+    return;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => { try { URL.revokeObjectURL(url); } catch { /* yok say */ } }, 1500);
+}
+
+/** canvas.toDataURL çıktısını indir — downloadBlobSmart'ın data-URL sarmalayıcısı. */
+export async function downloadDataUrlSmart(
+  dataUrl: string,
+  filename: string,
+  opts: { title?: string; text?: string; dialogTitle?: string } = {},
+): Promise<void> {
+  const blob = await (await fetch(dataUrl)).blob();
+  await downloadBlobSmart(blob, filename, opts);
+}
