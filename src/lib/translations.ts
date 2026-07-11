@@ -767,7 +767,7 @@ export const translations: Record<Language, any> = {
         certLoginPromptTitle: 'Sertifikalarını görmek için giriş yap',
         certLoginPromptDesc: 'Onaylanan gönüllülük ve etkinlik katılımlarının sertifikaları hesabına bağlıdır.',
         loginCta: 'Giriş yap',
-        viewCta: 'Görüntüle',
+        viewCta: 'İncele',
         downloadCta: 'İndir',
         shareCta: 'Paylaş',
         shareEmail: 'E-posta',

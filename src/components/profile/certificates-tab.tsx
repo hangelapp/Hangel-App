@@ -311,20 +311,22 @@ export function CertificatesTab() {
                                     )}
                                 </div>
                             </div>
+                            {/* Üç eşit buton: min-w-0 + truncate + px-2 → uzun etiket/dar ekranda
+                                taşma olmaz, sıra hizalı kalır (tasarımsal kayma düzeltmesi). */}
                             <div className="flex items-center gap-2">
-                                <Button size="sm" variant="outline" className="rounded-xl flex-1 min-h-[44px]" onClick={() => handleViewCertificate(cert)}>
-                                    <Eye className="h-4 w-4 mr-1.5" />
-                                    <span className="text-xs font-semibold">{t('dashboard.badges.viewCta')}</span>
+                                <Button size="sm" variant="outline" className="rounded-xl flex-1 min-w-0 min-h-[44px] px-2" onClick={() => handleViewCertificate(cert)}>
+                                    <Eye className="h-4 w-4 mr-1.5 shrink-0" />
+                                    <span className="text-xs font-semibold truncate">{t('dashboard.badges.viewCta')}</span>
                                 </Button>
-                                <Button size="sm" variant="outline" className="rounded-xl flex-1 min-h-[44px]" onClick={() => handleDownloadCertificate(cert)}>
-                                    <Download className="h-4 w-4 mr-1.5" />
-                                    <span className="text-xs font-semibold">{t('dashboard.badges.downloadCta')}</span>
+                                <Button size="sm" variant="outline" className="rounded-xl flex-1 min-w-0 min-h-[44px] px-2" onClick={() => handleDownloadCertificate(cert)}>
+                                    <Download className="h-4 w-4 mr-1.5 shrink-0" />
+                                    <span className="text-xs font-semibold truncate">{t('dashboard.badges.downloadCta')}</span>
                                 </Button>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button size="sm" variant="outline" className="rounded-xl flex-1 min-h-[44px]">
-                                            <Share2 className="h-4 w-4 mr-1.5" />
-                                            <span className="text-xs font-semibold">{t('dashboard.badges.shareCta')}</span>
+                                        <Button size="sm" variant="outline" className="rounded-xl flex-1 min-w-0 min-h-[44px] px-2">
+                                            <Share2 className="h-4 w-4 mr-1.5 shrink-0" />
+                                            <span className="text-xs font-semibold truncate">{t('dashboard.badges.shareCta')}</span>
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">

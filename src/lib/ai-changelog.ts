@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-07-11";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "7b838b9e",
+    "date": "2026-07-11",
+    "subject": "feat(gönüllülük): Meydan Okumalar (ngo-admin) + Etki Transkripti sayfaları — menü linkleri 404 vermesin"
+  },
+  {
+    "hash": "9accfa90",
+    "date": "2026-07-11",
+    "subject": "fix(mobil): app'te sessizce çalışmayan TÜM indirme/incele butonları + sertifika listesi okunurluğu"
+  },
+  {
     "hash": "22ace3f6",
     "date": "2026-07-11",
     "subject": "fix(yaka-kartı): native'de önizleme sistem aç/kaydet sayfasıyla — Android WebView iframe'de PDF gösteremiyor"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "c07ec5d8",
     "date": "2026-07-09",
     "subject": "fix(mobile): safe-area her cihazda güvenilir + kayıt sayfası uyumlu üst boşluk + profil tab/avatar/alt bar iyileştirmeleri"
-  },
-  {
-    "hash": "c38fd116",
-    "date": "2026-07-09",
-    "subject": "style(events): geri sayım ve mesafe rozeti Apple-temiz tasarım (önceki oturumdan bekleyen iş)"
-  },
-  {
-    "hash": "27868000",
-    "date": "2026-07-09",
-    "subject": "perf(build): in-build eslint'i kapat (ignoreDuringBuilds:true) → App Hosting build timeout riskini azalt"
   }
 ];
