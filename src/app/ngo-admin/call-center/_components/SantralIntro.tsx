@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import {
   Phone, Headphones, Voicemail, ListChecks, FileBadge, BarChart3,
   ArrowRight, HelpCircle, Sparkles, ShieldCheck, Clock, Wallet,
+  Lock, Mic, Server, Sparkle,
 } from 'lucide-react';
 
 const FEATURES: { icon: React.ElementType; title: string; desc: string }[] = [
@@ -34,7 +35,17 @@ const STEPS = [
   'Hazırsın — başvuru onaylanınca panel açılır',
 ];
 
-export function SantralIntro({ onStart }: { onStart: () => void }) {
+// Teknik altyapı & güvenlik — onaylı STK'ya da gösterilir (güven + şeffaflık).
+const TECH: { icon: React.ElementType; title: string; desc: string }[] = [
+  { icon: Lock, title: 'Uçtan uca şifreli ses (DTLS-SRTP)', desc: 'Tarayıcı ile santral arası ses trafiği WebRTC standardıyla şifrelenir.' },
+  { icon: ShieldCheck, title: 'TLS sertifikalı bağlantı (WSS)', desc: "Let's Encrypt sertifikası ile güvenli WebSocket; kimlik doğrulamalı erişim." },
+  { icon: Mic, title: 'Çağrı kaydı & sesli mesaj', desc: 'Kayıtlar güvenli depolamada; yalnız yetkili STK yöneticisi erişir (KVKK).' },
+  { icon: Server, title: 'Kurumsal telefon altyapısı', desc: 'Asterisk tabanlı sanal santral; IVR, sıra, çalışma saatleri, yönlendirme.' },
+  { icon: Sparkle, title: 'Yapay zekâ destekli', desc: 'Çağrı özeti, konuşma dökümü ve görüşme asistanı (Gemini) dahili.' },
+  { icon: FileBadge, title: 'KVKK uyumlu & sözleşmeli', desc: 'Veri sorumlusu STK; anons, saklama ve erişim kuralları sözleşmeyle tanımlı.' },
+];
+
+export function SantralIntro({ onStart }: { onStart?: () => void }) {
   return (
     <div className="space-y-8">
       {/* Hero */}
@@ -49,16 +60,18 @@ export function SantralIntro({ onStart }: { onStart: () => void }) {
           Numaranız çalsın, gönüllüleriniz cevaplasın. Cihaz almadan, teknik bilgi gerektirmeden —
           her adımda size yol gösteriyoruz.
         </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <Button onClick={onStart} size="lg" className="rounded-full h-12 px-7 text-base font-bold">
-            Hemen başla <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-          <Button asChild variant="outline" size="lg" className="rounded-full h-12 px-6 text-base">
-            <a href="#nasil-calisir">
-              <HelpCircle className="mr-2 h-4 w-4" /> Nasıl çalışır?
-            </a>
-          </Button>
-        </div>
+        {onStart && (
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Button onClick={onStart} size="lg" className="rounded-full h-12 px-7 text-base font-bold">
+              Hemen başla <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <Button asChild variant="outline" size="lg" className="rounded-full h-12 px-6 text-base">
+              <a href="#nasil-calisir">
+                <HelpCircle className="mr-2 h-4 w-4" /> Nasıl çalışır?
+              </a>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Yetenekler */}
@@ -111,12 +124,33 @@ export function SantralIntro({ onStart }: { onStart: () => void }) {
         </div>
       </div>
 
-      {/* Alt CTA */}
-      <div className="text-center pt-2">
-        <Button onClick={onStart} size="lg" className="rounded-full h-12 px-7 text-base font-bold">
-          Kuruluma başla <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+      {/* Teknik altyapı & güvenlik */}
+      <div className="glass rounded-3xl p-6 sm:p-8">
+        <h2 className="text-lg font-bold mb-1">Teknik altyapı & güvenlik</h2>
+        <p className="text-sm text-muted-foreground mb-5">
+          Kurumsal düzey telefon altyapısı — şifreli, kayıtlı ve KVKK uyumlu.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {TECH.map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="flex items-start gap-3 rounded-2xl border border-border/60 bg-muted/20 p-4">
+              <Icon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold leading-tight">{title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Alt CTA — yalnız kurulum akışında */}
+      {onStart && (
+        <div className="text-center pt-2">
+          <Button onClick={onStart} size="lg" className="rounded-full h-12 px-7 text-base font-bold">
+            Kuruluma başla <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, Plus, Trash2, Hash, Phone, Mic, ShieldCheck, PhoneIncoming, CheckCircle2, X } from 'lucide-react';
+import { Loader2, Save, Plus, Trash2, Hash, Phone, Mic, ShieldCheck, PhoneIncoming, CheckCircle2, X, MessageCircle } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,6 +33,7 @@ interface SettingsData {
   callerIdNumber?: string;
   inboundAgentUid?: string | null;
   inboundAgentName?: string | null;
+  communicationHubEnabled?: boolean;
 }
 
 interface UserSearchRow {
@@ -67,6 +68,7 @@ export function CallCenterSettings({ ngoId, ccDoc }: { ngoId: string; ccDoc: CcD
   );
   const [recordingEnabled, setRecordingEnabled] = useState<boolean>(ccDoc.settings?.recordingEnabled ?? true);
   const [kvkkAnnouncement, setKvkkAnnouncement] = useState<boolean>(ccDoc.settings?.kvkkAnnouncement ?? true);
+  const [communicationHubEnabled, setCommunicationHubEnabled] = useState<boolean>(ccDoc.settings?.communicationHubEnabled ?? false);
   const [callerIdNumber, setCallerIdNumber] = useState<string>(ccDoc.settings?.callerIdNumber ?? ccDoc.callerIdNumber ?? '');
   const [saving, setSaving] = useState(false);
 
@@ -138,6 +140,7 @@ export function CallCenterSettings({ ngoId, ccDoc }: { ngoId: string; ccDoc: CcD
           settings: {
             recordingEnabled,
             kvkkAnnouncement,
+            communicationHubEnabled,
             callerIdNumber: callerIdNumber.trim(),
             inboundAgentUid: inboundAgentUid || null,
             inboundAgentName: inboundAgentName || null,
@@ -320,6 +323,16 @@ export function CallCenterSettings({ ngoId, ccDoc }: { ngoId: string; ccDoc: CcD
             <Checkbox checked={kvkkAnnouncement} onCheckedChange={(v) => setKvkkAnnouncement(v === true)} aria-label="KVKK anonsu" />
             <span>
               <strong>KVKK kayıt anonsu</strong> — görüşme başında &quot;bu çağrı kayıt altına alınmaktadır&quot; anonsu çalsın (zorunluluk).
+            </span>
+          </label>
+
+          <label className="flex items-start gap-2.5 cursor-pointer text-sm">
+            <Checkbox checked={communicationHubEnabled} onCheckedChange={(v) => setCommunicationHubEnabled(v === true)} aria-label="İletişim Merkezi" />
+            <span className="flex items-center gap-1.5">
+              <MessageCircle className="h-4 w-4 text-muted-foreground" />
+              <span>
+                <strong>İletişim Merkezi</strong> — WhatsApp&apos;tan çağrıya akışını etkinleştir. Açıkken menüde &quot;Diğer → İletişim Merkezi&quot; görünür.
+              </span>
             </span>
           </label>
         </CardContent>

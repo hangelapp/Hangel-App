@@ -50,6 +50,7 @@ export interface CallCenterSettingsData {
   callerIdNumber?: string;
   inboundAgentUid?: string | null;
   inboundAgentName?: string | null;
+  communicationHubEnabled?: boolean;
 }
 
 interface NgoCallCenterDoc {
@@ -245,9 +246,11 @@ export default function NgoCallCenterPage() {
               <DropdownMenuItem onClick={() => setTab('bugun')} disabled={!isApproved}>
                 <Sun className="mr-2 h-4 w-4" /> Bugünkü İşim
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTab('iletisim')}>
-                <MessageCircle className="mr-2 h-4 w-4" /> İletişim Merkezi
-              </DropdownMenuItem>
+              {ccDoc?.settings?.communicationHubEnabled && (
+                <DropdownMenuItem onClick={() => setTab('iletisim')}>
+                  <MessageCircle className="mr-2 h-4 w-4" /> İletişim Merkezi
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => setTab('huni')} disabled={!isApproved}>
                 <TrendingUp className="mr-2 h-4 w-4" /> Bağış Hunisi
               </DropdownMenuItem>
@@ -330,6 +333,13 @@ export default function NgoCallCenterPage() {
                   </ul>
                 </CardContent>
               </Card>
+            )}
+            {/* Onaylı/bekleyen STK'ya da tanıtım + sertifika + teknik altyapı
+                (salt görüntü — onStart yok, CTA gizli). */}
+            {ccDoc && (
+              <div className="max-w-4xl pt-2">
+                <SantralIntro />
+              </div>
             )}
           </div>
           )}

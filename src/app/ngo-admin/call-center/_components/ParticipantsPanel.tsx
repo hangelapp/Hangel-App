@@ -91,6 +91,8 @@ export function ParticipantsPanel({ source }: { source: Source }) {
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Zaman filtresi: tümü / gelecek / geçmiş (kaynak tarihine göre).
+  const [when, setWhen] = useState<'all' | 'upcoming' | 'past'>('all');
 
   // Toplu mesaj diyalogu
   const [msgOpen, setMsgOpen] = useState(false);
@@ -249,6 +251,22 @@ export function ParticipantsPanel({ source }: { source: Source }) {
   const allSelected = rows.length > 0 && selected.size === rows.length;
   const toggleAll = () => setSelected(allSelected ? new Set() : new Set(rows.map((r) => r.id)));
 
+  // Zaman filtresi: kişinin en ileri kaynak tarihi bugünden sonra ise "gelecek",
+  // tüm kaynakları geçmişte ise "geçmiş". Tarih parse edilemezse "gelecek" say
+  // (kaybolmasın). 'all' hepsini gösterir.
+  const visibleRows = useMemo(() => {
+    if (when === 'all') return rows;
+    const now = Date.now();
+    return rows.filter((r) => {
+      const times = r.sources
+        .map((s) => (s.when ? Date.parse(s.when) : NaN))
+        .filter((t) => Number.isFinite(t)) as number[];
+      if (times.length === 0) return when === 'upcoming'; // tarihsiz → gelecek varsay
+      const latest = Math.max(...times);
+      return when === 'upcoming' ? latest >= now : latest < now;
+    });
+  }, [rows, when]);
+
   const attendedCount = useMemo(() => rows.filter((r) => r.attendance === 'attended').length, [rows]);
   const SourceIcon = source === 'event' ? Calendar : HeartHandshake;
   const title = source === 'event' ? 'Etkinlik Katılımcıları' : 'Gönüllü Katılımcıları';
@@ -265,7 +283,8 @@ export function ParticipantsPanel({ source }: { source: Source }) {
           <div className="min-w-0">
             <h2 className="font-bold text-sm leading-tight">{title}</h2>
             <p className="text-xs text-muted-foreground">
-              {rows.length} kişi{source === 'event' && attendedCount > 0 ? ` · ${attendedCount} geldi` : ''}
+              {when === 'all' ? `${rows.length} kişi` : `${visibleRows.length} / ${rows.length} kişi`}
+              {source === 'event' && attendedCount > 0 ? ` · ${attendedCount} geldi` : ''}
             </p>
           </div>
         </div>
@@ -289,6 +308,25 @@ export function ParticipantsPanel({ source }: { source: Source }) {
           placeholder="Ad, telefon veya e-posta ara"
           className="pl-9 rounded-xl min-h-[44px]"
         />
+      </div>
+
+      {/* Zaman filtresi: geçmiş / gelecek etkinlik-gönüllülük katılımcıları */}
+      <div className="flex gap-1.5">
+        {([
+          { key: 'all', label: 'Tümü' },
+          { key: 'upcoming', label: source === 'event' ? 'Gelecek etkinlikler' : 'Gelecek' },
+          { key: 'past', label: 'Geçmiş' },
+        ] as const).map((f) => (
+          <Button
+            key={f.key}
+            size="sm"
+            variant={when === f.key ? 'default' : 'outline'}
+            className="rounded-xl"
+            onClick={() => setWhen(f.key)}
+          >
+            {f.label}
+          </Button>
+        ))}
       </div>
 
       {/* Seçim + toplu aksiyon çubuğu */}
@@ -354,9 +392,13 @@ export function ParticipantsPanel({ source }: { source: Source }) {
               : 'Kuruluşuna gönüllü başvurusu yapan kişileri görmek için "Güncelle"ye bas.'}
           </p>
         </div>
+      ) : visibleRows.length === 0 ? (
+        <div className="py-12 text-center text-muted-foreground text-sm px-6">
+          {when === 'upcoming' ? 'Gelecek tarihli katılımcı yok.' : when === 'past' ? 'Geçmiş katılımcı yok.' : 'Katılımcı yok.'}
+        </div>
       ) : (
         <div className="space-y-2">
-          {rows.map((p) => {
+          {visibleRows.map((p) => {
             const disp = p.lastDisposition ? DISPOSITION[p.lastDisposition] : null;
             const isSel = selected.has(p.id);
             return (

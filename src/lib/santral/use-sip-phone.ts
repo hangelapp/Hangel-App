@@ -81,7 +81,14 @@ export interface UseSipPhoneApi {
  * E.164 / serbest girişten SIP user kısmı üret (sadece rakam + baştaki +).
  */
 function sanitizeNumber(input: string): string {
-  return input.replace(/[^\d+]/g, '');
+  // Yalnız rakam bırak. Asterisk dialplan `_X.` pattern'i '+' ile başlayan
+  // numarayı EŞLEŞTİRMEZ → çağrı anında düşer ("1 sn'de görüşme bitti").
+  // Türkiye trunk'ı 90XXXXXXXXXX bekler. '+' ve baştaki '00' soyulur;
+  // baştaki tek '0' (0XXX...) da ulusal formattır → 90 önekine çevrilir.
+  let n = input.replace(/[^\d]/g, '');
+  if (n.startsWith('00')) n = n.slice(2);
+  else if (n.startsWith('0')) n = '90' + n.slice(1);
+  return n;
 }
 
 /**

@@ -68,6 +68,7 @@ interface CleanSettings {
   callerIdNumber?: string;
   inboundAgentUid?: string | null;
   inboundAgentName?: string | null;
+  communicationHubEnabled?: boolean;
 }
 
 /** raw → temiz extension dizisi. Sadece bilinen alanları, normalize/clamp ederek geçirir. */
@@ -95,6 +96,7 @@ function normalizeSettings(raw: unknown): CleanSettings {
   const s = raw as Record<string, unknown>;
   if (s.recordingEnabled !== undefined) out.recordingEnabled = Boolean(s.recordingEnabled);
   if (s.kvkkAnnouncement !== undefined) out.kvkkAnnouncement = Boolean(s.kvkkAnnouncement);
+  if (s.communicationHubEnabled !== undefined) out.communicationHubEnabled = Boolean(s.communicationHubEnabled);
   if (s.callerIdNumber !== undefined) out.callerIdNumber = String(s.callerIdNumber).slice(0, 32);
   // Gelen aramayı alacak kişi — null kabul edilir ("herkes çalar"); string ise clamp.
   if (s.inboundAgentUid !== undefined) {
