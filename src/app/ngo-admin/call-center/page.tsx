@@ -22,6 +22,7 @@ import { doc } from 'firebase/firestore';
 import { OnboardingWizard } from './_components/OnboardingWizard';
 import { CallDashboard } from './_components/CallDashboard';
 import { CallCenterSettings } from './_components/CallCenterSettings';
+import { CallFlowSettings } from './_components/CallFlowSettings';
 import { CommunicationHub } from './_components/CommunicationHub';
 import { CallLists } from './_components/CallLists';
 import { ParticipantsPanel } from './_components/ParticipantsPanel';
@@ -314,10 +315,15 @@ export default function NgoCallCenterPage() {
           )}
         </TabsContent>
 
-        {/* Sekme 5 — Ayarlar (yalnızca onaylı STK) */}
+        {/* Sekme 5 — Ayarlar (yalnızca onaylı STK): dahili/kayıt ayarları + çağrı akışı */}
         <TabsContent value="ayarlar" className="mt-4">
           {isApproved && ccDoc ? (
-            <CallCenterSettings ngoId={ngoId} ccDoc={ccDoc} />
+            <div className="space-y-8">
+              <CallCenterSettings ngoId={ngoId} ccDoc={ccDoc} />
+              <div className="border-t border-border pt-6">
+                <CallFlowSettings />
+              </div>
+            </div>
           ) : (
             <LockedNotice title="Ayarlar kilitli" status={status} />
           )}
