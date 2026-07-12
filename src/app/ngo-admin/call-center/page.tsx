@@ -15,7 +15,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks, Calendar, HeartHandshake, MoreHorizontal, ChevronDown } from 'lucide-react';
+import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks, Calendar, HeartHandshake, MoreHorizontal, ChevronDown, Mic, Target } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
@@ -235,6 +235,17 @@ export default function NgoCallCenterPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setTab('iletisim')}>
                 <MessageCircle className="mr-2 h-4 w-4" /> İletişim Merkezi
+              </DropdownMenuItem>
+              {/* Yazılı olan ama panele bağlı olmayan sayfalar buradan erişilir. */}
+              <DropdownMenuItem asChild disabled={!isApproved}>
+                <Link href="/ngo-admin/call-center/recordings">
+                  <Mic className="mr-2 h-4 w-4" /> Çağrı Geçmişi & Kayıtlar
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild disabled={!isApproved}>
+                <Link href="/ngo-admin/call-center/queue">
+                  <Target className="mr-2 h-4 w-4" /> Arama Sırası (Cevapsız / Geri Ara)
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

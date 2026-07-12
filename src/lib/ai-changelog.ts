@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-07-12";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "aaaa64ff",
+    "date": "2026-07-12",
+    "subject": "feat(volunteering): kurumsal katılımcı başvuru akışı — form + yönetim onayı + yayınlama"
+  },
+  {
+    "hash": "36b7490d",
+    "date": "2026-07-12",
+    "subject": "fix(vanity): worldcleanday/cleanday rewrite → redirect (hedef client sayfa useParams kullanıyor, rewrite'ta id boş kalıp notFound veriyordu)"
+  },
+  {
+    "hash": "996f8178",
+    "date": "2026-07-12",
+    "subject": "feat(santral): sekme düzeni (katılımcılar Arama Listeleri altına + 'Diğer' menüsü) + WhatsApp token env fix"
+  },
+  {
     "hash": "bf066222",
     "date": "2026-07-12",
     "subject": "feat(volunteering): rekor gönüllülük ilanına çevrildi + çok-nokta + foto + pin + tanıtım sayfası"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "fa3fd199",
     "date": "2026-07-11",
     "subject": "sertifika: sol-üst hangel→organizatör logosu, ortadaki DÜZENLEYEN kaldırıldı, gelir-modeli partner logo şeridi (İçişleri STİGM) — geriye dönük"
-  },
-  {
-    "hash": "b3809893",
-    "date": "2026-07-10",
-    "subject": "feat(auth): etkinlik-QR akışında kayıt sayfasında Kurumsal tab gizli (yalnız Bireysel)"
-  },
-  {
-    "hash": "90d4aaf4",
-    "date": "2026-07-10",
-    "subject": "feat(onboarding): ngo-selection'da 'STK yöneticisiyim' + kütük mini formu + eksik-STK nudge"
-  },
-  {
-    "hash": "e8cf46f3",
-    "date": "2026-07-10",
-    "subject": "fix(lint): sroi share değişkeni no-useless-assignment (her iki dalda atanıyor)"
   }
 ];
