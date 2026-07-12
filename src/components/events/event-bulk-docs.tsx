@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { buildEventCertificateJpeg } from '@/lib/event-certificate';
 import { buildVolunteerCertificateJpeg } from '@/lib/volunteer-certificate';
 
-type Attendee = { name?: string; email?: string; userId?: string };
+type Attendee = { name?: string; email?: string; userId?: string; isManager?: boolean };
 type EventInfo = { name?: string; date?: string; location?: string };
 type DocKind = 'badge' | 'cert';
 type OrgKind = 'event' | 'volunteer';
@@ -69,7 +69,8 @@ async function qrDataUri(text: string, size = 220): Promise<string> {
 }
 
 function badgeCardHtml(a: Attendee, ev: EventInfo, ngoName: string, logoUrl: string | undefined, backQr: string, orgKind: OrgKind) {
-  const roleLabel = orgKind === 'volunteer' ? 'GÖNÜLLÜ' : 'KATILIMCI';
+  // Bu ilana atanmış yönetici → "KOORDİNATÖR"; değilse gönüllü/katılımcı.
+  const roleLabel = a.isManager ? 'KOORDİNATÖR' : orgKind === 'volunteer' ? 'GÖNÜLLÜ' : 'KATILIMCI';
   const logo = logoUrl ? `<img class="b-logo" src="${esc(logoUrl)}" alt="">` : `<div class="b-logo b-logo-ph">${esc((ngoName || 'H').charAt(0))}</div>`;
   // A6 kart = üstte ÖN (A7), altta ARKA (A7, katlama çizgisi). Katlanınca ön görünür.
   return `<div class="badge">
@@ -132,7 +133,8 @@ async function buildBadgeSheetHtml(kind: OrgKind, list: Attendee[], ev: EventInf
 
 function certInputFor(kind: OrgKind, a: Attendee, ev: EventInfo, ngoName: string, logoUrl: string | undefined, seed: string) {
   if (kind === 'volunteer') {
-    return { taskTitle: ev.name || '', organizerName: ngoName, userName: a.name || 'Gönüllü', date: ev.date || '', certificateId: seed, logoUrl } as const;
+    // Bu ilana atanmış yönetici → koordinatör sertifikası (başlık + metin farklı).
+    return { taskTitle: ev.name || '', organizerName: ngoName, userName: a.name || 'Gönüllü', date: ev.date || '', certificateId: seed, logoUrl, role: (a.isManager ? 'coordinator' : 'volunteer') as 'coordinator' | 'volunteer' } as const;
   }
   return { eventName: ev.name || '', eventDate: ev.date || '', userName: a.name || 'Katılımcı', organizerName: ngoName, role: 'participant' as const, certificateId: seed, logoUrl } as const;
 }
@@ -334,6 +336,7 @@ function BulkDocDialog({
                   <label key={i} className="flex items-center gap-2 text-sm py-1 cursor-pointer">
                     <Checkbox checked={sel.has(i)} onCheckedChange={() => toggle(i)} />
                     <span className="truncate">{a.name || (orgKind === 'volunteer' ? 'Gönüllü' : 'Katılımcı')}</span>
+                    {a.isManager && <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">Koordinatör</span>}
                   </label>
                 ))}
               </div>

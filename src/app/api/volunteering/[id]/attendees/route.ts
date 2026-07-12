@@ -11,7 +11,9 @@
  *
  * Yetki: super-admin VEYA ilan sahibi STK admini (opp.ngoId == actor.ngoId).
  *
- * Dönüş: { event: { name, date, location }, attendees: [{ name, email, userId }] }
+ * Dönüş: { event: { name, date, location }, attendees: [{ name, email, phone, userId }] }
+ * name = users/{uid}.name (isim-soyisim) → başvurudaki userName → e-posta fallback.
+ * phone = users/{uid}.personalInfo.phone (STK yöneticisi iletişim kurabilsin).
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
@@ -36,7 +38,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     dates?: { eventStart?: string };
     location?: { address?: string; district?: string; city?: string } | string;
     city?: string;
+    managerUids?: string[];
   };
+  const managerSet = new Set(opp.managerUids || []);
 
   if (!actor.isSuperAdmin && opp.ngoId !== actor.ngoId) {
     return NextResponse.json({ message: 'Bu ilanın gönüllülerini görme yetkin yok' }, { status: 403 });
@@ -50,15 +54,20 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     .get();
   const rows = appsSnap.docs.map((d) => d.data() as { userId?: string; userName?: string });
 
-  // E-postaları users doc'tan çöz (getAll batched)
+  // Ad-soyad + e-posta + telefonu users doc'tan çöz (getAll batched).
+  // İsim önceliği: users/{uid}.name (isim-soyisim) → başvurudaki userName → e-posta.
   const userIds = [...new Set(rows.map((r) => r.userId).filter(Boolean) as string[])];
-  const emailByUid: Record<string, string> = {};
+  const infoByUid: Record<string, { name: string; email: string; phone: string }> = {};
   if (userIds.length > 0) {
     const refs = userIds.map((u) => db.collection(COLLECTIONS.users).doc(u));
     const docs = await db.getAll(...refs);
     for (const d of docs) {
-      const u = d.data() as { personalInfo?: { email?: string } } | undefined;
-      emailByUid[d.id] = (u?.personalInfo?.email || '').trim();
+      const u = d.data() as { name?: string; personalInfo?: { email?: string; phone?: string } } | undefined;
+      infoByUid[d.id] = {
+        name: (u?.name || '').trim(),
+        email: (u?.personalInfo?.email || '').trim(),
+        phone: (u?.personalInfo?.phone || '').trim(),
+      };
     }
   }
 
@@ -67,11 +76,14 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     .filter((r) => r.userId && !seen.has(r.userId))
     .map((r) => {
       seen.add(r.userId as string);
-      const email = emailByUid[r.userId as string] || '';
+      const info = infoByUid[r.userId as string] || { name: '', email: '', phone: '' };
+      const name = info.name || (r.userName || '').trim() || (info.email ? info.email.split('@')[0] : 'Gönüllü');
       return {
-        name: (r.userName || '').trim() || (email ? email.split('@')[0] : 'Gönüllü'),
-        email,
+        name,
+        email: info.email,
+        phone: info.phone,
         userId: r.userId as string,
+        isManager: managerSet.has(r.userId as string),
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name, 'tr'));

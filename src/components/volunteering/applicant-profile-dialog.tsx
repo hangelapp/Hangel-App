@@ -21,7 +21,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Award, GraduationCap, Sparkles, Brain, Phone, Mail } from 'lucide-react';
+import { Award, GraduationCap, Sparkles, Brain, Phone, Mail, Languages, Car, Clock, Briefcase, Globe, BadgeCheck } from 'lucide-react';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { User } from '@/lib/types';
@@ -101,8 +101,38 @@ export function ApplicantProfileDialog({
   const telHref = phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : null;
   const skills = profile?.volunteerInfo?.skills || [];
   const interests = profile?.volunteerInfo?.interests || [];
-  const firstEducation = profile?.volunteerInfo?.education?.[0];
   const badge = statusBadge(application?.status);
+
+  // Yönetici karar verebilsin diye tam gönüllü profili. Bu dialog zaten yalnız
+  // ilan sahibi STK yöneticisine / super-admin'e açık (applications.list kuralı),
+  // bu yüzden KVKK gizleme gerekmez. Aşağıdaki bazı alanlar (certificates,
+  // driverLicenses, signLanguages, availability, motivations) User tipinde
+  // tanımlı değil ama settings/volunteer'da yazılıyor — widened tip ile okunur.
+  const vi = (profile?.volunteerInfo ?? {}) as NonNullable<User['volunteerInfo']> &
+    Partial<{
+      sector: string | null;
+      position: string | null;
+      signLanguages: string[];
+      certificates: string[];
+      driverLicenses: string[];
+      motivations: string[];
+      availabilityDays: string[];
+      availabilityTimes: string[];
+      workModes: string[];
+    }>;
+  const educationList = (vi.education ?? []).filter((e) => e?.school || e?.level);
+  const profession = (vi.profession ?? undefined) || undefined;
+  const sector = (vi.sector ?? undefined) || undefined;
+  const position = (vi.position ?? undefined) || undefined;
+  const languages = vi.languages ?? [];
+  const signLanguages = vi.signLanguages ?? [];
+  const certificates = vi.certificates ?? [];
+  const driverLicenses = vi.driverLicenses ?? [];
+  const programs = vi.programs ?? [];
+  const availabilityDays = vi.availabilityDays ?? [];
+  const availabilityTimes = vi.availabilityTimes ?? [];
+  const workModes = vi.workModes ?? [];
+  const motivations = vi.motivations ?? [];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -244,15 +274,154 @@ export function ApplicantProfileDialog({
               </div>
             ) : null}
 
-            {firstEducation?.school ? (
+            {/* Meslek / sektör / pozisyon */}
+            {(profession || sector || position) ? (
+              <div className="space-y-1">
+                {profession ? (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Briefcase className="h-4 w-4 text-primary shrink-0" />
+                    <span className="break-words">{profession}</span>
+                  </div>
+                ) : null}
+                {sector ? (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-xs text-muted-foreground">Sektör:</span>
+                    <span className="break-words">{sector}</span>
+                  </div>
+                ) : null}
+                {position ? (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-xs text-muted-foreground">Pozisyon:</span>
+                    <span className="break-words">{position}</span>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            {/* Tam eğitim listesi */}
+            {educationList.length > 0 ? (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-sm font-medium">
+                  <GraduationCap className="h-4 w-4 text-primary shrink-0" /> Eğitim
+                </div>
+                <ul className="space-y-1">
+                  {educationList.map((e, i) => (
+                    <li key={`edu-${i}`} className="text-sm break-words">
+                      {[e.level, e.school, e.department, e.grade, e.status, e.graduationYear]
+                        .map((v) => v?.trim())
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {/* Diller */}
+            {(languages.length > 0 || signLanguages.length > 0) ? (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-sm font-medium">
+                  <Languages className="h-4 w-4 text-primary shrink-0" /> Diller
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {languages.map((l, i) => (
+                    <Badge key={`lang-${i}`} variant="secondary">
+                      {l}
+                    </Badge>
+                  ))}
+                  {signLanguages.map((l, i) => (
+                    <Badge key={`sign-${i}`} variant="secondary">
+                      {l} (işaret dili)
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Sertifikalar */}
+            {certificates.length > 0 ? (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-sm font-medium">
+                  <BadgeCheck className="h-4 w-4 text-primary shrink-0" /> Sertifikalar
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {certificates.map((c, i) => (
+                    <Badge key={`cert-${i}`} variant="outline">
+                      {c}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Program & yazılım */}
+            {programs.length > 0 ? (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-sm font-medium">
+                  <Globe className="h-4 w-4 text-primary shrink-0" /> Program & Yazılım
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {programs.map((p, i) => (
+                    <Badge key={`prog-${i}`} variant="outline">
+                      {p}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Ehliyet */}
+            {driverLicenses.length > 0 ? (
               <div className="flex items-start gap-2 text-sm">
-                <GraduationCap className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <Car className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <span className="break-words">
-                  {firstEducation.school}
-                  {firstEducation.department
-                    ? ` — ${firstEducation.department}`
-                    : ''}
+                  <span className="text-xs text-muted-foreground">Ehliyet: </span>
+                  {driverLicenses.join(', ')}
                 </span>
+              </div>
+            ) : null}
+
+            {/* Uygunluk */}
+            {(availabilityDays.length > 0 ||
+              availabilityTimes.length > 0 ||
+              workModes.length > 0) ? (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-sm font-medium">
+                  <Clock className="h-4 w-4 text-primary shrink-0" /> Uygunluk
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {availabilityDays.map((d, i) => (
+                    <Badge key={`day-${i}`} variant="secondary">
+                      {d}
+                    </Badge>
+                  ))}
+                  {availabilityTimes.map((t, i) => (
+                    <Badge key={`time-${i}`} variant="secondary">
+                      {t}
+                    </Badge>
+                  ))}
+                  {workModes.map((w, i) => (
+                    <Badge key={`mode-${i}`} variant="outline">
+                      {w}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Motivasyon */}
+            {motivations.length > 0 ? (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-sm font-medium">
+                  <Sparkles className="h-4 w-4 text-primary shrink-0" /> Motivasyon
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {motivations.map((m, i) => (
+                    <Badge key={`motiv-${i}`} variant="outline">
+                      {m}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             ) : null}
           </div>

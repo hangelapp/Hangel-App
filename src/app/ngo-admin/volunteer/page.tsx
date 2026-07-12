@@ -25,6 +25,7 @@ import { VolunteerApplicants } from '@/components/volunteering/volunteer-applica
 import { ApplicationsAnalytics } from '@/components/volunteering/applications-analytics';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
+import { AssignManagerButton } from '@/components/ngo-admin/assign-manager-button';
 import { EventAttendees } from '@/components/events/event-attendees';
 import { EventBadgeCards, EventCertificates } from '@/components/events/event-bulk-docs';
 import { EventPhotosAdmin } from '@/components/events/event-photos-admin';
@@ -619,6 +620,12 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, a
                     <BroadcastMessageButton targetId={opp.id} kind="volunteering" title={opp.title} className="rounded-xl w-full sm:w-auto" />
                     <EventBadgeCards eventId={opp.id} eventName={opp.title} ngoName={ngoName} logoUrl={ngoLogoUrl} orgKind="volunteer" attendeesEndpoint={`/api/volunteering/${opp.id}/attendees`} />
                     <EventCertificates eventId={opp.id} eventName={opp.title} ngoName={ngoName} logoUrl={ngoLogoUrl} orgKind="volunteer" attendeesEndpoint={`/api/volunteering/${opp.id}/attendees`} />
+                    <AssignManagerButton
+                        kind="volunteering"
+                        listingId={opp.id}
+                        title={opp.title}
+                        currentManagers={(opp.managerUids || []).map((uid, i) => ({ uid, name: (opp.managerNames || [])[i] || '' }))}
+                    />
                     {/* Süper admin onayı bekleyen (Beklemede) ilanlarda STK statusü
                         değiştiremez → yayınla/pasife al gösterilmez. */}
                     {isPending ? null : isPassive ? (

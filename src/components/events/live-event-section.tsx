@@ -35,6 +35,7 @@ interface LiveEventSectionProps {
     contributors?: EventContributor[];
     organizer?: string;
     organizerLogoUrl?: string;
+    eventLogoUrl?: string; // Etkinliğe özel logo — varsa kurum logosundan ÖNCE gösterilir.
     slug?: string;
   };
   isGoing: boolean;
@@ -139,13 +140,14 @@ export function LiveEventSection({ eventId, event, isGoing, isManager, authUser,
   return (
     <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <HeaderWrap>
-      {/* Üst satır: düzenleyen kurum logosu/adı + (varsa) hava badge — canlı modda ekranda görünür */}
-      {(event.organizerLogoUrl || event.organizer || weather) && (
+      {/* Üst satır: etkinlik/düzenleyen logosu + adı + (varsa) hava badge — canlı modda ekranda görünür.
+          Logo önceliği: etkinliğe özel logo (eventLogoUrl) → kurum logosu → baş harfler. */}
+      {(event.eventLogoUrl || event.organizerLogoUrl || event.organizer || weather) && (
         <div className="mb-4 flex flex-wrap items-center gap-2.5">
-          {event.organizerLogoUrl ? (
+          {(event.eventLogoUrl || event.organizerLogoUrl) ? (
             <span className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-border bg-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={event.organizerLogoUrl} alt={event.organizer || 'Düzenleyen'} className="h-full w-full object-contain" />
+              <img src={event.eventLogoUrl || event.organizerLogoUrl} alt={event.organizer || 'Düzenleyen'} className="h-full w-full object-contain" />
             </span>
           ) : event.organizer ? (
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-black text-primary">

@@ -23,6 +23,7 @@ import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, addDoc, updateDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Country, State, City } from 'country-state-city';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import {
@@ -166,6 +167,7 @@ type StoredVolunteering = {
   };
   taskTypeId?: string;
   estimatedHours?: number;
+  eventLogoUrl?: string;
 };
 
 function NewOpportunityForm() {
@@ -245,6 +247,32 @@ function NewOpportunityForm() {
   const [taskTypeId, setTaskTypeId] = useState('');
   const [estimatedHours, setEstimatedHours] = useState('');
 
+  // Gönüllülüğe özel logo (STK logosundan ayrı) — canlı/detay ekranı + paylaşım önizlemesinde görünür.
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [existingLogoUrl, setExistingLogoUrl] = useState('');
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  // Gönüllülük logosu seçici (5 MB + image/* kontrolü).
+  const handleLogoFile = (file: File | null) => {
+    if (!file) {
+      setLogoFile(null);
+      setLogoPreview(null);
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      toast({ variant: 'destructive', title: 'Geçersiz dosya', description: 'Lütfen bir görsel dosyası seçin.' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'Logo en fazla 5 MB olmalı.' });
+      return;
+    }
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // EDIT modu prefill: yüklenen ilan bir KEZ form state'ine doldurulur. Guard
@@ -318,6 +346,10 @@ function NewOpportunityForm() {
 
     setTaskTypeId(o.taskTypeId || '');
     setEstimatedHours(o.estimatedHours != null ? String(o.estimatedHours) : '');
+
+    // Gönüllülüğe özel logo — mevcutsa önizlemeye yükle (yeni dosya seçilmezse korunur).
+    setExistingLogoUrl(o.eventLogoUrl || '');
+    setLogoPreview(o.eventLogoUrl || null);
   }, [isEdit, editOpp]);
 
   // Süper-admin tarafından yönetilen iş kalemleri kataloğu
@@ -426,6 +458,26 @@ function NewOpportunityForm() {
 
     setIsSubmitting(true);
     try {
+      // Gönüllülüğe özel logo upload (varsa) — Storage'a yükle. Yeni dosya yoksa
+      // düzenlemede mevcut logo korunur (create'te boş string).
+      let logoUrl = isEdit ? existingLogoUrl : '';
+      if (logoFile) {
+        setLogoUploading(true);
+        try {
+          const storage = getStorage();
+          const ext = (logoFile.name.split('.').pop() || 'png').toLowerCase();
+          const logoKey = editId || `new-${Date.now()}`;
+          const r = storageRef(storage, `volunteering-logos/${entityId}/${logoKey}.${ext}`);
+          await uploadBytes(r, logoFile, { contentType: logoFile.type });
+          logoUrl = await getDownloadURL(r);
+        } catch (uploadErr) {
+          console.error('Volunteering logo upload failed', uploadErr);
+          toast({ variant: 'destructive', title: 'Logo yüklenemedi', description: 'İlan logosuz kaydedildi; sonra düzenleyebilirsin.' });
+        } finally {
+          setLogoUploading(false);
+        }
+      }
+
       const payload: Record<string, unknown> = {
         title: title.trim(),
         description: description.trim(),
@@ -455,6 +507,8 @@ function NewOpportunityForm() {
         participationCondition: participationCondition.trim() || '',
         organizerLogoUrl: (ngoData as { avatarUrl?: string; logoUrl?: string } | null | undefined)?.avatarUrl
           || (ngoData as { avatarUrl?: string; logoUrl?: string } | null | undefined)?.logoUrl || '',
+        // Gönüllülüğe özel logo (STK logosundan ayrı) — detay/canlı ekran + paylaşım önizlemesi.
+        eventLogoUrl: logoUrl,
         commitment: [commitmentMap[commitment], commitmentDetail.trim()].filter(Boolean).join(' — '),
         volunteerCount: {
           needed: Number(volunteerNeeded) || 0,
@@ -600,6 +654,44 @@ function NewOpportunityForm() {
             <div className="space-y-2">
               <Label htmlFor="description">İlan Açıklaması</Label>
               <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Gönüllülerden beklentileri, yapılacak işleri ve projenin amacını detaylıca açıklayın." />
+            </div>
+            {/* Gönüllülük Logosu (opsiyonel) — STK logosundan AYRI; detay/canlı ekranda ve
+                paylaşım önizlemesinde (link kartı) görünür. Kare/yuvarlak logo önerilir. */}
+            <div className="space-y-2">
+              <Label>Gönüllülük Logosu (opsiyonel)</Label>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                className="hidden"
+                onChange={e => handleLogoFile(e.target.files?.[0] || null)}
+              />
+              <div className="flex items-center gap-3">
+                {logoPreview ? (
+                  <div className="h-16 w-16 shrink-0 rounded-2xl overflow-hidden border bg-muted flex items-center justify-center">
+                    {/* Rastgele host olabilir → next/image whitelist'ine takılmamak için <img>. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logoPreview} alt="Gönüllülük logosu önizleme" className="h-full w-full object-contain" />
+                  </div>
+                ) : (
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-dashed border-muted-foreground/30 text-muted-foreground">
+                    <MapPin className="h-6 w-6" />
+                  </div>
+                )}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={logoUploading || isSubmitting}>
+                      {logoPreview ? 'Değiştir' : 'Logo yükle'}
+                    </Button>
+                    {logoPreview && (
+                      <Button type="button" variant="ghost" size="sm" onClick={() => handleLogoFile(null)} disabled={logoUploading || isSubmitting}>
+                        Kaldır
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Detay/canlı ekranda ve paylaşım önizlemesinde görünür. PNG / JPG / WEBP · max 5 MB</p>
+                </div>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="participationCondition">Katılım Koşulu (opsiyonel)</Label>
@@ -881,11 +973,13 @@ function NewOpportunityForm() {
           </CardContent>
         </Card>
 
-        <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isEdit
-            ? (isSubmitting ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet')
-            : (isSubmitting ? 'Yayınlanıyor...' : 'İlanı Yayınla')}
+        <Button type="submit" size="lg" className="w-full" disabled={isSubmitting || logoUploading}>
+          {(isSubmitting || logoUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {logoUploading
+            ? 'Logo yükleniyor...'
+            : isEdit
+              ? (isSubmitting ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet')
+              : (isSubmitting ? 'Yayınlanıyor...' : 'İlanı Yayınla')}
         </Button>
       </form>
     </div>

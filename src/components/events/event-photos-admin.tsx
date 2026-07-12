@@ -10,7 +10,9 @@ import {
     DialogTitle,
     DialogDescription,
 } from '@/components/ui/dialog';
-import { Images, Loader2, Trash2, ExternalLink, Copy, Check } from 'lucide-react';
+import { Images, Loader2, Trash2, ExternalLink, Copy, Check, QrCode } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { LogoQr } from '@/components/shared/logo-qr';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, deleteDoc, doc, orderBy, query } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -146,9 +148,23 @@ export function EventPhotosAdmin({
                             <code className="flex-1 min-w-0 truncate rounded-lg bg-background border px-2.5 py-1.5 text-xs">
                                 {publicUrl}
                             </code>
-                            <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={copyLink}>
+                            <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={copyLink} aria-label="Linki kopyala">
                                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                             </Button>
+                            {/* QR ikonu — tıklanınca galeri linkinin QR'ı açılır (kopyala ikonunun yanında). */}
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button type="button" variant="outline" size="sm" className="shrink-0" aria-label="QR kodu göster">
+                                        <QrCode className="h-3.5 w-3.5" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-4 flex flex-col items-center gap-2">
+                                    <LogoQr value={publicUrl} size={180} />
+                                    <p className="text-xs text-muted-foreground text-center max-w-[180px]">
+                                        Bu QR&apos;ı okutan herkes foto galerisini açar.
+                                    </p>
+                                </PopoverContent>
+                            </Popover>
                             <Button asChild type="button" variant="outline" size="sm" className="shrink-0">
                                 <a href={publicUrl} target="_blank" rel="noopener noreferrer" aria-label="Galeriyi aç">
                                     <ExternalLink className="h-3.5 w-3.5" />

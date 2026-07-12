@@ -112,6 +112,20 @@ service firebase.storage {
         && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
     }
+    // Etkinliğe özel logolar — non-super-admin organizatörlerce yüklenir (afişle aynı kural).
+    match /event-logos/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+    // Gönüllülüğe özel logolar — non-super-admin STK yöneticilerince yüklenir (afişle aynı kural).
+    match /volunteering-logos/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
 
     // Varsayılan: kimliği doğrulanmış kullanıcı okuyabilir, sadece super-admin yazabilir
     match /{allPaths=**} {

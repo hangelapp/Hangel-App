@@ -99,10 +99,13 @@ export type VolunteerCertificateInput = {
   country?: string;
   city?: string;
   logoUrl?: string;
+  /** Bu ilana atanmış yönetici ise 'coordinator' → sertifika "KOORDİNATÖR" olarak etiketlenir. */
+  role?: 'volunteer' | 'coordinator';
 };
 
 export async function buildVolunteerCertificateJpeg(input: VolunteerCertificateInput): Promise<{ jpeg: string; code: string }> {
   const { taskTitle, organizerName, userName, date, certificateId } = input;
+  const isCoordinator = input.role === 'coordinator';
   const code = input.code || buildCertCode({ country: input.country, kind: 'volunteer', idSeed: certificateId });
   const verify = certVerifyUrl(code);
   const verifyShort = verify.replace(/^https?:\/\//, '');
@@ -125,8 +128,12 @@ export async function buildVolunteerCertificateJpeg(input: VolunteerCertificateI
   // Duygusal, "birlikte/kolektif" temalı metin.
   const quote = 'İyilik yalnız başına başarılmaz; birlikte, omuz omuza büyür.';
   const bodyLine1 = `${organizerName || 'bir STK'} ile yürüttüğü`;
-  const bodyLine2 = `“${taskTitle || 'gönüllülük'}” gönüllülüğünde gönülden emek verdi.`;
-  const bodyLine3 = 'Bu kolektif dayanışmanın gerçek bir parçası oldu — verdiği her an bir umuda dokundu.';
+  const bodyLine2 = isCoordinator
+    ? `“${taskTitle || 'gönüllülük'}” çalışmasını koordinatör olarak yönetti.`
+    : `“${taskTitle || 'gönüllülük'}” gönüllülüğünde gönülden emek verdi.`;
+  const bodyLine3 = isCoordinator
+    ? 'Ekibini organize etti, gönüllüleri yönlendirdi — bu kolektif dayanışmanın öncüsü oldu.'
+    : 'Bu kolektif dayanışmanın gerçek bir parçası oldu — verdiği her an bir umuda dokundu.';
 
   // Üstte coral degrade bant + beyaz kalp (etkinlik sertifikasından farklı kimlik).
   const heart =
@@ -148,7 +155,7 @@ export async function buildVolunteerCertificateJpeg(input: VolunteerCertificateI
   ${logoUri ? `<image x="44" y="34" width="34" height="34" href="${logoUri}" xlink:href="${logoUri}"/>` : ''}
   <text x="${logoUri ? 88 : 44}" y="59" font-size="24" font-weight="800" letter-spacing="-0.7" fill="#ffffff">hangel</text>
   <g transform="translate(${PX_W - 250}, 40) scale(1.4)"><path d="${heart}" fill="#ffffff" fill-opacity="0.95"/></g>
-  <text x="${PX_W - 44}" y="59" font-size="15" font-weight="800" letter-spacing="3" fill="#ffffff" text-anchor="end">GÖNÜLLÜLÜK SERTİFİKASI</text>
+  <text x="${PX_W - 44}" y="59" font-size="15" font-weight="800" letter-spacing="3" fill="#ffffff" text-anchor="end">${isCoordinator ? 'KOORDİNATÖR SERTİFİKASI' : 'GÖNÜLLÜLÜK SERTİFİKASI'}</text>
 
   <!-- Duygusal alıntı -->
   <text x="${PX_W / 2}" y="158" font-size="15" font-weight="600" fill="${CORAL_DARK}" text-anchor="middle">${escXml(fit(quote, 64))}</text>

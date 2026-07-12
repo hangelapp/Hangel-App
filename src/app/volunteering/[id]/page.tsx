@@ -554,8 +554,8 @@ export default function VolunteeringDetailPage() {
         taskId: opportunity.id,
         weatherEmoji,
         weatherTemp,
-        // İlan doc'unda logo yoksa NGO avatarına düş → Live Activity'de org logosu hep görünür.
-        organizerLogoUrl: organizerLogo || '',
+        // Önce ilana özel logo (eventLogoUrl), yoksa STK logosu → Live Activity'de logo hep görünür.
+        organizerLogoUrl: opportunity.eventLogoUrl || organizerLogo || '',
         activityStartEpoch: toEpoch(dts?.eventStart, dts?.eventStartTime),
         activityEndEpoch: toEpoch(dts?.eventEnd, dts?.eventEndTime),
       });
@@ -613,7 +613,7 @@ export default function VolunteeringDetailPage() {
             sizes="100vw"
             typeLabel={heroTypeLabel}
             secondaryLabel={locType}
-            organizerLogoUrl={organizerLogo}
+            organizerLogoUrl={opportunity.eventLogoUrl || organizerLogo}
             organizerName={organizerName}
             organizerHref={`/ngos/${opportunity.ngoId}`}
             title={opportunity.title}

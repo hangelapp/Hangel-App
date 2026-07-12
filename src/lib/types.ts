@@ -193,6 +193,7 @@ export type Event = {
   providesCertificate?: boolean;
   organizerId?: string;
   organizerLogoUrl?: string; // Etkinliği düzenleyen kulübün/STK'nın logosu (Live Activity + yaka kartı)
+  eventLogoUrl?: string; // Etkinliğe özel logo (kurum logosundan ayrı; canlı ekran + paylaşım önizlemesi).
   contributors?: EventContributor[]; // Konuşmacı / sanatçı / moderatör listesi (isim + ünvan + rol)
   agenda?: EventAgendaItem[]; // Etkinlik akış programı (saat + başlık)
   // Çok-noktalı etkinlik (ör. Guinness temizlik rekoru — 81 il). Boşsa tek `location` kullanılır.
@@ -205,6 +206,9 @@ export type Event = {
   liveStartedAt?: unknown;
   liveEndedAt?: unknown;
   completed?: boolean; // "Etkinliği Tamamla" sonrası true → aktif/canlı listeden düşer.
+  // Bu ilana özel atanmış yönetici(ler); ilan sahibi STK dışında da yazma yetkisi kazanır.
+  managerUids?: string[];
+  managerNames?: string[];
 };
 
 /** Etkinlikte görevli kişi — konuşmacı, sanatçı, moderatör. hangel üyesiyse userId bağlanır. */
@@ -306,6 +310,7 @@ export type Volunteering = {
     requiredDocuments?: string[]; // Yöneticinin istediği belgeler (GBT/adli sicil, sertifika, mezuniyet, TC) — ilanda gösterilir
     accessibilityTags?: string[]; // Erişilebilirlik/kapsayıcılık (Engelli-dostu, İşaret dili, Uzaktan uygun, Yaşlı-dostu, Aile-dostu) — filtre + ilanda gösterilir
     organizerLogoUrl?: string; // Organize eden STK logosu (Live Activity + yaka kartı)
+    eventLogoUrl?: string; // Etkinliğe özel logo (kurum logosundan ayrı; canlı ekran + paylaşım önizlemesi).
     commitment: string;
     volunteerCount: {
       needed: number;
@@ -355,6 +360,9 @@ export type Volunteering = {
         rating: number;
         comment: string;
     };
+    // Bu ilana özel atanmış yönetici(ler); ilan sahibi STK dışında da yazma yetkisi kazanır.
+    managerUids?: string[];
+    managerNames?: string[];
 };
 
 export type User = {

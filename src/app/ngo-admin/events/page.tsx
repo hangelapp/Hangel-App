@@ -80,6 +80,7 @@ import type {
 import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
 import { BroadcastMessageButton } from '@/components/messaging/broadcast-message-button';
+import { AssignManagerButton } from '@/components/ngo-admin/assign-manager-button';
 import { EventChecklistButton } from '@/components/events/event-checklist-button';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
@@ -136,6 +137,9 @@ interface ClubEventDoc {
     completedAt?: unknown;
     endDate?: string;
     managerChecklist?: Record<string, boolean>;
+    // Bu ilana özel atanmış yönetici(ler) — "Yönetici Ata" ile eklenir.
+    managerUids?: string[];
+    managerNames?: string[];
 }
 
 const EVENT_TYPE_OPTIONS = ['Seminer', 'Atölye', 'Konferans', 'Panel', 'Söyleşi', 'Konser', 'Sergi', 'Gezi / Tur', 'Turnuva', 'Yarışma', 'Eğitim', 'Buluşma', 'Gönüllülük', 'Bağış Kampanyası', 'Diğer'];
@@ -443,6 +447,12 @@ export default function EventManagementPage() {
                 <BroadcastMessageButton targetId={event.id} kind="event" title={event.name || ''} className="rounded-xl w-full sm:w-auto" />
                 <EventBadgeCards eventId={event.id} eventName={event.name || ''} ngoName={activeEntity?.data.name || ''} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
                 <EventCertificates eventId={event.id} eventName={event.name || ''} ngoName={activeEntity?.data.name || ''} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
+                <AssignManagerButton
+                    kind="event"
+                    listingId={event.id}
+                    title={event.name || ''}
+                    currentManagers={(event.managerUids || []).map((uid, i) => ({ uid, name: (event.managerNames || [])[i] || '' }))}
+                />
             </div>
         </div>
     );
@@ -465,6 +475,11 @@ export default function EventManagementPage() {
     const [evPosterFile, setEvPosterFile] = useState<File | null>(null);
     const [evPosterPreview, setEvPosterPreview] = useState<string | null>(null);
     const [evPosterUploading, setEvPosterUploading] = useState(false);
+    // Etkinliğe özel logo (kurum logosundan ayrı) — canlı ekran + paylaşım önizlemesinde görünür.
+    const [evLogoFile, setEvLogoFile] = useState<File | null>(null);
+    const [evLogoPreview, setEvLogoPreview] = useState<string | null>(null);
+    const [evLogoUploading, setEvLogoUploading] = useState(false);
+    const [existingLogoUrl, setExistingLogoUrl] = useState<string>('');
     const [evStartTime, setEvStartTime] = useState('');
     const [evEndDate, setEvEndDate] = useState('');
     const [evEndTime, setEvEndTime] = useState('');
@@ -491,6 +506,7 @@ export default function EventManagementPage() {
     // Katılımcı logo yükleme durumu (satır id → yükleniyor mu).
     const [participantLogoUploading, setParticipantLogoUploading] = useState<Record<string, boolean>>({});
     const posterInputRef = useRef<HTMLInputElement>(null);
+    const logoInputRef = useRef<HTMLInputElement>(null);
 
     const addContributor = () => {
         setContributors((prev) => [...prev, { name: '', title: '', role: 'speaker' }]);
@@ -606,6 +622,25 @@ export default function EventManagementPage() {
         setEvPosterPreview(URL.createObjectURL(file));
     };
 
+    // Etkinliğe özel logo seçici (afişle aynı desen; 5 MB + image/* kontrolü).
+    const handleLogoFile = (file: File | null) => {
+        if (!file) {
+            setEvLogoFile(null);
+            setEvLogoPreview(null);
+            return;
+        }
+        if (!file.type.startsWith('image/')) {
+            toast({ variant: 'destructive', title: 'Geçersiz dosya', description: 'Lütfen bir görsel dosyası seçin.' });
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'Logo en fazla 5 MB olmalı.' });
+            return;
+        }
+        setEvLogoFile(file);
+        setEvLogoPreview(URL.createObjectURL(file));
+    };
+
     const resetForm = () => {
         setEvName('');
         setEvDate('');
@@ -632,9 +667,14 @@ export default function EventManagementPage() {
         if (evPosterPreview) URL.revokeObjectURL(evPosterPreview);
         setEvPosterFile(null);
         setEvPosterPreview(null);
+        if (evLogoPreview && evLogoFile) URL.revokeObjectURL(evLogoPreview);
+        setEvLogoFile(null);
+        setEvLogoPreview(null);
+        setExistingLogoUrl('');
         setEditingId(null);
         setExistingPosterUrl('');
         if (posterInputRef.current) posterInputRef.current.value = '';
+        if (logoInputRef.current) logoInputRef.current.value = '';
     };
 
     // Mevcut bir etkinliği düzenlemek için formu doldurup dialog'u açar.
@@ -647,7 +687,7 @@ export default function EventManagementPage() {
             time?: string; endDate?: string; tags?: string[]; type?: string;
             capacity?: { max?: number }; language?: string; providesCertificate?: boolean;
             location?: { address?: string; city?: string; district?: string; neighborhood?: string; lat?: string; lon?: string };
-            description?: string; imageUrl?: string;
+            description?: string; imageUrl?: string; eventLogoUrl?: string;
             contributors?: EventContributor[]; agenda?: EventAgendaItem[];
             corporateParticipants?: CorporateParticipant[]; points?: EventPoint[];
         };
@@ -695,6 +735,10 @@ export default function EventManagementPage() {
         setEvPosterFile(null);
         setEvPosterPreview(e.imageUrl || null);
         setExistingPosterUrl(e.imageUrl || '');
+        // Etkinliğe özel logo — mevcutsa önizlemeye yükle (yeni dosya seçilmezse korunur).
+        setEvLogoFile(null);
+        setEvLogoPreview(e.eventLogoUrl || null);
+        setExistingLogoUrl(e.eventLogoUrl || '');
         setEditingId(ev.id);
         setCreateOpen(true);
     };
@@ -793,6 +837,25 @@ export default function EventManagementPage() {
                 }
             }
 
+            // Etkinliğe özel logo upload (varsa) — Storage'a yükle. Düzenlemede yeni
+            // dosya yoksa mevcut logo korunur.
+            let logoUrl = editingId ? existingLogoUrl : '';
+            if (evLogoFile) {
+                setEvLogoUploading(true);
+                try {
+                    const storage = getStorage();
+                    const ext = (evLogoFile.name.split('.').pop() || 'png').toLowerCase();
+                    const r = storageRef(storage, `event-logos/${activeEntity.data.id}/${posterKey}.${ext}`);
+                    await uploadBytes(r, evLogoFile, { contentType: evLogoFile.type });
+                    logoUrl = await getDownloadURL(r);
+                } catch (uploadErr) {
+                    console.error('Event logo upload failed', uploadErr);
+                    toast({ variant: 'destructive', title: 'Logo yüklenemedi', description: 'Etkinlik logosuz kaydedildi; sonra düzenleyebilirsin.' });
+                } finally {
+                    setEvLogoUploading(false);
+                }
+            }
+
             const startDateStr = evStartTime ? `${evDate} ${evStartTime}` : evDate;
             const endDateStr = evEndDate
                 ? (evEndTime ? `${evEndDate} ${evEndTime}` : evEndDate)
@@ -885,6 +948,7 @@ export default function EventManagementPage() {
                         },
                         description: evDescription.trim(),
                         imageUrl: posterUrl,
+                        eventLogoUrl: logoUrl,
                         contributors: cleanContributors,
                         agenda: cleanAgenda,
                         corporateParticipants: cleanCorporateParticipants,
@@ -936,6 +1000,7 @@ export default function EventManagementPage() {
                 },
                 description: evDescription.trim(),
                 imageUrl: posterUrl,
+                eventLogoUrl: logoUrl,
                 contributors: cleanContributors,
                 agenda: cleanAgenda,
                 corporateParticipants: cleanCorporateParticipants,
@@ -1184,6 +1249,43 @@ export default function EventManagementPage() {
                                     <span className="text-xs text-muted-foreground/60 px-3 text-center">A4 portre tasarladığın dosyayı direkt yükle</span>
                                 </button>
                             )}
+                        </div>
+
+                        {/* Etkinlik Logosu (opsiyonel) — kurum logosundan AYRI; canlı ekranda ve
+                            paylaşım önizlemesinde (link kartı) görünür. Kare/yuvarlak logo önerilir. */}
+                        <div className="space-y-2">
+                            <Label>Etkinlik Logosu (opsiyonel)</Label>
+                            <input
+                                ref={logoInputRef}
+                                type="file"
+                                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                className="hidden"
+                                onChange={(e) => handleLogoFile(e.target.files?.[0] || null)}
+                            />
+                            <div className="flex items-center gap-3">
+                                {evLogoPreview ? (
+                                    <div className="relative h-16 w-16 shrink-0 rounded-2xl overflow-hidden border bg-muted">
+                                        <NextImage src={evLogoPreview} alt="Etkinlik logosu önizleme" fill className="object-contain" unoptimized />
+                                    </div>
+                                ) : (
+                                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-dashed border-muted-foreground/30 text-muted-foreground">
+                                        <Upload className="h-6 w-6" />
+                                    </div>
+                                )}
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="flex items-center gap-2">
+                                        <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={evLogoUploading || submitting}>
+                                            <Upload className="h-3.5 w-3.5 mr-1.5" /> {evLogoPreview ? 'Değiştir' : 'Logo yükle'}
+                                        </Button>
+                                        {evLogoPreview && (
+                                            <Button type="button" variant="ghost" size="sm" onClick={() => handleLogoFile(null)} disabled={evLogoUploading || submitting}>
+                                                <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Kaldır
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Canlı ekranda ve paylaşım önizlemesinde görünür. PNG / JPG / WEBP · max 5 MB</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
@@ -1569,10 +1671,10 @@ export default function EventManagementPage() {
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={submitting || evPosterUploading}>{t('ngo_admin_events.cancelBtn')}</Button>
-                            <Button type="submit" disabled={submitting || evPosterUploading}>
-                                {(submitting || evPosterUploading)
-                                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {evPosterUploading ? 'Afiş yükleniyor...' : (editingId ? 'Güncelleniyor...' : t('ngo_admin_events.submitting'))}</>
+                            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={submitting || evPosterUploading || evLogoUploading}>{t('ngo_admin_events.cancelBtn')}</Button>
+                            <Button type="submit" disabled={submitting || evPosterUploading || evLogoUploading}>
+                                {(submitting || evPosterUploading || evLogoUploading)
+                                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {evPosterUploading ? 'Afiş yükleniyor...' : evLogoUploading ? 'Logo yükleniyor...' : (editingId ? 'Güncelleniyor...' : t('ngo_admin_events.submitting'))}</>
                                     : (editingId ? 'Güncelle' : t('ngo_admin_events.submitBtn'))}
                             </Button>
                         </DialogFooter>

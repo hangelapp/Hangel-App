@@ -657,7 +657,7 @@ export default function EventDetailPage() {
               <div className="mt-4">
                 <LiveEventSection
                   eventId={resolvedEventId}
-                  event={{ ...event, organizer: event.organizer, organizerLogoUrl: organizerLogo, slug: event.slug }}
+                  event={{ ...event, organizer: event.organizer, organizerLogoUrl: organizerLogo, eventLogoUrl: event.eventLogoUrl, slug: event.slug }}
                   isGoing={isGoing}
                   isManager={isManager}
                   authUser={authUser ?? null}

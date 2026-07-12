@@ -247,7 +247,9 @@ service cloud.firestore {
       // NGO admins can create listings owned by their own managed NGO.
       allow create: if isSuperAdmin() || ownsNgoListing(request.resource.data.ngoId);
       // Owners update/delete their own listings; super-admin full access.
-      allow update, delete: if isSuperAdmin() || ownsNgoListing(resource.data.ngoId);
+      // Ayrıca bu ilana ÖZEL atanmış yönetici (managerUids) yazma yetkisi kazanır.
+      allow update, delete: if isSuperAdmin() || ownsNgoListing(resource.data.ngoId)
+        || (isSignedIn() && resource.data.managerUids != null && request.auth.uid in resource.data.managerUids);
       // Gönüllülük foto galerisi — etkinliktekiyle aynı: public read, giriş yapan yükler.
       match /photos/{photoId} {
         allow read, list: if true;
@@ -300,6 +302,11 @@ service cloud.firestore {
       // Super-admin tüm alanları (status dahil) günceller; spesifik match catch-all'ı override eder.
       allow update: if isSuperAdmin() || (
         ownsEvent(resource.data.organizerId) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
+      ) || (
+        // Bu ilana ÖZEL atanmış yönetici — sahibi gibi status'ü DEĞİŞTİREMEZ.
+        resource.data.managerUids != null &&
+        request.auth.uid in resource.data.managerUids &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
       );
       allow delete: if isSuperAdmin() || ownsEvent(resource.data.organizerId);

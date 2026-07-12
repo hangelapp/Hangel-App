@@ -8,7 +8,7 @@ import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { downloadBlobSmart } from '@/lib/native-file';
 
-interface Attendee { name: string; email: string }
+interface Attendee { name: string; email: string; phone?: string; isManager?: boolean }
 interface AttendeesResponse { event: { name: string; date: string; location: string }; attendees: Attendee[] }
 
 function escapeHtml(s: string) {
@@ -34,12 +34,12 @@ const DOC_CSS = `
 
 function buildDocBody(data: AttendeesResponse): string {
   const rows = data.attendees.map((a, i) =>
-    `<tr><td class="n">${i + 1}</td><td class="nm">${escapeHtml(a.name)}</td><td class="sig"></td></tr>`).join('');
+    `<tr><td class="n">${i + 1}</td><td class="nm">${escapeHtml(a.name)}</td><td>${escapeHtml(a.phone || '—')}</td><td>${escapeHtml(a.email || '—')}</td><td class="sig"></td></tr>`).join('');
   return `<div class="doc">
     <h1>${escapeHtml(data.event.name || 'Etkinlik')}</h1>
     <div class="sub">Katılımcı İmza Listesi</div>
     <div class="meta"><b>Tarih:</b> ${escapeHtml(data.event.date || '—')}<br/><b>Konum:</b> ${escapeHtml(data.event.location || '—')}<br/><b>Toplam:</b> ${data.attendees.length} katılımcı</div>
-    <table><thead><tr><th>#</th><th>Ad Soyad</th><th>İmza</th></tr></thead><tbody>${rows || '<tr><td colspan="3" style="text-align:center;color:#777;padding:24px">Katılımcı yok</td></tr>'}</tbody></table>
+    <table><thead><tr><th>#</th><th>Ad Soyad</th><th>Telefon</th><th>E-posta</th><th>İmza</th></tr></thead><tbody>${rows || '<tr><td colspan="5" style="text-align:center;color:#777;padding:24px">Katılımcı yok</td></tr>'}</tbody></table>
   </div>`;
 }
 
@@ -218,17 +218,24 @@ export function EventAttendees({ eventId, label = 'Katılımcılar', endpoint }:
                     <tr className="bg-gray-100">
                       <th className="border border-gray-300 px-2 py-1.5 text-left w-10">#</th>
                       <th className="border border-gray-300 px-2 py-1.5 text-left">Ad Soyad</th>
-                      <th className="border border-gray-300 px-2 py-1.5 text-left w-2/5">İmza</th>
+                      <th className="border border-gray-300 px-2 py-1.5 text-left">Telefon</th>
+                      <th className="border border-gray-300 px-2 py-1.5 text-left">E-posta</th>
+                      <th className="border border-gray-300 px-2 py-1.5 text-left w-1/5">İmza</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data && count === 0 ? (
-                      <tr><td colSpan={3} className="border border-gray-300 px-2 py-6 text-center text-gray-500">Henüz katılımcı yok.</td></tr>
+                      <tr><td colSpan={5} className="border border-gray-300 px-2 py-6 text-center text-gray-500">Henüz katılımcı yok.</td></tr>
                     ) : (
                       data?.attendees.map((a, i) => (
                         <tr key={i}>
                           <td className="border border-gray-300 px-2 py-3 align-top text-gray-700">{i + 1}</td>
-                          <td className="border border-gray-300 px-2 py-3 align-top font-medium">{a.name}</td>
+                          <td className="border border-gray-300 px-2 py-3 align-top font-medium">
+                            {a.name}
+                            {a.isManager && <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wide text-primary">· Koordinatör</span>}
+                          </td>
+                          <td className="border border-gray-300 px-2 py-3 align-top tabular-nums whitespace-nowrap">{a.phone || '—'}</td>
+                          <td className="border border-gray-300 px-2 py-3 align-top break-all">{a.email || '—'}</td>
                           <td className="border border-gray-300 px-2 py-3"></td>
                         </tr>
                       ))

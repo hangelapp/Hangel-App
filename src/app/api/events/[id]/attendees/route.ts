@@ -48,7 +48,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     name?: string; organizerId?: string; createdBy?: string;
     date?: string; startDate?: string;
     location?: { address?: string; district?: string; city?: string };
+    managerUids?: string[];
   };
+  const managerSet = new Set(ev.managerUids || []);
 
   // Yetki kontrolü
   let authorized = isSuperAdmin || ev.createdBy === uid;
@@ -66,13 +68,17 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const userIds = rsvpsSnap.docs.map((d) => d.id);
 
   // İsimleri çöz — users docs (getAll) + Auth (getUsers, batched 100'lük)
-  const nameByUid: Record<string, { name: string; email: string }> = {};
+  const nameByUid: Record<string, { name: string; email: string; phone: string }> = {};
   if (userIds.length > 0) {
     const refs = userIds.map((id) => db.collection(COLLECTIONS.users).doc(id));
     const docs = await db.getAll(...refs);
     for (const d of docs) {
-      const data = d.data() as { name?: string; personalInfo?: { email?: string } } | undefined;
-      nameByUid[d.id] = { name: (data?.name || '').trim(), email: (data?.personalInfo?.email || '').trim() };
+      const data = d.data() as { name?: string; personalInfo?: { email?: string; phone?: string } } | undefined;
+      nameByUid[d.id] = {
+        name: (data?.name || '').trim(),
+        email: (data?.personalInfo?.email || '').trim(),
+        phone: (data?.personalInfo?.phone || '').trim(),
+      };
     }
     // Auth fallback (displayName/email) — 100'lük gruplar
     for (let i = 0; i < userIds.length; i += 100) {
@@ -80,9 +86,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       try {
         const res = await getAdminAuth().getUsers(chunk);
         for (const u of res.users) {
-          const cur = nameByUid[u.uid] || { name: '', email: '' };
+          const cur = nameByUid[u.uid] || { name: '', email: '', phone: '' };
           if (!cur.name) cur.name = (u.displayName || '').trim();
           if (!cur.email) cur.email = (u.email || '').trim();
+          if (!cur.phone) cur.phone = (u.phoneNumber || '').trim();
           nameByUid[u.uid] = cur;
         }
       } catch {
@@ -93,8 +100,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const attendees = userIds
     .map((id) => {
-      const r = nameByUid[id] || { name: '', email: '' };
-      return { name: r.name || (r.email ? r.email.split('@')[0] : 'Katılımcı'), email: r.email };
+      const r = nameByUid[id] || { name: '', email: '', phone: '' };
+      return { name: r.name || (r.email ? r.email.split('@')[0] : 'Katılımcı'), email: r.email, phone: r.phone, isManager: managerSet.has(id) };
     })
     .sort((a, b) => a.name.localeCompare(b.name, 'tr'));
 
