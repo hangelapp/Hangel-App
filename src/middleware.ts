@@ -16,6 +16,12 @@ import { NextResponse, type NextRequest } from 'next/server';
  */
 const NUMERIC_KUTUK_RE = /^\/\d{4,12}$/;
 const ROOT_DOMAIN = 'hangel.org';
+// Vanity kısa-linkler (kampanya için). hangel.org/worldcleanday ve /cleanday →
+// Guinness temizlik rekoru etkinliği. Kısa URL adres çubuğunda kalsın diye rewrite.
+const VANITY_SHORTLINKS: Record<string, string> = {
+  '/worldcleanday': '/events/guinness-temizlik-rekoru-2026',
+  '/cleanday': '/events/guinness-temizlik-rekoru-2026',
+};
 // STK alt alanı SAYILMAYAN rezerve etiketler.
 const RESERVED_SUBS = new Set(['www', 'app', 'admin', 'api', 'mail', 'm', 'cdn', 'static', '']);
 // Uygulamanın KENDİ servis ettiği host'lar — custom domain SAYILMAZ.
@@ -56,7 +62,16 @@ export function middleware(req: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  // 3) Kütük kısa-linki (ana alan).
+  // 3) Vanity kampanya kısa-linkleri (ana alan): /worldcleanday · /cleanday.
+  const vanityKey = pathname.replace(/\/+$/, '').toLowerCase();
+  const vanityTarget = VANITY_SHORTLINKS[vanityKey];
+  if (vanityTarget) {
+    const url = req.nextUrl.clone();
+    url.pathname = vanityTarget;
+    return NextResponse.rewrite(url);
+  }
+
+  // 4) Kütük kısa-linki (ana alan).
   if (NUMERIC_KUTUK_RE.test(pathname)) {
     const url = req.nextUrl.clone();
     url.pathname = `/k${pathname}`;

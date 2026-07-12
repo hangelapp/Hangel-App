@@ -29,6 +29,7 @@ import {
   setDoc,
   serverTimestamp,
 } from 'firebase/firestore';
+import type { User } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -40,7 +41,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { LogoQr } from '@/components/shared/logo-qr';
 import { ShareButtons } from '@/components/shared/share-buttons';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import type { EventPhoto } from '@/lib/types';
@@ -48,6 +49,7 @@ import {
   ensureFaceModels,
   computeFaceDescriptors,
   computeSingleFaceDescriptor,
+  descriptorFromUrl,
   descriptorsMatch,
 } from '@/lib/face-match';
 import {
@@ -61,6 +63,7 @@ import {
   X,
   Camera,
   ShieldCheck,
+  UserCircle,
 } from 'lucide-react';
 
 // ---- yardımcılar ---------------------------------------------------------
@@ -145,6 +148,19 @@ export function EventPhotosDialog({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  // Profil fotoğrafı ile bul: kullanıcının profil foto vektörü (best-effort, cache)
+  const profileDescRef = useRef<number[] | null>(null); // hesaplanan vektör
+  const [profileScanning, setProfileScanning] = useState(false);
+
+  // --- kullanıcı profil belgesi (avatar için) ---
+  const userDocRef = useMemoFirebase(
+    () => (firestore && user ? doc(firestore, COLLECTIONS.users, user.uid) : null),
+    [firestore, user],
+  );
+  const { data: userData } = useDoc<User>(userDocRef);
+  // kanonik profil fotoğrafı: Firestore user.avatarUrl → authUser.photoURL yedek
+  const profilePhotoUrl = userData?.avatarUrl || user?.photoURL || undefined;
+
   // --- galeri sorgusu (yeniden eskiye) ---
   const photosQuery = useMemoFirebase(
     () =>
@@ -177,6 +193,27 @@ export function EventPhotosDialog({
     };
   }, [open]);
 
+  // --- profil fotoğrafı vektörünü bir kez, en iyi çabayla önceden hesapla ---
+  // Kullanıcının profil fotoğrafı varsa +1 selfie olarak referans kabul edilir.
+  useEffect(() => {
+    if (!open || faceReady !== true || !profilePhotoUrl) {
+      profileDescRef.current = null;
+      return;
+    }
+    let cancelled = false;
+    profileDescRef.current = null;
+    descriptorFromUrl(profilePhotoUrl)
+      .then((d) => {
+        if (!cancelled) profileDescRef.current = d;
+      })
+      .catch(() => {
+        if (!cancelled) profileDescRef.current = null;
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, faceReady, profilePhotoUrl]);
+
   // --- kamera temizliği ---
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -193,6 +230,7 @@ export function EventPhotosDialog({
     setSelfieMode(false);
     setSelfieConsent(false);
     setScanning(false);
+    setProfileScanning(false);
     setMatchIds(null);
     setCamError('');
     setLightbox(null);
@@ -369,7 +407,37 @@ export function EventPhotosDialog({
     if (!selfieMode) stopCamera();
   }, [open, selfieMode, selfieConsent, startSelfieCamera, stopCamera]);
 
-  // selfie çek → eşleşenleri bul
+  /**
+   * Verilen referans vektör kümesiyle galeriyi filtrele.
+   * Bir foto, depolanmış vektörlerinden herhangi biri, referanslardan HERHANGİ birine
+   * eşik altında yakınsa eşleşir. Kaç selfie/referans kullanıldığını bildirmek için
+   * bir bilgi metni de üretir.
+   */
+  const runMatch = useCallback(
+    (references: number[][], opts: { usedSelfie: boolean; usedProfile: boolean }) => {
+      const refs = references.filter((r) => r && r.length > 0);
+      // Bir foto, depolanmış vektörlerinden biri referanslardan HERHANGİ birine yakınsa eşleşir.
+      const matches = (photos || [])
+        .filter((p) => refs.some((ref) => descriptorsMatch(ref, p.faceDescriptors)))
+        .map((p) => p.id);
+
+      setMatchIds(matches);
+
+      const bothUsed = opts.usedSelfie && opts.usedProfile;
+      toast({
+        title: matches.length > 0 ? `${matches.length} fotoğraf bulundu` : 'Eşleşme yok',
+        description:
+          matches.length > 0
+            ? bothUsed
+              ? 'Selfie + profil fotoğrafınla eşleştiriliyor. İçinde olduğun fotoğraflar gösteriliyor.'
+              : 'İçinde olduğun fotoğraflar gösteriliyor.'
+            : 'Eşleşen fotoğraf bulunamadı.',
+      });
+    },
+    [photos, toast],
+  );
+
+  // selfie çek → eşleşenleri bul (selfie + varsa profil fotoğrafı referansı)
   const captureAndMatch = useCallback(async () => {
     const video = videoRef.current;
     if (!video || video.readyState < 2) return;
@@ -386,7 +454,13 @@ export function EventPhotosDialog({
       // Selfie'yi bulundurma — kamerayı hemen kapat (sunucuya gitmez).
       stopCamera();
 
-      if (!selfieDesc) {
+      // Referanslar: canlı selfie (varsa) + profil fotoğrafı vektörü (varsa).
+      const profileDesc = profileDescRef.current;
+      const references: number[][] = [];
+      if (selfieDesc) references.push(selfieDesc);
+      if (profileDesc) references.push(profileDesc);
+
+      if (references.length === 0) {
         setScanning(false);
         toast({
           variant: 'destructive',
@@ -396,26 +470,42 @@ export function EventPhotosDialog({
         return;
       }
 
-      const matches = (photos || [])
-        .filter((p) => descriptorsMatch(selfieDesc, p.faceDescriptors))
-        .map((p) => p.id);
-
-      setMatchIds(matches);
+      runMatch(references, { usedSelfie: !!selfieDesc, usedProfile: !!profileDesc });
       setSelfieMode(false);
       setScanning(false);
-      toast({
-        title: matches.length > 0 ? `${matches.length} fotoğraf bulundu` : 'Eşleşme yok',
-        description:
-          matches.length > 0
-            ? 'İçinde olduğun fotoğraflar gösteriliyor.'
-            : 'Bu selfie ile eşleşen fotoğraf bulunamadı.',
-      });
     } catch {
       setScanning(false);
       stopCamera();
       toast({ variant: 'destructive', title: 'Eşleştirme başarısız', description: 'Tekrar dene.' });
     }
-  }, [photos, stopCamera, toast]);
+  }, [runMatch, stopCamera, toast]);
+
+  // Profil fotoğrafımla bul: kamera gerektirmez, yalnızca profil vektörüyle eşleştir.
+  const matchWithProfile = useCallback(async () => {
+    setProfileScanning(true);
+    try {
+      // Vektör henüz hazır değilse (önceden hesaplanmadıysa) burada dene.
+      let profileDesc = profileDescRef.current;
+      if (!profileDesc && profilePhotoUrl) {
+        profileDesc = await descriptorFromUrl(profilePhotoUrl);
+        profileDescRef.current = profileDesc;
+      }
+      if (!profileDesc) {
+        setProfileScanning(false);
+        toast({
+          variant: 'destructive',
+          title: 'Profil fotoğrafında yüz bulunamadı',
+          description: 'Yüzün net göründüğü bir profil fotoğrafı deneyebilirsin.',
+        });
+        return;
+      }
+      runMatch([profileDesc], { usedSelfie: false, usedProfile: true });
+      setProfileScanning(false);
+    } catch {
+      setProfileScanning(false);
+      toast({ variant: 'destructive', title: 'Eşleştirme başarısız', description: 'Tekrar dene.' });
+    }
+  }, [profilePhotoUrl, runMatch, toast]);
 
   const cancelSelfie = useCallback(() => {
     stopCamera();
@@ -514,6 +604,31 @@ export function EventPhotosDialog({
                 </Button>
               )}
 
+              {/* Profil fotoğrafımla Bul — face-api hazır ve profil fotoğrafı varsa */}
+              {faceReady && !!profilePhotoUrl && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="rounded-xl"
+                  onClick={() => {
+                    setMatchIds(null);
+                    void matchWithProfile();
+                  }}
+                  disabled={uploading || count === 0 || profileScanning}
+                >
+                  {profileScanning ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Aranıyor…
+                    </>
+                  ) : (
+                    <>
+                      <UserCircle className="h-4 w-4 mr-1.5" /> Profil fotoğrafımla bul
+                    </>
+                  )}
+                </Button>
+              )}
+
               {/* filtre etkinse temizle */}
               {matchIds != null && (
                 <Button
@@ -578,6 +693,11 @@ export function EventPhotosDialog({
                         </div>
                       )}
                     </div>
+                    {!!profilePhotoUrl && (
+                      <p className="text-center text-xs text-muted-foreground">
+                        Selfie + profil fotoğrafınla eşleştiriliyor.
+                      </p>
+                    )}
                     <div className="flex justify-center gap-2">
                       <Button type="button" size="sm" onClick={() => void captureAndMatch()} disabled={scanning}>
                         <ScanFace className="h-4 w-4 mr-1.5" /> Selfie Çek & Bul

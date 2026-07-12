@@ -122,6 +122,27 @@ export async function computeSingleFaceDescriptor(
   }
 }
 
+/**
+ * Bir görsel URL'inden (ör. profil fotoğrafı) TEK yüzün vektörünü çıkar.
+ * crossOrigin='anonymous' ile yüklenir → face-api pikselleri okuyabilsin (CORS taint yok).
+ * Herhangi bir hatada (CORS, yüz yok, model yok, decode başarısız) null döner → asla bloklamaz.
+ */
+export async function descriptorFromUrl(url: string | null | undefined): Promise<number[] | null> {
+  if (!url || typeof window === 'undefined') return null;
+  try {
+    const ok = await ensureFaceModels();
+    if (!ok) return null;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+    await img.decode();
+    return await computeSingleFaceDescriptor(img);
+  } catch (e) {
+    console.warn('[face-match] URL descriptor hesaplanamadı', e);
+    return null;
+  }
+}
+
 /** İki eşit boyutlu vektör arasındaki öklid mesafesi. */
 export function euclideanDistance(a: number[], b: number[]): number {
   if (!a || !b || a.length !== b.length) return Number.POSITIVE_INFINITY;
