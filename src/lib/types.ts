@@ -243,6 +243,23 @@ export type CorporateParticipant = {
   website?: string;
 };
 
+/** Kurumsal katılımcı BAŞVURUSU (volunteering/{oppId}/corporateApplications/{id}).
+ *  Herkese açık başvuru (status:'pending'); STK yöneticisi onaylayınca corporateParticipants'a
+ *  kopyalanır + status:'approved'. İletişim bilgisi yalnız yöneticide görünür. */
+export type CorporateApplication = {
+  id: string;
+  type: CorporateParticipantType;
+  name: string;
+  logoUrl?: string;
+  website?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  note?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt?: unknown;
+};
+
 /** Etkinlik fotoğrafı (events/{eventId}/photos/{photoId}). uploaderUid = kim yükledi.
  *  faceDescriptors: face-api ile üretilen yüz vektörleri — "selfie ile bul" eşleştirmesi için. */
 export type EventPhoto = {
@@ -282,6 +299,9 @@ export type Volunteering = {
     // Çok-noktalı gönüllülük (81 il vb.) — her noktanın kendi QR/başvurusu. Boşsa tek `location`.
     // NOT: `points` adı zaten ödül puanı (number) için kullanıldığından `sites` seçildi.
     sites?: EventPoint[];
+    // ONAYLANMIŞ kurumsal katılımcılar (belediye/valilik/marka/üniversite/STK) — detayda
+    // gruplu yayınlanır. Başvurular volunteering/{id}/corporateApplications'ta; onaylanınca buraya kopyalanır.
+    corporateParticipants?: CorporateParticipant[];
     microTask?: boolean; // Mikro-gönüllülük (5 dk uzaktan: form/anket/araştırma) — kart/filtre rozeti
     requiredDocuments?: string[]; // Yöneticinin istediği belgeler (GBT/adli sicil, sertifika, mezuniyet, TC) — ilanda gösterilir
     accessibilityTags?: string[]; // Erişilebilirlik/kapsayıcılık (Engelli-dostu, İşaret dili, Uzaktan uygun, Yaşlı-dostu, Aile-dostu) — filtre + ilanda gösterilir

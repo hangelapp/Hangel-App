@@ -255,6 +255,12 @@ service cloud.firestore {
         allow update: if isSignedIn() && resource.data.uploaderUid == request.auth.uid;
         allow delete: if isSignedIn() && (resource.data.uploaderUid == request.auth.uid || isSuperAdmin());
       }
+      // Kurumsal katılımcı başvuruları — herkes başvurabilir (pending); iletişim bilgisi
+      // içerdiğinden yalnız STK yöneticisi/süper-admin okur/onaylar/siler.
+      match /corporateApplications/{appId} {
+        allow create: if request.resource.data.status == 'pending';
+        allow read, list, update, delete: if isSuperAdmin() || ownsNgoListing(get(/databases/$(database)/documents/volunteering/$(oppId)).data.ngoId);
+      }
     }
 
     // Transparency: each NGO admin owns one doc with id == auth uid

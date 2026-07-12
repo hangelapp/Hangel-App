@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { CorporateApplyDialog } from '@/components/volunteering/corporate-apply-dialog';
 import {
   ArrowLeft,
   Leaf,
@@ -24,8 +25,8 @@ import {
   Timer,
   ClipboardCheck,
   ChevronRight,
-  Mail,
   Flag,
+  Building2,
 } from 'lucide-react';
 import { PublicFooter } from '@/components/layout/public-footer';
 
@@ -33,6 +34,8 @@ import { PublicFooter } from '@/components/layout/public-footer';
 const JOIN_URL = '/worldcleanday';
 const CONTACT_EMAIL = 'info@socialbusinessglobal.org';
 const EVENT_DATE = '19 Eylül 2026';
+// Bu kampanyanın gönüllülük ilanı (opp) id'si — kurumsal başvurular buraya yazılır.
+const OPP_ID = 'worldcleanday-2026';
 
 // Hero altındaki hızlı istatistik şeridi.
 const heroStats = [
@@ -120,6 +123,7 @@ const rules = [
 
 export default function WorldCleanupDayPage() {
   const router = useRouter();
+  const [corpApplyOpen, setCorpApplyOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background font-sans selection:bg-primary/30 pb-24 sm:pb-0">
@@ -389,13 +393,24 @@ export default function WorldCleanupDayPage() {
 
           <div className="mt-8 rounded-2xl border border-border bg-card/60 p-5">
             <p className="flex items-center justify-center gap-2 text-sm font-semibold text-foreground">
-              <Mail className="h-4 w-4 text-primary" /> Kurumsal katılımcı olmak ister misiniz?
+              <Building2 className="h-4 w-4 text-primary" /> Kurumsal katılımcı olmak ister misiniz?
             </p>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              Kurumunuzla ekip olarak katılmak için bize yazın:{' '}
+              STK, belediye, valilik, marka ya da üniversite olarak kurumunuzla ekip olun; onaylanınca logonuz kampanya sayfasında yayınlanır.
+            </p>
+            <Button
+              type="button"
+              onClick={() => setCorpApplyOpen(true)}
+              className="mt-4 h-11 rounded-full px-6 font-bold"
+            >
+              <Building2 className="mr-1.5 h-4 w-4" /> Kurumsal Başvuru Yap
+            </Button>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Dilerseniz{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-primary hover:underline">
                 {CONTACT_EMAIL}
-              </a>
+              </a>{' '}
+              adresinden de yazabilirsiniz.
             </p>
           </div>
 
@@ -408,6 +423,13 @@ export default function WorldCleanupDayPage() {
       </section>
 
       <PublicFooter currentPageLabel="Dünya Temizlik Günü" />
+
+      {/* Kurumsal katılımcı başvuru formu */}
+      <CorporateApplyDialog
+        oppId={OPP_ID}
+        open={corpApplyOpen}
+        onOpenChange={setCorpApplyOpen}
+      />
     </div>
   );
 }

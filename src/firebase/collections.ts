@@ -240,6 +240,9 @@ export const COLLECTIONS = {
   // events/{eventId}/photos/{photoId} — etkinlik foto galerisi. Katılımcılar yükler
   // (uploaderUid), herkes görüntüler/indirir. faceDescriptors ile "selfie ile bul".
   eventPhotos: 'photos',
+  // volunteering/{oppId}/corporateApplications/{id} — kurumsal katılımcı başvuruları.
+  // Public create (pending); STK yöneticisi okur/onaylar (approved → corporateParticipants'a kopyalanır).
+  corporateApplications: 'corporateApplications',
   // events/{eventId}/speakerRatings/{uid} — canlı modda konuşmacı puanları (sadece going).
   eventSpeakerRatings: 'speakerRatings',
   // events/{eventId}/eventEvaluations/{uid} — etkinlik sonrası puan+yorum (sadece going).

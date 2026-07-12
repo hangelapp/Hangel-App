@@ -77,6 +77,7 @@ import { EventBadgeCards, EventCertificates } from '@/components/events/event-bu
 import { VolunteeringCheckinQR } from '@/components/volunteering/volunteering-checkin-qr';
 import { RewardManager } from '@/components/rewards/reward-manager';
 import { EventPhotosAdmin } from '@/components/events/event-photos-admin';
+import { CorporateApplicationsAdmin } from '@/components/volunteering/corporate-applications-admin';
 
 /** Volunteering doc'larında status henüz mevcut değilse default 'Aktif' kabul
  *  ederiz — eski dokümanlar bozulmasın. */
@@ -437,6 +438,7 @@ function ListingsTab({
                   <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)"><Megaphone className="h-3.5 w-3.5 mr-1.5" /> Google'da Ücretsiz Tanıt</a>
                 </Button>
                 <VolunteeringCheckinQR oppId={opp.id} logoUrl={ngoLogoUrl} />
+                <CorporateApplicationsAdmin oppId={opp.id} />
                 <EventPhotosAdmin eventId={opp.id} scope="volunteering" />
                 <RewardManager kind="volunteering" id={opp.id} />
                 <EventAttendees eventId={opp.id} label="Gönüllüler" endpoint={`/api/volunteering/${opp.id}/attendees`} />

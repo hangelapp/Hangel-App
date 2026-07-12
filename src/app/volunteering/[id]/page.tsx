@@ -47,6 +47,9 @@ import { DetailStickyBar } from '@/components/detail/detail-body';
 import { downloadDataUrlSmart } from '@/lib/native-file';
 import { VolunteeringPoints } from '@/components/volunteering/volunteering-points';
 import { EventPhotosDialog } from '@/components/events/event-photos-dialog';
+import { CorporateApplyDialog } from '@/components/volunteering/corporate-apply-dialog';
+import { VolunteeringCorporateParticipants } from '@/components/volunteering/volunteering-corporate-participants';
+import { Building2 } from 'lucide-react';
 
 type WeatherDay = { date: string; tempMax: number; tempMin: number; label: string; emoji: string };
 
@@ -120,6 +123,8 @@ export default function VolunteeringDetailPage() {
 
   // Fotoğraflar dialog durumu — ?photos=1 ile otomatik açılır (QR/paylaşım linkinden gelen).
   const [photosOpen, setPhotosOpen] = useState(false);
+  // Kurumsal katılımcı başvurusu dialog durumu.
+  const [corpApplyOpen, setCorpApplyOpen] = useState(false);
   useEffect(() => {
     if (searchParams.get('photos') === '1') setPhotosOpen(true);
   }, [searchParams]);
@@ -1179,6 +1184,26 @@ export default function VolunteeringDetailPage() {
                     />
                 )}
 
+                {/* Onaylanmış kurumsal katılımcılar — türe göre gruplu. Boşsa hiçbir şey render edilmez. */}
+                <VolunteeringCorporateParticipants participants={opportunity.corporateParticipants ?? []} />
+
+                {/* Kurumsal katılımcı başvurusu — herkese açık (auth gerekmez). */}
+                <section className="rounded-3xl border border-primary/30 bg-primary/5 p-5 sm:p-6 space-y-3">
+                    <h2 className="text-xl font-bold tracking-tight text-foreground">Kurumsal katılımcı olmak ister misiniz?</h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                        STK, belediye, valilik, marka ya da üniversite olarak kurumunuzla bu gönüllülük fırsatına katılın. Onaylanınca logonuz ve adınız bu sayfada yayınlanır.
+                    </p>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        onClick={() => setCorpApplyOpen(true)}
+                        className="h-12 rounded-full font-semibold gap-2 border-primary/40 text-primary hover:bg-primary/10"
+                    >
+                        <Building2 className="h-5 w-5" /> Kurumsal katılımcı olun
+                    </Button>
+                </section>
+
                 </div>
 
                 {/* ───── SAĞ KOLON (web sidebar / mobil alt) — konum, STK, paylaş ───── */}
@@ -1271,6 +1296,13 @@ export default function VolunteeringDetailPage() {
             scope="volunteering"
             open={photosOpen}
             onOpenChange={setPhotosOpen}
+        />
+
+        {/* Kurumsal katılımcı başvuru formu */}
+        <CorporateApplyDialog
+            oppId={opportunity.id}
+            open={corpApplyOpen}
+            onOpenChange={setCorpApplyOpen}
         />
     </div>
   );
