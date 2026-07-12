@@ -197,3 +197,13 @@ export { stampSellerCountsDaily } from './seller-count-cron';
 // kullanıcıya notifications doc yazar (push'u onNotificationCreated gönderir) +
 // fav snapshot'ını güncelleyerek tekrar-uyarıyı önler. See ./price-drop-alerts.ts
 export { priceDropAlerts } from './price-drop-alerts';
+
+// Referans / davet ödülü — güvenli (client veremez, admin SDK verir).
+//  referralWelcomeReward: users/{uid} onCreate — invitedBy 'user:<uid>' ise
+//    DAVET EDİLENE +25 impactScore (self-referral engeli, referralWelcomeAwarded
+//    bayrağı ile tek sefer). Davet edene BURADA puan verilmez.
+//  referralCompletionReward: volunteerCompletions/{id} onWrite — ngoApproved
+//    false→true geçişinde, tamamlayanın invitedBy davet edeni varsa ve daha önce
+//    ödüllendirilmediyse (referrerAwarded) DAVET EDENE +50 impactScore.
+// See ./referral-reward.ts
+export { referralWelcomeReward, referralCompletionReward } from './referral-reward';

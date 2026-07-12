@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  let body: { calledNumber?: string; ngoId?: string; digit?: string };
+  let body: { calledNumber?: string; callerNumber?: string; ngoId?: string; digit?: string };
   try { body = await req.json(); } catch { body = {}; }
 
   const db = getAdminFirestore();
@@ -105,7 +105,15 @@ export async function POST(req: NextRequest) {
   if (!ngoId) return NextResponse.json({ action: 'default-ring' }); // çözülemezse normal çaldır
 
   const snap = await db.collection(NGO_CALL_CENTER).doc(ngoId).get();
-  const data = snap.data() as { callFlow?: unknown } | undefined;
+  const data = snap.data() as { callFlow?: unknown; blocklist?: unknown } | undefined;
+
+  // Kara liste: engelli arayan → hiç çaldırma, kapat.
+  const callerDigits = digitsOnly(body.callerNumber || '');
+  if (callerDigits && Array.isArray(data?.blocklist)) {
+    const blocked = (data!.blocklist as unknown[]).some((n) => typeof n === 'string' && digitsOnly(n) === callerDigits);
+    if (blocked) return NextResponse.json({ action: 'hangup', ngoId, reason: 'blocklist' });
+  }
+
   if (!data?.callFlow) return NextResponse.json({ action: 'default-ring', ngoId });
   const cf = normalizeCallFlow(data.callFlow);
 

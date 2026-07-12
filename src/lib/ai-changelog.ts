@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-12";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "a707280f",
+    "date": "2026-07-12",
+    "subject": "feat(santral) Grup2: sesli mesaj kutusu + not şablonları + çağrı etiketleri"
+  },
+  {
     "hash": "50f3a69c",
     "date": "2026-07-12",
     "subject": "feat(santral): Çağrı Geçmişi & Kayıtlar + Arama Sırası sayfalarını panele bağla (Diğer menüsü)"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "78bcda87",
     "date": "2026-07-11",
     "subject": "sertifika: gelir-modeli partner logolarını SAĞ ÜST köşeye taşı + resmi logo dosyaları"
-  },
-  {
-    "hash": "419c3c47",
-    "date": "2026-07-11",
-    "subject": "fix(etkinlik-kayıt): QR-kayıt sonrası RSVP garantili yaz (qrOnboard.eventId + token ile POST; sessionStorage pendingRsvp kaybını çözer)"
   }
 ];

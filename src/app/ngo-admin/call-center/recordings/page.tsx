@@ -284,6 +284,24 @@ export default function RecordingsPage() {
 
   const filtersActive = Boolean(q || disposition || from || to);
 
+  // Görüntülenen kayıtları CSV olarak indir (Excel-uyumlu, BOM'lu Türkçe).
+  const handleExportCsv = useCallback(() => {
+    const esc = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
+    const header = ['Tarih', 'Kişi', 'Arayan', 'Aranan', 'Yön', 'Süre (sn)', 'Sonuç'];
+    const dirTr = (d: string | null) => (d === 'inbound' ? 'Gelen' : d === 'outbound' ? 'Giden' : '');
+    const rows = recordings.map((r) => [
+      r.startedAt || r.createdAt || '', r.contactName || '', r.callerNumber || '', r.calledNumber || '',
+      dirTr(r.direction), String(r.duration ?? 0), DISPOSITION_LABEL[r.disposition ?? ''] || r.disposition || '',
+    ].map(esc).join(','));
+    const csv = '﻿' + [header.map(esc).join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'cagri-gecmisi.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch { /* yok say */ } }, 1500);
+  }, [recordings]);
+
   return (
     <div className="container mx-auto p-4 md:p-6 max-w-6xl space-y-4">
       <Link
@@ -391,13 +409,16 @@ export default function RecordingsPage() {
               }}
             />
           </div>
-          {filtersActive ? (
-            <div className="md:col-span-4 flex justify-end">
+          <div className="md:col-span-4 flex justify-end gap-2">
+            {filtersActive ? (
               <Button variant="ghost" size="sm" onClick={handleClearFilters}>
                 Filtreleri temizle
               </Button>
-            </div>
-          ) : null}
+            ) : null}
+            <Button variant="outline" size="sm" onClick={handleExportCsv} disabled={recordings.length === 0}>
+              <Download className="h-4 w-4 mr-1.5" /> CSV indir
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

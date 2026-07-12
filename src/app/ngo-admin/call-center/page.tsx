@@ -24,6 +24,7 @@ import { OnboardingWizard } from './_components/OnboardingWizard';
 import { CallDashboard } from './_components/CallDashboard';
 import { CallCenterSettings } from './_components/CallCenterSettings';
 import { CallFlowSettings } from './_components/CallFlowSettings';
+import { BlocklistSettings } from './_components/BlocklistSettings';
 import { SantralIntro } from './_components/SantralIntro';
 import { CommunicationHub } from './_components/CommunicationHub';
 import { CallLists } from './_components/CallLists';
@@ -366,6 +367,9 @@ export default function NgoCallCenterPage() {
               <CallCenterSettings ngoId={ngoId} ccDoc={ccDoc} />
               <div className="border-t border-border pt-6">
                 <CallFlowSettings />
+              </div>
+              <div className="border-t border-border pt-6">
+                <BlocklistSettings />
               </div>
             </div>
           ) : (
