@@ -167,14 +167,41 @@ def main():
         cmd("HANGUP")
         return
 
-    # Sesli mesaj
+    # Sesli mesaj — anons çal, kaydet, hangel'e yükle (recordings/ sayfasında görünür).
     if action == "voicemail":
         play_or_say(ngo_id, "voicemail", plan.get("promptAudioUrl"), plan.get("prompt"))
-        cmd('EXEC VoiceMail "100@hangel,su"')  # su = anons atla, kaydet
+        cmd('STREAM FILE "beep" ""')
+        import time
+        rec_base = f"/tmp/vm-{ngo_id}-{int(time.time())}"
+        # 120 sn'e kadar, # ile bitir; sessizlikte 5 sn sonra otomatik kes.
+        cmd(f'RECORD FILE "{rec_base}" wav "#" 120000 0 s=5')
+        wav = rec_base + ".wav"
+        if os.path.exists(wav):
+            upload_voicemail(wav, called, ngo_id)
+            try:
+                os.remove(wav)
+            except OSError:
+                pass
         cmd("HANGUP")
         return
 
     cmd("HANGUP")
+
+
+def upload_voicemail(wav_path, called, ngo_id):
+    """Kaydı hangel voicemail-upload API'sine multipart POST eder (recordings'te görünür)."""
+    import subprocess
+    try:
+        subprocess.run([
+            "curl", "-s", "-X", "POST",
+            f"{API_BASE}/api/santral/voicemail-upload",
+            "-H", f"Authorization: Bearer {SECRET}",
+            "-F", f"file=@{wav_path};type=audio/wav",
+            "-F", f"calledNumber={called}",
+            "-F", f"ngoId={ngo_id or ''}",
+        ], timeout=30)
+    except Exception as e:
+        verbose(f"voicemail upload hata: {e}")
 
 
 if __name__ == "__main__":

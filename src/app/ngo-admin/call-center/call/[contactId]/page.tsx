@@ -266,6 +266,7 @@ export default function ActiveCallPage() {
   // Notlar
   const [notes, setNotes] = useState<NoteRow[]>([]);
   const [noteDraft, setNoteDraft] = useState('');
+  const [noteTemplates, setNoteTemplates] = useState<string[]>([]);
   const [savingNote, setSavingNote] = useState(false);
 
   // Disposition
@@ -311,6 +312,22 @@ export default function ActiveCallPage() {
   useEffect(() => {
     void loadContact();
   }, [loadContact]);
+
+  // Hazır not şablonlarını bir kez çek (operatör çağrı sırasında seçer).
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/ngo-admin/call-center/note-templates', { headers: { authorization: `Bearer ${token}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (active && Array.isArray(data.templates)) setNoteTemplates(data.templates);
+      } catch { /* şablon yoksa çipler görünmez */ }
+    })();
+    return () => { active = false; };
+  }, [user]);
 
   const loadWhatsAppHistory = useCallback(async () => {
     if (!contactId) return;
@@ -907,6 +924,21 @@ export default function ActiveCallPage() {
               <Label htmlFor="note-text" className="text-sm font-semibold">
                 Not Ekle
               </Label>
+              {/* Hazır not şablonları — tıklayınca not alanına eklenir (zaman kazandırır). */}
+              {noteTemplates.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {noteTemplates.map((tpl, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setNoteDraft((prev) => (prev ? prev + ' ' + tpl : tpl))}
+                      className="text-xs rounded-full border border-border bg-muted/40 px-2.5 py-1 hover:bg-accent transition-colors"
+                    >
+                      {tpl.length > 28 ? tpl.slice(0, 27) + '…' : tpl}
+                    </button>
+                  ))}
+                </div>
+              )}
               <Textarea
                 id="note-text"
                 rows={3}

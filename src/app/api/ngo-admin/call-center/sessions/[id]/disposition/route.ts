@@ -67,7 +67,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ errorCode: 'BAD_INPUT', message: 'Oturum kimliği eksik.' }, { status: 400 });
   }
 
-  let body: { disposition?: unknown; outcomeNotes?: unknown };
+  let body: { disposition?: unknown; outcomeNotes?: unknown; tags?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -82,6 +82,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
   const disposition: Disposition = body.disposition;
   const outcomeNotes = typeof body.outcomeNotes === 'string' ? body.outcomeNotes.slice(0, 4000) : null;
+  // Çağrı etiketleri (bağış sözü / şikayet / bilgi …) — serbest ama sınırlı.
+  const tags = Array.isArray(body.tags)
+    ? body.tags.filter((t): t is string => typeof t === 'string' && t.trim().length > 0).map((t) => t.trim().slice(0, 40)).slice(0, 10)
+    : [];
 
   const db = getAdminFirestore();
   const sessionRef = db.collection(CALL_SESSIONS).doc(id);
@@ -103,6 +107,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     {
       disposition,
       outcomeNotes,
+      tags,
       dispositionAt: FieldValue.serverTimestamp(),
       dispositionBy: ctx.uid,
     },
