@@ -13,7 +13,10 @@ sudo apt-get autoremove -y 2>/dev/null || true
 echo "==> 2) Derleme bağımlılıkları"
 sudo apt-get update -y
 sudo apt-get install -y build-essential wget libssl-dev libncurses5-dev \
-  libnewt-dev libxml2-dev libsqlite3-dev uuid-dev libjansson-dev libedit-dev pkg-config
+  libnewt-dev libxml2-dev libsqlite3-dev uuid-dev libjansson-dev libedit-dev pkg-config \
+  libopus-dev libopusfile-dev libsrtp2-dev
+# libopus-dev: Opus kodeği (WebRTC ses kalitesi için kritik — yoksa ulaw'a düşer,
+# dar bant/robotik ses olur). libsrtp2-dev: DTLS-SRTP (şifreli medya).
 
 echo "==> 3) Asterisk ${AST_VER} kaynağı indiriliyor"
 cd /usr/src
@@ -28,10 +31,12 @@ sudo contrib/scripts/install_prereq install >/dev/null 2>&1 || true
 echo "==> 5) configure (WebSocket + PJSIP dahil)"
 sudo ./configure --with-jansson-bundled --with-pjproject-bundled >/dev/null
 
-echo "==> 6) menuselect: WSS/WebRTC modülleri açık"
+echo "==> 6) menuselect: WSS/WebRTC + Opus modülleri açık"
 sudo make menuselect.makeopts >/dev/null
 sudo menuselect/menuselect --enable res_http_websocket --enable res_pjsip_transport_websocket \
-  --enable res_pjsip --enable chan_pjsip --enable res_srtp menuselect.makeopts || true
+  --enable res_pjsip --enable chan_pjsip --enable res_srtp \
+  --enable codec_opus --enable format_ogg_opus \
+  --enable func_jitterbuffer menuselect.makeopts || true
 
 echo "==> 7) Derleme (birkaç dakika)"
 sudo make -j"$(nproc)" >/dev/null
@@ -53,3 +58,6 @@ sleep 6
 echo "==> SONUÇ"
 sudo asterisk -rx "pjsip show transports"
 sudo ss -tlnp | grep ":443" && echo "443 ACIK-BASARILI" || echo "443 HALA KAPALI"
+echo "--- Opus yüklü mü? (ses kalitesi) ---"
+sudo asterisk -rx "core show codec opus" 2>/dev/null | grep -qi opus && echo "OPUS YUKLU-BASARILI" || echo "OPUS YOK — libopus-dev kurulu mu kontrol et"
+sudo asterisk -rx "module show like codec_opus"

@@ -111,7 +111,12 @@ render() {  # render <kaynak-sablon> <hedef>
 log "Asterisk konfigleri yazılıyor (/etc/asterisk)"
 render "${SCRIPT_DIR}/asterisk/pjsip.conf"      "/etc/asterisk/pjsip.conf"
 render "${SCRIPT_DIR}/asterisk/extensions.conf" "/etc/asterisk/extensions.conf"
+# Ses kalitesi: Opus ince ayarı (FEC/DTX) + RTP taşıma. ${VAR} içermezler ama
+# tutarlılık için render ile yazıyoruz (varsa değişken de çözülür).
+[ -f "${SCRIPT_DIR}/asterisk/codecs.conf" ] && render "${SCRIPT_DIR}/asterisk/codecs.conf" "/etc/asterisk/codecs.conf"
+[ -f "${SCRIPT_DIR}/asterisk/rtp.conf" ] && render "${SCRIPT_DIR}/asterisk/rtp.conf" "/etc/asterisk/rtp.conf"
 chown root:asterisk /etc/asterisk/pjsip.conf /etc/asterisk/extensions.conf 2>/dev/null || true
+chown root:asterisk /etc/asterisk/codecs.conf /etc/asterisk/rtp.conf 2>/dev/null || true
 
 # Çok-kiracı include dizinleri (boş olsa bile #include hata vermesin).
 mkdir -p /etc/asterisk/pjsip.d /etc/asterisk/extensions.d
