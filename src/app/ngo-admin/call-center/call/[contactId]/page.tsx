@@ -1138,17 +1138,28 @@ export default function ActiveCallPage() {
               </div>
               {/* Söz verilen tutar — 'söz verdi' veya 'bağış yaptı' aşamasında anlamlı */}
               {(stage === 'promised' || stage === 'donated') && (
-                <div className="flex items-center gap-2 pt-1">
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    value={pledgeAmount}
-                    onChange={(e) => setPledgeAmount(e.target.value.replace(/[^\d]/g, ''))}
-                    placeholder="Söz verilen tutar (TL)"
-                    className="rounded-lg h-9"
-                  />
-                  <Button size="sm" variant="secondary" className="rounded-lg shrink-0" disabled={savingStage} onClick={() => handleSaveStage(stage)}>
-                    Kaydet
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      value={pledgeAmount}
+                      onChange={(e) => setPledgeAmount(e.target.value.replace(/[^\d]/g, ''))}
+                      placeholder="Söz verilen tutar (TL)"
+                      className="rounded-lg h-9"
+                    />
+                    <Button size="sm" variant="secondary" className="rounded-lg shrink-0" disabled={savingStage} onClick={() => handleSaveStage(stage)}>
+                      Kaydet
+                    </Button>
+                  </div>
+                  {/* Görüşme sonrası WhatsApp takibi — mevcut şablon gönderme akışına götürür */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full rounded-lg border-emerald-200 bg-emerald-50/40 text-emerald-800 hover:bg-emerald-100"
+                    onClick={() => { setWaTab('send'); document.getElementById('wa-followup-anchor')?.scrollIntoView({ behavior: 'smooth' }); }}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-1.5" /> WhatsApp'tan takip mesajı gönder
                   </Button>
                 </div>
               )}
@@ -1300,6 +1311,7 @@ export default function ActiveCallPage() {
       </div>
 
       {/* WhatsApp İletişim — accordion altta, tüm genişlik */}
+      <div id="wa-followup-anchor" />
       <Accordion type="single" collapsible defaultValue="whatsapp">
         <AccordionItem value="whatsapp" className="border rounded-lg bg-card">
           <AccordionTrigger className="px-4 hover:no-underline">
