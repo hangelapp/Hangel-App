@@ -3,7 +3,7 @@ export const AI_CHANGELOG_GENERATED = "2026-07-12";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
-    "hash": "d6e03eef",
+    "hash": "58a44a8f",
     "date": "2026-07-12",
     "subject": "santral: kampanya (peş peşe) arama modu + AI çağrı özeti"
   },

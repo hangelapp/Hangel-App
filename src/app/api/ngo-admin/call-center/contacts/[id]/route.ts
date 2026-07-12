@@ -147,6 +147,8 @@ export async function GET(
       attempts: typeof data.attempts === 'number' ? data.attempts : 0,
       lastAttemptAt: tsToIso(data.lastAttemptAt),
       lastDisposition: typeof data.lastDisposition === 'string' ? data.lastDisposition : null,
+      stage: typeof data.stage === 'string' ? data.stage : null,
+      pledgeAmount: typeof data.pledgeAmount === 'number' ? data.pledgeAmount : null,
       customFields,
       createdAt: tsToIso(data.createdAt),
     },

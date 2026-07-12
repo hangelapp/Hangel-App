@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import {
   ArrowLeft,
+  BadgeCheck,
   ChevronLeft,
   ChevronRight,
   Loader2,
@@ -51,6 +52,7 @@ import {
   Users,
 } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
+import { getStage, STAGE_TONE_CLASS } from '@/lib/santral/pipeline';
 
 const PAGE_SIZE = 50;
 const ALL_VALUE = '__all__';
@@ -64,6 +66,8 @@ interface ContactRow {
   lastAttemptAt: string | null;
   lastDisposition: string | null;
   listIds: string[];
+  stage: string | null;
+  pledgeAmount: number | null;
 }
 
 interface ContactsResponse {
@@ -129,6 +133,7 @@ export default function ContactsPage() {
   const initialQ = searchParams.get('q') ?? '';
   const initialListId = searchParams.get('listId') ?? '';
   const initialDisposition = searchParams.get('disposition') ?? '';
+  const initialStage = searchParams.get('stage') ?? '';
   const initialPage = parsePage(searchParams.get('page'));
 
   // Input state (debounced before commit to URL).
@@ -137,12 +142,15 @@ export default function ContactsPage() {
   const [q, setQ] = useState(initialQ);
   const [listId, setListId] = useState(initialListId);
   const [disposition, setDisposition] = useState(initialDisposition);
+  const [stage] = useState(initialStage);
   const [page, setPage] = useState(initialPage);
 
   const [contacts, setContacts] = useState<ContactRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // hangel üyesi olan kişilerin telefonları (küçük ikon için).
+  const [memberPhones, setMemberPhones] = useState<Set<string>>(new Set());
 
   const [lists, setLists] = useState<ListRow[]>([]);
   const [listsLoading, setListsLoading] = useState(true);
@@ -206,6 +214,7 @@ export default function ContactsPage() {
     if (q) params.set('q', q);
     if (listId) params.set('listId', listId);
     if (disposition) params.set('disposition', disposition);
+    if (stage) params.set('stage', stage);
     params.set('page', String(page));
     params.set('limit', String(PAGE_SIZE));
     messagingFetch<ContactsResponse>(`/api/ngo-admin/call-center/contacts?${params.toString()}`)
@@ -213,6 +222,18 @@ export default function ContactsPage() {
         if (cancelled) return;
         setContacts(res.contacts);
         setTotal(res.total);
+        // Yüklenen kişilerin telefonlarından hangel üyelerini işaretle (lazy).
+        const phones = res.contacts.map((c) => c.phone).filter(Boolean);
+        if (phones.length > 0) {
+          messagingFetch<{ members: string[] }>('/api/ngo-admin/call-center/members-check', {
+            method: 'POST',
+            body: JSON.stringify({ phones }),
+          })
+            .then((m) => { if (!cancelled) setMemberPhones(new Set(m.members)); })
+            .catch(() => { /* üye ikonu opsiyonel; sessiz geç */ });
+        } else if (!cancelled) {
+          setMemberPhones(new Set());
+        }
       })
       .catch((e: unknown) => {
         if (cancelled) return;
@@ -226,7 +247,7 @@ export default function ContactsPage() {
     return () => {
       cancelled = true;
     };
-  }, [q, listId, disposition, page]);
+  }, [q, listId, disposition, stage, page]);
 
   function handleListChange(value: string) {
     const next = value === ALL_VALUE ? '' : value;
@@ -383,6 +404,7 @@ export default function ContactsPage() {
                   <TableRow>
                     <TableHead>Ad</TableHead>
                     <TableHead>Telefon</TableHead>
+                    <TableHead>Aşama</TableHead>
                     <TableHead>E-posta</TableHead>
                     <TableHead className="text-right">Deneme</TableHead>
                     <TableHead>Son Durum</TableHead>
@@ -395,10 +417,31 @@ export default function ContactsPage() {
                     const dispKey = c.lastDisposition ?? '';
                     const dispLabel = dispKey ? DISPOSITION_LABEL[dispKey] ?? dispKey : 'Hiç aranmamış';
                     const dispBadgeClass = dispKey ? DISPOSITION_BADGE[dispKey] ?? '' : '';
+                    const stage = getStage(c.stage);
+                    const isMember = memberPhones.has(c.phone);
                     return (
                       <TableRow key={c.id}>
-                        <TableCell className="font-medium">{c.name || '—'}</TableCell>
+                        <TableCell className="font-medium">
+                          <span className="inline-flex items-center gap-1.5">
+                            {c.name || '—'}
+                            {isMember && (
+                              <BadgeCheck
+                                className="h-4 w-4 text-primary shrink-0"
+                                aria-label="hangel üyesi"
+                              />
+                            )}
+                          </span>
+                        </TableCell>
                         <TableCell className="font-mono text-xs">{c.phone || '—'}</TableCell>
+                        <TableCell>
+                          {c.stage ? (
+                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${STAGE_TONE_CLASS[stage.tone]}`}>
+                              {stage.label}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-xs">{c.email ?? '—'}</TableCell>
                         <TableCell className="text-right tabular-nums">{c.attempts}</TableCell>
                         <TableCell>

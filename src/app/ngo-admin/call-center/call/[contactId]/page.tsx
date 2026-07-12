@@ -54,8 +54,10 @@ import {
   Rocket,
   SkipForward,
   Sparkles,
+  TrendingUp,
 } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
+import { DEFAULT_STAGES as PIPELINE_STAGES, STAGE_TONE_CLASS } from '@/lib/santral/pipeline';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
@@ -71,6 +73,8 @@ interface ContactDetail {
   attempts: number;
   lastDisposition: string | null;
   lastAttemptAt: string | null;
+  stage: string | null;
+  pledgeAmount: number | null;
   customFields: Record<string, unknown>;
 }
 
@@ -216,6 +220,10 @@ export default function ActiveCallPage() {
   // AI çağrı özeti
   const [aiSummary, setAiSummary] = useState<{ summary: string; nextStep: string; sentiment: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  // Bağış hunisi aşaması + söz verilen tutar
+  const [stage, setStage] = useState<string>('');
+  const [pledgeAmount, setPledgeAmount] = useState<string>('');
+  const [savingStage, setSavingStage] = useState(false);
 
   // Aktif kurum — STK ise originate'e hedef ngoId olarak gönderilir
   // (super-admin başka STK'ya bakıyorsa doğru tenant'ta session açılsın).
@@ -319,6 +327,8 @@ export default function ActiveCallPage() {
       );
       setContact(res.contact);
       setSessions(res.sessions ?? []);
+      setStage(res.contact.stage ?? '');
+      setPledgeAmount(res.contact.pledgeAmount ? String(res.contact.pledgeAmount) : '');
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setLoadError(msg);
@@ -647,6 +657,25 @@ export default function ActiveCallPage() {
   useEffect(() => {
     if (campaignListId) void refreshCampaignRemaining();
   }, [campaignListId, refreshCampaignRemaining]);
+
+  async function handleSaveStage(nextStage: string) {
+    if (!contactId || !nextStage) return;
+    setStage(nextStage);
+    setSavingStage(true);
+    try {
+      const amount = pledgeAmount.trim() ? Number(pledgeAmount.replace(/[^\d]/g, '')) : undefined;
+      await messagingFetch(`/api/ngo-admin/call-center/contacts/${contactId}/stage`, {
+        method: 'POST',
+        body: JSON.stringify({ stage: nextStage, pledgeAmount: amount }),
+      });
+      toast({ title: 'Aşama güncellendi' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast({ variant: 'destructive', title: 'Aşama kaydedilemedi', description: msg });
+    } finally {
+      setSavingStage(false);
+    }
+  }
 
   async function handleGenerateSummary() {
     if (!contactId) return;
@@ -1081,6 +1110,47 @@ export default function ActiveCallPage() {
                     </li>
                   ))}
                 </ul>
+              )}
+            </div>
+
+            {/* Bağış hunisi aşaması + söz verilen tutar */}
+            <div className="space-y-2 border-t pt-4">
+              <Label className="text-sm font-semibold flex items-center gap-1.5">
+                <TrendingUp className="h-4 w-4 text-primary" /> Aşama
+              </Label>
+              <div className="flex flex-wrap gap-1.5">
+                {PIPELINE_STAGES.map((s) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    disabled={savingStage}
+                    onClick={() => handleSaveStage(s.key)}
+                    className={cn(
+                      'text-xs font-medium px-2.5 py-1 rounded-full transition-all border',
+                      stage === s.key
+                        ? `${STAGE_TONE_CLASS[s.tone]} border-current`
+                        : 'bg-muted/40 text-muted-foreground border-transparent hover:bg-muted',
+                    )}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+              {/* Söz verilen tutar — 'söz verdi' veya 'bağış yaptı' aşamasında anlamlı */}
+              {(stage === 'promised' || stage === 'donated') && (
+                <div className="flex items-center gap-2 pt-1">
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    value={pledgeAmount}
+                    onChange={(e) => setPledgeAmount(e.target.value.replace(/[^\d]/g, ''))}
+                    placeholder="Söz verilen tutar (TL)"
+                    className="rounded-lg h-9"
+                  />
+                  <Button size="sm" variant="secondary" className="rounded-lg shrink-0" disabled={savingStage} onClick={() => handleSaveStage(stage)}>
+                    Kaydet
+                  </Button>
+                </div>
               )}
             </div>
 

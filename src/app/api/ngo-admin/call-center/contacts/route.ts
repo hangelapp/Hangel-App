@@ -40,6 +40,8 @@ interface ContactRow {
   lastAttemptAt: string | null;
   lastDisposition: string | null;
   listIds: string[];
+  stage: string | null;
+  pledgeAmount: number | null;
 }
 
 async function authorize(req: NextRequest): Promise<CallerContext | null> {
@@ -78,6 +80,7 @@ export async function GET(req: NextRequest) {
   const q = (url.searchParams.get('q') || '').trim().toLowerCase();
   const listId = (url.searchParams.get('listId') || '').trim();
   const disposition = (url.searchParams.get('disposition') || '').trim();
+  const stage = (url.searchParams.get('stage') || '').trim();
   const pageRaw = Number.parseInt(url.searchParams.get('page') || '1', 10);
   const limitRaw = Number.parseInt(url.searchParams.get('limit') || String(PAGE_SIZE_MAX), 10);
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
@@ -90,6 +93,9 @@ export async function GET(req: NextRequest) {
   }
   if (disposition) {
     query = query.where('lastDisposition', '==', disposition);
+  }
+  if (stage) {
+    query = query.where('stage', '==', stage);
   }
   query = query.orderBy('createdAt', 'desc');
 
@@ -113,6 +119,8 @@ export async function GET(req: NextRequest) {
         lastAttemptAt: tsToIso(data.lastAttemptAt),
         lastDisposition: typeof data.lastDisposition === 'string' ? data.lastDisposition : null,
         listIds: Array.isArray(data.listIds) ? (data.listIds as unknown[]).filter((s): s is string => typeof s === 'string') : [],
+        stage: typeof data.stage === 'string' ? data.stage : null,
+        pledgeAmount: typeof data.pledgeAmount === 'number' ? data.pledgeAmount : null,
       };
     });
     return NextResponse.json({ contacts, total });
@@ -141,6 +149,8 @@ export async function GET(req: NextRequest) {
       lastAttemptAt: tsToIso(data.lastAttemptAt),
       lastDisposition: typeof data.lastDisposition === 'string' ? data.lastDisposition : null,
       listIds: Array.isArray(data.listIds) ? (data.listIds as unknown[]).filter((s): s is string => typeof s === 'string') : [],
+      stage: typeof data.stage === 'string' ? data.stage : null,
+      pledgeAmount: typeof data.pledgeAmount === 'number' ? data.pledgeAmount : null,
     };
   });
   return NextResponse.json({ contacts, total });
