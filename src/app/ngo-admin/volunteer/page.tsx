@@ -2,20 +2,27 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone, Check, Users, Clock, Pencil } from "lucide-react";
-import React, { useMemo, useEffect, useRef, Suspense } from 'react';
+import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone, Check, Users, Clock, Pencil, FileSpreadsheet } from "lucide-react";
+import React, { useMemo, useEffect, useRef, useState, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+    AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, query, where, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import type { Volunteering, Application as UserApplication, NGO } from '@/lib/types';
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { VolunteerApplicants } from '@/components/volunteering/volunteer-applicants';
+import { ApplicationsAnalytics } from '@/components/volunteering/applications-analytics';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
 import { EventAttendees } from '@/components/events/event-attendees';
@@ -117,7 +124,66 @@ const useVolunteerApplications = (opportunities: Volunteering[]) => {
         }
     };
 
-    return { applications, isLoading, handleApplication };
+    // Toplu onay/red — seçili başvuruları AYNI güvenli rotaya (approve/reject)
+    // tek tek POST eder, ama handleApplication'ın aksine per-item toast ATMAZ.
+    // Bittiğinde tek bir özet toast gösterir (başarı/başarısız sayısıyla). Böylece
+    // N başvuru için N toast yerine 1 toast çıkar; kısmi hatalar da sayılıp bildirilir.
+    const handleBulkApplication = async (
+        selectedApps: UserApplication[],
+        decision: 'approved' | 'rejected',
+    ) => {
+        if (selectedApps.length === 0) return;
+        const status = decision === 'approved' ? 'onaylandı' : 'reddedildi';
+        const token = await authUser?.getIdToken();
+        if (!token) {
+            toast({
+                variant: 'destructive',
+                title: 'Oturum gerekli',
+                description: 'Lütfen tekrar giriş yapıp deneyin.',
+            });
+            return;
+        }
+        // Aynı uç + header seti (handleApplication ile birebir). Paralel ateşle,
+        // tümünü bekle; her birinin sonucunu (ok?) topla.
+        const results = await Promise.allSettled(
+            selectedApps.map((application) =>
+                fetch(`/api/volunteering/applications/${application.id}/${decision === 'approved' ? 'approve' : 'reject'}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({}),
+                }),
+            ),
+        );
+        let success = 0;
+        let failed = 0;
+        for (const r of results) {
+            if (r.status === 'fulfilled' && r.value.ok) success++;
+            else failed++;
+        }
+        if (failed === 0) {
+            toast({
+                title: `${success} başvuru ${status}`,
+                description: 'Gönüllüler bilgilendirildi.',
+            });
+        } else if (success === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'İşlem başarısız',
+                description: `${failed} başvuru güncellenemedi. Lütfen tekrar deneyin.`,
+            });
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Kısmen tamamlandı',
+                description: `${success} başvuru ${status}, ${failed} başvuru güncellenemedi.`,
+            });
+        }
+    };
+
+    return { applications, isLoading, handleApplication, handleBulkApplication };
 };
 
 // Bir ilana ait başvuru sayıları (rozet + özet için). entityId = ilan id.
@@ -141,27 +207,130 @@ const useApplicationCountsByListing = (applications: UserApplication[]): Record<
 // Tek bir ilana ait başvuru listesi — ilan kartının ALTINDA (accordion içinde)
 // gösterilir. Onayla/Reddet aksiyonları ve markup ESKİSİYLE birebir aynı; tek
 // fark: artık global liste yerine o ilanın (entityId) başvurularını alır.
+// CSV alan kaçışı: virgül / tırnak / satır sonu içeren alanı çift tırnakla sar,
+// içteki tırnakları ikile (call-center ParticipantsPanel'deki desenle aynı).
+const csvEsc = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+// Başvuranları CSV'ye çevir. Sütunlar: Ad Soyad, Durum, Başvuru Tarihi.
+// Telefon/E-posta EKLENMEDİ — bu alanlar ListingApplications seviyesinde yüklü
+// değil (yalnız ApplicantRow her satırda users/{uid} okur); yeni okuma yapmamak
+// için sadece bellekteki başvuru verisini kullanıyoruz (sıfır ek Firestore okuma).
+const applicantsToCsv = (apps: UserApplication[]): string => {
+    const header = ['Ad Soyad', 'Durum', 'Başvuru Tarihi'];
+    const lines = apps.map((a) => [
+        a.userName || 'Gönüllü',
+        a.status,
+        a.date || '',
+    ].map(csvEsc).join(','));
+    return '﻿' + [header.map(csvEsc).join(','), ...lines].join('\r\n'); // BOM → Excel TR karakter
+};
+
 const ListingApplications = ({
-    listingTitle, apps, handleApplication,
+    listingTitle, apps, handleApplication, handleBulkApplication,
 }: {
     listingTitle: string;
     apps: UserApplication[];
     handleApplication: (application: UserApplication, decision: 'approved' | 'rejected') => void;
+    handleBulkApplication: (selectedApps: UserApplication[], decision: 'approved' | 'rejected') => Promise<void>;
 }) => {
+    // Toplu seçim: seçili başvuru id'leri (yalnız Beklemede satırlar seçilebilir).
+    const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [bulkBusy, setBulkBusy] = useState(false);
+
+    const pendingApps = useMemo(() => apps.filter((a) => a.status === 'Beklemede'), [apps]);
+
     if (apps.length === 0) {
         return <p className="text-center text-muted-foreground text-sm py-4">Bu ilana henüz başvuru yok.</p>;
     }
+
+    // CSV indir — bellekteki başvurulardan üret, Blob + geçici <a> ile indir (client-only).
+    const exportCsv = () => {
+        const slug = (listingTitle || 'ilan')
+            .toLocaleLowerCase('tr')
+            .replaceAll('ı', 'i').replaceAll('ğ', 'g').replaceAll('ü', 'u')
+            .replaceAll('ş', 's').replaceAll('ö', 'o').replaceAll('ç', 'c')
+            .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'ilan';
+        const blob = new Blob([applicantsToCsv(apps)], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `basvuranlar-${slug}.csv`;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch { /* yok say */ } }, 1500);
+    };
+
+    const toggle = (id: string) => setSelected((prev) => {
+        const n = new Set(prev);
+        if (n.has(id)) n.delete(id); else n.add(id);
+        return n;
+    });
+    const allPendingSelected = pendingApps.length > 0 && pendingApps.every((a) => selected.has(a.id));
+    const toggleAll = () => setSelected(allPendingSelected ? new Set() : new Set(pendingApps.map((a) => a.id)));
+
+    const runBulk = async (decision: 'approved' | 'rejected') => {
+        const selectedApps = pendingApps.filter((a) => selected.has(a.id));
+        if (selectedApps.length === 0) return;
+        setBulkBusy(true);
+        try {
+            await handleBulkApplication(selectedApps, decision);
+            setSelected(new Set()); // bitince seçimi temizle
+        } finally {
+            setBulkBusy(false);
+        }
+    };
+
     return (
         <div className="space-y-3">
-            {/* Başvuran listesi: indir / yazdır / paylaş (etkinliklerdeki gibi) */}
-            <div className="flex justify-end">
+            {/* Başvuru analitiği — zaman serisi + dönüşüm hunisi (bellekteki apps'ten, yeni okuma yok) */}
+            <ApplicationsAnalytics apps={apps} />
+            {/* Başvuran listesi: indir / yazdır / paylaş (etkinliklerdeki gibi) + CSV indir */}
+            <div className="flex justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={exportCsv}>
+                    <FileSpreadsheet className="h-4 w-4 mr-1.5" /> CSV İndir
+                </Button>
                 <VolunteerApplicants
                     title={listingTitle}
                     applicants={apps.map((a) => ({ name: a.userName || 'Gönüllü', status: a.status, date: a.date }))}
                 />
             </div>
+            {/* Toplu onay/red çubuğu — yalnız en az bir bekleyen başvuru varsa görünür. */}
+            {pendingApps.length > 0 && (
+                <div className="flex items-center gap-3 flex-wrap rounded-lg bg-muted/40 px-3 py-2">
+                    <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                        <Checkbox checked={allPendingSelected} onCheckedChange={toggleAll} /> Tümünü Seç
+                    </label>
+                    {selected.size > 0 && <span className="text-xs text-muted-foreground">{selected.size} seçili</span>}
+                    <div className="flex items-center gap-1.5 ml-auto flex-wrap">
+                        <Button
+                            size="sm"
+                            className="rounded-lg h-9 bg-green-600 hover:bg-green-700 text-white"
+                            disabled={selected.size === 0 || bulkBusy}
+                            onClick={() => runBulk('approved')}
+                        >
+                            {bulkBusy ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1.5" />} Seçilenleri Onayla
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="destructive"
+                            className="rounded-lg h-9"
+                            disabled={selected.size === 0 || bulkBusy}
+                            onClick={() => runBulk('rejected')}
+                        >
+                            Seçilenleri Reddet
+                        </Button>
+                    </div>
+                </div>
+            )}
             {apps.map((app) => (
-                <ApplicantRow key={app.id} app={app} listingTitle={listingTitle} handleApplication={handleApplication} />
+                <ApplicantRow
+                    key={app.id}
+                    app={app}
+                    listingTitle={listingTitle}
+                    handleApplication={handleApplication}
+                    selectable
+                    checked={selected.has(app.id)}
+                    onCheckedChange={() => toggle(app.id)}
+                />
             ))}
         </div>
     );
@@ -172,11 +341,14 @@ const ListingApplications = ({
 // "Profil" butonu, o ilana dair başvuru detayı + kullanıcının gönüllülük profilini
 // gösteren ApplicantProfileDialog'u açar.
 const ApplicantRow = ({
-    app, listingTitle, handleApplication,
+    app, listingTitle, handleApplication, selectable, checked, onCheckedChange,
 }: {
     app: UserApplication;
     listingTitle: string;
     handleApplication: (application: UserApplication, decision: 'approved' | 'rejected') => void;
+    selectable?: boolean;
+    checked?: boolean;
+    onCheckedChange?: () => void;
 }) => {
     const db = useFirestore();
     const userRef = useMemoFirebase(
@@ -191,6 +363,10 @@ const ApplicantRow = ({
     return (
         <div className="p-3 border rounded-lg flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-3 min-w-0">
+                {/* Toplu seçim kutusu — yalnız seçilebilir modda ve Beklemede başvurularda. */}
+                {selectable && app.status === 'Beklemede' && (
+                    <Checkbox checked={checked} onCheckedChange={onCheckedChange} className="shrink-0" aria-label="Başvuruyu seç" />
+                )}
                 <Avatar>
                     <AvatarFallback>{displayName.charAt(0) || 'G'}</AvatarFallback>
                 </Avatar>
@@ -222,9 +398,58 @@ const ApplicantRow = ({
 };
 
 
-const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, applications, handleApplication, ngoName, ngoLogoUrl }: { opportunities: Volunteering[], isLoading: boolean, countsByListing: Record<string, PerListingCounts>, applications: UserApplication[], handleApplication: (application: UserApplication, decision: 'approved' | 'rejected') => void, ngoName: string, ngoLogoUrl: string }) => {
+const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, applications, handleApplication, handleBulkApplication, ngoName, ngoLogoUrl }: { opportunities: Volunteering[], isLoading: boolean, countsByListing: Record<string, PerListingCounts>, applications: UserApplication[], handleApplication: (application: UserApplication, decision: 'approved' | 'rejected') => void, handleBulkApplication: (selectedApps: UserApplication[], decision: 'approved' | 'rejected') => Promise<void>, ngoName: string, ngoLogoUrl: string }) => {
     const { toast } = useToast();
     const db = useFirestore();
+    const router = useRouter();
+    const { user: authUser } = useUser();
+    // Kopyala onay dialogu — hangi ilan çoğaltılacak + çoğaltma sürüyor mu.
+    const [duplicateTarget, setDuplicateTarget] = useState<Volunteering | null>(null);
+    const [duplicating, setDuplicating] = useState(false);
+
+    // Gönüllülük ilanını çoğalt (Kopyala). Onay dialogundan sonra çağrılır: mevcut
+    // opp'un alanlarını kopyalar, kopyalanmaması gereken alanları düşürür, yeni
+    // dokümanı 'Beklemede' (normal süper-admin onay akışına gitsin) durumunda
+    // oluşturur, ardından kullanıcıyı çoğaltılan ilanın DÜZENLEME sayfasına yollar.
+    const handleDuplicate = async (opp: Volunteering) => {
+        setDuplicating(true);
+        try {
+            // Kopyalanmaması gereken alanları düş (id + yaşam döngüsü zaman damgaları).
+            const {
+                id: _id,
+                completedAt: _completedAt,
+                deactivatedAt: _deactivatedAt,
+                reactivatedAt: _reactivatedAt,
+                updatedAt: _updatedAt,
+                approvedAt: _approvedAt,
+                ...rest
+            } = opp as Volunteering & Record<string, unknown>;
+            void _id; void _completedAt; void _deactivatedAt; void _reactivatedAt; void _updatedAt; void _approvedAt;
+            const ref = await addDoc(collection(db, COLLECTIONS.volunteering), {
+                ...rest,
+                title: `${opp.title} (Kopya)`,
+                status: 'Beklemede',
+                volunteerCount: { needed: opp.volunteerCount?.needed ?? 0, applications: 0 },
+                createdAt: serverTimestamp(),
+                createdBy: authUser?.uid,
+            });
+            toast({
+                title: 'İlan kopyalandı',
+                description: 'Düzenleyip yayına alabilirsiniz.',
+            });
+            setDuplicateTarget(null);
+            router.push(`/ngo-admin/volunteer/new?edit=${ref.id}`);
+        } catch (err) {
+            console.error('[ngo-admin/volunteer] handleDuplicate failed', err);
+            toast({
+                variant: 'destructive',
+                title: 'Kopyalanamadı',
+                description: 'İlan kopyalanırken bir hata oluştu. Lütfen tekrar deneyin.',
+            });
+        } finally {
+            setDuplicating(false);
+        }
+    };
 
     // Gönüllülük ilanını "Tamamla" — status='Tamamlandı' + completedAt yazar.
     // Tamamlanan ilan "Tamamlananlar" tab'ına düşer; public sayfadan 24 saat
@@ -348,7 +573,7 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, a
                           </span>
                         </AccordionTrigger>
                         <AccordionContent>
-                          <ListingApplications listingTitle={opp.title} apps={listingApps} handleApplication={handleApplication} />
+                          <ListingApplications listingTitle={opp.title} apps={listingApps} handleApplication={handleApplication} handleBulkApplication={handleBulkApplication} />
                         </AccordionContent>
                       </AccordionItem>
                     </Accordion>
@@ -401,6 +626,15 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, a
                     ) : (
                         <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => handleToggleStatus(opp)}>Pasife Al</Button>
                     )}
+                    {/* Kopyala — ilanı çoğaltıp düzenleme paneline yönlendirir (önce onay sorar). */}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl w-full sm:w-auto"
+                        onClick={() => setDuplicateTarget(opp)}
+                    >
+                        <Copy className="h-4 w-4 mr-1.5" /> Kopyala
+                    </Button>
                     <Button
                         variant="secondary"
                         size="sm"
@@ -414,6 +648,27 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, a
               </Card>
               );
             }) : <p className="text-center p-8 text-muted-foreground">Aktif ilanınız bulunmuyor.</p>}
+
+            {/* Kopyala onay dialogu — çoğaltmadan önce kullanıcıya sorar. */}
+            <AlertDialog open={!!duplicateTarget} onOpenChange={(o) => { if (!o && !duplicating) setDuplicateTarget(null); }}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>İlanı Kopyala</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bu ilandan bir kopya daha oluşturulsun mu? Kopya oluşturulunca düzenleme paneli açılır.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={duplicating}>İptal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => { e.preventDefault(); if (duplicateTarget) void handleDuplicate(duplicateTarget); }}
+                            disabled={duplicating}
+                        >
+                            {duplicating ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Copy className="h-4 w-4 mr-1.5" />} Evet, Çoğalt
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
@@ -525,7 +780,7 @@ const VolunteerPage = () => {
     () => oppList.filter((o) => (o as Volunteering & { status?: string }).status === 'Tamamlandı'),
     [oppList],
   );
-  const { applications, isLoading: appsLoading, handleApplication } = useVolunteerApplications(oppList);
+  const { applications, isLoading: appsLoading, handleApplication, handleBulkApplication } = useVolunteerApplications(oppList);
   const countsByListing = useApplicationCountsByListing(applications);
 
   // Aktif STK doc'u — bozuk ilan self-heal için ad + logo kaynağı.
@@ -572,14 +827,22 @@ const VolunteerPage = () => {
   return (
     <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
         <div className="space-y-4">
-          <div className="flex justify-between items-center px-1">
+          <div className="flex justify-between items-center px-1 gap-2 flex-wrap">
             <h1 className="text-2xl font-bold">Gönüllülük Yönetimi</h1>
-            <Button asChild>
-              <Link href="/ngo-admin/volunteer/new">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Yeni İlan Oluştur
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button asChild variant="outline">
+                <Link href="/ngo-admin/volunteer-completions">
+                  <Clock className="mr-2 h-4 w-4" />
+                  Saat & Etki Raporu
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/ngo-admin/volunteer/new">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Yeni İlan Oluştur
+                </Link>
+              </Button>
+            </div>
           </div>
 
           <Tabs defaultValue="manage" className="w-full">
@@ -623,7 +886,7 @@ const VolunteerPage = () => {
                         </CardContent>
                       </Card>
                     )}
-                    <OpportunityManagementTab opportunities={activeOpps} isLoading={isLoading} countsByListing={countsByListing} applications={applications} handleApplication={handleApplication} ngoName={ngoDoc?.name || ''} ngoLogoUrl={ngoDoc?.avatarUrl || ''} />
+                    <OpportunityManagementTab opportunities={activeOpps} isLoading={isLoading} countsByListing={countsByListing} applications={applications} handleApplication={handleApplication} handleBulkApplication={handleBulkApplication} ngoName={ngoDoc?.name || ''} ngoLogoUrl={ngoDoc?.avatarUrl || ''} />
                 </section>
             </TabsContent>
             <TabsContent value="completed" className="mt-4 space-y-4">
@@ -632,7 +895,7 @@ const VolunteerPage = () => {
                     <p className="text-xs text-muted-foreground px-1">
                         Tamamlanmış gönüllülük ilanları burada arşivlenir. Public gönüllülük sayfasından tamamlanma anından 24 saat sonra otomatik kaldırılır.
                     </p>
-                    <OpportunityManagementTab opportunities={completedOpps} isLoading={isLoading} countsByListing={countsByListing} applications={applications} handleApplication={handleApplication} ngoName={ngoDoc?.name || ''} ngoLogoUrl={ngoDoc?.avatarUrl || ''} />
+                    <OpportunityManagementTab opportunities={completedOpps} isLoading={isLoading} countsByListing={countsByListing} applications={applications} handleApplication={handleApplication} handleBulkApplication={handleBulkApplication} ngoName={ngoDoc?.name || ''} ngoLogoUrl={ngoDoc?.avatarUrl || ''} />
                 </section>
             </TabsContent>
             <TabsContent value="publish" className="mt-4">

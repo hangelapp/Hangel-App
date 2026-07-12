@@ -33,6 +33,14 @@ import {
   LineChart,
   PhoneCall,
   MessageCircle,
+  IdCard,
+  ListChecks,
+  Copy,
+  TrendingUp,
+  Timer,
+  Camera,
+  MapPinned,
+  Building2,
 } from 'lucide-react';
 import {
   MarketingNav,
@@ -58,9 +66,9 @@ const TR = {
 
   heroEyebrow: 'hangel STK',
   heroTitle: 'Kurumunuz için sürdürülebilir geleceği bugün kurun.',
-  heroSubtitle: 'Şeffaflık, kaynak ve gönüllü gücü. Hepsi tek panelde.',
+  heroSubtitle: 'Şeffaflık, kaynak ve gönüllü gücü. Hepsi tek panelde, tamamen ücretsiz.',
   heroDescription:
-    'hangel, derneğinizi ve vakfınızı dijitalde güçlendiren bütünleşik bir yönetim platformudur. Şeffaflığınızı görünür kılın, düzenli kaynak oluşturun, gönüllülerinizi yönetin; tek bir panelden.',
+    'hangel, derneğinizi ve vakfınızı dijitalde güçlendiren, Türkiye’ye özel bütünleşik bir yönetim platformudur. Şeffaflığınızı görünür kılın, düzenli kaynak oluşturun, gönüllülerinizi yönetin; tek bir panelden. Kurulum dakikalar sürer, verileriniz güvende ve süreç baştan sona şeffaftır.',
   heroImage:
     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2400&auto=format&fit=crop',
   heroPrimary: 'Ücretsiz Başvur',
@@ -81,6 +89,11 @@ const TR = {
   volunteerDescription:
     'Yetenek bazlı ilanlar yayınlayın. hangel, her gönüllüye otomatik yüzde uyum eşleştirmesi yapar; başvuruları tek ekrandan yönetirsiniz.',
 
+  certificatesEyebrow: 'Sertifikalar & Rozetler',
+  certificatesTitle: 'Her emeğin bir belgesi olsun.',
+  certificatesDescription:
+    'Gönüllülerinize tek tıkla, kurumunuzun logosuyla otomatik katılım ve başarı sertifikaları ile yaka kartları üretin. Kurumunuz her ay, toplam bağış + gönüllü saati + sosyal etki değerini birleştiren otomatik bir etki sertifikası kazanır. Rozetler ve size özel rozetlerle gönüllü sadakatini ödüllendirin.',
+
   compareTransparency:
     "Dünyada şeffaflık derecelendirmesi ve alışverişle bağış benzerleri çoğu zaman ücretli ve parçalıdır. hangel'de bu, Türkiye'ye özel, ücretsiz ve tek panelde.",
 
@@ -96,9 +109,9 @@ const TR = {
 
   finalEyebrow: 'Başlayın',
   finalTitle: 'Dijital dönüşümü bugün başlatın.',
-  finalSubtitle: 'Başvuru ücretsiz. Kurulum dakikalar sürer.',
+  finalSubtitle: 'Başvuru ücretsiz. Kurulum dakikalar sürer. Kredi kartı gerekmez.',
   finalDescription:
-    'Kurumunuzu hangel ile dakikalar içinde kaydedin; şeffaflığınızı, kaynağınızı ve etkinizi büyütmeye hemen başlayın.',
+    'Binlerce kurumun katıldığı harekete siz de katılın. Kurumunuzu hangel ile dakikalar içinde kaydedin; şeffaflığınızı, kaynağınızı ve etkinizi büyütmeye bugün başlayın. En güzel yarınları birlikte kuralım.',
   finalPrimary: 'Ücretsiz Başvur',
   finalSecondary: 'Daha Fazla',
 
@@ -180,6 +193,46 @@ const TR = {
       description:
         "Gönüllülerinize hazır WhatsApp şablonlarıyla ulaşın; 'Evet' diyenler otomatik çağrı sırasına düşer, 'Hayır' diyene randevu kurulur, operatör tek tıkla arar.",
     },
+    applicantProfile: {
+      title: 'Başvuran İletişimi & Tam Profil',
+      description:
+        'Her başvuranın tam gönüllü profilini görün; telefon ya da e-postayla tek dokunuşla ulaşın. KVKK-uyumlu: yalnızca iletişim bilgisi paylaşılır.',
+    },
+    bulkApprove: {
+      title: 'Toplu Onay & CSV Dışa Aktarım',
+      description:
+        'Onay kutularıyla yüzlerce başvuruyu aynı anda onaylayın ya da reddedin; başvuranları tek tıkla CSV/Excel olarak dışa aktarın.',
+    },
+    duplicateListing: {
+      title: 'İlan Kopyalama',
+      description:
+        'Bir etkinliği ya da gönüllülük ilanını tek dokunuşla çoğaltın; kopyayı anında düzenleyip yayınlayın. Tekrarlayan ilanlar dakikalar yerine saniyeler.',
+    },
+    applicationAnalytics: {
+      title: 'Başvuru Analitiği',
+      description:
+        'İlan bazında zaman içindeki başvuru grafiği ve dönüşüm mini-grafikleriyle hangi ilanın işe yaradığını canlı görün.',
+    },
+    hoursImpact: {
+      title: 'Gönüllü Saat & Etki Raporu',
+      description:
+        'Gönüllü başına saatleri ve sosyal etki değerini (TL) izleyin; SROI-hazır raporlarla ürettiğiniz değeri sayısal olarak kanıtlayın.',
+    },
+    eventPhotos: {
+      title: 'Etkinlik & Gönüllülük Fotoğrafları',
+      description:
+        'Yükle/indir/paylaş ve QR ile fotoğraf galerisi; "selfie ile bul" yüz eşleştirmesiyle katılımcılar kendi fotoğraflarını saniyeler içinde bulur.',
+    },
+    multiLocation: {
+      title: 'Çok Noktalı Etkinlikler',
+      description:
+        'Tek etkinliğe ya da gönüllülüğe birden fazla konum ekleyin; her noktanın kendi QR kodu ve başvuru butonu olur. Şehir şehir tek panelden yönetin.',
+    },
+    corporateParticipants: {
+      title: 'Kurumsal Katılımcılar',
+      description:
+        'Belediye, valilik, marka, üniversite ve STK\'lar etkinliğinize kurumsal katılımcı olarak başvurur; onayınızla profilinizde ve etkinlikte yayınlanır.',
+    },
   },
 
   soon: {
@@ -227,9 +280,9 @@ const EN: typeof TR = {
 
   heroEyebrow: 'hangel NGO',
   heroTitle: 'Build a sustainable future for your organization, today.',
-  heroSubtitle: 'Transparency, resources and volunteer power. All in one panel.',
+  heroSubtitle: 'Transparency, resources and volunteer power. All in one panel, completely free.',
   heroDescription:
-    'hangel is an integrated management platform that strengthens your association or foundation online. Make your transparency visible, generate steady resources, manage your volunteers; all from a single panel.',
+    'hangel is an integrated management platform, tailored to Türkiye, that strengthens your association or foundation online. Make your transparency visible, generate steady resources, manage your volunteers; all from a single panel. Setup takes minutes, your data is safe, and the whole process is transparent end to end.',
   heroImage:
     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2400&auto=format&fit=crop',
   heroPrimary: 'Apply Free',
@@ -250,6 +303,11 @@ const EN: typeof TR = {
   volunteerDescription:
     'Post skill-based listings. hangel automatically computes a percentage match for each volunteer; you manage applications from a single screen.',
 
+  certificatesEyebrow: 'Certificates & Badges',
+  certificatesTitle: 'Let every effort have its certificate.',
+  certificatesDescription:
+    "Generate automatic participation and achievement certificates and name badges for your volunteers in one click, with your organization's logo. Every month your organization earns an automatic impact certificate combining total donations + volunteer hours + social impact value. Reward volunteer loyalty with badges and your own custom badges.",
+
   compareTransparency:
     'Worldwide, transparency ratings and shop-to-donate equivalents are often paid and fragmented. On hangel, this is tailored to Türkiye, free, and in a single panel.',
 
@@ -265,9 +323,9 @@ const EN: typeof TR = {
 
   finalEyebrow: 'Get Started',
   finalTitle: 'Start your digital transformation today.',
-  finalSubtitle: 'Applying is free. Setup takes minutes.',
+  finalSubtitle: 'Applying is free. Setup takes minutes. No credit card required.',
   finalDescription:
-    'Register your organization with hangel in minutes; start growing your transparency, resources and impact right away.',
+    'Join the movement thousands of organizations are already part of. Register your organization with hangel in minutes; start growing your transparency, resources and impact today. Let’s build brighter tomorrows, together.',
   finalPrimary: 'Apply Free',
   finalSecondary: 'Learn More',
 
@@ -349,6 +407,46 @@ const EN: typeof TR = {
       description:
         "Reach volunteers with ready WhatsApp templates; 'Yes' replies drop into the call queue automatically, 'No' replies get a callback appointment, your operator calls in one click.",
     },
+    applicantProfile: {
+      title: 'Applicant Contact & Full Profile',
+      description:
+        "See each applicant's full volunteer profile and reach them by phone or email in one tap. KVKK-compliant: only contact details are shared.",
+    },
+    bulkApprove: {
+      title: 'Bulk Approval & CSV Export',
+      description:
+        'Approve or reject hundreds of applications at once with checkboxes, and export applicants to CSV/Excel in a single click.',
+    },
+    duplicateListing: {
+      title: 'Duplicate Listing',
+      description:
+        'Duplicate an event or volunteering listing in one tap, then edit and publish the copy instantly. Recurring listings in seconds, not minutes.',
+    },
+    applicationAnalytics: {
+      title: 'Application Analytics',
+      description:
+        'See live applications-over-time charts and conversion mini-charts per listing, so you know which listing is actually working.',
+    },
+    hoursImpact: {
+      title: 'Volunteer Hours & Impact Report',
+      description:
+        'Track hours and social impact value (TRY) per volunteer; prove the value you create in numbers with SROI-ready reports.',
+    },
+    eventPhotos: {
+      title: 'Event & Volunteering Photos',
+      description:
+        'A photo gallery with upload/download/share and QR; with "find by selfie" face matching, participants find their own photos in seconds.',
+    },
+    multiLocation: {
+      title: 'Multi-Location Events',
+      description:
+        'Add multiple locations to a single event or volunteering listing; each point gets its own QR code and apply button. Manage city by city from one panel.',
+    },
+    corporateParticipants: {
+      title: 'Corporate Participants',
+      description:
+        'Municipalities, governorships, brands, universities and NGOs apply to your event as corporate participants; once you approve, they appear on your profile and the event.',
+    },
   },
 
   soon: {
@@ -415,6 +513,14 @@ export default function NgoOnboardingPage() {
     { icon: Megaphone, title: C.tools.ads.title, description: C.tools.ads.description, badge: { kind: 'beta' } },
     { icon: PhoneCall, title: C.tools.callCenter.title, description: C.tools.callCenter.description, badge: { kind: 'beta' } },
     { icon: MessageCircle, title: C.tools.contactCenter.title, description: C.tools.contactCenter.description, badge: { kind: 'beta' } },
+    { icon: IdCard, title: C.tools.applicantProfile.title, description: C.tools.applicantProfile.description, badge: { kind: 'yeni' } },
+    { icon: ListChecks, title: C.tools.bulkApprove.title, description: C.tools.bulkApprove.description, badge: { kind: 'yeni' } },
+    { icon: Copy, title: C.tools.duplicateListing.title, description: C.tools.duplicateListing.description, badge: { kind: 'yeni' } },
+    { icon: TrendingUp, title: C.tools.applicationAnalytics.title, description: C.tools.applicationAnalytics.description, badge: { kind: 'yeni' } },
+    { icon: Timer, title: C.tools.hoursImpact.title, description: C.tools.hoursImpact.description, badge: { kind: 'yeni' } },
+    { icon: Camera, title: C.tools.eventPhotos.title, description: C.tools.eventPhotos.description, badge: { kind: 'yeni' } },
+    { icon: MapPinned, title: C.tools.multiLocation.title, description: C.tools.multiLocation.description, badge: { kind: 'yeni' } },
+    { icon: Building2, title: C.tools.corporateParticipants.title, description: C.tools.corporateParticipants.description, badge: { kind: 'yeni' } },
   ];
 
   const soonTools: FeatureItem[] = [
@@ -481,6 +587,16 @@ export default function NgoOnboardingPage() {
         description={C.volunteerDescription}
         badges={[{ kind: 'hangel' }]}
         image={{ url: 'https://images.unsplash.com/photo-1593113630400-ea4288922497?q=80&w=2400&auto=format&fit=crop', hint: 'volunteers matching skills' }}
+      />
+
+      {/* Statement: Sertifikalar & Rozetler (light) */}
+      <AppleSection
+        id="sertifikalar"
+        eyebrow={C.certificatesEyebrow}
+        title={C.certificatesTitle}
+        description={C.certificatesDescription}
+        badges={[{ kind: 'hangel' }]}
+        image={{ url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2400&auto=format&fit=crop', hint: 'certificate award ceremony' }}
       />
 
       {/* Tek panelde her şey — live tools */}

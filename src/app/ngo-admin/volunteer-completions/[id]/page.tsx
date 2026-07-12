@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation';
 
 /**
- * /ngo-admin/volunteer-completions/{id} için sayfa rotası YOK. Gönüllü tamamlama
- * onay bildirimleri (admin) eskiden bu linke gidiyordu → 404 → siyah ekran.
- * Onaylar /ngo-admin/volunteer sayfasında yapılıyor; eski bildirimleri de oraya
- * yönlendirip siyah ekranı önle.
+ * /ngo-admin/volunteer-completions/{id} için per-kayıt sayfa rotası YOK. Gönüllü
+ * tamamlama onay bildirimleri (admin) bu linke gidiyor. Artık tüm tamamlamaların
+ * onaylandığı gerçek rapor sayfası var (../volunteer-completions); eski deep-link'leri
+ * de oraya yönlendir (siyah ekran/404 yerine ilgili raporu aç).
  */
 export default function VolunteerCompletionRedirect() {
-  redirect('/ngo-admin/volunteer');
+  redirect('/ngo-admin/volunteer-completions');
 }

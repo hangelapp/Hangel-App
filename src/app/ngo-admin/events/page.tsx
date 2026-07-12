@@ -30,6 +30,7 @@ import {
     Megaphone,
     Building2,
     Globe,
+    Copy,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +52,16 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { addDoc, collection, doc, getDoc, query, setDoc, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -412,6 +423,10 @@ export default function EventManagementPage() {
                 <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => openEdit(event)}>
                     <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
                 </Button>
+                {/* Kopyala — etkinliği çoğaltıp düzenleme dialogunu açar (önce onay sorar). */}
+                <Button variant="outline" size="sm" className="rounded-xl w-full sm:w-auto" onClick={() => setDuplicateTarget(event)}>
+                    <Copy className="h-4 w-4 mr-1.5" /> Kopyala
+                </Button>
                 <EventChecklistButton eventId={event.id} checklist={event.managerChecklist} className="rounded-xl w-full sm:w-auto" />
                 <Button asChild variant="outline" size="sm" className="rounded-xl w-full sm:w-auto min-w-0 border-blue-500/30 text-blue-600 hover:bg-blue-500/10 hover:text-blue-700">
                     <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)" className="flex items-center justify-center min-w-0">
@@ -682,6 +697,58 @@ export default function EventManagementPage() {
         setExistingPosterUrl(e.imageUrl || '');
         setEditingId(ev.id);
         setCreateOpen(true);
+    };
+
+    // ── Kopyala (etkinliği çoğalt) ──
+    // Önce onay dialogu (duplicateTarget) çıkar; onaylanınca mevcut etkinlik
+    // dokümanını COLLECTIONS.events'e klonlar (id + tamamlanma + zaman damgaları
+    // düşürülür, kapasite.current sıfırlanır, isme "(Kopya)" eklenir, status
+    // 'Beklemede'). Ardından "Düzenle"ye basılmış gibi yeni dokümanın edit
+    // dialog'unu açar → kullanıcı düzenleyip yeniden yayına alabilir.
+    const [duplicateTarget, setDuplicateTarget] = useState<ClubEventDoc | null>(null);
+    const [duplicating, setDuplicating] = useState(false);
+
+    const handleDuplicate = async (ev: ClubEventDoc) => {
+        if (!firestore || !activeEntity) return;
+        setDuplicating(true);
+        try {
+            // Tüm alanları taşımak için mevcut dokümanı yeniden oku (kart yalnız
+            // özet alanları tutuyor; contributors/agenda/points vb. da kopyalansın).
+            const snap = await getDoc(doc(firestore, COLLECTIONS.events, ev.id));
+            const src = (snap.exists() ? snap.data() : {}) as Record<string, unknown>;
+            // Kopyalanmaması gereken alanları düş.
+            const {
+                completed: _completed,
+                completedAt: _completedAt,
+                createdAt: _createdAt,
+                approvedAt: _approvedAt,
+                approvedBy: _approvedBy,
+                updatedAt: _updatedAt,
+                ...rest
+            } = src;
+            void _completed; void _completedAt; void _createdAt; void _approvedAt; void _approvedBy; void _updatedAt;
+            const srcName = (src.name as string) || ev.name || '';
+            const srcCapacity = (src.capacity as { max?: number; current?: number } | undefined) || {};
+            const ref = await addDoc(collection(firestore, COLLECTIONS.events), {
+                ...rest,
+                name: `${srcName} (Kopya)`,
+                capacity: { max: srcCapacity.max ?? 0, current: 0 },
+                status: 'Beklemede' as EventStatus,
+                organizerId: activeEntity.data.id,
+                // eslint-disable-next-line react-hooks/purity -- event handler'da çalışır (render değil); create akışıyla aynı desen
+                createdAt: Date.now(),
+                createdBy: authUser?.uid || null,
+            });
+            toast({ title: 'Etkinlik kopyalandı', description: 'Düzenleyip yayına alabilirsiniz.' });
+            setDuplicateTarget(null);
+            // "Düzenle"ye basılmış gibi: yeni dokümanı bellekten kurup edit dialog'unu aç.
+            openEdit({ ...(rest as Partial<ClubEventDoc>), id: ref.id, name: `${srcName} (Kopya)` } as ClubEventDoc);
+        } catch (err) {
+            console.error('Event duplicate failed', err);
+            toast({ variant: 'destructive', title: 'Kopyalanamadı', description: 'Etkinlik kopyalanırken bir hata oluştu. Lütfen tekrar deneyin.' });
+        } finally {
+            setDuplicating(false);
+        }
     };
 
     const handleCreateEvent = async (e: React.FormEvent) => {
@@ -1048,6 +1115,27 @@ export default function EventManagementPage() {
                 </TabsContent>
 
             </Tabs>
+
+            {/* Kopyala onay dialogu — çoğaltmadan önce kullanıcıya sorar. */}
+            <AlertDialog open={!!duplicateTarget} onOpenChange={(o) => { if (!o && !duplicating) setDuplicateTarget(null); }}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Etkinliği Kopyala</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bu etkinlikten bir kopya daha oluşturulsun mu? Kopya oluşturulunca düzenleme paneli açılır.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={duplicating}>İptal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => { e.preventDefault(); if (duplicateTarget) void handleDuplicate(duplicateTarget); }}
+                            disabled={duplicating}
+                        >
+                            {duplicating ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Copy className="h-4 w-4 mr-1.5" />} Evet, Çoğalt
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Create-event dialog (clubs only) */}
             <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) resetForm(); }}>
