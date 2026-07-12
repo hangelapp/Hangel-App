@@ -105,6 +105,25 @@ function friendlyConnError(err: unknown): string {
 }
 
 /**
+ * Ses kalitesi için mikrofon (getUserMedia) constraints.
+ * echoCancellation/noiseSuppression/autoGainControl = tarayıcının yankı+gürültü
+ * bastırma ve otomatik seviye motorları. Bunlar açık olmadan çağrılarda yankı,
+ * fon gürültüsü ve kısık/dalgalı ses olur. Opus zaten 48kHz'i destekler.
+ */
+const AUDIO_CONSTRAINTS: MediaTrackConstraints = {
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true,
+  // Opus için ideal; tarayıcı desteklemezse yok sayar (ideal = zorunlu değil).
+  sampleRate: 48000,
+  channelCount: 1,
+};
+
+const SDH_OPTIONS = {
+  constraints: { audio: AUDIO_CONSTRAINTS, video: false },
+} as const;
+
+/**
  * STK santral paneli için tarayıcı SIP.js telefonu.
  *
  * Config tam değilse `ready=false`, `state='unconfigured'` döner ve hiçbir
@@ -178,8 +197,13 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
             | undefined;
           const remoteStream = sdh?.remoteMediaStream;
           if (remoteStream && remoteAudioRef.current) {
-            remoteAudioRef.current.srcObject = remoteStream;
-            void remoteAudioRef.current.play().catch(() => undefined);
+            const el = remoteAudioRef.current;
+            el.srcObject = remoteStream;
+            el.volume = 1.0;
+            // Bazı tarayıcılar ilk play()'i autoplay politikasıyla reddedebilir;
+            // kısa bir retry karşıdan ses gelmeme sorununu azaltır.
+            const tryPlay = () => el.play().catch(() => setTimeout(() => el.play().catch(() => undefined), 300));
+            void tryPlay();
           }
           setState('in-call');
           setMuted(false);
@@ -334,9 +358,7 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
           throw new Error('Geçersiz hedef numara.');
         }
         const inviter = new Inviter(ua, target, {
-          sessionDescriptionHandlerOptions: {
-            constraints: { audio: true, video: false },
-          },
+          sessionDescriptionHandlerOptions: SDH_OPTIONS,
         });
         wireSession(inviter);
         setRemoteIdentity(sanitizeNumber(number));
@@ -357,9 +379,7 @@ export function useSipPhone(config: UseSipPhoneConfig): UseSipPhoneApi {
     if (!session || typeof session.accept !== 'function') return;
     try {
       await session.accept({
-        sessionDescriptionHandlerOptions: {
-          constraints: { audio: true, video: false },
-        },
+        sessionDescriptionHandlerOptions: SDH_OPTIONS,
       });
       // 'Established' state listener'ı in-call'a geçirir + medya bağlar.
     } catch (err) {
