@@ -278,6 +278,10 @@ export type Volunteering = {
     participationCondition?: string; // Katılım koşulu (varsa)
     meetUrl?: string; // Online gönüllülük için Google Meet linki (onaylı gönüllü "Katıl" ile açar)
     urgent?: boolean; // ACİL gönüllülük (afet/acil) — kart/detayda kırmızı şerit + öne çıkar
+    pinned?: boolean; // Listede EN ÜSTTE sabitlenir (iğne/yıldız ikonu) — öne çıkan kampanya
+    // Çok-noktalı gönüllülük (81 il vb.) — her noktanın kendi QR/başvurusu. Boşsa tek `location`.
+    // NOT: `points` adı zaten ödül puanı (number) için kullanıldığından `sites` seçildi.
+    sites?: EventPoint[];
     microTask?: boolean; // Mikro-gönüllülük (5 dk uzaktan: form/anket/araştırma) — kart/filtre rozeti
     requiredDocuments?: string[]; // Yöneticinin istediği belgeler (GBT/adli sicil, sertifika, mezuniyet, TC) — ilanda gösterilir
     accessibilityTags?: string[]; // Erişilebilirlik/kapsayıcılık (Engelli-dostu, İşaret dili, Uzaktan uygun, Yaşlı-dostu, Aile-dostu) — filtre + ilanda gösterilir

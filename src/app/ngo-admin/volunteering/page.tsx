@@ -66,7 +66,7 @@ import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebas
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
-import type { Volunteering, Application as UserApplication } from '@/lib/types';
+import type { Volunteering, Application as UserApplication, EventPoint } from '@/lib/types';
 
 import { ListingForm, type ListingFormValues } from './_components/listing-form';
 import { ApplicationReviewCard, type ApplicationReviewItem } from './_components/application-review-card';
@@ -76,6 +76,7 @@ import { EventAttendees } from '@/components/events/event-attendees';
 import { EventBadgeCards, EventCertificates } from '@/components/events/event-bulk-docs';
 import { VolunteeringCheckinQR } from '@/components/volunteering/volunteering-checkin-qr';
 import { RewardManager } from '@/components/rewards/reward-manager';
+import { EventPhotosAdmin } from '@/components/events/event-photos-admin';
 
 /** Volunteering doc'larında status henüz mevcut değilse default 'Aktif' kabul
  *  ederiz — eski dokümanlar bozulmasın. */
@@ -166,6 +167,25 @@ function ListingsTab({
     }
     setSubmitting(true);
     try {
+      // Katılım noktaları — adı VEYA adresi olan satırları al; boş/undefined alanları temizle.
+      // Firestore alanı `sites` (ödül `points: number` ile çakışmasın diye).
+      const cleanSites: EventPoint[] = (values.sites ?? [])
+        .map((p) => ({
+          id: p.id || crypto.randomUUID(),
+          name: (p.name || '').trim(),
+          address: (p.address || '').trim(),
+          city: (p.city || '').trim(),
+          district: (p.district || '').trim(),
+          mapsUrl: (p.mapsUrl || '').trim(),
+        }))
+        .filter((p) => p.name.length > 0 || p.address.length > 0)
+        .map((p) => {
+          const out: EventPoint = { id: p.id, name: p.name, address: p.address, city: p.city };
+          if (p.district) out.district = p.district;
+          if (p.mapsUrl) out.mapsUrl = p.mapsUrl;
+          return out;
+        });
+
       const payload = {
         title: values.title,
         description: values.description,
@@ -209,6 +229,8 @@ function ListingsTab({
         microTask: values.microTask,
         requiredDocuments: values.requiredDocuments,
         accessibilityTags: values.accessibilityTags,
+        sites: cleanSites,
+        pinned: values.pinned,
       };
 
       if (editing) {
@@ -333,6 +355,8 @@ function ListingsTab({
         microTask: editing.microTask ?? false,
         requiredDocuments: editing.requiredDocuments ?? [],
         accessibilityTags: editing.accessibilityTags ?? [],
+        sites: editing.sites ?? [],
+        pinned: editing.pinned ?? false,
       }
     : undefined;
 
@@ -413,6 +437,7 @@ function ListingsTab({
                   <a href="/ngo-admin/ads?tab=google" title="Google'da Ücretsiz Tanıt — Reklam Yönetimi (Google Ad Grants)"><Megaphone className="h-3.5 w-3.5 mr-1.5" /> Google'da Ücretsiz Tanıt</a>
                 </Button>
                 <VolunteeringCheckinQR oppId={opp.id} logoUrl={ngoLogoUrl} />
+                <EventPhotosAdmin eventId={opp.id} scope="volunteering" />
                 <RewardManager kind="volunteering" id={opp.id} />
                 <EventAttendees eventId={opp.id} label="Gönüllüler" endpoint={`/api/volunteering/${opp.id}/attendees`} />
                 <EventBadgeCards eventId={opp.id} eventName={opp.title} ngoName={ngoName} logoUrl={ngoLogoUrl} orgKind="volunteer" attendeesEndpoint={`/api/volunteering/${opp.id}/attendees`} />

@@ -4,7 +4,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, MapPin, ChevronDown, ArrowDownUp, Map as MapIcon, X, Clock, Award, Bus, Star, Globe, Trophy, Sparkles } from 'lucide-react';
+import { Filter, Search, MapPin, ChevronDown, ArrowDownUp, Map as MapIcon, X, Clock, Award, Bus, Star, Globe, Trophy, Sparkles, Pin, Info } from 'lucide-react';
 import { VolunteeringMapDialog } from '@/components/volunteering/volunteering-map-dialog';
 import { useTranslation } from '@/components/providers/language-provider';
 import { ngos } from '@/lib/data';
@@ -236,9 +236,28 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
     const providesBadge = Array.isArray(opp.earnedBadges) && opp.earnedBadges.length > 0;
 
     return (
-        <Card className="overflow-hidden rounded-2xl border border-border/60 shadow-sm transition-all hover:shadow-md hover:border-primary/30 h-full">
+        <Card className={`relative overflow-hidden rounded-2xl border shadow-sm transition-all hover:shadow-md hover:border-primary/30 h-full ${opp.pinned ? 'border-primary/40 ring-2 ring-primary/40' : 'border-border/60'}`}>
+            {/* Öne çıkan ilanda: sağ üst köşede kampanya bilgi ikonu (kartın ana
+                yönlendirmesini tetiklemesin diye propagation durdurulur) */}
+            {opp.pinned && (
+                <Link
+                    href="/dunya-temizlik-gunu"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label="Kampanya hakkında bilgi"
+                    title="Kampanya hakkında bilgi"
+                    className="absolute top-2 right-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-background/80 text-primary shadow-sm ring-1 ring-primary/20 backdrop-blur transition-colors hover:bg-primary/10"
+                >
+                    <Info size={15} />
+                </Link>
+            )}
             <Link href={`/volunteering/${opp.id}`} className="block group h-full">
                 <CardContent className="p-4 flex flex-col gap-3 h-full">
+                    {/* Öne çıkan (pinned) → coral pin rozeti, en üstte */}
+                    {opp.pinned && (
+                        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-primary">
+                            <Pin size={12} className="shrink-0 fill-primary" /> Öne çıkan
+                        </span>
+                    )}
                     {/* ACİL (afet/acil) → kırmızı rozet, en üstte */}
                     {opp.urgent && (
                         <span className="inline-flex w-fit items-center gap-1 rounded-full bg-red-600 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-white">
@@ -571,7 +590,14 @@ export default function VolunteeringPage() {
             : sortBy === 'deadline' ? (a: Volunteering, b: Volunteering) => dd(a) - dd(b)
             : sortBy === 'newest' ? (a: Volunteering, b: Volunteering) => cAt(b) - cAt(a)
             : byMatch;
-        return filtered.sort((a, b) => { const d = primary(a, b); return d !== 0 ? d : byPoints(a, b); });
+        // Öne çıkan (pinned) ilanlar, seçili sıralamadan bağımsız olarak DAİMA
+        // en üstte; pinned grubunun içinde mevcut sıralama (primary → puan) geçerli.
+        return filtered.sort((a, b) => {
+            const pin = (a.pinned ? 1 : 0) - (b.pinned ? 1 : 0);
+            if (pin !== 0) return -pin; // pinned önce
+            const d = primary(a, b);
+            return d !== 0 ? d : byPoints(a, b);
+        });
     }, [oppsData, interestFilter, skillFilter, cityFilter, socialAreaFilter, taskTypeFilter, locationTypeFilter, accessFilter, certificateOnly, searchTerm, sortBy, hasVolunteerProfile, matchPercentById]);
 
   return (

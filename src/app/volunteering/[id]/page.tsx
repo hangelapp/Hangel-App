@@ -1,7 +1,7 @@
 'use client';
-import { notFound, useRouter, useParams } from 'next/navigation';
+import { notFound, useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, CalendarPlus, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock, Wallet, Nfc, Star, IdCard, Video } from 'lucide-react';
+import { ArrowLeft, Calendar, CalendarPlus, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock, Wallet, Nfc, Star, IdCard, Video, Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { openExternalUrl } from '@/lib/capacitor';
 import { DualCountdown } from '@/components/events/event-countdown';
@@ -45,12 +45,15 @@ import { extractListingHours } from '@/lib/volunteer/listing-impact';
 import { DetailHero } from '@/components/detail/detail-hero';
 import { DetailStickyBar } from '@/components/detail/detail-body';
 import { downloadDataUrlSmart } from '@/lib/native-file';
+import { VolunteeringPoints } from '@/components/volunteering/volunteering-points';
+import { EventPhotosDialog } from '@/components/events/event-photos-dialog';
 
 type WeatherDay = { date: string; tempMax: number; tempMin: number; label: string; emoji: string };
 
 export default function VolunteeringDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = params.id as string;
   const db = useFirestore();
 
@@ -114,6 +117,12 @@ export default function VolunteeringDetailPage() {
   // Değerlendirme (gönüllü → STK) dialog durumu.
   const [isEvalOpen, setIsEvalOpen] = useState(false);
   const [isEvalSubmitting, setIsEvalSubmitting] = useState(false);
+
+  // Fotoğraflar dialog durumu — ?photos=1 ile otomatik açılır (QR/paylaşım linkinden gelen).
+  const [photosOpen, setPhotosOpen] = useState(false);
+  useEffect(() => {
+    if (searchParams.get('photos') === '1') setPhotosOpen(true);
+  }, [searchParams]);
 
   const matchingProfile = useMemo<MatchingUserProfile>(() => ({
     volunteerInfo: userData?.volunteerInfo ?? null,
@@ -732,6 +741,23 @@ export default function VolunteeringDetailPage() {
                         </div>
                     )}
 
+                    {/* Katılım Noktaları — çok noktalı (multi-location) gönüllülük.
+                        Tek konumlu ilanlarda (points boş) hiçbir şey render edilmez. */}
+                    <VolunteeringPoints opp={opportunity} />
+
+                    {/* Fotoğraflar — herkese açık foto merkezi (galeri + yükle + QR/link). */}
+                    <div>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            onClick={() => setPhotosOpen(true)}
+                            className="h-12 rounded-2xl font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5"
+                        >
+                            <Camera className="h-5 w-5" /> 📷 Fotoğraflar
+                        </Button>
+                    </div>
+
                     {/* Açıklama — büyük, okunur özet */}
                     <section className="space-y-4">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Genel bakış</h2>
@@ -1237,6 +1263,15 @@ export default function VolunteeringDetailPage() {
                 </Button>
              )}
         </DetailStickyBar>
+
+        {/* Fotoğraflar merkezi — galeri / yükle / selfie ile bul / QR & link (gönüllülük kapsamı) */}
+        <EventPhotosDialog
+            eventId={opportunity.id}
+            eventName={opportunity.title}
+            scope="volunteering"
+            open={photosOpen}
+            onOpenChange={setPhotosOpen}
+        />
     </div>
   );
 }

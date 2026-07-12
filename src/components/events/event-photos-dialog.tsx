@@ -118,12 +118,20 @@ export function EventPhotosDialog({
   eventName,
   open,
   onOpenChange,
+  scope = 'events',
 }: {
+  /** Kapsanan belgenin id'si — scope 'events' ise etkinlik, 'volunteering' ise gönüllülük id'si. */
   eventId: string;
   eventName?: string;
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  /** Foto merkezinin bağlı olduğu koleksiyon: etkinlik mi gönüllülük mü. Varsayılan 'events'. */
+  scope?: 'events' | 'volunteering';
 }) {
+  // Kapsam-türevli değerler: tüm Firestore/Storage/URL yolları bunlardan gelir.
+  const parentCol = scope === 'volunteering' ? COLLECTIONS.volunteering : COLLECTIONS.events;
+  const storagePrefix = scope === 'volunteering' ? 'volunteering-photos' : 'event-photos';
+  const publicBase = `https://hangel.org/${scope === 'volunteering' ? 'volunteering' : 'events'}`;
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
@@ -166,15 +174,15 @@ export function EventPhotosDialog({
     () =>
       firestore && open
         ? query(
-            collection(firestore, COLLECTIONS.events, eventId, COLLECTIONS.eventPhotos),
+            collection(firestore, parentCol, eventId, COLLECTIONS.eventPhotos),
             orderBy('createdAt', 'desc'),
           )
         : null,
-    [firestore, eventId, open],
+    [firestore, parentCol, eventId, open],
   );
   const { data: photos, isLoading } = useCollection<EventPhoto>(photosQuery);
 
-  const publicUrl = `https://hangel.org/events/${eventId}?photos=1`;
+  const publicUrl = `${publicBase}/${eventId}?photos=1`;
 
   // --- face-api uygunluğunu (kütüphane + modeller) dialog açılınca kontrol et ---
   useEffect(() => {
@@ -270,7 +278,7 @@ export function EventPhotosDialog({
         try {
           const photoId = makeId();
           const ext = extOf(file);
-          const path = `event-photos/${eventId}/${photoId}.${ext}`;
+          const path = `${storagePrefix}/${eventId}/${photoId}.${ext}`;
           const r = storageRef(storage, path);
           await uploadBytes(r, file);
           const url = await getDownloadURL(r);
@@ -298,7 +306,7 @@ export function EventPhotosDialog({
           if (faceDescriptors.length > 0) photoDoc.faceDescriptors = faceDescriptors;
 
           await setDoc(
-            doc(firestore, COLLECTIONS.events, eventId, COLLECTIONS.eventPhotos, photoId),
+            doc(firestore, parentCol, eventId, COLLECTIONS.eventPhotos, photoId),
             photoDoc,
           );
           ok++;
@@ -331,7 +339,7 @@ export function EventPhotosDialog({
         });
       }
     },
-    [user, firestore, eventId, toast],
+    [user, firestore, parentCol, storagePrefix, eventId, toast],
   );
 
   const triggerFilePick = useCallback(() => {

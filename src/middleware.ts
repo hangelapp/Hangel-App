@@ -19,8 +19,8 @@ const ROOT_DOMAIN = 'hangel.org';
 // Vanity kısa-linkler (kampanya için). hangel.org/worldcleanday ve /cleanday →
 // Guinness temizlik rekoru etkinliği. Kısa URL adres çubuğunda kalsın diye rewrite.
 const VANITY_SHORTLINKS: Record<string, string> = {
-  '/worldcleanday': '/events/guinness-temizlik-rekoru-2026',
-  '/cleanday': '/events/guinness-temizlik-rekoru-2026',
+  '/worldcleanday': '/volunteering/worldcleanday-2026',
+  '/cleanday': '/volunteering/worldcleanday-2026',
 };
 // STK alt alanı SAYILMAYAN rezerve etiketler.
 const RESERVED_SUBS = new Set(['www', 'app', 'admin', 'api', 'mail', 'm', 'cdn', 'static', '']);

@@ -17,9 +17,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, Plus, Trash2, Globe, Star } from 'lucide-react';
 import { useTranslation } from '@/components/providers/language-provider';
 import { LocationFields } from '@/components/shared/location-fields';
+import type { EventPoint } from '@/lib/types';
 
 export type ListingFormValues = {
   title: string;
@@ -52,6 +53,11 @@ export type ListingFormValues = {
   microTask: boolean;
   requiredDocuments: string[];
   accessibilityTags: string[];
+  // Çok-noktalı gönüllülük (81 il vb.) — her nokta için ad/adres/şehir/ilçe/harita.
+  // NOT: Firestore alanı `sites` (ödül `points: number` ile çakışmasın diye).
+  sites: EventPoint[];
+  // Listede en üstte sabitle (öne çıkar).
+  pinned: boolean;
 };
 
 // Yöneticinin talep edebileceği belgeler (güvenlik doğrulaması — çocuk/yaşlıyla çalışma vb.)
@@ -89,6 +95,8 @@ const EMPTY: ListingFormValues = {
   microTask: false,
   requiredDocuments: [],
   accessibilityTags: [],
+  sites: [],
+  pinned: false,
 };
 
 // Kanonik seçenekler — rozet motoru socialArea'yı normalize eder (resolveBadgeArea).
@@ -147,6 +155,23 @@ export function ListingForm({ initialValues, onSubmit, onCancel, submitting }: P
       values[kind].filter((s) => s !== val),
     );
   };
+
+  // ── Katılım noktaları (çok-noktalı gönüllülük) — Firestore alanı `sites` ──
+  const addPoint = () =>
+    update('sites', [
+      ...values.sites,
+      { id: crypto.randomUUID(), name: '', address: '', city: '', district: '', mapsUrl: '' },
+    ]);
+  const updatePoint = (idx: number, patch: Partial<EventPoint>) =>
+    update(
+      'sites',
+      values.sites.map((p, i) => (i === idx ? { ...p, ...patch } : p)),
+    );
+  const removePoint = (idx: number) =>
+    update(
+      'sites',
+      values.sites.filter((_, i) => i !== idx),
+    );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -535,6 +560,85 @@ export function ListingForm({ initialValues, onSubmit, onCancel, submitting }: P
           </div>
         )}
       </div>
+
+      {/* Katılım Noktaları (çok-noktalı gönüllülük) */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-muted-foreground" /> Katılım Noktaları (çok-noktalı)
+          </Label>
+          <Button type="button" variant="outline" size="sm" onClick={addPoint}>
+            <Plus className="h-3.5 w-3.5 mr-1.5" /> Ekle
+          </Button>
+        </div>
+        {values.sites.length === 0 ? (
+          <p className="text-xs text-muted-foreground px-1">
+            Gönüllülük birden çok noktada (ör. 81 il) yapılıyorsa her nokta için &quot;Ekle&quot;ye dokun. Tek-noktalı gönüllülükte boş bırakın.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {values.sites.map((p, idx) => (
+              <div key={p.id} className="p-3 border rounded-xl bg-card space-y-2">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Nokta adı</Label>
+                  <Input
+                    value={p.name}
+                    onChange={(e) => updatePoint(idx, { name: e.target.value })}
+                    placeholder="Örn. İstanbul - Kadıköy Sahili"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Adres</Label>
+                  <Input
+                    value={p.address}
+                    onChange={(e) => updatePoint(idx, { address: e.target.value })}
+                    placeholder="Açık adres"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Şehir</Label>
+                    <Input
+                      value={p.city}
+                      onChange={(e) => updatePoint(idx, { city: e.target.value })}
+                      placeholder="İstanbul"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">İlçe</Label>
+                    <Input
+                      value={p.district || ''}
+                      onChange={(e) => updatePoint(idx, { district: e.target.value })}
+                      placeholder="Kadıköy"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Google Maps linki</Label>
+                  <Input
+                    type="url"
+                    value={p.mapsUrl || ''}
+                    onChange={(e) => updatePoint(idx, { mapsUrl: e.target.value })}
+                    placeholder="https://maps.google.com/…"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => removePoint(idx)}>
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Sil
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Öne çıkar / listede en üstte sabitle */}
+      <label className="flex items-center gap-2 text-sm cursor-pointer rounded-xl border bg-muted/20 p-3">
+        <Checkbox checked={values.pinned} onCheckedChange={(c) => update('pinned', c === true)} />
+        <Star className="h-4 w-4 text-amber-500" />
+        <span className="font-semibold">Öne çıkar / Listede en üstte sabitle</span>
+      </label>
 
       <div className="flex justify-end gap-2 pt-2">
         {onCancel && (

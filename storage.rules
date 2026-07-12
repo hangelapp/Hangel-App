@@ -98,6 +98,13 @@ service firebase.storage {
         && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
     }
+    // Gönüllülük fotoğrafları — etkinliktekiyle aynı kural.
+    match /volunteering-photos/{oppId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
     // Etkinlik afişleri de non-super-admin organizatörlerce yüklenebilsin.
     match /event-posters/{allPaths=**} {
       allow read: if true;

@@ -248,6 +248,13 @@ service cloud.firestore {
       allow create: if isSuperAdmin() || ownsNgoListing(request.resource.data.ngoId);
       // Owners update/delete their own listings; super-admin full access.
       allow update, delete: if isSuperAdmin() || ownsNgoListing(resource.data.ngoId);
+      // Gönüllülük foto galerisi — etkinliktekiyle aynı: public read, giriş yapan yükler.
+      match /photos/{photoId} {
+        allow read, list: if true;
+        allow create: if isSignedIn() && request.resource.data.uploaderUid == request.auth.uid;
+        allow update: if isSignedIn() && resource.data.uploaderUid == request.auth.uid;
+        allow delete: if isSignedIn() && (resource.data.uploaderUid == request.auth.uid || isSuperAdmin());
+      }
     }
 
     // Transparency: each NGO admin owns one doc with id == auth uid

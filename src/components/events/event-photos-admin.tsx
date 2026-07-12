@@ -54,10 +54,14 @@ export function EventPhotosAdmin({
     eventId,
     canDelete = true,
     className,
+    scope = 'events',
 }: {
+    /** Kapsanan belgenin id'si — scope 'events' ise etkinlik, 'volunteering' ise gönüllülük id'si. */
     eventId: string;
     canDelete?: boolean;
     className?: string;
+    /** Foto galerisinin bağlı olduğu koleksiyon: etkinlik mi gönüllülük mü. Varsayılan 'events'. */
+    scope?: 'events' | 'volunteering';
 }) {
     const firestore = useFirestore();
     const { user } = useUser();
@@ -66,22 +70,26 @@ export function EventPhotosAdmin({
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
 
+    // Kapsam-türevli değerler: Firestore yolu ve public link bunlardan gelir.
+    const parentCol = scope === 'volunteering' ? COLLECTIONS.volunteering : COLLECTIONS.events;
+    const publicPath = scope === 'volunteering' ? 'volunteering' : 'events';
+
     const photosQuery = useMemoFirebase(
         () =>
             firestore && open
                 ? query(
-                    collection(firestore, COLLECTIONS.events, eventId, COLLECTIONS.eventPhotos),
+                    collection(firestore, parentCol, eventId, COLLECTIONS.eventPhotos),
                     orderBy('createdAt', 'desc'),
                 )
                 : null,
-        [firestore, eventId, open],
+        [firestore, parentCol, eventId, open],
     );
     const { data: photos, isLoading } = useCollection<EventPhoto>(photosQuery);
 
     const publicUrl =
         typeof window !== 'undefined'
-            ? `${window.location.origin}/events/${eventId}?photos=1`
-            : `/events/${eventId}?photos=1`;
+            ? `${window.location.origin}/${publicPath}/${eventId}?photos=1`
+            : `/${publicPath}/${eventId}?photos=1`;
 
     const copyLink = async () => {
         try {
@@ -97,7 +105,7 @@ export function EventPhotosAdmin({
         if (!firestore) return;
         setDeletingId(photoId);
         try {
-            await deleteDoc(doc(firestore, COLLECTIONS.events, eventId, COLLECTIONS.eventPhotos, photoId));
+            await deleteDoc(doc(firestore, parentCol, eventId, COLLECTIONS.eventPhotos, photoId));
             toast({ title: 'Fotoğraf silindi' });
         } catch (e) {
             toast({
