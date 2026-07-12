@@ -28,6 +28,8 @@ import {
     MapPin,
     Eye,
     Megaphone,
+    Building2,
+    Globe,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +37,7 @@ import { LocationFields } from '@/components/shared/location-fields';
 import { VenueManager } from './_components/venue-manager';
 import { EventAttendees } from '@/components/events/event-attendees';
 import { EventCheckinQR } from '@/components/events/event-checkin-qr';
+import { EventPhotosAdmin } from '@/components/events/event-photos-admin';
 import { EventCompleteButton } from '@/components/events/event-complete-button';
 import { RewardManager } from '@/components/rewards/reward-manager';
 import { ExamManager } from '@/components/exam/exam-manager';
@@ -55,7 +58,14 @@ import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-enti
 import { useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { EventContributor, EventContributorRole, EventAgendaItem } from '@/lib/types';
+import type {
+    EventContributor,
+    EventContributorRole,
+    EventAgendaItem,
+    CorporateParticipant,
+    CorporateParticipantType,
+    EventPoint,
+} from '@/lib/types';
 import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
 import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
 import { BroadcastMessageButton } from '@/components/messaging/broadcast-message-button';
@@ -85,6 +95,14 @@ const CONTRIBUTOR_ROLE_OPTIONS: { value: EventContributorRole; label: string }[]
     { value: 'academic', label: 'Akademisyen' },
     { value: 'jury', label: 'Jüri Üyesi' },
     { value: 'guest', label: 'Özel Konuk' },
+];
+
+const CORPORATE_PARTICIPANT_TYPE_OPTIONS: { value: CorporateParticipantType; label: string }[] = [
+    { value: 'stk', label: 'STK' },
+    { value: 'belediye', label: 'Belediye' },
+    { value: 'valilik', label: 'Valilik' },
+    { value: 'marka', label: 'Marka' },
+    { value: 'universite', label: 'Üniversite' },
 ];
 
 type EventStatus = 'Beklemede' | 'Yayında' | 'Aktif' | 'Reddedildi';
@@ -402,6 +420,7 @@ export default function EventManagementPage() {
                     </a>
                 </Button>
                 <EventCheckinQR eventId={event.id} logoUrl={activeEntity?.data.logoUrl || activeEntity?.data.avatarUrl} />
+                <EventPhotosAdmin eventId={event.id} />
                 <RewardManager kind="event" id={event.id} />
                 <ExamManager id={event.id} />
                 <EventCompleteButton eventId={event.id} />
@@ -450,6 +469,12 @@ export default function EventManagementPage() {
     };
     const [contributorLookups, setContributorLookups] = useState<ContributorLookup[]>([]);
     const [agenda, setAgenda] = useState<EventAgendaItem[]>([]);
+    // Kurumsal / özel katılımcılar (STK / belediye / valilik / marka / üniversite).
+    const [corporateParticipants, setCorporateParticipants] = useState<CorporateParticipant[]>([]);
+    // Katılım noktaları — çok-noktalı etkinlik (81 il vb.). Tek-noktalı etkinlikte boş kalır.
+    const [points, setPoints] = useState<EventPoint[]>([]);
+    // Katılımcı logo yükleme durumu (satır id → yükleniyor mu).
+    const [participantLogoUploading, setParticipantLogoUploading] = useState<Record<string, boolean>>({});
     const posterInputRef = useRef<HTMLInputElement>(null);
 
     const addContributor = () => {
@@ -513,6 +538,45 @@ export default function EventManagementPage() {
     };
     const removeAgendaItem = (idx: number) => setAgenda((prev) => prev.filter((_, i) => i !== idx));
 
+    // ── Kurumsal / özel katılımcılar (contributors satır-yöneticisiyle aynı desen) ──
+    const addCorporateParticipant = () =>
+        setCorporateParticipants((prev) => [...prev, { id: crypto.randomUUID(), type: 'stk', name: '', website: '', logoUrl: '' }]);
+    const updateCorporateParticipant = (idx: number, patch: Partial<CorporateParticipant>) =>
+        setCorporateParticipants((prev) => prev.map((c, i) => (i === idx ? { ...c, ...patch } : c)));
+    const removeCorporateParticipant = (idx: number) =>
+        setCorporateParticipants((prev) => prev.filter((_, i) => i !== idx));
+
+    // Katılımcı logosunu Storage'a yükle → logoUrl set et.
+    const handleParticipantLogoFile = async (idx: number, file: File | null) => {
+        if (!file || !activeEntity) return;
+        if (file.size > 3 * 1024 * 1024) {
+            toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'Logo en fazla 3 MB olmalı.' });
+            return;
+        }
+        const rowId = corporateParticipants[idx]?.id || crypto.randomUUID();
+        setParticipantLogoUploading((prev) => ({ ...prev, [rowId]: true }));
+        try {
+            const storage = getStorage();
+            const ext = (file.name.split('.').pop() || 'png').toLowerCase();
+            const r = storageRef(storage, `event-participants/${activeEntity.data.id}/${rowId}.${ext}`);
+            await uploadBytes(r, file, { contentType: file.type });
+            const url = await getDownloadURL(r);
+            updateCorporateParticipant(idx, { logoUrl: url });
+        } catch (uploadErr) {
+            console.error('Participant logo upload failed', uploadErr);
+            toast({ variant: 'destructive', title: 'Logo yüklenemedi', description: 'Tekrar deneyin.' });
+        } finally {
+            setParticipantLogoUploading((prev) => ({ ...prev, [rowId]: false }));
+        }
+    };
+
+    // ── Katılım noktaları (çok-noktalı etkinlik) ──
+    const addPoint = () =>
+        setPoints((prev) => [...prev, { id: crypto.randomUUID(), name: '', address: '', city: '', district: '', mapsUrl: '' }]);
+    const updatePoint = (idx: number, patch: Partial<EventPoint>) =>
+        setPoints((prev) => prev.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
+    const removePoint = (idx: number) => setPoints((prev) => prev.filter((_, i) => i !== idx));
+
     const handlePosterFile = (file: File | null) => {
         if (!file) {
             setEvPosterFile(null);
@@ -547,6 +611,9 @@ export default function EventManagementPage() {
         setContributors([]);
         setContributorLookups([]);
         setAgenda([]);
+        setCorporateParticipants([]);
+        setPoints([]);
+        setParticipantLogoUploading({});
         if (evPosterPreview) URL.revokeObjectURL(evPosterPreview);
         setEvPosterFile(null);
         setEvPosterPreview(null);
@@ -567,6 +634,7 @@ export default function EventManagementPage() {
             location?: { address?: string; city?: string; district?: string; neighborhood?: string; lat?: string; lon?: string };
             description?: string; imageUrl?: string;
             contributors?: EventContributor[]; agenda?: EventAgendaItem[];
+            corporateParticipants?: CorporateParticipant[]; points?: EventPoint[];
         };
         setEvName(e.name || '');
         setEvDate(e.date || (e.startDate || '').split(' ')[0] || '');
@@ -589,6 +657,26 @@ export default function EventManagementPage() {
         setContributors(contribs.map((c) => ({ name: c.name || '', title: c.title || '', role: c.role || 'speaker', ...(c.userId ? { userId: c.userId } : {}) })));
         setContributorLookups(contribs.map((c) => ({ phone: '', status: c.userId ? 'member' as const : 'idle' as const, locked: Boolean(c.userId) })));
         setAgenda((e.agenda || []).map((a) => ({ time: a.time || '', title: a.title || '' })));
+        setCorporateParticipants(
+            (e.corporateParticipants || []).map((c) => ({
+                id: c.id || crypto.randomUUID(),
+                type: c.type || 'stk',
+                name: c.name || '',
+                website: c.website || '',
+                logoUrl: c.logoUrl || '',
+            })),
+        );
+        setPoints(
+            (e.points || []).map((p) => ({
+                id: p.id || crypto.randomUUID(),
+                name: p.name || '',
+                address: p.address || '',
+                city: p.city || '',
+                district: p.district || '',
+                mapsUrl: p.mapsUrl || '',
+            })),
+        );
+        setParticipantLogoUploading({});
         setEvPosterFile(null);
         setEvPosterPreview(e.imageUrl || null);
         setExistingPosterUrl(e.imageUrl || '');
@@ -659,6 +747,41 @@ export default function EventManagementPage() {
                 .map((a) => ({ time: a.time.trim(), title: a.title.trim() }))
                 .filter((a) => a.time.length > 0 || a.title.length > 0);
 
+            // Kurumsal / özel katılımcılar — ismi olan satırları al, boş opsiyonelleri yazma.
+            const cleanCorporateParticipants: CorporateParticipant[] = corporateParticipants
+                .map((c) => ({
+                    id: c.id || crypto.randomUUID(),
+                    type: c.type,
+                    name: (c.name || '').trim(),
+                    website: (c.website || '').trim(),
+                    logoUrl: (c.logoUrl || '').trim(),
+                }))
+                .filter((c) => c.name.length > 0)
+                .map((c) => {
+                    const out: CorporateParticipant = { id: c.id, type: c.type, name: c.name };
+                    if (c.website) out.website = c.website;
+                    if (c.logoUrl) out.logoUrl = c.logoUrl;
+                    return out;
+                });
+
+            // Katılım noktaları — adı VEYA adresi olan satırları al.
+            const cleanPoints: EventPoint[] = points
+                .map((p) => ({
+                    id: p.id || crypto.randomUUID(),
+                    name: (p.name || '').trim(),
+                    address: (p.address || '').trim(),
+                    city: (p.city || '').trim(),
+                    district: (p.district || '').trim(),
+                    mapsUrl: (p.mapsUrl || '').trim(),
+                }))
+                .filter((p) => p.name.length > 0 || p.address.length > 0)
+                .map((p) => {
+                    const out: EventPoint = { id: p.id, name: p.name, address: p.address, city: p.city };
+                    if (p.district) out.district = p.district;
+                    if (p.mapsUrl) out.mapsUrl = p.mapsUrl;
+                    return out;
+                });
+
             // Düzenleyen kuruluşun logosu (avatarUrl/logoUrl); yoksa boş string.
             const organizerLogoUrl = activeEntity.data.logoUrl || activeEntity.data.avatarUrl || '';
 
@@ -697,6 +820,8 @@ export default function EventManagementPage() {
                         imageUrl: posterUrl,
                         contributors: cleanContributors,
                         agenda: cleanAgenda,
+                        corporateParticipants: cleanCorporateParticipants,
+                        points: cleanPoints,
                         organizerLogoUrl,
                     }),
                 });
@@ -746,6 +871,8 @@ export default function EventManagementPage() {
                 imageUrl: posterUrl,
                 contributors: cleanContributors,
                 agenda: cleanAgenda,
+                corporateParticipants: cleanCorporateParticipants,
+                points: cleanPoints,
                 organizerLogoUrl,
                 status: 'Beklemede' as EventStatus,
                 createdAt: Date.now(),
@@ -1182,6 +1309,171 @@ export default function EventManagementPage() {
                                             <Button type="button" variant="ghost" size="icon" onClick={() => removeAgendaItem(idx)} aria-label="Satırı sil">
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Kurumsal / Özel Katılımcılar */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label className="flex items-center gap-2">
+                                    <Building2 className="h-4 w-4 text-muted-foreground" /> Kurumsal / Özel Katılımcılar
+                                </Label>
+                                <Button type="button" variant="outline" size="sm" onClick={addCorporateParticipant}>
+                                    <Plus className="h-3.5 w-3.5 mr-1.5" /> Ekle
+                                </Button>
+                            </div>
+                            {corporateParticipants.length === 0 ? (
+                                <p className="text-xs text-muted-foreground px-1">
+                                    Belediye, valilik, marka, üniversite veya STK eklemek için “Ekle”ye dokun.
+                                </p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {corporateParticipants.map((c, idx) => {
+                                        const uploading = Boolean(participantLogoUploading[c.id]);
+                                        return (
+                                            <div key={c.id} className="p-3 border rounded-xl bg-card space-y-2">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                    <div className="space-y-1">
+                                                        <Label className="text-xs text-muted-foreground">Tür</Label>
+                                                        <Select
+                                                            value={c.type}
+                                                            onValueChange={(v) => updateCorporateParticipant(idx, { type: v as CorporateParticipantType })}
+                                                        >
+                                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                                            <SelectContent>
+                                                                {CORPORATE_PARTICIPANT_TYPE_OPTIONS.map((o) => (
+                                                                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <Label className="text-xs text-muted-foreground">Ad</Label>
+                                                        <Input
+                                                            value={c.name}
+                                                            onChange={(e) => updateCorporateParticipant(idx, { name: e.target.value })}
+                                                            placeholder="Örn. İstanbul Büyükşehir Belediyesi"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <Label className="text-xs text-muted-foreground">Web sitesi</Label>
+                                                    <Input
+                                                        type="url"
+                                                        value={c.website || ''}
+                                                        onChange={(e) => updateCorporateParticipant(idx, { website: e.target.value })}
+                                                        placeholder="https://…"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <Label className="text-xs text-muted-foreground">Logo</Label>
+                                                    <div className="flex items-center gap-3">
+                                                        {c.logoUrl ? (
+                                                            <div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden border bg-muted">
+                                                                <NextImage src={c.logoUrl} alt={`${c.name} logosu`} fill className="object-contain" unoptimized />
+                                                            </div>
+                                                        ) : null}
+                                                        <input
+                                                            id={`participant-logo-${c.id}`}
+                                                            type="file"
+                                                            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                                            className="hidden"
+                                                            onChange={(e) => handleParticipantLogoFile(idx, e.target.files?.[0] || null)}
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            disabled={uploading}
+                                                            onClick={() => document.getElementById(`participant-logo-${c.id}`)?.click()}
+                                                        >
+                                                            {uploading
+                                                                ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Yükleniyor…</>
+                                                                : <><Upload className="h-3.5 w-3.5 mr-1.5" /> {c.logoUrl ? 'Değiştir' : 'Logo yükle'}</>}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-end">
+                                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeCorporateParticipant(idx)}>
+                                                        <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Sil
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Katılım Noktaları (çok-noktalı etkinlik) */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label className="flex items-center gap-2">
+                                    <Globe className="h-4 w-4 text-muted-foreground" /> Katılım Noktaları (çok-noktalı etkinlik)
+                                </Label>
+                                <Button type="button" variant="outline" size="sm" onClick={addPoint}>
+                                    <Plus className="h-3.5 w-3.5 mr-1.5" /> Ekle
+                                </Button>
+                            </div>
+                            {points.length === 0 ? (
+                                <p className="text-xs text-muted-foreground px-1">
+                                    Etkinlik birden çok noktada (ör. 81 il) yapılıyorsa her nokta için “Ekle”ye dokun. Tek-noktalı etkinlikte boş bırakın.
+                                </p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {points.map((p, idx) => (
+                                        <div key={p.id} className="p-3 border rounded-xl bg-card space-y-2">
+                                            <div className="space-y-1">
+                                                <Label className="text-xs text-muted-foreground">Nokta adı</Label>
+                                                <Input
+                                                    value={p.name}
+                                                    onChange={(e) => updatePoint(idx, { name: e.target.value })}
+                                                    placeholder="Örn. İstanbul - Kadıköy Sahili"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-xs text-muted-foreground">Adres</Label>
+                                                <Input
+                                                    value={p.address}
+                                                    onChange={(e) => updatePoint(idx, { address: e.target.value })}
+                                                    placeholder="Açık adres"
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                <div className="space-y-1">
+                                                    <Label className="text-xs text-muted-foreground">Şehir</Label>
+                                                    <Input
+                                                        value={p.city}
+                                                        onChange={(e) => updatePoint(idx, { city: e.target.value })}
+                                                        placeholder="İstanbul"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <Label className="text-xs text-muted-foreground">İlçe</Label>
+                                                    <Input
+                                                        value={p.district || ''}
+                                                        onChange={(e) => updatePoint(idx, { district: e.target.value })}
+                                                        placeholder="Kadıköy"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-xs text-muted-foreground">Google Maps linki</Label>
+                                                <Input
+                                                    type="url"
+                                                    value={p.mapsUrl || ''}
+                                                    onChange={(e) => updatePoint(idx, { mapsUrl: e.target.value })}
+                                                    placeholder="https://maps.google.com/…"
+                                                />
+                                            </div>
+                                            <div className="flex justify-end">
+                                                <Button type="button" variant="ghost" size="sm" onClick={() => removePoint(idx)}>
+                                                    <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Sil
+                                                </Button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>

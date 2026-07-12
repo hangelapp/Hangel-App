@@ -1,5 +1,5 @@
 'use client';
-import { notFound, useRouter, useParams } from 'next/navigation';
+import { notFound, useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, where, limit, documentId } from 'firebase/firestore';
 import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/lib/types';
@@ -9,6 +9,9 @@ import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
 import { LiveEventSection } from '@/components/events/live-event-section';
 import { EventEvaluateButton } from '@/components/events/event-evaluate-button';
 import { EventCheckinScanButton } from '@/components/events/event-checkin-scan-button';
+import { EventPhotosDialog } from '@/components/events/event-photos-dialog';
+import { EventPoints } from '@/components/events/event-points';
+import { EventParticipants } from '@/components/events/event-participants';
 import { RewardBanner } from '@/components/rewards/reward-banner';
 import { ExamEntry } from '@/components/exam/exam-entry';
 import { openExternalUrl } from '@/lib/capacitor';
@@ -76,10 +79,13 @@ const InfoRow = ({ icon: Icon, label, children, href }: { icon: React.ElementTyp
 export default function EventDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = params.id as string;
   const db = useFirestore();
   const { user: authUser } = useUser();
   const [profileUrl, setProfileUrl] = useState('');
+  // Fotoğraf merkezi dialog'u — ?photos=1 ile otomatik açılır (QR/link/admin paneli).
+  const [photosOpen, setPhotosOpen] = useState(false);
   const { toast } = useToast();
   const requireAuth = useRequireAuth();
   const cardFrontRef = useRef<HTMLDivElement>(null);
@@ -375,6 +381,11 @@ export default function EventDetailPage() {
       setProfileUrl(`${window.location.origin}/events/${event.slug || slug}`);
     }
   }, [event, slug]);
+
+  // ?photos=1 → fotoğraf merkezini otomatik aç (foto dialog QR'ı + admin paneli linki).
+  useEffect(() => {
+    if (searchParams.get('photos') === '1') setPhotosOpen(true);
+  }, [searchParams]);
 
   // Mesafe + hava durumu için koordinat: kayıtta coordinates yoksa adresi BİR KEZ geocode et.
   // event.location string ya da undefined olabilir (online/eski kayıtlar) → GÜVENLİ obje.
@@ -725,6 +736,9 @@ export default function EventDetailPage() {
                                 </InfoRow>
                             </CardContent>
                         </Card>
+
+                        {/* Çok noktalı etkinlik — tüm katılım noktaları (tek konumlu etkinlikte gizli) */}
+                        <EventPoints event={event} />
 
                         <Card className="glass-surface rounded-3xl border-white/40 shadow-sm">
                             <CardHeader>
@@ -1118,10 +1132,37 @@ export default function EventDetailPage() {
               </div>
             )}
 
+            {/* Fotoğraflar — herkese açık (isGoing gerekmez); foto merkezi dialog'unu açar */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 min-w-0 pt-1">
+              <Button
+                size="lg"
+                variant="secondary"
+                onClick={() => setPhotosOpen(true)}
+                className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words"
+                aria-label="Etkinlik Fotoğrafları"
+                title="Etkinlik Fotoğrafları"
+              >
+                📷 Fotoğraflar
+              </Button>
+            </div>
+
             {/* Paylaşım — ayrı satır, ferah */}
             <div className="pt-1">
               <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} />
             </div>
+
+            {/* Katılımcılar — kurumsal/özel katılımcılar (türe göre gruplu), en altta */}
+            <EventParticipants event={event} />
+
+            {/* Foto merkezi dialog'u — ?photos=1 ve 📷 Fotoğraflar butonu bunu açar */}
+            {resolvedEventId && (
+              <EventPhotosDialog
+                eventId={resolvedEventId}
+                eventName={event.name}
+                open={photosOpen}
+                onOpenChange={setPhotosOpen}
+              />
+            )}
                 </div>{/* end aksiyon butonları */}
             </div>{/* end içerik wrapper (tabs + kapasite + aksiyon) */}
           </div>{/* end SAĞ KOLON */}

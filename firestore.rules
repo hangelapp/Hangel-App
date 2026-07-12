@@ -298,6 +298,14 @@ service cloud.firestore {
         allow list: if isSuperAdmin();
         allow write: if false;
       }
+      // Etkinlik foto galerisi — herkes görüntüler (public), giriş yapan yükler
+      // (uploaderUid kendisi olmalı). Silme: yükleyen ya da süper-admin.
+      match /photos/{photoId} {
+        allow read, list: if true;
+        allow create: if isSignedIn() && request.resource.data.uploaderUid == request.auth.uid;
+        allow update: if isSignedIn() && resource.data.uploaderUid == request.auth.uid;
+        allow delete: if isSignedIn() && (resource.data.uploaderUid == request.auth.uid || isSuperAdmin());
+      }
     }
 
     // FEAT-REWARD — Ödül/Çekiliş/Quiz PUBLIC banner özeti (doğru cevap İÇERMEZ).

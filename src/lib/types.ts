@@ -195,6 +195,11 @@ export type Event = {
   organizerLogoUrl?: string; // Etkinliği düzenleyen kulübün/STK'nın logosu (Live Activity + yaka kartı)
   contributors?: EventContributor[]; // Konuşmacı / sanatçı / moderatör listesi (isim + ünvan + rol)
   agenda?: EventAgendaItem[]; // Etkinlik akış programı (saat + başlık)
+  // Çok-noktalı etkinlik (ör. Guinness temizlik rekoru — 81 il). Boşsa tek `location` kullanılır.
+  points?: EventPoint[];
+  // Kurumsal/özel katılımcılar (belediye/valilik/marka/üniversite/STK) — logo+ad+web ile
+  // etkinlik detayının altında gruplu başlıklarla yayınlanır.
+  corporateParticipants?: CorporateParticipant[];
   // Canlı etkinlik modu — organizatör "Canlı yayını başlat" deyince true olur.
   live?: boolean;
   liveStartedAt?: unknown;
@@ -212,6 +217,44 @@ export type EventContributor = {
   title: string; // ünvan (örn. "Prof. Dr.", "Genel Müdür", "Müzisyen")
   role: EventContributorRole;
   userId?: string; // hangel üyesiyse Firebase uid — rol yaka kartı/Live Activity/sertifikaya yansır
+};
+
+/** Çok-noktalı etkinlikte tek bir katılım noktası (adres). Her noktanın kendi Katıl/QR'ı olur. */
+export type EventPoint = {
+  id: string;
+  name: string;        // "İstanbul - Kadıköy Sahili" gibi
+  address: string;
+  city: string;
+  district?: string;
+  hostNgoId?: string;  // bu noktayı üstlenen STK (varsa)
+  hostNgoName?: string;
+  lat?: number;
+  lon?: number;
+  mapsUrl?: string;    // Google Maps linki (paylaşım/yol tarifi)
+};
+
+/** Kurumsal/özel katılımcı türleri — etkinlik detayında gruplu başlık olur. */
+export type CorporateParticipantType = 'stk' | 'belediye' | 'valilik' | 'marka' | 'universite';
+export type CorporateParticipant = {
+  id: string;
+  type: CorporateParticipantType;
+  name: string;
+  logoUrl?: string;
+  website?: string;
+};
+
+/** Etkinlik fotoğrafı (events/{eventId}/photos/{photoId}). uploaderUid = kim yükledi.
+ *  faceDescriptors: face-api ile üretilen yüz vektörleri — "selfie ile bul" eşleştirmesi için. */
+export type EventPhoto = {
+  id: string;
+  url: string;
+  thumbUrl?: string;
+  uploaderUid: string;
+  uploaderName?: string;
+  faceDescriptors?: number[][];
+  width?: number;
+  height?: number;
+  createdAt?: unknown;
 };
 
 /** Etkinlik akış programı öğesi. */

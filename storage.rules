@@ -90,6 +90,22 @@ service firebase.storage {
       allow write: if isSuperAdmin();
     }
 
+    // Etkinlik fotoğrafları — herkes okur; giriş yapan kullanıcı yükler (10MB görsel).
+    // Katılımcılar etkinlikte çekilen fotoğrafları buraya yükler.
+    match /event-photos/{eventId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+    // Etkinlik afişleri de non-super-admin organizatörlerce yüklenebilsin.
+    match /event-posters/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     // Varsayılan: kimliği doğrulanmış kullanıcı okuyabilir, sadece super-admin yazabilir
     match /{allPaths=**} {
       allow read: if request.auth != null;

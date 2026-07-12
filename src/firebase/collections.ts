@@ -237,6 +237,9 @@ export const COLLECTIONS = {
   // events/{eventId}/checkins/{uid} — gönüllünün etkinliğe katılım kaydı.
   // method: 'qr' | 'nfc' | 'manual', checkedOutAt: geofence exit ile dolar.
   eventCheckins: 'checkins',
+  // events/{eventId}/photos/{photoId} — etkinlik foto galerisi. Katılımcılar yükler
+  // (uploaderUid), herkes görüntüler/indirir. faceDescriptors ile "selfie ile bul".
+  eventPhotos: 'photos',
   // events/{eventId}/speakerRatings/{uid} — canlı modda konuşmacı puanları (sadece going).
   eventSpeakerRatings: 'speakerRatings',
   // events/{eventId}/eventEvaluations/{uid} — etkinlik sonrası puan+yorum (sadece going).
