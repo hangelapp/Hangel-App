@@ -23,6 +23,7 @@ import { OnboardingWizard } from './_components/OnboardingWizard';
 import { CallDashboard } from './_components/CallDashboard';
 import { CallCenterSettings } from './_components/CallCenterSettings';
 import { CallFlowSettings } from './_components/CallFlowSettings';
+import { SantralIntro } from './_components/SantralIntro';
 import { CommunicationHub } from './_components/CommunicationHub';
 import { CallLists } from './_components/CallLists';
 import { ParticipantsPanel } from './_components/ParticipantsPanel';
@@ -107,6 +108,8 @@ export default function NgoCallCenterPage() {
   // API'sinden (Admin SDK) okunur; rules deploy gerekmeden sekme gating'i çalışır.
   const [ccDoc, setCcDoc] = useState<NgoCallCenterDoc | null>(null);
   const [ccLoading, setCcLoading] = useState(true);
+  // Kurulum yapılmamışken: önce tanıtım vitrini, "Hemen başla" ile sihirbaza geç.
+  const [showWizard, setShowWizard] = useState(false);
   useEffect(() => {
     let cancelled = false;
     async function loadStatus() {
@@ -219,8 +222,13 @@ export default function NgoCallCenterPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Sekme 1 — Başvuru */}
+        {/* Sekme 1 — Başvuru: kurulum yoksa önce tanıtım vitrini, sonra sihirbaz */}
         <TabsContent value="basvuru" className="mt-4">
+          {!ccDoc && !showWizard ? (
+            <div className="max-w-4xl">
+              <SantralIntro onStart={() => setShowWizard(true)} />
+            </div>
+          ) : (
           <div className="max-w-3xl space-y-4">
             {!ccDoc && (
               <OnboardingWizard
@@ -268,6 +276,7 @@ export default function NgoCallCenterPage() {
               </Card>
             )}
           </div>
+          )}
         </TabsContent>
 
         {/* Sekme 2 — Çağrı Merkezi (yalnızca onaylı STK) */}

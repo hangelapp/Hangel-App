@@ -24,6 +24,7 @@ import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebas
 import { collection, query, where, limit } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/hooks/use-toast';
+import { celebrate } from '@/lib/celebrate';
 import { messagingFetch } from '@/lib/messaging/client';
 import { cn } from '@/lib/utils';
 
@@ -445,6 +446,8 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
         },
       );
       setSuccess({ formId: result.formId });
+      // Kurulum tamamlandı — kutlama: konfeti + haptik.
+      celebrate({ title: 'Başvurun tamamlandı 🎉', message: 'Onaylanınca santralın açılacak.' });
       toast({ title: 'Başvurunuz alındı', description: result.message });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

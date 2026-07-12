@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-12";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "efee8360",
+    "date": "2026-07-12",
+    "subject": "feat(santral): panelden yönetilen çağrı akışı — IVR + sıra + sesli mesaj + yönlendirme + çalışma saatleri"
+  },
+  {
     "hash": "9989066b",
     "date": "2026-07-12",
     "subject": "fix(santral): WSS geçidi kuruldu — kaynak-Asterisk + doğru domain + panel şifresi"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "5cb67ec5",
     "date": "2026-07-10",
     "subject": "gönüllülük kümesi 2: erişilebilirlik etiketleri + beceri rozetleri + takım meydan-okuma + referans mektubu + kısayol şeridi (build 408/408)"
-  },
-  {
-    "hash": "7f84b1c9",
-    "date": "2026-07-10",
-    "subject": "gönüllülük kümesi: doküman-isteme + mikro-gönüllülük + lider tablosu + SROI panosu + onboarding sihirbazı + referans davet UI (build 405/405)"
   }
 ];
