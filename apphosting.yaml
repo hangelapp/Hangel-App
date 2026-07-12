@@ -104,7 +104,7 @@ env:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_SANTRAL_SIP_PASS
-    value: "334292ef9db814604a93f1cd04104452"
+    value: "6d4b994b4e0f3d1b3275ff89f636f6c3"
     availability:
       - BUILD
       - RUNTIME
