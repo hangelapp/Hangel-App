@@ -63,12 +63,15 @@ export function middleware(req: NextRequest) {
   }
 
   // 3) Vanity kampanya kısa-linkleri (ana alan): /worldcleanday · /cleanday.
+  //    REDIRECT (rewrite DEĞİL): hedef sayfa 'use client' + useParams() kullanıyor;
+  //    rewrite'ta tarayıcı URL'i /worldcleanday kalıp [id] paramı boş gelir → notFound.
+  //    Redirect ile tarayıcı gerçek /volunteering/<id>'ye gider, param doğru dolar.
   const vanityKey = pathname.replace(/\/+$/, '').toLowerCase();
   const vanityTarget = VANITY_SHORTLINKS[vanityKey];
   if (vanityTarget) {
     const url = req.nextUrl.clone();
     url.pathname = vanityTarget;
-    return NextResponse.rewrite(url);
+    return NextResponse.redirect(url, 307);
   }
 
   // 4) Kütük kısa-linki (ana alan).
