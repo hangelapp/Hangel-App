@@ -1,5 +1,5 @@
 'use client';
-import { notFound, useRouter, useParams, useSearchParams } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, CalendarPlus, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock, Wallet, Nfc, Star, IdCard, Video, Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -56,7 +56,6 @@ type WeatherDay = { date: string; tempMax: number; tempMin: number; label: strin
 export default function VolunteeringDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
   const id = params.id as string;
   const db = useFirestore();
 
@@ -125,9 +124,13 @@ export default function VolunteeringDetailPage() {
   const [photosOpen, setPhotosOpen] = useState(false);
   // Kurumsal katılımcı başvurusu dialog durumu.
   const [corpApplyOpen, setCorpApplyOpen] = useState(false);
+  // NOT: useSearchParams() Next 15'te Suspense gerektirip prod'da sayfayı bozuyordu →
+  // window.location.search ile client-only oku (Suspense tuzağı yok).
   useEffect(() => {
-    if (searchParams.get('photos') === '1') setPhotosOpen(true);
-  }, [searchParams]);
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('photos') === '1') {
+      setPhotosOpen(true);
+    }
+  }, []);
 
   const matchingProfile = useMemo<MatchingUserProfile>(() => ({
     volunteerInfo: userData?.volunteerInfo ?? null,

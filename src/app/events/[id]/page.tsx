@@ -1,5 +1,5 @@
 'use client';
-import { notFound, useRouter, useParams, useSearchParams } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, where, limit, documentId } from 'firebase/firestore';
 import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/lib/types';
@@ -79,7 +79,6 @@ const InfoRow = ({ icon: Icon, label, children, href }: { icon: React.ElementTyp
 export default function EventDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
   const slug = params.id as string;
   const db = useFirestore();
   const { user: authUser } = useUser();
@@ -382,10 +381,13 @@ export default function EventDetailPage() {
     }
   }, [event, slug]);
 
-  // ?photos=1 → fotoğraf merkezini otomatik aç (foto dialog QR'ı + admin paneli linki).
+  // ?photos=1 → fotoğraf merkezini otomatik aç. NOT: useSearchParams() Next 15'te
+  // Suspense gerektirip prod'da sayfayı bozuyordu → window.location.search ile oku.
   useEffect(() => {
-    if (searchParams.get('photos') === '1') setPhotosOpen(true);
-  }, [searchParams]);
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('photos') === '1') {
+      setPhotosOpen(true);
+    }
+  }, []);
 
   // Mesafe + hava durumu için koordinat: kayıtta coordinates yoksa adresi BİR KEZ geocode et.
   // event.location string ya da undefined olabilir (online/eski kayıtlar) → GÜVENLİ obje.
