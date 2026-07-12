@@ -3,6 +3,21 @@ export const AI_CHANGELOG_GENERATED = "2026-07-12";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "d6e03eef",
+    "date": "2026-07-12",
+    "subject": "santral: kampanya (peş peşe) arama modu + AI çağrı özeti"
+  },
+  {
+    "hash": "b22bfe42",
+    "date": "2026-07-12",
+    "subject": "fix(detail): useSearchParams kaldırıldı → window.location.search (Next 15 Suspense'siz useSearchParams prod'da etkinlik+gönüllülük detayını notFound'a düşürüyordu)"
+  },
+  {
+    "hash": "ec8bb639",
+    "date": "2026-07-12",
+    "subject": "santral: temsilci performans özeti + panel bildirimleri (cevapsız/geri arama)"
+  },
+  {
     "hash": "ebf0b1dc",
     "date": "2026-07-12",
     "subject": "santral: kara liste (rahatsız etme) + çağrı geçmişi CSV dışa aktar"
@@ -111,20 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "22ace3f6",
     "date": "2026-07-11",
     "subject": "fix(yaka-kartı): native'de önizleme sistem aç/kaydet sayfasıyla — Android WebView iframe'de PDF gösteremiyor"
-  },
-  {
-    "hash": "ac9ede7d",
-    "date": "2026-07-11",
-    "subject": "fix(sertifika): app'lerde önizleme/indirme hatası — file:// Browser.open ve Android Documents yazımı kaldırıldı"
-  },
-  {
-    "hash": "a82e7155",
-    "date": "2026-07-11",
-    "subject": "sertifika: gelir-modeli konferansları için özel tasarım (mockup'a göre)"
-  },
-  {
-    "hash": "c29c35dc",
-    "date": "2026-07-11",
-    "subject": "sertifika: logo redesign'ını geri al — orijinal tasarıma dön (kullanıcı isteği)"
   }
 ];

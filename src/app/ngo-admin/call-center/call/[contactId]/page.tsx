@@ -14,7 +14,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,6 +51,9 @@ import {
   PhoneIncoming,
   MessageCircle,
   Send,
+  Rocket,
+  SkipForward,
+  Sparkles,
 } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
 import { useToast } from '@/hooks/use-toast';
@@ -198,6 +201,21 @@ export default function ActiveCallPage() {
   const params = useParams<{ contactId: string }>();
   const contactId = params?.contactId ?? '';
   const { toast } = useToast();
+  const router = useRouter();
+  // Kampanya (peş peşe arama) modu: ?campaign=<listId> ile açılır.
+  // Not: useSearchParams yerine window.location.search kullanılıyor — Next 15'te
+  // Suspense'siz useSearchParams prod'da sayfayı bozabiliyor (bkz. b22bfe42).
+  const [campaignListId, setCampaignListId] = useState('');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCampaignListId(new URLSearchParams(window.location.search).get('campaign') || '');
+    }
+  }, []);
+  const [campaignRemaining, setCampaignRemaining] = useState<number | null>(null);
+  const [loadingNext, setLoadingNext] = useState(false);
+  // AI çağrı özeti
+  const [aiSummary, setAiSummary] = useState<{ summary: string; nextStep: string; sentiment: string } | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   // Aktif kurum — STK ise originate'e hedef ngoId olarak gönderilir
   // (super-admin başka STK'ya bakıyorsa doğru tenant'ta session açılsın).
@@ -312,6 +330,7 @@ export default function ActiveCallPage() {
   useEffect(() => {
     void loadContact();
   }, [loadContact]);
+
 
   // Hazır not şablonlarını bir kez çek (operatör çağrı sırasında seçer).
   useEffect(() => {
@@ -594,6 +613,8 @@ export default function ActiveCallPage() {
       );
       toast({ title: 'Sonuç kaydedildi' });
       await loadContact();
+      // Kampanya modunda sonuç girilir girilmez kalan kişi sayısını tazele.
+      if (campaignListId) void refreshCampaignRemaining();
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (sessionId.startsWith('mock-')) {
@@ -606,6 +627,63 @@ export default function ActiveCallPage() {
       }
     } finally {
       setSavingDisposition(false);
+    }
+  }
+
+  // Kampanya modu: listedeki sıradaki aranacak kişiye geç (bu kişi hariç).
+  const refreshCampaignRemaining = useCallback(async () => {
+    if (!campaignListId) return;
+    try {
+      const res = await messagingFetch<{ contact: { id: string } | null; remaining: number }>(
+        `/api/ngo-admin/call-center/campaign/next?listId=${encodeURIComponent(campaignListId)}&exclude=${encodeURIComponent(contactId)}`,
+      );
+      setCampaignRemaining(res.remaining);
+    } catch {
+      setCampaignRemaining(null);
+    }
+  }, [campaignListId, contactId]);
+
+  // Kampanya modu açıldıysa kalan kişi sayısını başlangıçta çek (tanımdan SONRA — TDZ yok).
+  useEffect(() => {
+    if (campaignListId) void refreshCampaignRemaining();
+  }, [campaignListId, refreshCampaignRemaining]);
+
+  async function handleGenerateSummary() {
+    if (!contactId) return;
+    setAiLoading(true);
+    setAiSummary(null);
+    try {
+      const res = await messagingFetch<{ ok: boolean; summary: string; nextStep: string; sentiment: string }>(
+        `/api/ngo-admin/call-center/contacts/${contactId}/summary`,
+        { method: 'POST', body: JSON.stringify({}) },
+      );
+      setAiSummary({ summary: res.summary, nextStep: res.nextStep, sentiment: res.sentiment });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast({ variant: 'destructive', title: 'Özet üretilemedi', description: msg });
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  async function goToNextInCampaign() {
+    if (!campaignListId) return;
+    setLoadingNext(true);
+    try {
+      const res = await messagingFetch<{ contact: { id: string } | null; remaining: number }>(
+        `/api/ngo-admin/call-center/campaign/next?listId=${encodeURIComponent(campaignListId)}&exclude=${encodeURIComponent(contactId)}`,
+      );
+      if (res.contact) {
+        router.push(`/ngo-admin/call-center/call/${res.contact.id}?campaign=${encodeURIComponent(campaignListId)}`);
+      } else {
+        toast({ title: 'Kampanya tamamlandı 🎉', description: 'Listede aranacak kişi kalmadı.' });
+        setCampaignRemaining(0);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast({ variant: 'destructive', title: 'Sıradaki kişi alınamadı', description: msg });
+    } finally {
+      setLoadingNext(false);
     }
   }
 
@@ -779,6 +857,41 @@ export default function ActiveCallPage() {
                 </ul>
               </div>
             )}
+
+            {/* AI çağrı özeti — notlar + sonuçlardan Gemini ile kısa özet */}
+            <div className="border-t pt-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" /> AI Özeti
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 rounded-lg text-xs px-2"
+                  onClick={handleGenerateSummary}
+                  disabled={aiLoading}
+                >
+                  {aiLoading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                  {aiSummary ? 'Yenile' : 'Özetle'}
+                </Button>
+              </div>
+              {aiSummary ? (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2 text-sm">
+                  <p className="leading-snug">{aiSummary.summary}</p>
+                  <p className="text-xs"><span className="font-semibold">Sonraki adım:</span> {aiSummary.nextStep}</p>
+                  <span className={cn(
+                    'inline-block text-[11px] font-medium px-2 py-0.5 rounded-full',
+                    aiSummary.sentiment === 'olumlu' ? 'bg-emerald-500/15 text-emerald-700'
+                      : aiSummary.sentiment === 'olumsuz' ? 'bg-rose-500/15 text-rose-700'
+                      : 'bg-muted text-muted-foreground',
+                  )}>
+                    {aiSummary.sentiment}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">Notlar ve çağrı sonuçlarından kısa bir özet ve sonraki adım önerisi üretir.</p>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -996,6 +1109,29 @@ export default function ActiveCallPage() {
                 {savingDisposition && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Sonucu Kaydet
               </Button>
+
+              {/* Kampanya modu: sonuç girildikten sonra sıradaki kişiye geç */}
+              {campaignListId && (
+                <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-2">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <Rocket className="h-3.5 w-3.5 text-primary" />
+                    Kampanya modu
+                    {campaignRemaining !== null && (
+                      <span className="ml-auto font-medium tabular-nums">{campaignRemaining} kişi bekliyor</span>
+                    )}
+                  </p>
+                  <Button
+                    onClick={goToNextInCampaign}
+                    disabled={loadingNext}
+                    size="sm"
+                    variant="secondary"
+                    className="w-full rounded-lg"
+                  >
+                    {loadingNext ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <SkipForward className="h-4 w-4 mr-2" />}
+                    Sıradaki kişiyi ara
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Callback */}

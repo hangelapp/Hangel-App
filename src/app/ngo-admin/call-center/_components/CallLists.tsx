@@ -18,6 +18,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import {
   Card,
@@ -43,6 +44,7 @@ import {
   Loader2,
   MessageCircle,
   Plus,
+  Rocket,
   Send,
   Trash2,
   Upload,
@@ -135,6 +137,34 @@ function formatCount(n: number): string {
 export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
+  const router = useRouter();
+  const [campaignStartingId, setCampaignStartingId] = useState<string | null>(null);
+
+  // Kampanya (peş peşe arama) modu: listenin ilk aranacak kişisini çekip
+  // arama sayfasına ?campaign=<listId> ile götür. Sonuç girildikçe otomatik
+  // sıradaki kişiye geçilir.
+  const startCampaign = useCallback(async (list: ListRow) => {
+    if (!user) return;
+    setCampaignStartingId(list.id);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(
+        `/api/ngo-admin/call-center/campaign/next?listId=${encodeURIComponent(list.id)}`,
+        { headers: { authorization: `Bearer ${token}` } },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || 'Kampanya başlatılamadı.');
+      if (!data.contact) {
+        toast({ title: 'Aranacak kişi yok', description: 'Bu listedeki herkes aranmış görünüyor.' });
+        return;
+      }
+      router.push(`/ngo-admin/call-center/call/${data.contact.id}?campaign=${encodeURIComponent(list.id)}`);
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Başlatılamadı', description: err instanceof Error ? err.message : 'Hata.' });
+    } finally {
+      setCampaignStartingId(null);
+    }
+  }, [user, router, toast]);
 
   const [lists, setLists] = useState<ListRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -605,6 +635,18 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void startCampaign(list)}
+                    disabled={campaignStartingId === list.id}
+                    className="w-full border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+                  >
+                    {campaignStartingId === list.id
+                      ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      : <Rocket className="h-4 w-4 mr-1" />}
+                    Kampanya Başlat (peş peşe ara)
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
