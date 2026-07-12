@@ -53,6 +53,7 @@ import {
 } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
 import { getStage, STAGE_TONE_CLASS } from '@/lib/santral/pipeline';
+import { scoreTone } from '@/lib/santral/lead-score';
 
 const PAGE_SIZE = 50;
 const ALL_VALUE = '__all__';
@@ -68,6 +69,7 @@ interface ContactRow {
   listIds: string[];
   stage: string | null;
   pledgeAmount: number | null;
+  heatScore: number;
 }
 
 interface ContactsResponse {
@@ -405,6 +407,7 @@ export default function ContactsPage() {
                     <TableHead>Ad</TableHead>
                     <TableHead>Telefon</TableHead>
                     <TableHead>Aşama</TableHead>
+                    <TableHead>Sıcaklık</TableHead>
                     <TableHead>E-posta</TableHead>
                     <TableHead className="text-right">Deneme</TableHead>
                     <TableHead>Son Durum</TableHead>
@@ -418,6 +421,7 @@ export default function ContactsPage() {
                     const dispLabel = dispKey ? DISPOSITION_LABEL[dispKey] ?? dispKey : 'Hiç aranmamış';
                     const dispBadgeClass = dispKey ? DISPOSITION_BADGE[dispKey] ?? '' : '';
                     const stage = getStage(c.stage);
+                    const heat = scoreTone(c.heatScore);
                     const isMember = memberPhones.has(c.phone);
                     return (
                       <TableRow key={c.id}>
@@ -441,6 +445,11 @@ export default function ContactsPage() {
                           ) : (
                             <span className="text-xs text-muted-foreground">—</span>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${heat.className}`}>
+                            {heat.label} · {c.heatScore}
+                          </span>
                         </TableCell>
                         <TableCell className="text-xs">{c.email ?? '—'}</TableCell>
                         <TableCell className="text-right tabular-nums">{c.attempts}</TableCell>

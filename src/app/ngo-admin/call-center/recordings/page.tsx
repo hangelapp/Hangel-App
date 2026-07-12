@@ -58,6 +58,7 @@ import {
   Play,
   Search,
   ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
 
@@ -178,6 +179,26 @@ export default function RecordingsPage() {
   const [notes, setNotes] = useState<NoteRow[]>([]);
   const [notesLoading, setNotesLoading] = useState(false);
   const [notesError, setNotesError] = useState<string | null>(null);
+
+  // AI döküm & özet dialog'u
+  const [transcriptRow, setTranscriptRow] = useState<RecordingRow | null>(null);
+  const [transcript, setTranscript] = useState<{ transcript: string; summary: string; sentiment: string } | null>(null);
+  const [transcriptLoading, setTranscriptLoading] = useState(false);
+  const [transcriptError, setTranscriptError] = useState<string | null>(null);
+
+  const openTranscript = useCallback((r: RecordingRow) => {
+    setTranscriptRow(r);
+    setTranscript(null);
+    setTranscriptError(null);
+    setTranscriptLoading(true);
+    messagingFetch<{ transcript: string; summary: string; sentiment: string }>(
+      `/api/ngo-admin/call-center/sessions/${r.id}/transcribe`,
+      { method: 'POST', body: JSON.stringify({}) },
+    )
+      .then((res) => setTranscript({ transcript: res.transcript, summary: res.summary, sentiment: res.sentiment }))
+      .catch((e: unknown) => setTranscriptError(e instanceof Error ? e.message : 'Döküm üretilemedi.'))
+      .finally(() => setTranscriptLoading(false));
+  }, []);
 
   // Arama input debounce — 300ms.
   useEffect(() => {
@@ -507,6 +528,15 @@ export default function RecordingsPage() {
                               <Play className="h-3.5 w-3.5 mr-1" /> Dinle
                             </Button>
                             <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-primary"
+                              title="AI döküm & özet"
+                              onClick={() => openTranscript(r)}
+                            >
+                              <Sparkles className="h-3.5 w-3.5 mr-1" /> Döküm
+                            </Button>
+                            <Button
                               asChild
                               size="sm"
                               variant="ghost"
@@ -703,6 +733,44 @@ export default function RecordingsPage() {
                   </Button>
                 ) : null}
               </aside>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Döküm & Özet dialog'u */}
+      <Dialog open={!!transcriptRow} onOpenChange={(o) => { if (!o) setTranscriptRow(null); }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> AI Döküm & Özet
+            </DialogTitle>
+            <DialogDescription>
+              {transcriptRow?.contactName || transcriptRow?.callerNumber || 'Çağrı kaydı'} — kayıttan otomatik üretildi.
+            </DialogDescription>
+          </DialogHeader>
+          {transcriptLoading ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Ses işleniyor, bir dakika sürebilir…</p>
+            </div>
+          ) : transcriptError ? (
+            <p className="text-sm text-destructive py-4">{transcriptError}</p>
+          ) : transcript ? (
+            <div className="space-y-3">
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Özet</p>
+                <p className="text-sm">{transcript.summary || '—'}</p>
+                <span className="inline-block mt-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                  {transcript.sentiment}
+                </span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Konuşma dökümü</p>
+                <div className="max-h-72 overflow-y-auto rounded-xl border border-border/60 bg-muted/20 p-3 text-sm whitespace-pre-wrap">
+                  {transcript.transcript || '—'}
+                </div>
+              </div>
             </div>
           ) : null}
         </DialogContent>

@@ -20,6 +20,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { Query } from 'firebase-admin/firestore';
+import { computeLeadScore } from '@/lib/santral/lead-score';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,6 +43,7 @@ interface ContactRow {
   listIds: string[];
   stage: string | null;
   pledgeAmount: number | null;
+  heatScore: number;
 }
 
 async function authorize(req: NextRequest): Promise<CallerContext | null> {
@@ -68,6 +70,22 @@ function tsToIso(value: unknown): string | null {
   }
   if (value instanceof Date) return value.toISOString();
   return null;
+}
+
+function tsToMs(value: unknown): number | null {
+  const iso = tsToIso(value);
+  return iso ? Date.parse(iso) : null;
+}
+
+/** Ham kişi doc verisinden sıcaklık skoru üretir. */
+function heatFor(data: Record<string, unknown>): number {
+  return computeLeadScore({
+    stage: typeof data.stage === 'string' ? data.stage : null,
+    lastDisposition: typeof data.lastDisposition === 'string' ? data.lastDisposition : null,
+    lastAttemptAtMs: tsToMs(data.lastAttemptAt),
+    attempts: typeof data.attempts === 'number' ? data.attempts : 0,
+    pledgeAmount: typeof data.pledgeAmount === 'number' ? data.pledgeAmount : null,
+  });
 }
 
 export async function GET(req: NextRequest) {
@@ -121,6 +139,7 @@ export async function GET(req: NextRequest) {
         listIds: Array.isArray(data.listIds) ? (data.listIds as unknown[]).filter((s): s is string => typeof s === 'string') : [],
         stage: typeof data.stage === 'string' ? data.stage : null,
         pledgeAmount: typeof data.pledgeAmount === 'number' ? data.pledgeAmount : null,
+        heatScore: heatFor(data),
       };
     });
     return NextResponse.json({ contacts, total });
@@ -151,6 +170,7 @@ export async function GET(req: NextRequest) {
       listIds: Array.isArray(data.listIds) ? (data.listIds as unknown[]).filter((s): s is string => typeof s === 'string') : [],
       stage: typeof data.stage === 'string' ? data.stage : null,
       pledgeAmount: typeof data.pledgeAmount === 'number' ? data.pledgeAmount : null,
+      heatScore: heatFor(data),
     };
   });
   return NextResponse.json({ contacts, total });

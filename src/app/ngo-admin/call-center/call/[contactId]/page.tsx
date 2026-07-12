@@ -55,6 +55,7 @@ import {
   SkipForward,
   Sparkles,
   TrendingUp,
+  History,
 } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
 import { DEFAULT_STAGES as PIPELINE_STAGES, STAGE_TONE_CLASS } from '@/lib/santral/pipeline';
@@ -128,6 +129,13 @@ interface WhatsAppTemplateRow {
   bodyText: string;
   variables: string[];
   status: string;
+}
+
+interface TimelineItem {
+  type: 'call' | 'note' | 'whatsapp' | 'stage';
+  at: string | null;
+  title: string;
+  detail: string | null;
 }
 
 type CallState = 'idle' | 'ringing' | 'in-progress' | 'ended';
@@ -224,6 +232,9 @@ export default function ActiveCallPage() {
   const [stage, setStage] = useState<string>('');
   const [pledgeAmount, setPledgeAmount] = useState<string>('');
   const [savingStage, setSavingStage] = useState(false);
+  // Zaman tüneli
+  const [timeline, setTimeline] = useState<TimelineItem[] | null>(null);
+  const [timelineLoading, setTimelineLoading] = useState(false);
 
   // Aktif kurum — STK ise originate'e hedef ngoId olarak gönderilir
   // (super-admin başka STK'ya bakıyorsa doğru tenant'ta session açılsın).
@@ -677,6 +688,22 @@ export default function ActiveCallPage() {
     }
   }
 
+  async function handleLoadTimeline() {
+    if (!contactId) return;
+    setTimelineLoading(true);
+    try {
+      const res = await messagingFetch<{ items: TimelineItem[] }>(
+        `/api/ngo-admin/call-center/contacts/${contactId}/timeline`,
+      );
+      setTimeline(res.items || []);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast({ variant: 'destructive', title: 'Zaman tüneli yüklenemedi', description: msg });
+    } finally {
+      setTimelineLoading(false);
+    }
+  }
+
   async function handleGenerateSummary() {
     if (!contactId) return;
     setAiLoading(true);
@@ -919,6 +946,41 @@ export default function ActiveCallPage() {
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">Notlar ve çağrı sonuçlarından kısa bir özet ve sonraki adım önerisi üretir.</p>
+              )}
+            </div>
+
+            {/* Zaman tüneli — aramalar + WhatsApp + notlar + aşama değişimleri */}
+            <div className="border-t pt-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1.5">
+                  <History className="h-3.5 w-3.5 text-primary" /> Zaman Tüneli
+                </div>
+                <Button size="sm" variant="ghost" className="h-7 rounded-lg text-xs px-2" onClick={handleLoadTimeline} disabled={timelineLoading}>
+                  {timelineLoading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <History className="h-3.5 w-3.5 mr-1" />}
+                  {timeline ? 'Yenile' : 'Göster'}
+                </Button>
+              </div>
+              {timeline === null ? (
+                <p className="text-xs text-muted-foreground">Kişinin tüm geçmişi (arama, WhatsApp, not, aşama) tek akışta.</p>
+              ) : timeline.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Henüz kayıt yok.</p>
+              ) : (
+                <ol className="space-y-2.5 relative border-l border-border/60 pl-3 ml-1">
+                  {timeline.map((t, i) => (
+                    <li key={i} className="relative">
+                      <span className={cn(
+                        'absolute -left-[17px] top-1 h-2.5 w-2.5 rounded-full ring-2 ring-background',
+                        t.type === 'call' ? 'bg-emerald-500'
+                          : t.type === 'whatsapp' ? 'bg-green-600'
+                          : t.type === 'stage' ? 'bg-primary'
+                          : 'bg-sky-500',
+                      )} />
+                      <p className="text-xs font-medium leading-tight">{t.title}</p>
+                      {t.detail && <p className="text-[11px] text-muted-foreground line-clamp-2">{t.detail}</p>}
+                      {t.at && <p className="text-[10px] text-muted-foreground/70">{formatDateTime(t.at)}</p>}
+                    </li>
+                  ))}
+                </ol>
               )}
             </div>
           </CardContent>
