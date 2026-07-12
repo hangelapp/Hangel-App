@@ -72,6 +72,10 @@ struct VolunteerTaskLiveActivity: Widget {
         .padding(14)
         .activityBackgroundTint(Color.hangelOrange.opacity(0.10))
         .activitySystemActionForegroundColor(.hangelOrange)
+        // KİLİT EKRANI tıklama hedefi — dynamicIsland'da vardı, burada eksikti →
+        // "canlı gönüllülüğe tıklayınca gitmiyor". Dokun → hangel://volunteer-task/{id}
+        // → deep-link handler /volunteering/{id}'ye çevirir (native-bridge SCHEME_HOST_ROUTE).
+        .widgetURL(URL(string: "hangel://volunteer-task/\(context.attributes.taskId)"))
     }
 
     // MARK: - Faz mantığı

@@ -8,7 +8,8 @@
         ],
         "components": [
           { "/": "/checkin/*", "comment": "Etkinlik check-in" },
-          { "/": "/event/*", "comment": "Etkinlik detayı" },
+          { "/": "/events/*", "comment": "Etkinlik detayı (doğru çoğul route)" },
+          { "/": "/volunteering/*", "comment": "Gönüllülük ilanı detayı" },
           { "/": "/ngo/*", "comment": "STK profili" },
           { "/": "/u/*", "comment": "Kullanıcı magic link" },
           { "/": "/link/*", "comment": "WhatsApp cihaz bağlama (device-link)" },

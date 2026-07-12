@@ -32,6 +32,22 @@ export async function ensureStatusBarVisible(): Promise<void> {
   }
 }
 
+// Custom-scheme host'unu (hangel://<host>/...) gerçek Next.js route'una çevir.
+// KRİTİK: Live Activity / kilit ekranı / Dinamik Ada widget'ları TEKİL host
+// kullanıyor (hangel://event/123, hangel://volunteer-task/123) ama gerçek route'lar
+// ÇOĞUL/farklı (/events/123, /volunteering/123). Eşleme yapılmazsa tıklayınca
+// /event/123 → 404 → "canlı etkinliğe tıklayınca gitmiyor" (defalarca bildirilen bug).
+// Web'de görünmez, yalnız telefonda; bu yüzden React düzeltmeleri işe yaramadı.
+const SCHEME_HOST_ROUTE: Record<string, string> = {
+  event: 'events',              // hangel://event/{id}         → /events/{id}
+  events: 'events',
+  'volunteer-task': 'volunteering', // hangel://volunteer-task/{id} → /volunteering/{id}
+  volunteering: 'volunteering',
+  volunteer: 'volunteering',
+  'emergency-blood': 'emergency',   // kan bağışı canlı aktivitesi → /emergency
+  blood: 'emergency',
+};
+
 export function initDeepLinkListener(navigate: (path: string) => void): Unsubscribe {
   if (!Capacitor.isNativePlatform()) return () => {};
 
@@ -42,11 +58,16 @@ export function initDeepLinkListener(navigate: (path: string) => void): Unsubscr
       // Universal Link (http/https): hangel.org/ngo/abc → /ngo/abc (sadece pathname)
       // Custom Scheme (hangel://): host İLK segmenttir → host + pathname'i BİRLEŞTİR.
       //   hangel://blood        → /blood
-      //   hangel://event/123    → /event/123   (eski kod host'u düşürüp /123 yapıyordu — bug)
+      //   hangel://event/123    → /events/123  (host eşlemesiyle doğru çoğul route)
       const isCustomScheme = url.protocol !== 'http:' && url.protocol !== 'https:';
-      const base = isCustomScheme
-        ? `/${url.host}${url.pathname === '/' ? '' : url.pathname}`
-        : url.pathname;
+      let base: string;
+      if (isCustomScheme) {
+        // host'u gerçek route'a eşle (varsa); yoksa host'u aynen kullan.
+        const mappedHost = SCHEME_HOST_ROUTE[url.host] || url.host;
+        base = `/${mappedHost}${url.pathname === '/' ? '' : url.pathname}`;
+      } else {
+        base = url.pathname;
+      }
       const path = `${base || '/'}${url.search}${url.hash}`;
       if (path.startsWith('/')) {
         navigate(path);
