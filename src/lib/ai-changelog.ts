@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-12";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "bfaadf3b",
+    "date": "2026-07-12",
+    "subject": "santral: zaman tüneli + sıcaklık skoru + kayıttan sesli AI döküm"
+  },
+  {
     "hash": "4bc41300",
     "date": "2026-07-12",
     "subject": "santral: Bugünkü İşim ekranı + görüşme sonrası WhatsApp takip kısayolu"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "200c9367",
     "date": "2026-07-11",
     "subject": "fix(sertifika): buton sırasındaki tasarımsal kayma — 'Görüntüle'→'İncele' + taşmaya dayanıklı eşit butonlar"
-  },
-  {
-    "hash": "7b838b9e",
-    "date": "2026-07-11",
-    "subject": "feat(gönüllülük): Meydan Okumalar (ngo-admin) + Etki Transkripti sayfaları — menü linkleri 404 vermesin"
   }
 ];

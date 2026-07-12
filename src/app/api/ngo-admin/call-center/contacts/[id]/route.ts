@@ -149,6 +149,8 @@ export async function GET(
       lastDisposition: typeof data.lastDisposition === 'string' ? data.lastDisposition : null,
       stage: typeof data.stage === 'string' ? data.stage : null,
       pledgeAmount: typeof data.pledgeAmount === 'number' ? data.pledgeAmount : null,
+      assignedToUid: typeof data.assignedToUid === 'string' ? data.assignedToUid : null,
+      assignedToName: typeof data.assignedToName === 'string' ? data.assignedToName : null,
       customFields,
       createdAt: tsToIso(data.createdAt),
     },

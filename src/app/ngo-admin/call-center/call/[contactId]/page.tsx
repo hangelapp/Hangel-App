@@ -56,9 +56,19 @@ import {
   Sparkles,
   TrendingUp,
   History,
+  UserCheck,
+  UserPlus,
+  Star,
 } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
 import { DEFAULT_STAGES as PIPELINE_STAGES, STAGE_TONE_CLASS } from '@/lib/santral/pipeline';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useSipPhone } from '@/lib/santral/use-sip-phone';
@@ -76,6 +86,8 @@ interface ContactDetail {
   lastAttemptAt: string | null;
   stage: string | null;
   pledgeAmount: number | null;
+  assignedToUid: string | null;
+  assignedToName: string | null;
   customFields: Record<string, unknown>;
 }
 
@@ -235,6 +247,12 @@ export default function ActiveCallPage() {
   // Zaman tüneli
   const [timeline, setTimeline] = useState<TimelineItem[] | null>(null);
   const [timelineLoading, setTimelineLoading] = useState(false);
+  // Görev atama (ekip)
+  const [team, setTeam] = useState<{ userId: string; name: string }[]>([]);
+  const [assignedName, setAssignedName] = useState<string | null>(null);
+  // Konuşma anında AI asistanı
+  const [assist, setAssist] = useState<{ opener: string; tips: string[]; objections: { objection: string; response: string }[] } | null>(null);
+  const [assistLoading, setAssistLoading] = useState(false);
 
   // Aktif kurum — STK ise originate'e hedef ngoId olarak gönderilir
   // (super-admin başka STK'ya bakıyorsa doğru tenant'ta session açılsın).
@@ -340,6 +358,7 @@ export default function ActiveCallPage() {
       setSessions(res.sessions ?? []);
       setStage(res.contact.stage ?? '');
       setPledgeAmount(res.contact.pledgeAmount ? String(res.contact.pledgeAmount) : '');
+      setAssignedName(res.contact.assignedToName ?? null);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setLoadError(msg);
@@ -669,6 +688,39 @@ export default function ActiveCallPage() {
     if (campaignListId) void refreshCampaignRemaining();
   }, [campaignListId, refreshCampaignRemaining]);
 
+  // Ekip listesini (görev atama için) yükle.
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/ngo-admin/users/managers', { headers: { authorization: `Bearer ${token}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (active && Array.isArray(data.managers)) {
+          setTeam(data.managers.map((m: { userId: string; name: string }) => ({ userId: m.userId, name: m.name })));
+        }
+      } catch { /* ekip yoksa atama menüsü sadece 'kaldır' gösterir */ }
+    })();
+    return () => { active = false; };
+  }, [user]);
+
+  async function handleAssign(member: { userId: string; name: string } | null) {
+    if (!contactId) return;
+    setAssignedName(member?.name ?? null);
+    try {
+      await messagingFetch(`/api/ngo-admin/call-center/contacts/${contactId}/assign`, {
+        method: 'POST',
+        body: JSON.stringify({ assignedToUid: member?.userId ?? null, assignedToName: member?.name }),
+      });
+      toast({ title: member ? `Sorumlu: ${member.name}` : 'Sorumlu kaldırıldı' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast({ variant: 'destructive', title: 'Atanamadı', description: msg });
+    }
+  }
+
   async function handleSaveStage(nextStage: string) {
     if (!contactId || !nextStage) return;
     setStage(nextStage);
@@ -686,6 +738,32 @@ export default function ActiveCallPage() {
     } finally {
       setSavingStage(false);
     }
+  }
+
+  async function handleAssist() {
+    if (!contactId) return;
+    setAssistLoading(true);
+    try {
+      const res = await messagingFetch<{ opener: string; tips: string[]; objections: { objection: string; response: string }[] }>(
+        `/api/ngo-admin/call-center/contacts/${contactId}/assist`,
+        { method: 'POST', body: JSON.stringify({ goal: 'bağış' }) },
+      );
+      setAssist({ opener: res.opener, tips: res.tips || [], objections: res.objections || [] });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast({ variant: 'destructive', title: 'İpuçları alınamadı', description: msg });
+    } finally {
+      setAssistLoading(false);
+    }
+  }
+
+  function copySurveyLink() {
+    if (!sessionId || typeof window === 'undefined') return;
+    const url = `${window.location.origin}/anket/${sessionId}`;
+    navigator.clipboard?.writeText(url).then(
+      () => toast({ title: 'Anket linki kopyalandı', description: 'WhatsApp/SMS ile arayana gönderebilirsiniz.' }),
+      () => toast({ variant: 'destructive', title: 'Kopyalanamadı', description: url }),
+    );
   }
 
   async function handleLoadTimeline() {
@@ -1107,6 +1185,49 @@ export default function ActiveCallPage() {
               </div>
             )}
 
+            {/* Konuşma anında AI asistanı */}
+            <div className="border-t pt-3 text-left">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" /> AI Asistan
+                </span>
+                <Button size="sm" variant="ghost" className="h-7 rounded-lg text-xs px-2" onClick={handleAssist} disabled={assistLoading}>
+                  {assistLoading ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                  {assist ? 'Yenile' : 'İpucu al'}
+                </Button>
+              </div>
+              {assist ? (
+                <div className="space-y-2.5 text-left">
+                  {assist.opener && (
+                    <div className="rounded-lg bg-primary/5 border border-primary/20 p-2.5">
+                      <p className="text-[11px] font-semibold text-muted-foreground mb-0.5">Açılış</p>
+                      <p className="text-sm">{assist.opener}</p>
+                    </div>
+                  )}
+                  {assist.tips.length > 0 && (
+                    <ul className="space-y-1">
+                      {assist.tips.map((t, i) => (
+                        <li key={i} className="text-xs flex gap-1.5"><span className="text-primary">•</span><span>{t}</span></li>
+                      ))}
+                    </ul>
+                  )}
+                  {assist.objections.length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-[11px] font-semibold text-muted-foreground">Olası itirazlar</p>
+                      {assist.objections.map((o, i) => (
+                        <div key={i} className="rounded-lg border border-border/50 bg-muted/20 p-2">
+                          <p className="text-xs font-medium">“{o.objection}”</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">→ {o.response}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">Aramadan önce kişiye özel açılış cümlesi + ikna ipuçları + itiraz yanıtları alın.</p>
+              )}
+            </div>
+
             {sessionId && (
               <div className="text-xs text-muted-foreground border-t pt-3 break-all">
                 <span className="font-semibold">Oturum:</span> {sessionId}
@@ -1173,6 +1294,36 @@ export default function ActiveCallPage() {
                   ))}
                 </ul>
               )}
+            </div>
+
+            {/* Görev atama — bu kişiden sorumlu temsilci */}
+            <div className="space-y-2 border-t pt-4">
+              <Label className="text-sm font-semibold flex items-center gap-1.5">
+                <UserCheck className="h-4 w-4 text-primary" /> Sorumlu
+              </Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-full justify-between rounded-lg">
+                    {assignedName || 'Sorumlu ata'}
+                    <UserPlus className="h-4 w-4 opacity-60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  {team.length === 0 ? (
+                    <DropdownMenuItem disabled>Ekip üyesi yok</DropdownMenuItem>
+                  ) : team.map((m) => (
+                    <DropdownMenuItem key={m.userId} onClick={() => handleAssign(m)}>
+                      <UserPlus className="mr-2 h-4 w-4" /> {m.name}
+                    </DropdownMenuItem>
+                  ))}
+                  {assignedName && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => handleAssign(null)}>Sorumluyu kaldır</DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Bağış hunisi aşaması + söz verilen tutar */}
@@ -1274,6 +1425,19 @@ export default function ActiveCallPage() {
                     Sıradaki kişiyi ara
                   </Button>
                 </div>
+              )}
+
+              {/* Memnuniyet anketi linki — sonuç kaydedildikten sonra arayana gönderilir */}
+              {sessionId && !sessionId.startsWith('mock-') && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="w-full rounded-lg"
+                  onClick={copySurveyLink}
+                >
+                  <Star className="h-4 w-4 mr-1.5" /> Memnuniyet anketi linkini kopyala
+                </Button>
               )}
             </div>
 

@@ -15,7 +15,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks, Calendar, HeartHandshake, MoreHorizontal, ChevronDown, Mic, Target, BarChart3, TrendingUp, Sun } from 'lucide-react';
+import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks, Calendar, HeartHandshake, MoreHorizontal, ChevronDown, Mic, Target, BarChart3, TrendingUp, Sun, MonitorPlay } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
@@ -29,6 +29,7 @@ import { NotificationBell } from './_components/NotificationBell';
 import { AgentStatsPanel } from './_components/AgentStatsPanel';
 import { PipelineBoard } from './_components/PipelineBoard';
 import { MyDayPanel } from './_components/MyDayPanel';
+import { Wallboard } from './_components/Wallboard';
 import { SantralIntro } from './_components/SantralIntro';
 import { CommunicationHub } from './_components/CommunicationHub';
 import { CallLists } from './_components/CallLists';
@@ -233,7 +234,7 @@ export default function NgoCallCenterPage() {
               <button
                 type="button"
                 className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[on=true]:bg-background data-[on=true]:text-foreground data-[on=true]:shadow-sm"
-                data-on={['iletisim', 'performans', 'huni', 'bugun'].includes(tab ?? '') ? 'true' : undefined}
+                data-on={['iletisim', 'performans', 'huni', 'bugun', 'wallboard'].includes(tab ?? '') ? 'true' : undefined}
               >
                 <MoreHorizontal className="h-4 w-4" /> Diğer
                 {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
@@ -252,6 +253,9 @@ export default function NgoCallCenterPage() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTab('performans')} disabled={!isApproved}>
                 <BarChart3 className="mr-2 h-4 w-4" /> Temsilci Performansı
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTab('wallboard')} disabled={!isApproved}>
+                <MonitorPlay className="mr-2 h-4 w-4" /> Süpervizör Panosu
               </DropdownMenuItem>
               {/* Yazılı olan ama panele bağlı olmayan sayfalar buradan erişilir. */}
               <DropdownMenuItem asChild disabled={!isApproved}>
@@ -382,6 +386,15 @@ export default function NgoCallCenterPage() {
             <MyDayPanel />
           ) : (
             <LockedNotice title="Bugünkü İşim kilitli" status={status} />
+          )}
+        </TabsContent>
+
+        {/* Sekme 4e — Süpervizör Panosu ("Diğer" menüsünden; yalnızca onaylı STK) */}
+        <TabsContent value="wallboard" className="mt-4">
+          {isApproved && ccDoc ? (
+            <Wallboard />
+          ) : (
+            <LockedNotice title="Süpervizör Panosu kilitli" status={status} />
           )}
         </TabsContent>
 
