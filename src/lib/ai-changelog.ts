@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-12";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "ebf0b1dc",
+    "date": "2026-07-12",
+    "subject": "santral: kara liste (rahatsız etme) + çağrı geçmişi CSV dışa aktar"
+  },
+  {
     "hash": "a707280f",
     "date": "2026-07-12",
     "subject": "feat(santral) Grup2: sesli mesaj kutusu + not şablonları + çağrı etiketleri"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "c29c35dc",
     "date": "2026-07-11",
     "subject": "sertifika: logo redesign'ını geri al — orijinal tasarıma dön (kullanıcı isteği)"
-  },
-  {
-    "hash": "78bcda87",
-    "date": "2026-07-11",
-    "subject": "sertifika: gelir-modeli partner logolarını SAĞ ÜST köşeye taşı + resmi logo dosyaları"
   }
 ];

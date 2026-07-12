@@ -15,7 +15,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks, Calendar, HeartHandshake, MoreHorizontal, ChevronDown, Mic, Target } from 'lucide-react';
+import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks, Calendar, HeartHandshake, MoreHorizontal, ChevronDown, Mic, Target, BarChart3 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
@@ -25,6 +25,8 @@ import { CallDashboard } from './_components/CallDashboard';
 import { CallCenterSettings } from './_components/CallCenterSettings';
 import { CallFlowSettings } from './_components/CallFlowSettings';
 import { BlocklistSettings } from './_components/BlocklistSettings';
+import { NotificationBell } from './_components/NotificationBell';
+import { AgentStatsPanel } from './_components/AgentStatsPanel';
 import { SantralIntro } from './_components/SantralIntro';
 import { CommunicationHub } from './_components/CommunicationHub';
 import { CallLists } from './_components/CallLists';
@@ -183,13 +185,16 @@ export default function NgoCallCenterPage() {
       <Link href="/ngo-admin" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4 mr-1" /> Yönetim Paneli
       </Link>
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold font-headline flex items-center gap-2">
-          <PhoneCall className="h-6 w-6 text-emerald-600" /> Çağrı Merkezi
-        </h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          STK'nız için sanal santral — başvuru, çağrı paneli ve ayarlar.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold font-headline flex items-center gap-2">
+            <PhoneCall className="h-6 w-6 text-emerald-600" /> Çağrı Merkezi
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            STK'nız için sanal santral — başvuru, çağrı paneli ve ayarlar.
+          </p>
+        </div>
+        {isApproved && <NotificationBell />}
       </div>
 
       <Tabs value={tab ?? defaultTab} onValueChange={setTab} className="w-full">
@@ -226,7 +231,7 @@ export default function NgoCallCenterPage() {
               <button
                 type="button"
                 className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[on=true]:bg-background data-[on=true]:text-foreground data-[on=true]:shadow-sm"
-                data-on={['iletisim'].includes(tab ?? '') ? 'true' : undefined}
+                data-on={['iletisim', 'performans'].includes(tab ?? '') ? 'true' : undefined}
               >
                 <MoreHorizontal className="h-4 w-4" /> Diğer
                 {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
@@ -236,6 +241,9 @@ export default function NgoCallCenterPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setTab('iletisim')}>
                 <MessageCircle className="mr-2 h-4 w-4" /> İletişim Merkezi
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTab('performans')} disabled={!isApproved}>
+                <BarChart3 className="mr-2 h-4 w-4" /> Temsilci Performansı
               </DropdownMenuItem>
               {/* Yazılı olan ama panele bağlı olmayan sayfalar buradan erişilir. */}
               <DropdownMenuItem asChild disabled={!isApproved}>
@@ -357,6 +365,15 @@ export default function NgoCallCenterPage() {
             <CommunicationHub ccDoc={ccDoc} onGoToCallCenter={() => setTab('callcenter')} />
           ) : (
             <LockedNotice title="İletişim Merkezi kilitli" status={status} />
+          )}
+        </TabsContent>
+
+        {/* Sekme 4b — Temsilci Performansı ("Diğer" menüsünden; yalnızca onaylı STK) */}
+        <TabsContent value="performans" className="mt-4">
+          {isApproved && ccDoc ? (
+            <AgentStatsPanel />
+          ) : (
+            <LockedNotice title="Temsilci Performansı kilitli" status={status} />
           )}
         </TabsContent>
 
