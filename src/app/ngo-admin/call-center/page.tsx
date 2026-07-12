@@ -15,7 +15,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks, Calendar, HeartHandshake } from 'lucide-react';
+import { Loader2, PhoneCall, Clock, ArrowLeft, FileText, Lock, CheckCircle2, Settings, MessageCircle, ListChecks, Calendar, HeartHandshake, MoreHorizontal, ChevronDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -191,13 +192,20 @@ export default function NgoCallCenterPage() {
       </div>
 
       <Tabs value={tab ?? defaultTab} onValueChange={setTab} className="w-full">
-        <TabsList>
+        {/* Sekme çubuğu dar ekranda yatay kaydırılır (taşma kesilmez). */}
+        <div className="-mx-4 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0">
+        <TabsList className="w-max">
           <TabsTrigger value="basvuru" className="flex items-center gap-1.5">
             <FileText className="h-4 w-4" /> Başvuru
             {isApproved && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />}
           </TabsTrigger>
           <TabsTrigger value="callcenter" className="flex items-center gap-1.5">
             <PhoneCall className="h-4 w-4" /> Çağrı Merkezi
+            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
+          </TabsTrigger>
+          {/* Arama Listeleri ve hemen ALTINDA katılımcı sekmeleri (istenen sıra) */}
+          <TabsTrigger value="listeler" className="flex items-center gap-1.5">
+            <ListChecks className="h-4 w-4" /> Arama Listeleri
             {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
           </TabsTrigger>
           <TabsTrigger value="etkinlik-katilimcilari" className="flex items-center gap-1.5">
@@ -208,19 +216,35 @@ export default function NgoCallCenterPage() {
             <HeartHandshake className="h-4 w-4" /> Gönüllü Katılımcıları
             {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
           </TabsTrigger>
-          <TabsTrigger value="listeler" className="flex items-center gap-1.5">
-            <ListChecks className="h-4 w-4" /> Arama Listeleri
-            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
-          </TabsTrigger>
-          <TabsTrigger value="iletisim" className="flex items-center gap-1.5">
-            <MessageCircle className="h-4 w-4" /> İletişim Merkezi
-            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
-          </TabsTrigger>
+
+          {/* "Diğer" açılır menüsü — İletişim Merkezi + ileride eklenecek sekmeler
+              buraya toplanır (sekme çubuğu kalabalıklaşmasın). Seçilince ilgili
+              TabsContent açılır; aktif alt-sekme menü etiketinde gösterilir. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[on=true]:bg-background data-[on=true]:text-foreground data-[on=true]:shadow-sm"
+                data-on={['iletisim'].includes(tab ?? '') ? 'true' : undefined}
+              >
+                <MoreHorizontal className="h-4 w-4" /> Diğer
+                {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
+                <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setTab('iletisim')}>
+                <MessageCircle className="mr-2 h-4 w-4" /> İletişim Merkezi
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <TabsTrigger value="ayarlar" className="flex items-center gap-1.5">
             <Settings className="h-4 w-4" /> Ayarlar
             {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
           </TabsTrigger>
         </TabsList>
+        </div>
 
         {/* Sekme 1 — Başvuru: kurulum yoksa önce tanıtım vitrini, sonra sihirbaz */}
         <TabsContent value="basvuru" className="mt-4">

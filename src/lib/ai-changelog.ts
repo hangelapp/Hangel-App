@@ -3,6 +3,26 @@ export const AI_CHANGELOG_GENERATED = "2026-07-12";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "bf066222",
+    "date": "2026-07-12",
+    "subject": "feat(volunteering): rekor gönüllülük ilanına çevrildi + çok-nokta + foto + pin + tanıtım sayfası"
+  },
+  {
+    "hash": "7f5b6610",
+    "date": "2026-07-12",
+    "subject": "feat(events): profil fotoğrafı = +1 selfie referansı + worldcleanday/cleanday vanity kısa-linkleri"
+  },
+  {
+    "hash": "59801a88",
+    "date": "2026-07-12",
+    "subject": "feat(events): rekor etkinliği altyapısı — çok-nokta + kurumsal katılımcı + foto galeri + selfie ile bul"
+  },
+  {
+    "hash": "f0ede8a2",
+    "date": "2026-07-12",
+    "subject": "feat(santral): karşılama/tanıtım ekranı + kurulum konfetisi (ilk-kez kullanıcı deneyimi)"
+  },
+  {
     "hash": "efee8360",
     "date": "2026-07-12",
     "subject": "feat(santral): panelden yönetilen çağrı akışı — IVR + sıra + sesli mesaj + yönlendirme + çalışma saatleri"
@@ -106,25 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "e8cf46f3",
     "date": "2026-07-10",
     "subject": "fix(lint): sroi share değişkeni no-useless-assignment (her iki dalda atanıyor)"
-  },
-  {
-    "hash": "30a84f7c",
-    "date": "2026-07-10",
-    "subject": "fix(mobile): onboarding/volunteer safe-area env() → var(--sat/--sab) (Android 15+ WebView)"
-  },
-  {
-    "hash": "03daa903",
-    "date": "2026-07-10",
-    "subject": "feat(deck): konferans kapağına destek dipnotu (title slaytına foot alanı) + default tarih/şehir"
-  },
-  {
-    "hash": "dc95dba0",
-    "date": "2026-07-10",
-    "subject": "fix(events): kilit ekranı canlı etkinliği (Live Activity) etkinlik günü sayfa açılışında da başlasın"
-  },
-  {
-    "hash": "5cb67ec5",
-    "date": "2026-07-10",
-    "subject": "gönüllülük kümesi 2: erişilebilirlik etiketleri + beceri rozetleri + takım meydan-okuma + referans mektubu + kısayol şeridi (build 408/408)"
   }
 ];

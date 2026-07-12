@@ -228,7 +228,7 @@ export async function POST(
   }
 
   // POC: Secret Manager entegrasyonu yok → apphosting.yaml env fallback.
-  const accessToken = process.env.WHATSAPP_DEFAULT_TOKEN ?? process.env.META_WA_ACCESS_TOKEN ?? '';
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN ?? process.env.WHATSAPP_DEFAULT_TOKEN ?? process.env.META_WA_ACCESS_TOKEN ?? '';
   if (!accessToken) {
     return NextResponse.json(
       {

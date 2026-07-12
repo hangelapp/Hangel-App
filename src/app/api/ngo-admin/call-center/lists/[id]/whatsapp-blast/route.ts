@@ -219,7 +219,7 @@ export async function POST(
     );
   }
 
-  const accessToken = process.env.WHATSAPP_DEFAULT_TOKEN ?? process.env.META_WA_ACCESS_TOKEN ?? '';
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN ?? process.env.WHATSAPP_DEFAULT_TOKEN ?? process.env.META_WA_ACCESS_TOKEN ?? '';
   if (!accessToken) {
     return NextResponse.json(
       { errorCode: 'WABA_TOKEN_MISSING', message: 'WhatsApp access token yapılandırılmamış.' },
