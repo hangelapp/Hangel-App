@@ -3,6 +3,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
@@ -88,6 +89,7 @@ export default function MyApplicationsPage() {
   }, [activeTab, searchTerm, sortOrder, statusFilter, applications]);
 
   const ApplicationCard = ({ app, onWithdraw }: { app: Application, onWithdraw: (id: string, title: string) => void }) => {
+    const router = useRouter();
     const getEntityLink = () => {
       if (!app.entityId) return '#';
       switch (app.type) {
@@ -97,6 +99,12 @@ export default function MyApplicationsPage() {
       }
     };
 
+    // Kartın tamamı yalnızca gerçek bir hedef varsa tıklanabilir ('#' değil).
+    // Anchor yerine router.push kullanılır → iç içe <a> hatası oluşmaz
+    // (butondaki mevcut <Link> tek anchor olarak kalır).
+    const entityLink = getEntityLink();
+    const isClickable = entityLink !== '#';
+
     const StatusIcon = {
       'Onaylandı': <CheckCircle className="h-5 w-5 text-green-600" />,
       'Beklemede': <Hourglass className="h-5 w-5 text-yellow-500" />,
@@ -104,7 +112,25 @@ export default function MyApplicationsPage() {
     }[app.status];
 
     return (
-      <Card className="transition-colors hover:bg-accent/50">
+      <Card
+        className={cn(
+          'transition-colors',
+          isClickable && 'cursor-pointer hover:bg-accent/50 hover:border-primary/30',
+        )}
+        {...(isClickable
+          ? {
+              role: 'link',
+              tabIndex: 0,
+              onClick: () => router.push(entityLink),
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  router.push(entityLink);
+                }
+              },
+            }
+          : {})}
+      >
         <CardHeader className="flex flex-row items-start justify-between gap-4 p-4">
           <div className="min-w-0">
             <CardTitle className="text-base break-words">{app.title}</CardTitle>
@@ -125,7 +151,10 @@ export default function MyApplicationsPage() {
               <AlertDescription>{app.rejectionReason}</AlertDescription>
             </Alert>
           )}
-          <div className="flex gap-2">
+          {/* Kart tıklanabilir olduğunda buton kendi navigasyonunu yapar;
+              çift tetiklenmeyi ve dialog açılırken kart yönlendirmesini
+              önlemek için buton satırında propagation durdurulur. */}
+          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
             <Button asChild variant="secondary" className="flex-1">
               <Link href={getEntityLink()}>
                 <Eye className="mr-2 h-4 w-4" /> {t('dashboard.applications.viewListing')}

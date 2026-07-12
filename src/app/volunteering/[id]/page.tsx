@@ -504,6 +504,11 @@ export default function VolunteeringDetailPage() {
         type: 'Gönüllülük',
         org: opportunity.organization,
         entityId: opportunity.id,
+        // İlan sahibi STK'nın id'sini DENORMALİZE et: applications.list kuralı
+        // ownsNgoListing(resource.data.ngoId) ile ilan sahibi yöneticiye (super-admin
+        // olmayan) okuma izni verebilsin. Aksi halde yönetici başvuru listesini
+        // client-side sorguda PERMISSION_DENIED alıp "liste yüklenemedi" görüyordu.
+        ngoId: opportunity.ngoId || '',
         date: today,
         status: 'Beklemede',
         location: oppLoc.city

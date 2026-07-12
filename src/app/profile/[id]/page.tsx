@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useParams, useRouter, notFound } from 'next/navigation';
 import { doc } from 'firebase/firestore';
-import { ArrowLeft, MapPin, GraduationCap, Briefcase, Star, Heart, Handshake, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { ArrowLeft, MapPin, GraduationCap, Briefcase, Star, Heart, Handshake, Loader2, AlertCircle, RefreshCw, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useIsNgoAdmin } from '@/hooks/use-is-ngo-admin';
 
 type PublicUserData = {
   name?: string;
@@ -19,6 +20,11 @@ type PublicUserData = {
   coverPhotoUrl?: string;
   impactScore?: number;
   personalInfo?: {
+    // İletişim: yalnız STK yöneticisi / super-admin görür (KVKK). Diğer
+    // ziyaretçilere render EDİLMEZ. users read kuralı ham dokümanı okumaya
+    // izin verdiği için gizleme UI seviyesinde koşullu yapılır.
+    phone?: string;
+    email?: string;
     address?: {
       city?: string;
       district?: string;
@@ -45,6 +51,8 @@ export default function PublicProfilePage() {
   const router = useRouter();
   const id = params.id as string;
   const db = useFirestore();
+  // İletişim bilgisini yalnız STK yöneticisi / super-admin görebilir.
+  const { isNgoAdmin } = useIsNgoAdmin();
 
   const userRef = useMemoFirebase(
     () => (db && id ? doc(db, COLLECTIONS.users, id) : null),
@@ -108,6 +116,10 @@ export default function PublicProfilePage() {
   const profession = profile.volunteerInfo?.profession;
   const skills = profile.volunteerInfo?.skills ?? [];
   const interests = profile.volunteerInfo?.interests ?? [];
+  // İletişim — yalnız STK yöneticisi/super-admin için (KVKK: sadece telefon+e-posta).
+  const phone = profile.personalInfo?.phone?.trim();
+  const email = profile.personalInfo?.email?.trim();
+  const showContact = isNgoAdmin && (phone || email);
 
   return (
     <div className="animate-in fade-in-0">
@@ -168,6 +180,37 @@ export default function PublicProfilePage() {
             </CardContent>
           </Card>
         </div>
+
+        {showContact && (
+          <Card className="mt-4 border-primary/30">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">İletişim</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Bu bilgi yalnızca STK yöneticilerine gösterilir.
+              </p>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 space-y-2">
+              {phone && (
+                <a
+                  href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
+                  className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
+                >
+                  <Phone className="h-4 w-4 text-primary shrink-0" />
+                  <span className="font-medium tabular-nums break-all">{phone}</span>
+                </a>
+              )}
+              {email && (
+                <a
+                  href={`mailto:${email}`}
+                  className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
+                >
+                  <Mail className="h-4 w-4 text-primary shrink-0" />
+                  <span className="font-medium break-all">{email}</span>
+                </a>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {(topEducation?.school || profession) && (
           <Card className="mt-4">

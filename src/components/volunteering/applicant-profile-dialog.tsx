@@ -21,7 +21,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Award, GraduationCap, Sparkles, Brain } from 'lucide-react';
+import { Award, GraduationCap, Sparkles, Brain, Phone, Mail } from 'lucide-react';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { User } from '@/lib/types';
@@ -92,6 +92,13 @@ export function ApplicantProfileDialog({
   const displayName = profile?.name || userName || 'Gönüllü';
   const username = profile?.username;
   const city = profile?.personalInfo?.address?.city;
+  // İletişim: yönetici başvuranla iletişime geçebilsin diye telefon + e-posta
+  // gösterilir (KVKK: yalnız iletişim alanları; adres/doğum tarihi/cinsiyet
+  // vb. paylaşılmaz). Bu dialog zaten sadece ilan sahibi STK yöneticisine /
+  // super-admin'e açık (applications.list kuralı gereği).
+  const phone = profile?.personalInfo?.phone?.trim();
+  const email = profile?.personalInfo?.email?.trim();
+  const telHref = phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : null;
   const skills = profile?.volunteerInfo?.skills || [];
   const interests = profile?.volunteerInfo?.interests || [];
   const firstEducation = profile?.volunteerInfo?.education?.[0];
@@ -160,7 +167,34 @@ export function ApplicantProfileDialog({
           ) : null}
         </div>
 
-        {/* 3. Gönüllü profili özeti */}
+        {/* 3. İletişim — telefon + e-posta (yönetici iletişime geçebilsin) */}
+        {!isLoading && (phone || email) ? (
+          <div className="rounded-xl border bg-card p-4 space-y-2">
+            <span className="text-xs font-semibold text-muted-foreground">
+              İletişim
+            </span>
+            {phone ? (
+              <a
+                href={telHref ?? undefined}
+                className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
+              >
+                <Phone className="h-4 w-4 text-primary shrink-0" />
+                <span className="font-medium tabular-nums break-all">{phone}</span>
+              </a>
+            ) : null}
+            {email ? (
+              <a
+                href={`mailto:${email}`}
+                className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
+              >
+                <Mail className="h-4 w-4 text-primary shrink-0" />
+                <span className="font-medium break-all">{email}</span>
+              </a>
+            ) : null}
+          </div>
+        ) : null}
+
+        {/* 4. Gönüllü profili özeti */}
         {isLoading && userId ? (
           <div className="space-y-2">
             <Skeleton className="h-5 w-40" />
@@ -224,7 +258,7 @@ export function ApplicantProfileDialog({
           </div>
         )}
 
-        {/* 4. Tam profil linki */}
+        {/* 5. Tam profil linki */}
         {userId ? (
           <Button asChild className="rounded-xl w-full">
             <Link href={`/profile/${userId}`}>Tam profili aç</Link>

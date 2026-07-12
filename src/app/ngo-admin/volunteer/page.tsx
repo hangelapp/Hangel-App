@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone, Check, Users, Clock } from "lucide-react";
+import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone, Check, Users, Clock, Pencil } from "lucide-react";
 import React, { useMemo, useEffect, useRef, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -20,6 +20,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/
 import { SocialShareButton } from '@/components/ngo-admin/social-share-dialog';
 import { EventAttendees } from '@/components/events/event-attendees';
 import { EventBadgeCards, EventCertificates } from '@/components/events/event-bulk-docs';
+import { EventPhotosAdmin } from '@/components/events/event-photos-admin';
 import { VolunteeringCheckinQR } from '@/components/volunteering/volunteering-checkin-qr';
 import { RewardManager } from '@/components/rewards/reward-manager';
 import { BroadcastMessageButton } from '@/components/messaging/broadcast-message-button';
@@ -356,6 +357,14 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, a
                     Sosyal Medya · Google Tanıt · Kayıt/Check-in QR · Ödül · Katılımcılar
                     · Mesaj Gönder · Yaka Kartları · Sertifikalar · Tamamla + yayın kontrolü. */}
                 <CardFooter className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                    {/* Düzenle — ilanın TÜM detaylarını create form'unun edit
+                        modunda açar (?edit=<id>). Kayıtta onaylı gönüllülere
+                        bildirim gider. Beklemede/pasif ilanlar dahil düzenlenebilir. */}
+                    <Button asChild variant="outline" size="sm" className="rounded-xl w-full sm:w-auto">
+                        <Link href={`/ngo-admin/volunteer/new?edit=${opp.id}`}>
+                            <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
+                        </Link>
+                    </Button>
                     <SocialShareButton
                         kind="volunteering"
                         item={{
@@ -377,6 +386,9 @@ const OpportunityManagementTab = ({ opportunities, isLoading, countsByListing, a
                         </Link>
                     </Button>
                     <VolunteeringCheckinQR oppId={opp.id} logoUrl={ngoLogoUrl} />
+                    {/* Fotoğraflar yönetimi — public galeri linki + kim yükledi + sil.
+                        Etkinlik kartıyla eşitlik: fotoğraf özelliği tüm gönüllülüklerde de aktif. */}
+                    <EventPhotosAdmin eventId={opp.id} scope="volunteering" />
                     <RewardManager kind="volunteering" id={opp.id} />
                     <EventAttendees eventId={opp.id} label="Gönüllüler" endpoint={`/api/volunteering/${opp.id}/attendees`} />
                     <BroadcastMessageButton targetId={opp.id} kind="volunteering" title={opp.title} className="rounded-xl w-full sm:w-auto" />

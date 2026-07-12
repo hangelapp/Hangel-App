@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
+import React, { useState, useMemo, useRef, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,7 +22,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, addDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, addDoc, updateDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { Country, State, City } from 'country-state-city';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import {
@@ -92,6 +92,82 @@ const commitmentMap: Record<string, string> = {
   continuous: 'Sürekli',
 };
 
+// EDIT modu ters eşlemeler: Firestore'da saklanan Türkçe değerden form
+// state değerine geri döner (prefill için). locationTypeMap/commitmentMap'in
+// tersi.
+const locationTypeReverseMap: Record<string, string> = {
+  Online: 'online',
+  Saha: 'field',
+  Hibrit: 'hybrid',
+};
+
+const commitmentReverseMap: Record<string, string> = {
+  'Tek Günlük': 'one-day',
+  Dönemsel: 'periodic',
+  Sürekli: 'continuous',
+};
+
+// Saklanmış değer virgülle birleşik string ("A, B") ya da array olabilir.
+// Array varsa onu, yoksa string'i virgülden ayırıp temizleyerek diziye çevir.
+const toArray = (arr: unknown, str: unknown): string[] => {
+  if (Array.isArray(arr)) return arr.filter((x): x is string => typeof x === 'string' && x.trim().length > 0);
+  if (typeof str === 'string' && str.trim()) return str.split(',').map(s => s.trim()).filter(Boolean);
+  return [];
+};
+
+// Firestore'da saklanan gönüllülük ilanı — create form'un yazdığı tüm alanlar
+// (Volunteering tipinde bulunmayan dailySkills/professions/taskTypeId vb. dahil).
+type StoredVolunteering = {
+  ngoId?: string;
+  title?: string;
+  description?: string;
+  socialArea?: string;
+  interests?: string[];
+  location?: {
+    country?: string;
+    city?: string;
+    district?: string;
+    neighborhood?: string;
+    cities?: string[];
+    districts?: string[];
+    neighborhoods?: string[];
+    address?: string;
+    lat?: string | number;
+    lon?: string | number;
+    type?: 'Online' | 'Saha' | 'Hibrit';
+  };
+  participationCondition?: string;
+  commitment?: string;
+  volunteerCount?: { needed?: number; applications?: number };
+  dates?: {
+    applicationEnd?: string;
+    applicationEndTime?: string | null;
+    eventStart?: string;
+    eventStartTime?: string | null;
+    eventEnd?: string;
+    eventEndTime?: string | null;
+  };
+  skills?: string[];
+  dailySkills?: string[];
+  professions?: string[];
+  languages?: string[];
+  signLanguages?: string[];
+  programs?: string[];
+  certificates?: string[];
+  driverLicenses?: string[];
+  education?: string | null;
+  travel?: { domestic?: boolean; international?: boolean; visas?: string[] };
+  amenities?: {
+    transport?: boolean;
+    food?: boolean;
+    accommodation?: boolean;
+    preTraining?: boolean;
+    providesCertificate?: boolean;
+  };
+  taskTypeId?: string;
+  estimatedHours?: number;
+};
+
 function NewOpportunityForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -103,7 +179,23 @@ function NewOpportunityForm() {
   // uid'sine düşüp eşleşmiyor ve STK kendi ilanını göremiyordu (#8).
   const { id: activeId } = useActiveEntity();
 
-  const entityId = searchParams.get('id') || activeId || authUser?.uid || null;
+  // EDIT modu: ?edit=<volunteeringId> varsa mevcut ilanı düzenliyoruz.
+  const editId = searchParams.get('edit');
+  const isEdit = !!editId;
+
+  // Düzenlenecek ilanı yükle (edit modunda). Doc'tan gelen ngoId, edit modunda
+  // backHref + ngoData lookup'ının doğru STK'ya işaret etmesini sağlar.
+  const editDocRef = useMemoFirebase(() => {
+    if (!db || !editId) return null;
+    return doc(db, COLLECTIONS.volunteering, editId);
+  }, [db, editId]);
+  const { data: editOpp } = useDoc<StoredVolunteering>(editDocRef);
+
+  // Create modunda entityId = ?id / aktif STK / kullanıcı uid.
+  // Edit modunda entityId = yüklenen ilanın ngoId'si (doğru STK).
+  const entityId = isEdit
+    ? (editOpp?.ngoId || activeId || authUser?.uid || null)
+    : (searchParams.get('id') || activeId || authUser?.uid || null);
 
   const ngoDocRef = useMemoFirebase(() => {
     if (!db || !entityId) return null;
@@ -154,6 +246,79 @@ function NewOpportunityForm() {
   const [estimatedHours, setEstimatedHours] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // EDIT modu prefill: yüklenen ilan bir KEZ form state'ine doldurulur. Guard
+  // (prefilledRef) sayesinde sonraki re-render/snapshot'larda kullanıcının
+  // düzenlemeleri EZİLMEZ. Yüklenen ilanın volunteerCount.applications değerini
+  // de tutuyoruz ki save'de sıfırlamayalım.
+  const prefilledRef = useRef(false);
+  const existingApplicationsRef = useRef(0);
+
+  useEffect(() => {
+    if (!isEdit || !editOpp || prefilledRef.current) return;
+    prefilledRef.current = true;
+
+    const o = editOpp;
+    existingApplicationsRef.current = o.volunteerCount?.applications || 0;
+
+    setTitle(o.title || '');
+    setDescription(o.description || '');
+    setSocialArea(o.socialArea || '');
+
+    // location.type ('Online'/'Saha'/'Hibrit') → state ('online'/'field'/'hybrid')
+    setLocationType(o.location?.type ? (locationTypeReverseMap[o.location.type] || '') : '');
+    setCountry(o.location?.country || 'Türkiye');
+    // Array varsa onu, yoksa virgüllü string'i böl.
+    setCities(toArray(o.location?.cities, o.location?.city));
+    setDistricts(toArray(o.location?.districts, o.location?.district));
+    setNeighborhoods(toArray(o.location?.neighborhoods, o.location?.neighborhood));
+    setMeetingAddress(o.location?.address || '');
+    setMeetingLat(o.location?.lat != null ? String(o.location.lat) : '');
+    setMeetingLon(o.location?.lon != null ? String(o.location.lon) : '');
+
+    setApplicationEnd(o.dates?.applicationEnd || '');
+    setApplicationEndTime(o.dates?.applicationEndTime || '');
+    setEventStart(o.dates?.eventStart || '');
+    setEventStartTime(o.dates?.eventStartTime || '');
+    setEventEnd(o.dates?.eventEnd || '');
+    setEventEndTime(o.dates?.eventEndTime || '');
+
+    setParticipationCondition(o.participationCondition || '');
+
+    // commitment "<Türkçe> — <detay>" → state + detay. join(' — ') ile yazıldığı
+    // için ilk ' — ' üzerinden ayır; sonraki ' — ' varsa detaya dahil et.
+    const commitmentRaw = o.commitment || '';
+    const sepIdx = commitmentRaw.indexOf(' — ');
+    const commitmentLabel = sepIdx >= 0 ? commitmentRaw.slice(0, sepIdx) : commitmentRaw;
+    const commitmentDetailRaw = sepIdx >= 0 ? commitmentRaw.slice(sepIdx + 3) : '';
+    setCommitment(commitmentReverseMap[commitmentLabel.trim()] || '');
+    setCommitmentDetail(commitmentDetailRaw.trim());
+
+    setVolunteerNeeded(o.volunteerCount?.needed != null ? String(o.volunteerCount.needed) : '');
+
+    setSkills(Array.isArray(o.skills) ? o.skills : []);
+    setDailySkills(Array.isArray(o.dailySkills) ? o.dailySkills : []);
+    setInterests(Array.isArray(o.interests) ? o.interests : []);
+    setProfessions(Array.isArray(o.professions) ? o.professions : []);
+    setLanguages(Array.isArray(o.languages) ? o.languages : []);
+    setSignLanguages(Array.isArray(o.signLanguages) ? o.signLanguages : []);
+    setPrograms(Array.isArray(o.programs) ? o.programs : []);
+    setCertificates(Array.isArray(o.certificates) ? o.certificates : []);
+    setDriverLicenses(Array.isArray(o.driverLicenses) ? o.driverLicenses : []);
+    setVisas(Array.isArray(o.travel?.visas) ? (o.travel?.visas as string[]) : []);
+    setEducation(o.education || '');
+
+    setDomesticTravel(!!o.travel?.domestic);
+    setInternationalTravel(!!o.travel?.international);
+    setTransport(!!o.amenities?.transport);
+    setFood(!!o.amenities?.food);
+    setAccommodation(!!o.amenities?.accommodation);
+    setPreTraining(!!o.amenities?.preTraining);
+    setProvidesCertificate(!!o.amenities?.providesCertificate);
+
+    setTaskTypeId(o.taskTypeId || '');
+    setEstimatedHours(o.estimatedHours != null ? String(o.estimatedHours) : '');
+  }, [isEdit, editOpp]);
 
   // Süper-admin tarafından yönetilen iş kalemleri kataloğu
   const scoringQuery = useMemoFirebase(
@@ -293,7 +458,8 @@ function NewOpportunityForm() {
         commitment: [commitmentMap[commitment], commitmentDetail.trim()].filter(Boolean).join(' — '),
         volunteerCount: {
           needed: Number(volunteerNeeded) || 0,
-          applications: 0,
+          // Edit modunda mevcut başvuru sayısını KORU (create'te 0).
+          applications: isEdit ? existingApplicationsRef.current : 0,
         },
         dates: {
           applicationStart: new Date().toISOString().slice(0, 10),
@@ -338,33 +504,78 @@ function NewOpportunityForm() {
         estimatedHours: hoursNum,
         points: computedPoints,
         manHourValue: computedMHValue,
-        status: 'Beklemede',
-        createdAt: serverTimestamp(),
-        createdBy: authUser?.uid || null,
       };
 
-      const volunteerRef = await addDoc(collection(db, COLLECTIONS.volunteering), payload);
+      if (isEdit && editId) {
+        // EDIT: sadece düzenlenebilir alanları güncelle. status / createdAt /
+        // createdBy DEĞİŞTİRİLMEZ (super-admin onay durumu, oluşturulma bilgisi
+        // korunur), volunteerCount.applications yukarıda mevcut değerle korundu.
+        await updateDoc(doc(db, COLLECTIONS.volunteering, editId), {
+          ...payload,
+          updatedAt: serverTimestamp(),
+        });
 
-      // Yaşam döngüsü: "gönüllülük ilanınızın kaydı alındı" (bildirim + kurumsal SMS)
-      try {
-        const lifecycleToken = await authUser?.getIdToken();
-        await fireOrgLifecycle(lifecycleToken, { kind: 'volunteer', stage: 'received', refId: volunteerRef.id });
-      } catch { /* best-effort */ }
+        // Onaylı gönüllülere "ilan güncellendi" bildirimi — MEVCUT broadcast
+        // rotasını yeniden kullan (yeni server function YOK). Best-effort:
+        // bildirim gitmezse kayıt yine de başarılı sayılır.
+        try {
+          const token = await authUser?.getIdToken();
+          if (token) {
+            await fetch(`/api/volunteering/${editId}/broadcast`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                audience: 'approved',
+                subject: 'Gönüllülük ilanı güncellendi',
+                message: `"${title.trim()}" ilanında güncelleme yapıldı. Detayları ilan sayfasından görebilirsin.`,
+              }),
+            });
+          }
+        } catch { /* best-effort — bildirim başarısız olsa da kayıt başarılı */ }
 
-      toast({
-        title: 'İlan Onaya Gönderildi',
-        description: 'Gönüllülük ilanınız süper admin onayından sonra yayına alınacaktır.',
-      });
-      const backHref = entityId && searchParams.get('id')
-        ? `/ngo-admin/volunteer?id=${searchParams.get('id')}`
-        : '/ngo-admin/volunteer';
+        toast({
+          title: 'İlan güncellendi',
+          description: 'İlan güncellendi — onaylı gönüllülere bildirim gönderildi.',
+        });
+      } else {
+        const payloadCreate: Record<string, unknown> = {
+          ...payload,
+          status: 'Beklemede',
+          createdAt: serverTimestamp(),
+          createdBy: authUser?.uid || null,
+        };
+
+        const volunteerRef = await addDoc(collection(db, COLLECTIONS.volunteering), payloadCreate);
+
+        // Yaşam döngüsü: "gönüllülük ilanınızın kaydı alındı" (bildirim + kurumsal SMS)
+        try {
+          const lifecycleToken = await authUser?.getIdToken();
+          await fireOrgLifecycle(lifecycleToken, { kind: 'volunteer', stage: 'received', refId: volunteerRef.id });
+        } catch { /* best-effort */ }
+
+        toast({
+          title: 'İlan Onaya Gönderildi',
+          description: 'Gönüllülük ilanınız süper admin onayından sonra yayına alınacaktır.',
+        });
+      }
+
+      // Edit modunda ngoId doc'tan (entityId) gelir; create modunda mevcut
+      // ?id davranışı AYNEN korunur.
+      const backHref = isEdit
+        ? (entityId ? `/ngo-admin/volunteer?id=${entityId}` : '/ngo-admin/volunteer')
+        : (entityId && searchParams.get('id')
+            ? `/ngo-admin/volunteer?id=${searchParams.get('id')}`
+            : '/ngo-admin/volunteer');
       router.push(backHref);
     } catch (err) {
-      console.error('Failed to publish opportunity:', err);
+      console.error(isEdit ? 'Failed to update opportunity:' : 'Failed to publish opportunity:', err);
       const e = err as { message?: string };
       toast({
         variant: 'destructive',
-        title: 'İlan yayınlanamadı',
+        title: isEdit ? 'İlan güncellenemedi' : 'İlan yayınlanamadı',
         description: e?.message || 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.',
       });
     } finally {
@@ -375,8 +586,8 @@ function NewOpportunityForm() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Yeni Gönüllülük İlanı Oluştur</h1>
-        <p className="text-muted-foreground">Kuruluşunuz için yeni bir gönüllülük fırsatı yayınlayın.</p>
+        <h1 className="text-2xl font-bold">{isEdit ? 'Gönüllülük İlanını Düzenle' : 'Yeni Gönüllülük İlanı Oluştur'}</h1>
+        <p className="text-muted-foreground">{isEdit ? 'İlanın tüm detaylarını güncelleyin; kaydedince onaylı gönüllülere bildirim gönderilir.' : 'Kuruluşunuz için yeni bir gönüllülük fırsatı yayınlayın.'}</p>
       </div>
       <form className="space-y-6" onSubmit={handleSubmit}>
         <Card>
@@ -672,7 +883,9 @@ function NewOpportunityForm() {
 
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isSubmitting ? 'Yayınlanıyor...' : 'İlanı Yayınla'}
+          {isEdit
+            ? (isSubmitting ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet')
+            : (isSubmitting ? 'Yayınlanıyor...' : 'İlanı Yayınla')}
         </Button>
       </form>
     </div>

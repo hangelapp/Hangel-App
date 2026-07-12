@@ -71,7 +71,7 @@ export interface NgoAdminContext {
  */
 export async function requireNgoAdmin(
   req: Request,
-  options?: { allowSuperAdmin?: boolean; targetNgoId?: string; scope?: NgoScope }
+  options?: { allowSuperAdmin?: boolean; targetNgoId?: string; scope?: NgoScope; requireNgoId?: boolean }
 ): Promise<
   | { error: NextResponse; actor?: undefined }
   | { actor: NgoAdminContext; error?: undefined }
@@ -101,8 +101,22 @@ export async function requireNgoAdmin(
   const isSuperAdmin = decoded.role === 'super-admin';
 
   if (isSuperAdmin && allowSuperAdmin) {
+    // Super-admin, herhangi bir NGO adına işlem yapabilir. ngoId çözüm sırası:
+    // targetNgoId (client'ın hedeflediği) → kendi managedNgoId'si → boş string.
+    // ÖNEMLİ: super-admin'in managedNgoId'si genelde null'dur; eskiden bu durumda
+    // KOŞULSUZ 400 "targetNgoId gerekli" dönüyordu ve targetNgoId GÖNDERMEYEN rotalar
+    // (volunteering approve/reject/attendees/checkins/broadcast, event broadcast)
+    // super-admin için TAMAMEN kırılıyordu — bu rotalar zaten super-admin'i
+    // ownership kontrolünden `!actor.isSuperAdmin && ...` ile muaf tutuyor, yani
+    // boş ngoId onlar için sorun değil.
     const ngoId = options?.targetNgoId ?? userData?.managedNgoId ?? '';
-    if (!ngoId) {
+    // 400 SADECE ngoId'yi doküman anahtarı olarak kullanan rotalar için (ads/mail).
+    // Bu rotalar server-auth.requireNgoAdmin'i DOĞRUDAN çağırır; varsayılan
+    // requireNgoId=true olduğundan davranışları hiç değişmez (boş ngoId → 400,
+    // .doc('') çağrısı engellenir). Volunteering/events rotaları ise
+    // requireNgoAdminForRoute wrapper'ı ÜZERİNDEN requireNgoId=false geçer.
+    const requireNgoId = options?.requireNgoId ?? true;
+    if (!ngoId && requireNgoId) {
       return {
         error: NextResponse.json({ error: 'targetNgoId gerekli (super-admin için)' }, { status: 400 }),
       };

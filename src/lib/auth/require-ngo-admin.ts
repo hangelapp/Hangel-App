@@ -28,9 +28,14 @@ export type { NgoAdminContext };
 
 export async function requireNgoAdminForRoute(
   req: Request,
-  options?: { allowSuperAdmin?: boolean; targetNgoId?: string },
+  options?: { allowSuperAdmin?: boolean; targetNgoId?: string; requireNgoId?: boolean },
 ): Promise<{ error: NextResponse; actor?: undefined } | { actor: NgoAdminContext; error?: undefined }> {
-  const result = await requireNgoAdmin(req, options);
+  // Bu wrapper'ı SADECE volunteering/events/evaluations/completions rotaları
+  // kullanır; hepsi super-admin'i ownership'ten `!actor.isSuperAdmin && ...` ile
+  // muaf tutar ve ngoId'yi doküman anahtarı olarak KULLANMAZ. Bu yüzden super-admin
+  // için boş ngoId güvenlidir → requireNgoId varsayılanı false. (Aksi halde
+  // super-admin'in managedNgoId'si null olduğundan onay/liste rotaları 400 verirdi.)
+  const result = await requireNgoAdmin(req, { requireNgoId: false, ...options });
   if ('actor' in result && result.actor) {
     return { actor: result.actor };
   }

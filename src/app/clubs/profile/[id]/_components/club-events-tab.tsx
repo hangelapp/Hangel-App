@@ -105,23 +105,25 @@ export function ClubEventsTab({ clubId }: Props) {
 
   return (
     <div className="space-y-3">
+      {/* Kartın tamamı etkinlik detayına yönlendirir. İç içe <a> hatasını
+          önlemek için footer butonu artık link değil; sadece görseldir. */}
       {events.map((event) => (
-        <Card key={event.id}>
-          <CardContent className="pt-4 space-y-2">
-            <h3 className="font-bold text-base leading-snug break-words line-clamp-2">{event.title}</h3>
-            {event.description && <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{event.description}</p>}
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
-              <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatEventDate(event.startDate)}</span>
-              {event.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span>}
-              {event.capacity != null && (
-                <span>{event.registeredCount ?? 0}/{event.capacity}</span>
-              )}
-            </div>
-            <Button asChild size="sm" variant="outline" className="w-full mt-2">
-              <Link href={`/events/${event.id}`}>Detay</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <Link key={event.id} href={`/events/${event.id}`} className="group block">
+          <Card className="transition-all group-hover:border-primary/30 group-hover:shadow-lg">
+            <CardContent className="pt-4 space-y-2">
+              <h3 className="font-bold text-base leading-snug break-words line-clamp-2 group-hover:text-primary transition-colors">{event.title}</h3>
+              {event.description && <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{event.description}</p>}
+              <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
+                <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatEventDate(event.startDate)}</span>
+                {event.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span>}
+                {event.capacity != null && (
+                  <span>{event.registeredCount ?? 0}/{event.capacity}</span>
+                )}
+              </div>
+              <Button size="sm" variant="outline" className="w-full mt-2">Detay</Button>
+            </CardContent>
+          </Card>
+        </Link>
       ))}
     </div>
   );

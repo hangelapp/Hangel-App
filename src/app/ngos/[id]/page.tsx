@@ -139,23 +139,25 @@ const PostCard = ({ post, shareUrl, shareTitle }: { post: Post; shareUrl: string
     );
 };
 
+// Kartın tamamı ilan detayına yönlendirir (whole-card link). İç içe <a>
+// hatasını önlemek için footer butonu artık link değil; sadece görseldir.
 const OpportunityCard = ({ opp }: { opp: Volunteering }) => (
-    <Card>
-        <CardHeader>
-            <CardTitle className="text-base">{opp.title}</CardTitle>
-            <CardDescription>{opp.organization}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4" />{opp.location.city} ({opp.location.type})</div>
-            <div className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-4 w-4" />{opp.commitment}</div>
-            <div className="flex items-center gap-2 text-primary font-semibold"><Award className="h-4 w-4" />{opp.points} Puan</div>
-        </CardContent>
-        <CardFooter>
-            <Button asChild variant="secondary" className="w-full">
-                <Link href={`/volunteering/${opp.id}`}>Detayları Gör</Link>
-            </Button>
-        </CardFooter>
-    </Card>
+    <Link href={`/volunteering/${opp.id}`} className="group block transition-all hover:border-primary/30 hover:shadow-lg rounded-lg">
+        <Card className="transition-all group-hover:border-primary/30 group-hover:shadow-lg">
+            <CardHeader>
+                <CardTitle className="text-base group-hover:text-primary transition-colors">{opp.title}</CardTitle>
+                <CardDescription>{opp.organization}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4" />{opp.location.city} ({opp.location.type})</div>
+                <div className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-4 w-4" />{opp.commitment}</div>
+                <div className="flex items-center gap-2 text-primary font-semibold"><Award className="h-4 w-4" />{opp.points} Puan</div>
+            </CardContent>
+            <CardFooter>
+                <Button variant="secondary" className="w-full">Detayları Gör</Button>
+            </CardFooter>
+        </Card>
+    </Link>
 );
 
 export default function NgoProfilePage() {

@@ -876,8 +876,19 @@ service cloud.firestore {
     // Başvuru koleksiyonu
     // SECURITY FIX 2026-05-27: list per-doc kısıtlı — kullanıcı sadece kendi başvurusunu görür.
     match /applications/{appId} {
-      allow list: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
-      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isSuperAdmin());
+      // list/read: super-admin; kendi başvurusu; VEYA ilan sahibi STK yöneticisi
+      // (başvuruya denormalize edilmiş ngoId, yöneticinin managedNgoId'siyle eşleşirse).
+      // Bu son koşul, super-admin OLMAYAN gerçek STK yöneticilerinin başvuru listesini
+      // görebilmesi için gereklidir (aksi halde "liste yüklenemedi" hatası alıyorlardı).
+      allow list: if isSuperAdmin()
+        || (isSignedIn() && resource.data.userId == request.auth.uid)
+        || ownsNgoListing(resource.data.ngoId);
+      allow read: if isSignedIn() && (
+        resource == null
+        || resource.data.userId == request.auth.uid
+        || isSuperAdmin()
+        || ownsNgoListing(resource.data.ngoId)
+      );
       // Corporate registrations (BRAND/CLUB/NGO) can be submitted by anonymous users
       // (onboarding flow runs before account creation). All other app types require auth.
       allow create: if isSignedIn() || (
