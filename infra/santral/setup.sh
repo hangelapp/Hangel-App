@@ -143,6 +143,32 @@ if [ -f /etc/default/coturn ]; then
 fi
 mkdir -p /var/log/turnserver && chown turnserver:turnserver /var/log/turnserver 2>/dev/null || true
 
+# --- 4b. Firewall (OS + GCP hatırlatma) --------------------------------------
+# ÖNEMLİ (2026-07-13): ses (RTP/TURN) portları açık DEĞİLSE arama bağlanır ama
+# SES AKMAZ (klasik belirti). Sinyal 443/WSS'ten gelir; medya bu UDP portlarından:
+#   - Asterisk RTP:   10000-20000/udp   (rtp.conf ile aynı aralık)
+#   - TURN:           3478/udp,tcp  5349/tcp
+#   - TURN relay:     49152-65535/udp   (turnserver.conf min/max-port ile aynı)
+#   - SIP trunk:      5060/udp,tcp
+# OS güvenlik duvarı (ufw) varsa burada açılır:
+if command -v ufw >/dev/null 2>&1; then
+  log "OS güvenlik duvarı (ufw) medya portları açılıyor"
+  ufw allow 443/tcp        >/dev/null 2>&1 || true
+  ufw allow 5060/tcp       >/dev/null 2>&1 || true
+  ufw allow 5060/udp       >/dev/null 2>&1 || true
+  ufw allow 3478/tcp       >/dev/null 2>&1 || true
+  ufw allow 3478/udp       >/dev/null 2>&1 || true
+  ufw allow 5349/tcp       >/dev/null 2>&1 || true
+  ufw allow 10000:20000/udp >/dev/null 2>&1 || true
+  ufw allow 49152:65535/udp >/dev/null 2>&1 || true
+  ok "ufw kuralları eklendi (ufw aktifse geçerli)"
+fi
+warn "GCP VPC güvenlik duvarını AYRICA açman gerekir (ufw yetmez). Cloud Shell'de bir kez:"
+echo "    gcloud compute firewall-rules create santral-media --project=hangelorg \\"
+echo "      --direction=INGRESS --action=ALLOW \\"
+echo "      --rules=udp:3478,tcp:3478,tcp:5349,tcp:5060,udp:5060,udp:10000-20000,udp:49152-65535 \\"
+echo "      --source-ranges=0.0.0.0/0"
+
 # --- 5. Servisleri etkinleştir + yeniden başlat ------------------------------
 log "Servisler etkinleştiriliyor ve başlatılıyor"
 systemctl enable asterisk coturn >/dev/null 2>&1 || true
