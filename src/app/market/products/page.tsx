@@ -17,7 +17,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ProductCard } from '@/components/market/product-card';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
-import { collection, limit, query, orderBy, startAt, where, getCountFromServer } from 'firebase/firestore';
+import { collection, limit, query, orderBy, startAt, where, getDocs } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
 
 export default function ProductsPage() {
@@ -55,15 +55,18 @@ export default function ProductsPage() {
     [debounced]
   );
 
-  // Toplam ürün sayısı (koleksiyonun tamamı) — placeholder yalnız çekilen 120'yi
-  // değil GERÇEK toplamı göstersin diye getCountFromServer ile ayrıca sayılır.
+  // Toplam ürün sayısı — MALİYET FİKSİ (2026-07-13): eskiden her açılışta
+  // getCountFromServer(products) çalışıyordu → 1.96M koleksiyonda count = ~2.000
+  // okuma/ziyaretçi. Artık önbellekli /api/public/stats'tan okunuyor (bedava).
   const [totalCount, setTotalCount] = useState<number | null>(null);
   useEffect(() => {
-    if (!db) return;
-    getCountFromServer(collection(db, COLLECTIONS.products))
-      .then((snap) => setTotalCount(snap.data().count))
+    let alive = true;
+    fetch('/api/public/stats')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (alive && d && typeof d.products === 'number') setTotalCount(d.products); })
       .catch(() => { /* sessiz — placeholder yine çalışır */ });
-  }, [db]);
+    return () => { alive = false; };
+  }, []);
 
   const productsQuery = useMemoFirebase(
     () =>
@@ -80,8 +83,17 @@ export default function ProductsPage() {
     useCollection<CanonicalProduct>(productsQuery);
 
   // Bağış oranı brands koleksiyonundan çözülür (scrape ürünlerinde donationRate yok).
-  const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
-  const { data: brands } = useCollection<{ name?: string; donationRate?: number }>(brandsQuery);
+  // MALİYET FİKSİ (2026-07-13): canlı dinleyici (useCollection) yerine TEK SEFERLİK
+  // okuma → her değişiklikte yeniden okumaz; mount başına bir kez ~200 doc okur.
+  const [brands, setBrands] = useState<{ name?: string; donationRate?: number }[]>([]);
+  useEffect(() => {
+    if (!db) return;
+    let alive = true;
+    getDocs(collection(db, COLLECTIONS.brands))
+      .then((snap) => { if (alive) setBrands(snap.docs.map((d) => d.data() as { name?: string; donationRate?: number })); })
+      .catch(() => { /* sessiz */ });
+    return () => { alive = false; };
+  }, [db]);
   const normBrand = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').toLowerCase().trim();
   const donationByBrand = useMemo(() => {
     const m = new Map<string, number>();

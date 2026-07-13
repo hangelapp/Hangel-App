@@ -185,13 +185,9 @@ const getCachedAllBrands = unstable_cache(
   { revalidate: CACHE_TTL_SECONDS },
 );
 
-// Ön-hesaplanmış marka listesi burada saklanır → istekler 99k ürünü TARAMADAN
-// tek doküman okur. Yalnız doc yoksa/bayatsa (>6s) yeniden hesaplanır (unstable_cache
-// zaten taramayı 1s'te bir ile sınırlar). Ürünler yalnız ingest'te değiştiği için
-// 6s tazelik dengesi uygun; yeni çekilen ürünler en geç 6s içinde listeye yansır.
-const AGG_DOC_FRESH_MS = 6 * 3600 * 1000;
-// Şema sürümü: gizli-marka listesi değişince bunu artır → eski kalıcı doc bayat
-// sayılır ve filtreyle yeniden hesaplanır (yoksa 6 saat eski liste servis edilir).
+// Ön-hesaplanmış marka listesi burada saklanır → istekler 1.96M ürünü TARAMADAN
+// tek doküman okur. Tarama yalnız korumalı ?refresh=<key> (cron) yolunda çalışır.
+// Şema sürümü: gizli-marka listesi değişince artır → refresh'te yeni şemayla yazılır.
 const AGG_SCHEMA = 2;
 
 // SERVİS anında da gizli markaları çıkar — kalıcı doc/cache eski liste içerse bile
@@ -215,18 +211,49 @@ const cacheHeaders = {
   'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,
 };
 
-export async function GET() {
+export async function GET(req: Request) {
   const db = getAdminFirestore();
   const ref = db.collection('marketAggregates').doc('brandsAll');
   const hidden = await resolveHiddenKeys(db); // statik + cron'dan gelen onaysız mağazalar
 
-  // 1) HIZLI YOL — önceden hesaplanmış doküman (ürün taraması YOK).
+  // ── MALİYET FİKSİ (2026-07-13) ────────────────────────────────────────────
+  // 1.96M ürünün TAM taraması (getCachedAllBrands) Firestore okuma faturasının
+  // ~%90'ını yakıyordu: bu GET kullanıcı isteğinde çalışıyor ve kalıcı doc 6 saatte
+  // bir bayatlayınca (veya soğuk başlangıçta) her ziyaretçi taramayı tetikliyordu
+  // → günde ~4-5 tarama × 1.96M = ~8.5M okuma/gün. ÇÖZÜM: kullanıcı isteği ASLA
+  // taramaz — yalnız ön-hesaplanmış doc'u okur (ürünler sadece ingest'te değişir,
+  // bayat liste zararsız). Pahalı tarama SADECE korumalı ?refresh=<key> ile,
+  // günde bir kez cron'dan çalışır (cron-job.org → MESSAGING_WORKER_KEY).
+  const url = new URL(req.url);
+  const provided = (url.searchParams.get('refresh') || '').trim()
+    || (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
+  const workerKey = process.env.MESSAGING_WORKER_KEY || '';
+  const isRefresh = !!workerKey && provided === workerKey;
+
+  if (isRefresh) {
+    // YALNIZ CRON: tam taramayı yap + doc'a yaz. Tek pahalı yol burası.
+    try {
+      const brands = await getCachedAllBrands();
+      await ref.set({ brands, updatedAt: Date.now(), schema: AGG_SCHEMA });
+      const visible = filterHidden(brands, hidden);
+      return NextResponse.json(
+        { version: 9, count: visible.length, brands: visible, refreshed: true },
+        { headers: { 'Cache-Control': 'no-store' } },
+      );
+    } catch (err) {
+      console.error('/api/market/brands-all refresh error', err);
+      return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'Yenilenemedi' }, { status: 500 });
+    }
+  }
+
+  // NORMAL YOL (kullanıcı): SADECE ön-hesaplanmış doc'u oku — bayatlık bakılmaz,
+  // ASLA ürün taraması yapılmaz. Doc yoksa boş liste dön (cron dolduracak),
+  // kullanıcıyı 1.96M taramayla bekletme.
   try {
     const snap = await ref.get();
     if (snap.exists) {
-      const data = snap.data() as { brands?: AllBrand[]; updatedAt?: number; schema?: number };
-      const fresh = typeof data.updatedAt === 'number' && Date.now() - data.updatedAt < AGG_DOC_FRESH_MS;
-      if (Array.isArray(data.brands) && data.brands.length > 0 && fresh) {
+      const data = snap.data() as { brands?: AllBrand[] };
+      if (Array.isArray(data.brands) && data.brands.length > 0) {
         const visible = filterHidden(data.brands, hidden);
         return NextResponse.json(
           { version: 9, count: visible.length, brands: visible },
@@ -235,23 +262,7 @@ export async function GET() {
       }
     }
   } catch {
-    /* doc okunamadı → hesaplama yoluna düş */
+    /* doc okunamadı → boş liste */
   }
-
-  // 2) YAVAŞ YOL — hesapla (unstable_cache 1s ile sınırlı) + doc'a yaz (fire-and-forget).
-  try {
-    const brands = await getCachedAllBrands();
-    ref.set({ brands, updatedAt: Date.now(), schema: AGG_SCHEMA }).catch(() => { /* yazım opsiyonel */ });
-    const visible = filterHidden(brands, hidden);
-    return NextResponse.json(
-      { version: 9, count: visible.length, brands: visible },
-      { headers: cacheHeaders },
-    );
-  } catch (err) {
-    console.error('/api/market/brands-all error', err);
-    return NextResponse.json(
-      { errorCode: 'INTERNAL_ERROR', message: 'Marka listesi alınamadı' },
-      { status: 500 },
-    );
-  }
+  return NextResponse.json({ version: 9, count: 0, brands: [] }, { headers: cacheHeaders });
 }

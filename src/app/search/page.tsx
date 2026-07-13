@@ -48,6 +48,13 @@ function GlobalSearchPageInner() {
     const [recent, setRecent] = useState<string[]>([]);
     const db = useFirestore();
 
+    // MALİYET FİKSİ (2026-07-13): 5 koleksiyon (ngos/brands/clubs/events/volunteering)
+    // HER ziyaretçide canlı okunuyordu (limitsiz onSnapshot × 5). Artık SADECE kullanıcı
+    // >=2 harf arayınca bir kez abone olunur (latch: bir açılır, açık kalır) — arama
+    // yapmadan sayfayı açan ziyaretçi Firestore'dan HİÇBİR şey okumaz.
+    const [active, setActive] = useState(initialQ.trim().length >= 2);
+    useEffect(() => { if (q.trim().length >= 2) setActive(true); }, [q]);
+
     useEffect(() => {
         try {
             const stored = localStorage.getItem(RECENT_KEY);
@@ -62,11 +69,11 @@ function GlobalSearchPageInner() {
         try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* noop */ }
     };
 
-    const ngosRef = useMemoFirebase(() => db ? query(collection(db, COLLECTIONS.ngos)) : null, [db]);
-    const brandsRef = useMemoFirebase(() => db ? query(collection(db, COLLECTIONS.brands)) : null, [db]);
-    const clubsRef = useMemoFirebase(() => db ? query(collection(db, COLLECTIONS.clubs)) : null, [db]);
-    const eventsRef = useMemoFirebase(() => db ? query(collection(db, COLLECTIONS.events)) : null, [db]);
-    const oppsRef = useMemoFirebase(() => db ? query(collection(db, COLLECTIONS.volunteering)) : null, [db]);
+    const ngosRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.ngos)) : null, [db, active]);
+    const brandsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.brands)) : null, [db, active]);
+    const clubsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.clubs)) : null, [db, active]);
+    const eventsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.events)) : null, [db, active]);
+    const oppsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.volunteering)) : null, [db, active]);
 
     const { data: ngos } = useCollection<SearchableEntity>(ngosRef);
     const { data: brands } = useCollection<SearchableEntity>(brandsRef);
