@@ -17,6 +17,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Capacitor } from '@capacitor/core';
 
@@ -28,8 +29,14 @@ import { setCrashlyticsUser } from '@/lib/native-crashlytics';
 
 export function PushNotificationsProvider() {
   const { user, isUserLoading } = useUser();
+  const router = useRouter();
   const attemptedRef = useRef<string | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
+  // Router'ı ref'te tut ki bildirim listener'ı her zaman güncel router.push'u
+  // kullansın ama effect'in bağımlılığına router ekleyip listener'ı yeniden
+  // kurmak zorunda kalmayalım (attemptedRef guard'ı bozulmasın).
+  const routerRef = useRef(router);
+  routerRef.current = router;
 
   useEffect(() => {
     if (isUserLoading) return;
@@ -51,7 +58,8 @@ export function PushNotificationsProvider() {
 
     if (Capacitor.isNativePlatform()) {
       void registerNativePushToken(user.uid);
-      cleanupRef.current = attachNativePushListeners(user.uid);
+      // Bildirime tıklayınca SPA navigasyonu (router.push) — tam sayfa reload YOK.
+      cleanupRef.current = attachNativePushListeners(user.uid, (path) => routerRef.current.push(path));
       // Girişte tüm native izinleri iste (konum + rehber; push yukarıda).
       void requestAllNativePermissions();
       return;

@@ -48,34 +48,54 @@ const SCHEME_HOST_ROUTE: Record<string, string> = {
   blood: 'emergency',
 };
 
+// Bir deep-link URL'ini (custom scheme veya universal link) uygulama içi
+// route'a çevirir. Geçersizse null döner.
+function resolveDeepLinkPath(rawUrl: string): string | null {
+  try {
+    const url = new URL(rawUrl);
+    // Universal Link (http/https): hangel.org/ngo/abc → /ngo/abc (sadece pathname)
+    // Custom Scheme (hangel://): host İLK segmenttir → host + pathname'i BİRLEŞTİR.
+    //   hangel://blood        → /blood
+    //   hangel://event/123    → /events/123  (host eşlemesiyle doğru çoğul route)
+    const isCustomScheme = url.protocol !== 'http:' && url.protocol !== 'https:';
+    let base: string;
+    if (isCustomScheme) {
+      const mappedHost = SCHEME_HOST_ROUTE[url.host] || url.host;
+      base = `/${mappedHost}${url.pathname === '/' ? '' : url.pathname}`;
+    } else {
+      base = url.pathname;
+    }
+    const path = `${base || '/'}${url.search}${url.hash}`;
+    return path.startsWith('/') ? path : null;
+  } catch {
+    return null;
+  }
+}
+
 export function initDeepLinkListener(navigate: (path: string) => void): Unsubscribe {
   if (!Capacitor.isNativePlatform()) return () => {};
 
   let handle: { remove: () => Promise<void> } | null = null;
+
+  // 1) App AÇIKKEN gelen deep-link'ler (warm).
   void App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-    try {
-      const url = new URL(event.url);
-      // Universal Link (http/https): hangel.org/ngo/abc → /ngo/abc (sadece pathname)
-      // Custom Scheme (hangel://): host İLK segmenttir → host + pathname'i BİRLEŞTİR.
-      //   hangel://blood        → /blood
-      //   hangel://event/123    → /events/123  (host eşlemesiyle doğru çoğul route)
-      const isCustomScheme = url.protocol !== 'http:' && url.protocol !== 'https:';
-      let base: string;
-      if (isCustomScheme) {
-        // host'u gerçek route'a eşle (varsa); yoksa host'u aynen kullan.
-        const mappedHost = SCHEME_HOST_ROUTE[url.host] || url.host;
-        base = `/${mappedHost}${url.pathname === '/' ? '' : url.pathname}`;
-      } else {
-        base = url.pathname;
-      }
-      const path = `${base || '/'}${url.search}${url.hash}`;
-      if (path.startsWith('/')) {
-        navigate(path);
-      }
-    } catch {
-      // malformed url — yok say
-    }
+    const path = resolveDeepLinkPath(event.url);
+    if (path) navigate(path);
   }).then(h => { handle = h; });
+
+  // 2) COLD-START: App KAPALIYKEN bir Live Activity / widget / deep-link'e
+  //    tıklanıp uygulama o URL ile açıldığında, appUrlOpen listener kurulmadan
+  //    ÖNCE URL gelmiş olur → kaçırılır → "canlı etkinliğe tıklayınca açılmıyor".
+  //    getLaunchUrl açılıştaki bekleyen URL'i döndürür; onu da yönlendir.
+  //    Router'ın hazır olması için küçük bir gecikme (best-effort).
+  void App.getLaunchUrl().then((res) => {
+    const raw = res?.url;
+    if (!raw) return;
+    const path = resolveDeepLinkPath(raw);
+    if (path) {
+      setTimeout(() => navigate(path), 300);
+    }
+  }).catch(() => { /* getLaunchUrl desteklenmiyorsa yok say */ });
 
   return () => { if (handle) void handle.remove(); };
 }

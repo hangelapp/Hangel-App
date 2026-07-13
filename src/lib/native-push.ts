@@ -69,7 +69,7 @@ export async function registerNativePushToken(uid: string): Promise<string | nul
   return token;
 }
 
-export function attachNativePushListeners(uid: string): Unsubscribe {
+export function attachNativePushListeners(uid: string, navigate?: (path: string) => void): Unsubscribe {
   if (!Capacitor.isNativePlatform() || !uid) return () => {};
 
   const handles: Array<{ remove: () => Promise<void> }> = [];
@@ -90,7 +90,11 @@ export function attachNativePushListeners(uid: string): Unsubscribe {
     const notifType = typeof data?.type === 'string' ? data.type : 'unknown';
     logHangelEvent(EVENTS.open_notification, { type: notifType });
     if (link && link.startsWith('/')) {
-      window.location.assign(link);
+      // SPA navigasyonu (router.push) — window.location.assign TAM SAYFA RELOAD
+      // yapıyordu → "bildirime tıklayınca sayfa kapanıp tekrar açılıyor" (garip
+      // titreme). navigate verilmezse yalnızca güvenli fallback olarak location.
+      if (navigate) navigate(link);
+      else window.location.assign(link);
     }
   }).then(h => handles.push(h));
 
