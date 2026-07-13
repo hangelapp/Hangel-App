@@ -307,6 +307,19 @@ export default function NgoProfilePage() {
       return;
     }
 
+      const ngoRef = doc(db, COLLECTIONS.ngos, id);
+      const isFirstSelection = current.length === 0;
+
+    // İlk kez bağışçı olurken 30 günlük değiştirme kilidini ÖNCEDEN bildir
+    // (Samara raporu, madde 11: sürpriz kilitlenme). Kullanıcı bilerek onaylasın.
+    if (!isSupporter && isFirstSelection) {
+      const ok = typeof window === 'undefined' || window.confirm(
+        'Bu STK\'nın bağışçısı oluyorsun. Bilgi: Bağış yapacağın STK\'yı seçtikten sonra ' +
+        '30 gün boyunca değiştiremezsin. Devam etmek istiyor musun?'
+      );
+      if (!ok) return;
+    }
+
     setDonorBusy(true);
     try {
       // User doc + NGO stats.donors atomic update: ikisi de aynı transaction'da
@@ -314,8 +327,6 @@ export default function NgoProfilePage() {
       // verirse ikisi de revert eder. NGO ref güncellemesi rules tarafında
       // public 'viewCount'+'stats' yazımına izin verilen alanlarla aynı tipte
       // (donor ekleme/çıkarma kullanıcı talebi sonucu).
-      const ngoRef = doc(db, COLLECTIONS.ngos, id);
-      const isFirstSelection = current.length === 0;
       await runTransaction(db, async (tx) => {
         if (isSupporter) {
           // Çıkış: user'dan kaldır + NGO donor sayacını 1 azalt.

@@ -3,6 +3,31 @@ export const AI_CHANGELOG_GENERATED = "2026-07-13";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "4c20acdf",
+    "date": "2026-07-13",
+    "subject": "feat: Kayıt QR liste+kopya/indir/paylaş + rol-bazlı Live Activity zamanlaması"
+  },
+  {
+    "hash": "c4b4f150",
+    "date": "2026-07-13",
+    "subject": "fix(native): bildirim tıklamada tam-reload + Live Activity cold-start deep-link"
+  },
+  {
+    "hash": "5cf528c4",
+    "date": "2026-07-13",
+    "subject": "santral: firewall medya portlarını aç (ses akmama fiksi)"
+  },
+  {
+    "hash": "1afeb256",
+    "date": "2026-07-13",
+    "subject": "fix(ios/live-activity): okunurluk + kesik metin + absürt geri sayım düzeltmesi"
+  },
+  {
+    "hash": "fa7ce884",
+    "date": "2026-07-13",
+    "subject": "super-admin/users: kullanıcı detayına konum (il/ilçe/mahalle) + izinler bölümü"
+  },
+  {
     "hash": "e62bb7a3",
     "date": "2026-07-13",
     "subject": "feat(marketing): 'Daha Fazla Bilgi' 6 bilgi sayfasını zenginleştir (ilkler + güvenlik + sertifika)"
@@ -101,30 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "a707280f",
     "date": "2026-07-12",
     "subject": "feat(santral) Grup2: sesli mesaj kutusu + not şablonları + çağrı etiketleri"
-  },
-  {
-    "hash": "50f3a69c",
-    "date": "2026-07-12",
-    "subject": "feat(santral): Çağrı Geçmişi & Kayıtlar + Arama Sırası sayfalarını panele bağla (Diğer menüsü)"
-  },
-  {
-    "hash": "aaaa64ff",
-    "date": "2026-07-12",
-    "subject": "feat(volunteering): kurumsal katılımcı başvuru akışı — form + yönetim onayı + yayınlama"
-  },
-  {
-    "hash": "36b7490d",
-    "date": "2026-07-12",
-    "subject": "fix(vanity): worldcleanday/cleanday rewrite → redirect (hedef client sayfa useParams kullanıyor, rewrite'ta id boş kalıp notFound veriyordu)"
-  },
-  {
-    "hash": "996f8178",
-    "date": "2026-07-12",
-    "subject": "feat(santral): sekme düzeni (katılımcılar Arama Listeleri altına + 'Diğer' menüsü) + WhatsApp token env fix"
-  },
-  {
-    "hash": "bf066222",
-    "date": "2026-07-12",
-    "subject": "feat(volunteering): rekor gönüllülük ilanına çevrildi + çok-nokta + foto + pin + tanıtım sayfası"
   }
 ];

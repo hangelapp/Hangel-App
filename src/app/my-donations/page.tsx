@@ -231,11 +231,11 @@ export default function MyDonationsPage() {
         <Card className="border-primary/30 bg-primary/5">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base text-primary">
-              <Clock className="h-4 w-4 shrink-0" />
-              Bağışın işleniyor 🧡
+              <ShoppingBag className="h-4 w-4 shrink-0" />
+              Başlattığın alışverişler
             </CardTitle>
             <CardDescription>
-              Başlattığın alışverişler onaylanınca bağışların otomatik hesabına işlenir.
+              Bunlar henüz bağış değil. Alışverişi <b>markanın sitesinde tamamlarsan</b> bağışa dönüşür ve aşağıdaki geçmişine düşer.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 pt-0">
@@ -260,14 +260,14 @@ export default function MyDonationsPage() {
                   className="shrink-0 border-orange-200 bg-orange-100 text-[10px] font-bold uppercase text-orange-700 dark:border-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
                 >
                   <Clock className="mr-1 h-3 w-3" />
-                  İşleniyor
+                  Bekliyor
                 </Badge>
               </div>
             ))}
             <p className="pt-1 text-[11px] leading-relaxed text-muted-foreground">
-              Onaylanması markaya göre birkaç dakika–saat (bazen birkaç gün) sürebilir.
-              Tamamlanınca bağışın geçmiş listende görünür. Yalnız değilsin, birlikte
-              umudu büyütüyoruz.
+              Not: Sadece markaya bakmak veya siteye gitmek bağış <b>oluşturmaz</b>. Bağış, alışverişi
+              tamamlayıp marka onayladığında oluşur; markaya göre birkaç dakika–saat (bazen birkaç gün)
+              sürebilir ve tamamlanınca aşağıdaki geçmişine düşer.
             </p>
           </CardContent>
         </Card>

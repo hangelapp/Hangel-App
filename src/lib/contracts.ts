@@ -403,7 +403,7 @@ export const contractsData: Contract[] = [
 <li>Türkiye'deki kişisel veri işleme faaliyetleri (KVKK) için: <a href="mailto:kvkk@hangel.org">kvkk@hangel.org</a></li>
 <li>Avrupa Birliği / uluslararası veri sahipleri (GDPR) için: <a href="mailto:privacy@hangel.org">privacy@hangel.org</a> veya <a href="mailto:dpo@hangel.org">dpo@hangel.org</a></li>
 </ul>
-<p>Veri Sorumluları Sicili (VERBİS) kayıt numarası: <em>[VERBİS-NO yer tutucu]</em>. GDPR Art.27 anlamında AB temsilcisi ataması, veri sahibi kapsamı gerektirdiğinde yol haritasında yer almaktadır.</p>
+<p>Veri Sorumluları Sicili (VERBİS) kayıt numarası: <em>5547007007</em>. GDPR Art.27 anlamında AB temsilcisi ataması, veri sahibi kapsamı gerektirdiğinde yol haritasında yer almaktadır.</p>
 
 <h4>2. İşlenen Kişisel Veri Kategorileri</h4>
 <p>hangel, hizmetin niteliğine ve kullanıcının tercihlerine bağlı olarak aşağıdaki kişisel veri kategorilerini işler:</p>
@@ -487,7 +487,7 @@ export const contractsData: Contract[] = [
 <p>İşbu Aydınlatma Metni, <strong>hangel AŞ</strong> ("hangel" veya "veri sorumlusu") tarafından, 6698 sayılı Kişisel Verilerin Korunması Kanunu'nun ("KVKK") <strong>10. maddesi</strong> ve Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ uyarınca, kişisel verilerinizin işlenmesine ilişkin sizi bilgilendirmek amacıyla hazırlanmıştır. hangel, Türkiye merkezli bir toplumsal etki platformu olarak acil kan talebi/eşleştirme, bağış, gönüllülük, STK profilleri, marka üyelikleri, öğrenci kulüpleri ve etki raporlaması hizmetleri sunmaktadır.</p>
 
 <h4>1. Veri Sorumlusu Kimliği ve İletişim</h4>
-<p>Kişisel verileriniz, veri sorumlusu sıfatıyla <strong>hangel AŞ</strong> tarafından işlenmektedir. hangel, Veri Sorumluları Sicili (VERBİS) kapsamında Veri Sorumluları Sicili Hakkında Yönetmelik uyarınca kayıtlıdır; VERBİS kayıt numarası: <em>[VERBİS-NO yer tutucu]</em>. KVKK kapsamındaki taleplerinizi <a href="mailto:kvkk@hangel.org">kvkk@hangel.org</a> adresine iletebilirsiniz.</p>
+<p>Kişisel verileriniz, veri sorumlusu sıfatıyla <strong>hangel AŞ</strong> tarafından işlenmektedir. hangel, Veri Sorumluları Sicili (VERBİS) kapsamında Veri Sorumluları Sicili Hakkında Yönetmelik uyarınca kayıtlıdır; VERBİS kayıt numarası: <em>5547007007</em>. KVKK kapsamındaki taleplerinizi <a href="mailto:kvkk@hangel.org">kvkk@hangel.org</a> adresine iletebilirsiniz.</p>
 
 <h4>2. İşlenen Kişisel Veri Kategorileri</h4>
 <p>hangel, hizmetin gerektirdiği ölçüde aşağıdaki veri kategorilerini işlemektedir:</p>

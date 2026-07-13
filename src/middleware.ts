@@ -22,6 +22,20 @@ const VANITY_SHORTLINKS: Record<string, string> = {
   '/worldcleanday': '/volunteering/worldcleanday-2026',
   '/cleanday': '/volunteering/worldcleanday-2026',
 };
+// Eski/önceki nesil site adresleri (Google'da hâlâ indeksli, boş sayfaya düşüyor).
+// 301 kalıcı yönlendirme ile arama motoru eski URL'leri yeni sayfalara taşır ve
+// kullanıcı boş sayfa yerine doğru içeriğe ulaşır. (Samara raporu: madde 13,14,21)
+const LEGACY_REDIRECTS: Record<string, string> = {
+  '/stk': '/ngos',
+  '/en': '/',
+  '/en/markalar': '/market',
+  '/markalar': '/market',
+  '/sozlesmeler': '/settings/contracts',
+  '/hangel_app': '/app',
+  '/hangel-org-gonulluk-protokolu': '/settings/contracts',
+  '/hakkimizda': '/about',
+  '/iletisim': '/support/app-support',
+};
 // STK alt alanı SAYILMAYAN rezerve etiketler.
 const RESERVED_SUBS = new Set(['www', 'app', 'admin', 'api', 'mail', 'm', 'cdn', 'static', '']);
 // Uygulamanın KENDİ servis ettiği host'lar — custom domain SAYILMAZ.
@@ -42,6 +56,25 @@ function isAppHost(host: string): boolean {
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const host = getHost(req);
+
+  // 0a) www.hangel.org → hangel.org (kanonik host). SEO + tutarlılık; www boş
+  //     içerik döndürüyordu (Samara raporu: madde 22). 301 kalıcı.
+  if (host === 'www.' + ROOT_DOMAIN) {
+    const url = req.nextUrl.clone();
+    url.host = ROOT_DOMAIN;
+    url.hostname = ROOT_DOMAIN;
+    return NextResponse.redirect(url, 301);
+  }
+
+  // 0b) Eski/ölü site adresleri → yeni sayfalara 301 (Samara raporu: 13,14,21).
+  const legacyKey = pathname.replace(/\/+$/, '').toLowerCase();
+  const legacyTarget = LEGACY_REDIRECTS[legacyKey];
+  if (legacyTarget) {
+    const url = req.nextUrl.clone();
+    url.pathname = legacyTarget;
+    url.search = '';
+    return NextResponse.redirect(url, 301);
+  }
 
   // 1) STK alt alan adı: {slug}.hangel.org → STK sitesi.
   if (host.endsWith('.' + ROOT_DOMAIN)) {

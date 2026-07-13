@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  Menu, Siren, Bell, Globe, Search, QrCode,
+  Menu, Droplet, Bell, Globe, Search, QrCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/layout/user-nav';
@@ -107,11 +107,14 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
               </Button>
             )}
 
-            {/* Acil ikonu — giriş yapmamış kullanıcı /emergency/about tanıtım sayfasına,
-                giriş yapmış kullanıcı /emergency aksiyon sayfasına gider. */}
-            <Button asChild variant="ghost" size="icon" aria-label={t('a11y.emergency')}>
+            {/* Acil kan / afet — ETİKETLİ buton (Samara raporu: etiketsiz siren
+                bulunamıyordu). Kan damlası + "Acil" yazısı ile keşfedilebilir.
+                Giriş yoksa tanıtım, varsa aksiyon sayfasına gider. */}
+            <Button asChild variant="ghost" size="sm" aria-label={t('a11y.emergency')}
+              className="h-9 gap-1.5 px-2.5 text-destructive hover:bg-destructive/10">
               <Link href={user ? '/emergency' : '/emergency/about'}>
-                <Siren className="h-5 w-5 text-destructive" />
+                <Droplet className="h-5 w-5 fill-destructive/20" />
+                <span className="text-xs font-semibold hidden sm:inline">Acil Kan</span>
               </Link>
             </Button>
 

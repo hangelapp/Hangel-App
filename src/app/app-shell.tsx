@@ -303,7 +303,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 '/ngo-admin', '/super-admin', '/admin'
             ];
 
-            const isProtected = protectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
+            // Herkese AÇIK olması gereken yollar (giriş yapmadan da erişilir).
+            // Yasal sözleşmeler kayıt ekranından okunabilmeli; aksi halde
+            // /settings altında oldukları için guard onları login'e atıyor ve
+            // belge ~1 sn görünüp kapanıyordu (Samara raporu, madde 1).
+            const publicPaths = ['/settings/contracts'];
+            const isPublic = publicPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
+
+            const isProtected = !isPublic && protectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
 
             if (isProtected) {
                 // P0-4b follow-up: if the user just got dropped from authed to unauthed

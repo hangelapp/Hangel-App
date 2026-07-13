@@ -61,7 +61,7 @@ const emptyUser: User = {
     supportedNgos: [],
     volunteerNgos: []
 };
-import { ArrowLeft, Camera, Trash2, Loader2, Globe, Linkedin, Instagram, Twitter, Plus, Link as LinkIcon, X, GraduationCap, UserCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, Camera, Trash2, Loader2, Globe, Linkedin, Instagram, Twitter, Plus, Link as LinkIcon, X, GraduationCap, UserCircle, Calendar, Droplet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -360,6 +360,7 @@ export default function ProfileSettingsPage() {
         'personalInfo.gender': profile.personalInfo.gender ?? '',
         'personalInfo.birthDate': (profile.personalInfo as { birthDate?: string }).birthDate ?? '',
         'personalInfo.nationality': (profile.personalInfo as { nationality?: string }).nationality ?? '',
+        'personalInfo.bloodType': (profile.personalInfo as { bloodType?: string }).bloodType ?? '',
     };
 
     await updateDoc(userDocRef, payload);
@@ -580,6 +581,23 @@ export default function ProfileSettingsPage() {
                             <SelectItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</SelectItem>
                         </SelectContent>
                     </Select>
+                </div>
+                {/* Kan grubu — acil kan eşleştirme özelliğinin temel verisi.
+                    Samara raporu: kullanıcı profilde kan grubu alanı bulamıyordu. */}
+                <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><Droplet className="h-4 w-4 text-destructive" /> Kan Grubu</Label>
+                    <Select
+                        value={profile.personalInfo.bloodType || ''}
+                        onValueChange={(v) => handleChange('personalInfo', 'bloodType', v)}
+                    >
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz (acil kan eşleştirme için)..." /></SelectTrigger>
+                        <SelectContent>
+                            {["A Rh+", "A Rh-", "B Rh+", "B Rh-", "AB Rh+", "AB Rh-", "0 Rh+", "0 Rh-", "Bilinmiyor"].map((bt) => (
+                                <SelectItem key={bt} value={bt}>{bt}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">Yakınında acil kan ihtiyacı olduğunda seni eşleştirmek için kullanılır. İstemezsen boş bırakabilirsin.</p>
                 </div>
             </CardContent>
         </Card>
