@@ -85,6 +85,29 @@ const TR = {
     'Kulüp etkinliğini ve gönüllülük ilanını dakikalar içinde oluşturup yayınla. Başvuru ve katılım topla, kapasite belirle; otomatik canlı mod ve geri sayımla gün gelince akış kendiliğinden başlasın. Katılımcılar takvime ekleyebilir (.ics) ve Apple Wallet biletini cebinde taşıyabilir.',
   eventsBadge: { kind: 'yeni' as const },
 
+  firstsEyebrow: 'Bir İlk',
+  firstsTitle: 'Kampüs kulüpleri için Türkiye’de bir ilk.',
+  firstsDescription:
+    'hangel; öğrenci kulüplerine ücretsiz dijital yönetim ile bir kampüs etki ağını birleştiren Türkiye’deki ilk platformdur. Etkinlik, gönüllülük, QR/NFC yoklama, otomatik sertifika ve etki puanı tek panelde. Kulübün, tüm kampüsün gördüğü canlı bir etki ağının parçası olur — yalnız değil, birlikte.',
+  firstsBadge: { kind: 'hangel' as const },
+
+  certEyebrow: 'Sertifika & Rozet',
+  certTitle: 'Her katkı, bir belgeyle ödüllensin.',
+  certDescription:
+    'Etkinlik veya gönüllülük bittiğinde katılımcılar kulübünüzün adıyla otomatik sertifika kazanır — staj ve burs başvurularında gösterilebilir gerçek bir kanıt. Kulübün ise etki puanı biriktikçe rozetler ve Sosyal Etki Karnesiyle görünürlük kazanır. Emek, artık somut bir belgeye dönüşür.',
+  certBadge: { kind: 'hangel' as const },
+
+  securityEyebrow: 'Güvenlik & Teknoloji',
+  securityTitle: 'Verileriniz güvende.',
+  securityDescription:
+    'hangel, KVKK-uyumlu veri işleme ilkeleriyle çalışır; kulüp ve üye verileriniz Google Cloud ve Firebase üzerinde şifreli saklanır. Rol-bazlı yetkilendirmeyle Kulüp Başkanı ve Genel Yönetici gibi roller yalnızca kendi kapsamını görür; giriş çift-yönlü doğrulamayla korunur. Güven, altyapının kendisidir.',
+
+  evolveEyebrow: 'Sürekli Gelişim',
+  evolveTitle: 'hangel sürekli gelişiyor.',
+  evolveDescription:
+    'Yeni özellikler siz hiçbir şey yapmadan panelinize düşer — güncelleme, kurulum ya da ek ücret yok. Öğrenci geri bildirimleriyle şekillenen yol haritası her hafta büyür; kulübün her zaman en güncel araçlarla çalışır.',
+  evolveBadge: { kind: 'yeni' as const },
+
   toolsEyebrow: 'Canlı Araçlar',
   toolsTitle: 'Kulübünü büyütmek için her şey hazır.',
   toolsDescription:
@@ -183,6 +206,29 @@ const EN: typeof TR = {
   eventsDescription:
     'Create and publish your club event or volunteering listing in minutes. Collect applications and attendance, set capacity; with automatic live mode and a countdown, the flow starts on its own when the day arrives. Attendees can add it to their calendar (.ics) and carry an Apple Wallet ticket in their pocket.',
   eventsBadge: { kind: 'yeni' as const },
+
+  firstsEyebrow: 'A First',
+  firstsTitle: 'A first in Türkiye for campus clubs.',
+  firstsDescription:
+    'hangel is the first platform in Türkiye to combine free digital management for student clubs with a campus impact network. Events, volunteering, QR/NFC attendance, automatic certificates and impact points, all in one panel. Your club becomes part of a live impact network the whole campus can see — not alone, but together.',
+  firstsBadge: { kind: 'hangel' as const },
+
+  certEyebrow: 'Certificate & Badge',
+  certTitle: 'Let every contribution be rewarded with a certificate.',
+  certDescription:
+    'When an event or volunteering ends, attendees earn an automatic certificate in your club’s name — real proof they can show in internship and scholarship applications. As your club’s impact points build up, it gains visibility with badges and the Social Impact Scorecard. Effort now turns into a concrete document.',
+  certBadge: { kind: 'hangel' as const },
+
+  securityEyebrow: 'Security & Technology',
+  securityTitle: 'Your data is safe.',
+  securityDescription:
+    'hangel runs on KVKK-compliant data-processing principles; your club and member data is stored encrypted on Google Cloud and Firebase. With role-based authorization, roles like Club President and General Manager see only their own scope; sign-in is protected by two-factor authentication. Trust is the infrastructure itself.',
+
+  evolveEyebrow: 'Continuous Improvement',
+  evolveTitle: 'hangel keeps getting better.',
+  evolveDescription:
+    'New features land in your panel with nothing for you to do — no updates, no installs, no extra cost. Shaped by student feedback, the roadmap grows every week, so your club always works with the most current tools.',
+  evolveBadge: { kind: 'yeni' as const },
 
   toolsEyebrow: 'Live Tools',
   toolsTitle: 'Everything you need to grow your club.',
@@ -345,6 +391,27 @@ export default function CampusAdvantagesPage() {
         theme="light"
       />
 
+      {/* Statement: İlkler */}
+      <AppleSection
+        id="ilkler"
+        eyebrow={C.firstsEyebrow}
+        title={C.firstsTitle}
+        description={C.firstsDescription}
+        badges={[C.firstsBadge]}
+        image={{ url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2400&auto=format&fit=crop', hint: 'students celebrating graduation together' }}
+        theme="dark"
+      />
+
+      {/* Statement: Sertifika & Rozet */}
+      <AppleSection
+        eyebrow={C.certEyebrow}
+        title={C.certTitle}
+        description={C.certDescription}
+        badges={[C.certBadge]}
+        image={{ url: 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=2400&auto=format&fit=crop', hint: 'student holding certificate award' }}
+        theme="light"
+      />
+
       {/* Canlı araçlar */}
       <section id="araclar" className="bg-muted pt-20 pb-16 border-b border-border">
         <SectionHeading
@@ -397,6 +464,26 @@ export default function CampusAdvantagesPage() {
         />
         <FeatureGrid items={soonTools} columns={2} />
       </section>
+
+      {/* Statement: Güvenlik & Teknoloji */}
+      <AppleSection
+        id="guvenlik"
+        eyebrow={C.securityEyebrow}
+        title={C.securityTitle}
+        description={C.securityDescription}
+        image={{ url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2400&auto=format&fit=crop', hint: 'secure encrypted data infrastructure' }}
+        theme="light"
+      />
+
+      {/* Statement: Sürekli Gelişim */}
+      <AppleSection
+        eyebrow={C.evolveEyebrow}
+        title={C.evolveTitle}
+        description={C.evolveDescription}
+        badges={[C.evolveBadge]}
+        image={{ url: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2400&auto=format&fit=crop', hint: 'students building software growth' }}
+        theme="dark"
+      />
 
       {/* Final CTA */}
       <AppleSection

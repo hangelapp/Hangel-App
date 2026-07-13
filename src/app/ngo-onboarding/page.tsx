@@ -92,7 +92,22 @@ const TR = {
   certificatesEyebrow: 'Sertifikalar & Rozetler',
   certificatesTitle: 'Her emek, bir belgeyle taçlansın.',
   certificatesDescription:
-    'Gönüllülerinize tek tıkla, kurumunuzun logosuyla otomatik katılım ve başarı sertifikaları ile yaka kartları üretin. Kurumunuz her ay; toplam bağış, gönüllü saati ve sosyal etki değerini birleştiren otomatik bir etki sertifikası kazanır. Bu belge, güçlü yönlerinizi tek bakışta anlatan en somut kanıtınız olur. Rozetler ve size özel rozetlerle gönüllü sadakatini ödüllendirin.',
+    'Gönüllülerinize tek tıkla, kurumunuzun logosuyla otomatik katılım ve başarı sertifikaları ile yaka kartları üretin. Kurumunuz her ay; toplam bağış, gönüllü saati ve sosyal etki değerini birleştiren otomatik bir etki sertifikası kazanır. Bu belge, güçlü yönlerinizi tek bakışta anlatan en somut kanıtınız olur. Şeffaflık puanınız da profilinizde bir güven rozetine dönüşür. Rozetler ve size özel rozetlerle gönüllü sadakatini ödüllendirin.',
+
+  firstsEyebrow: 'Bir İlk',
+  firstsTitle: 'Türkiye’de bir ilki birlikte kuruyoruz.',
+  firstsDescription:
+    'hangel; alışverişten bağış, şeffaflık endeksi ve gönüllü yüzde-uyum eşleştirmesini tek ücretsiz panelde birleştiren Türkiye’deki ilk STK platformudur. Otomatik hibe eşleştirmesinden sanal santrale, WhatsApp’tan çağrıya akıştan “selfie ile fotoğrafını bul”a kadar sektöre yeni giren araçları öncü olarak sunar. Yeni bir standart, tam da burada başlıyor.',
+
+  securityEyebrow: 'Güvenlik & Teknoloji',
+  securityTitle: 'Verileriniz güvende, altyapınız sağlam.',
+  securityDescription:
+    'hangel, KVKK-uyumlu veri işleme ilkeleriyle çalışır; kurum ve destekçi verileriniz Google Cloud ve Firebase üzerinde şifreli olarak saklanır. Rol-bazlı yetkilendirme sayesinde her ekip üyesi yalnızca kendi kapsamını görür; giriş çift-yönlü doğrulamayla korunur, iletişim uçtan uca şifrelenir. Güven, sadece bir söz değil; altyapının kendisi.',
+
+  evolveEyebrow: 'Sürekli Gelişim',
+  evolveTitle: 'hangel sürekli gelişiyor.',
+  evolveDescription:
+    'Yeni özellikler siz hiçbir şey yapmadan panelinize düşer — güncelleme, kurulum ya da ek ücret yok. Geri bildirimlerinizle şekillenen yol haritası her hafta büyür; kurumunuz her zaman en güncel araçlarla çalışır. Bugün kaydolun, yarının özellikleri kendiliğinden gelsin.',
 
   compareTransparency:
     "Dünyada şeffaflık derecelendirmesi ve alışverişle bağış benzerleri çoğu zaman ücretli ve parçalıdır. hangel'de bu, Türkiye'ye özel, ücretsiz ve tek panelde.",
@@ -307,7 +322,22 @@ const EN: typeof TR = {
   certificatesEyebrow: 'Certificates & Badges',
   certificatesTitle: 'Let every effort be crowned with a certificate.',
   certificatesDescription:
-    "Generate automatic participation and achievement certificates and name badges for your volunteers in one click, with your organization's logo. Every month your organization earns an automatic impact certificate combining total donations, volunteer hours and social impact value. This document becomes the clearest proof of your strengths at a single glance. Reward volunteer loyalty with badges and your own custom badges.",
+    "Generate automatic participation and achievement certificates and name badges for your volunteers in one click, with your organization's logo. Every month your organization earns an automatic impact certificate combining total donations, volunteer hours and social impact value. This document becomes the clearest proof of your strengths at a single glance. Your transparency score also turns into a trust badge on your profile. Reward volunteer loyalty with badges and your own custom badges.",
+
+  firstsEyebrow: 'A First',
+  firstsTitle: 'We’re building a first for Türkiye, together.',
+  firstsDescription:
+    'hangel is the first NGO platform in Türkiye to combine shop-to-donate, a transparency index and percentage-match volunteer matching in a single free panel. From automatic grant matching to a virtual PBX, from WhatsApp-to-call flows to “find your photo by selfie,” it pioneers tools that are new to the sector. A new standard starts right here.',
+
+  securityEyebrow: 'Security & Technology',
+  securityTitle: 'Your data is safe, your infrastructure is solid.',
+  securityDescription:
+    'hangel runs on KVKK-compliant data-processing principles; your organization and supporter data is stored encrypted on Google Cloud and Firebase. With role-based authorization, each team member sees only their own scope; sign-in is protected by two-factor authentication and communication is encrypted end to end. Trust isn’t just a promise here; it’s the infrastructure itself.',
+
+  evolveEyebrow: 'Continuous Improvement',
+  evolveTitle: 'hangel keeps getting better.',
+  evolveDescription:
+    'New features land in your panel with nothing for you to do — no updates, no installs, no extra cost. Shaped by your feedback, the roadmap grows every week, so your organization always works with the most current tools. Sign up today, and tomorrow’s features arrive on their own.',
 
   compareTransparency:
     'Worldwide, transparency ratings and shop-to-donate equivalents are often paid and fragmented. On hangel, this is tailored to Türkiye, free, and in a single panel.',
@@ -601,6 +631,26 @@ export default function NgoOnboardingPage() {
         image={{ url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2400&auto=format&fit=crop', hint: 'certificate award ceremony' }}
       />
 
+      {/* Statement: İlkler (dark) */}
+      <AppleSection
+        id="ilkler"
+        theme="dark"
+        eyebrow={C.firstsEyebrow}
+        title={C.firstsTitle}
+        description={C.firstsDescription}
+        badges={[{ kind: 'hangel' }]}
+        image={{ url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2400&auto=format&fit=crop', hint: 'pioneering technology first light' }}
+      />
+
+      {/* Statement: Güvenlik & Teknoloji (light) */}
+      <AppleSection
+        id="guvenlik"
+        eyebrow={C.securityEyebrow}
+        title={C.securityTitle}
+        description={C.securityDescription}
+        image={{ url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2400&auto=format&fit=crop', hint: 'secure encrypted data infrastructure' }}
+      />
+
       {/* Tek panelde her şey — live tools */}
       <section id="tek-panel" className="bg-[#f5f5f7] py-24 border-b border-black/5">
         <SectionHeading
@@ -621,6 +671,16 @@ export default function NgoOnboardingPage() {
         />
         <FeatureGrid items={soonTools} columns={4} />
       </section>
+
+      {/* Statement: Sürekli Gelişim (light) */}
+      <AppleSection
+        id="surekli-gelisim"
+        eyebrow={C.evolveEyebrow}
+        title={C.evolveTitle}
+        description={C.evolveDescription}
+        badges={[{ kind: 'yeni' }]}
+        image={{ url: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2400&auto=format&fit=crop', hint: 'team building software growth' }}
+      />
 
       {/* Final CTA (dark) */}
       <AppleSection

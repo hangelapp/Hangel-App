@@ -25,6 +25,12 @@ import {
   CalendarHeart,
   HeartHandshake,
   Wallet,
+  Lock,
+  Cloud,
+  KeyRound,
+  BarChart3,
+  BadgeCheck,
+  Landmark,
 } from 'lucide-react';
 import {
   MarketingNav,
@@ -124,6 +130,35 @@ const TR = {
   compare:
     'Dünyada STK’lara ayrı ayrı araçlar satan platformlar var; hangel’de panel, çağrı merkezi, reklam, CRM, AI rapor ve şeffaflık tek çatıda, Türkiye’ye özel ve ücretsiz. Siz davanıza odaklanın; altyapıyı biz taşıyalım.',
 
+  firstEyebrow: 'Türkiye’de bir ilk',
+  firstTitle: 'Kamu ve sivil toplum, aynı veride buluşuyor.',
+  firstSubtitle: 'Belediye ve bakanlıklar için veriyle planlanan, şeffaf yönetilen işbirliği.',
+  firstDescription:
+    'Belediye ve bakanlıkların sosyal projelerini veriyle planlayıp şeffaf biçimde yönetebildiği öncü bir kamu-STK işbirliği altyapısı. Kurumlar, STK’lar ve gönüllüler tek çatı altında buluşur; her adım ölçülebilir, her sonuç raporlanabilir.',
+  firstImage:
+    'https://images.unsplash.com/photo-1577495508048-b635879837f1?q=80&w=2074&auto=format&fit=crop',
+
+  secEyebrow: 'Güvenlik & Teknoloji',
+  secTitle: 'Kurumsal veriniz güvende.',
+  secSubtitle: 'KVKK uyumlu, şifreli ve rol-bazlı bir altyapı.',
+  secDescription:
+    'hangel; kurumunuzun ve topluluğunuzun verisini güvenli Google Cloud altyapısında, KVKK’ya uygun ve şifreli biçimde işler. Rol-bazlı yetkilendirmeyle her ekip üyesi yalnızca yetkili olduğu alana erişir. Kamu işbirliklerinde beklenen güven, baştan tasarlanmıştır.',
+  secImage:
+    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop',
+
+  secGridEyebrow: 'Güven veren altyapı',
+  secGridTitle: 'Verileriniz için kurumsal düzeyde güvence.',
+  secGridDescription:
+    'KVKK uyumundan rol-bazlı yetkiye — her katman, kamu ve sivil toplum işbirliğinin gerektirdiği güven için tasarlandı.',
+
+  docsEyebrow: 'Belgeler & Etki Raporları',
+  docsTitle: 'Şeffaflığınız, belgelerle konuşsun.',
+  docsDescription:
+    'Şeffaflık skoru, AI sürdürülebilirlik raporu ve etki raporları; kurumunuzun açıklığını bağışçıya, gönüllüye ve kamu paydaşına belgeyle gösterir. Otomatik sertifikalarla katkı sağlayan herkesin emeği görünür olur.',
+
+  evolveNote:
+    'hangel sürekli gelişiyor; yeni kamu entegrasyonları, raporlar ve işbirliği araçları eklendikçe bu sayfa güncellenir.',
+
   finalEyebrow: '#wearehangel',
   finalTitle: 'Kurumunuzu iyiliğin merkezine taşıyın.',
   finalSubtitle: 'Kayıt ücretsiz, kurulum hızlı.',
@@ -207,6 +242,35 @@ const EN = {
 
   compare:
     'There are platforms around the world that sell tools to NGOs one by one; on hangel the panel, call center, ads, CRM, AI reports and transparency are under one roof, built for Türkiye and free. You focus on your cause; we carry the infrastructure.',
+
+  firstEyebrow: 'A first in Türkiye',
+  firstTitle: 'Public sector and civil society, meeting on the same data.',
+  firstSubtitle: 'Collaboration planned with data and managed transparently — for municipalities and ministries.',
+  firstDescription:
+    'A pioneering public–NGO collaboration infrastructure where municipalities and ministries can plan their social projects with data and manage them transparently. Institutions, NGOs and volunteers meet under one roof; every step is measurable, every outcome reportable.',
+  firstImage:
+    'https://images.unsplash.com/photo-1577495508048-b635879837f1?q=80&w=2074&auto=format&fit=crop',
+
+  secEyebrow: 'Security & Technology',
+  secTitle: 'Your organizational data is safe.',
+  secSubtitle: 'A KVKK-compliant, encrypted and role-based infrastructure.',
+  secDescription:
+    'hangel processes your organization’s and community’s data on secure Google Cloud infrastructure, in a KVKK-compliant and encrypted way. With role-based authorization, each team member accesses only what they are authorized to. The trust expected in public collaborations is designed in from the start.',
+  secImage:
+    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop',
+
+  secGridEyebrow: 'Infrastructure you can trust',
+  secGridTitle: 'Enterprise-grade assurance for your data.',
+  secGridDescription:
+    'From KVKK compliance to role-based access — every layer is designed for the trust that public and civil-society collaboration requires.',
+
+  docsEyebrow: 'Documents & Impact Reports',
+  docsTitle: 'Let your transparency speak through documents.',
+  docsDescription:
+    'A transparency score, an AI sustainability report and impact reports show your organization’s openness to donors, volunteers and public stakeholders with real documents. Automatic certificates make everyone’s contribution visible.',
+
+  evolveNote:
+    'hangel keeps evolving; this page is updated as new public integrations, reports and collaboration tools are added.',
 
   finalEyebrow: '#wearehangel',
   finalTitle: 'Move your organization to the heart of good.',
@@ -427,6 +491,72 @@ export default function CorporateShowcasePage() {
         },
       ];
 
+  const secFeatures: FeatureItem[] = en
+    ? [
+        {
+          icon: ShieldCheck,
+          title: 'KVKK-Compliant Data Processing',
+          description: 'Personal and organizational data processed in a KVKK-compliant, purpose-limited and transparent way.',
+        },
+        {
+          icon: Cloud,
+          title: 'Secure Cloud Infrastructure',
+          description: 'Runs on Google Cloud; scalable, continuously updated and resilient under load.',
+        },
+        {
+          icon: KeyRound,
+          title: 'Role-Based Authorization',
+          description: 'Each team member accesses only what they are authorized to; every action is auditable.',
+        },
+        {
+          icon: Lock,
+          title: 'Encrypted Communication',
+          description: 'Encrypted in transit and at rest; your data and your community are protected.',
+        },
+        {
+          icon: BarChart3,
+          title: 'Data-Driven Planning',
+          description: 'Plan social projects with data and public datasets; measure every step.',
+        },
+        {
+          icon: BadgeCheck,
+          title: 'Verified & Transparent',
+          description: 'Registry matching, a coral verified tick and a transparency score public stakeholders can trust.',
+        },
+      ]
+    : [
+        {
+          icon: ShieldCheck,
+          title: 'KVKK Uyumlu Veri İşleme',
+          description: 'Kişisel ve kurumsal veriler KVKK’ya uygun, amaçla sınırlı ve şeffaf biçimde işlenir.',
+        },
+        {
+          icon: Cloud,
+          title: 'Güvenli Bulut Altyapısı',
+          description: 'Google Cloud üzerinde çalışır; ölçeklenir, sürekli güncellenir ve yük altında dayanıklıdır.',
+        },
+        {
+          icon: KeyRound,
+          title: 'Rol-Bazlı Yetkilendirme',
+          description: 'Her ekip üyesi yalnızca yetkili olduğu alana erişir; her işlem denetlenebilir.',
+        },
+        {
+          icon: Lock,
+          title: 'Şifreli İletişim',
+          description: 'Aktarımda ve saklamada şifreli; verileriniz ve topluluğunuz korunur.',
+        },
+        {
+          icon: BarChart3,
+          title: 'Veriyle Planlama',
+          description: 'Sosyal projeleri veri ve kamu veri setleriyle planlayın; her adımı ölçün.',
+        },
+        {
+          icon: BadgeCheck,
+          title: 'Doğrulanmış & Şeffaf',
+          description: 'Kütük eşleştirme, coral onay tiki ve kamu paydaşının güvenebileceği şeffaflık skoru.',
+        },
+      ];
+
   return (
     <div className="min-h-screen bg-background font-sans selection:bg-primary/30">
       <MarketingNav
@@ -493,6 +623,17 @@ export default function CorporateShowcasePage() {
         actions={[{ label: C.trustCta, href: REPORTS_HREF, variant: 'link' }]}
       />
 
+      {/* Türkiye'de bir ilk — kamu-STK işbirliği */}
+      <AppleSection
+        eyebrow={C.firstEyebrow}
+        title={C.firstTitle}
+        subtitle={C.firstSubtitle}
+        description={C.firstDescription}
+        image={{ url: C.firstImage, hint: 'city hall public building civic collaboration daylight' }}
+        badges={[{ kind: 'hangel' }]}
+        actions={[{ label: C.heroCtaPrimary, href: REGISTER_HREF, variant: 'secondary' }]}
+      />
+
       {/* Canlı kurumsal araçlar ızgarası */}
       <AppleSection compact theme="light">
         <SectionHeading
@@ -535,6 +676,52 @@ export default function CorporateShowcasePage() {
             <ShieldCheck className="h-7 w-7 text-primary" aria-hidden="true" />
           </div>
         </div>
+      </AppleSection>
+
+      {/* Güvenlik & teknoloji — statement */}
+      <AppleSection
+        theme="dark"
+        eyebrow={C.secEyebrow}
+        title={C.secTitle}
+        subtitle={C.secSubtitle}
+        description={C.secDescription}
+        image={{ url: C.secImage, hint: 'secure cloud data protection abstract calm' }}
+        badges={[{ kind: 'hangel' }]}
+      />
+
+      {/* Güven veren altyapı ızgarası */}
+      <AppleSection compact theme="light">
+        <SectionHeading
+          eyebrow={C.secGridEyebrow}
+          title={C.secGridTitle}
+          description={C.secGridDescription}
+        />
+        <FeatureGrid items={secFeatures} columns={3} />
+      </AppleSection>
+
+      {/* Belgeler & etki raporları */}
+      <AppleSection
+        compact
+        eyebrow={C.docsEyebrow}
+        title={C.docsTitle}
+        description={C.docsDescription}
+        actions={[
+          { label: C.trustCta, href: TRANSPARENCY_HREF, variant: 'link' },
+          { label: en ? 'See AI reports' : 'AI raporları gör', href: REPORTS_HREF, variant: 'link' },
+        ]}
+      >
+        <div className="flex justify-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10">
+            <BarChart3 className="h-7 w-7 text-primary" aria-hidden="true" />
+          </div>
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10">
+            <Landmark className="h-7 w-7 text-primary" aria-hidden="true" />
+          </div>
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10">
+            <Award className="h-7 w-7 text-primary" aria-hidden="true" />
+          </div>
+        </div>
+        <CompareNote>{C.evolveNote}</CompareNote>
       </AppleSection>
 
       {/* Topluluğa ulaş — etkinlik / gönüllülük / pazar */}

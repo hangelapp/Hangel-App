@@ -11,6 +11,12 @@ import {
   BookMarked,
   FileSpreadsheet,
   Database,
+  ShieldCheck,
+  Lock,
+  Cloud,
+  Gauge,
+  Filter,
+  Sparkles,
 } from 'lucide-react';
 
 import {
@@ -72,6 +78,29 @@ const TR = {
   compare:
     "Bir yanda küresel araştırma veritabanları, bir yanda AI yazı araçları — hangel bunları sivil topluma özel, Türkçe ve ücretsiz tek çatıda birleştirir.",
 
+  // İlk / öncü
+  firstEyebrow: 'Türkiye’de bir ilk',
+  firstTitle: 'Sivil toplumun bilgisi, tek çatı altında.',
+  firstSubtitle: 'Filtrelenebilir, Türkçe ve ücretsiz bir öncü veri kütüphanesi.',
+  firstDescription:
+    'STK’lar ve gönüllüler için sosyal etki, gönüllülük ve sürdürülebilirlik verisini tek yerde, filtrelenebilir biçimde sunan öncü Türkçe veri kütüphanesi. Dağınık kaynakları aramak yerine, kanıtınız aradığınız anda önünüzde.',
+
+  // Güvenlik & teknoloji
+  techEyebrow: 'Güvenlik & Teknoloji',
+  techTitle: 'Verileriniz güvende, erişiminiz özgür.',
+  techSubtitle: 'KVKK uyumlu, güvenli bulut ve rol-bazlı yetki.',
+  techDescription:
+    'hangel Kütüphane, güvenli Google Cloud altyapısında çalışır; KVKK uyumlu veri işleme, rol-bazlı yetkilendirme ve şifreli iletişimle bilgiye özgürce erişirken verileriniz korunur. Güven, bilgiye erişimin ön koşuludur.',
+
+  techGridEyebrow: 'Neden güvenle kullanın',
+  techGridTitle: 'Açık bilgi, güvenli altyapı.',
+  techGridDescription:
+    'Ücretsiz ve üyeliksiz erişimden kurumsal düzeyde güvenliğe — kütüphane hem açık hem güvenli olacak şekilde tasarlandı.',
+
+  // Sürekli gelişim
+  evolveNote:
+    'hangel Kütüphane sürekli gelişiyor; yeni veri setleri, kaynaklar ve AI araçları eklendikçe bu sayfa güncellenir.',
+
   finalEyebrow: 'Hazır mısınız?',
   finalTitle: 'Kütüphane sizi bekliyor.',
   finalSubtitle: 'Üyelik gerektirmeden keşfetmeye başlayın.',
@@ -125,6 +154,39 @@ const TR = {
         'Belediye, bakanlık ve TÜİK gibi kaynaklardan 50+ kamu veri seti kataloğu; kanıt-odaklı çalışın.',
     },
   },
+
+  tech: {
+    free: {
+      title: 'Ücretsiz & Üyeliksiz',
+      description:
+        'Keşfetmeye başlamak için kayıt gerekmez; bilgi, herkes için gerçekten erişilebilir olsun.',
+    },
+    kvkk: {
+      title: 'KVKK Uyumlu',
+      description:
+        'Kişisel verileriniz KVKK’ya uygun, amaçla sınırlı ve şeffaf biçimde işlenir.',
+    },
+    cloud: {
+      title: 'Güvenli Bulut Altyapısı',
+      description:
+        'Google Cloud üzerinde çalışan, ölçeklenen ve sürekli güncel tutulan güvenli altyapı.',
+    },
+    roles: {
+      title: 'Rol-Bazlı Yetki & Şifreleme',
+      description:
+        'Rol-bazlı yetkilendirme ve şifreli iletişim; içerik erişimi kontrollü, verileriniz korunur.',
+    },
+    filter: {
+      title: 'Filtrelenebilir Katalog',
+      description:
+        'Sektör, dil ve türe göre filtreleyin; aradığınız kaynağa saniyeler içinde ulaşın.',
+    },
+    updated: {
+      title: 'Sürekli Güncel İçerik',
+      description:
+        'Katalog düzenli olarak genişler; yeni veri setleri ve kaynaklar sürekli eklenir.',
+    },
+  },
 };
 
 /* -------------------------------------------------------------------------- */
@@ -169,6 +231,26 @@ const EN: typeof TR = {
 
   compare:
     "On one side global research databases, on the other AI writing tools — hangel brings them together under a single roof built for civil society, in Turkish and free.",
+
+  firstEyebrow: 'A first in Türkiye',
+  firstTitle: 'Civil society’s knowledge, under one roof.',
+  firstSubtitle: 'A pioneering data library — filterable, in Turkish and free.',
+  firstDescription:
+    'A pioneering Turkish data library that brings social-impact, volunteering and sustainability data into one place, filterable for NGOs and volunteers. Instead of searching scattered sources, your evidence is in front of you the moment you look.',
+
+  techEyebrow: 'Security & Technology',
+  techTitle: 'Your data is safe, your access is free.',
+  techSubtitle: 'KVKK-compliant, secure cloud and role-based access.',
+  techDescription:
+    'The hangel Library runs on secure Google Cloud infrastructure; with KVKK-compliant data processing, role-based authorization and encrypted communication, your data is protected while you access knowledge freely. Trust is the precondition of access to knowledge.',
+
+  techGridEyebrow: 'Why use it with confidence',
+  techGridTitle: 'Open knowledge, secure infrastructure.',
+  techGridDescription:
+    'From free, no-signup access to enterprise-grade security — the library is designed to be both open and safe.',
+
+  evolveNote:
+    'The hangel Library keeps evolving; this page is updated as new datasets, resources and AI tools are added.',
 
   finalEyebrow: 'Ready?',
   finalTitle: 'The library is waiting for you.',
@@ -223,6 +305,39 @@ const EN: typeof TR = {
         'A catalogue of 50+ public datasets from sources like municipalities, ministries and the national statistics office — work evidence-first.',
     },
   },
+
+  tech: {
+    free: {
+      title: 'Free & No Sign-up',
+      description:
+        'No registration to start exploring; knowledge should be genuinely accessible to everyone.',
+    },
+    kvkk: {
+      title: 'KVKK-Compliant',
+      description:
+        'Your personal data is processed in a KVKK-compliant, purpose-limited and transparent way.',
+    },
+    cloud: {
+      title: 'Secure Cloud Infrastructure',
+      description:
+        'Secure infrastructure that runs on Google Cloud, scales and is kept continuously up to date.',
+    },
+    roles: {
+      title: 'Role-Based Access & Encryption',
+      description:
+        'Role-based authorization and encrypted communication; content access is controlled and your data protected.',
+    },
+    filter: {
+      title: 'Filterable Catalogue',
+      description:
+        'Filter by sector, language and type; reach the resource you need in seconds.',
+    },
+    updated: {
+      title: 'Continuously Updated Content',
+      description:
+        'The catalogue expands regularly; new datasets and resources are added all the time.',
+    },
+  },
 };
 
 /* -------------------------------------------------------------------------- */
@@ -244,6 +359,15 @@ export default function LibraryAboutPage() {
     { icon: BookMarked, title: C.features.glossary.title, description: C.features.glossary.description },
     { icon: FileSpreadsheet, title: C.features.templates.title, description: C.features.templates.description },
     { icon: Database, title: C.features.openData.title, description: C.features.openData.description },
+  ];
+
+  const techFeatures: FeatureItem[] = [
+    { icon: Sparkles, title: C.tech.free.title, description: C.tech.free.description, badge: { kind: 'hangel' } },
+    { icon: ShieldCheck, title: C.tech.kvkk.title, description: C.tech.kvkk.description },
+    { icon: Cloud, title: C.tech.cloud.title, description: C.tech.cloud.description },
+    { icon: Lock, title: C.tech.roles.title, description: C.tech.roles.description },
+    { icon: Filter, title: C.tech.filter.title, description: C.tech.filter.description },
+    { icon: Gauge, title: C.tech.updated.title, description: C.tech.updated.description },
   ];
 
   return (
@@ -291,11 +415,43 @@ export default function LibraryAboutPage() {
         actions={[{ label: C.navCta, href: '/library', variant: 'link' }]}
       />
 
+      {/* Statement — Türkiye'de bir ilk */}
+      <AppleSection
+        eyebrow={C.firstEyebrow}
+        title={C.firstTitle}
+        subtitle={C.firstSubtitle}
+        description={C.firstDescription}
+        badges={[{ kind: 'hangel' }]}
+        actions={[{ label: C.navCta, href: '/library', variant: 'link' }]}
+      />
+
       {/* Koleksiyon ızgarası */}
       <section className="bg-muted py-24 border-b border-border">
         <SectionHeading eyebrow={C.gridEyebrow} title={C.gridTitle} description={C.gridDescription} />
         <FeatureGrid items={features} columns={3} />
         <CompareNote>{C.compare}</CompareNote>
+      </section>
+
+      {/* Statement — Güvenlik & Teknoloji */}
+      <AppleSection
+        theme="dark"
+        eyebrow={C.techEyebrow}
+        title={
+          <span className="inline-flex flex-col items-center gap-4">
+            <ShieldCheck className="h-10 w-10 text-primary" aria-hidden="true" />
+            {C.techTitle}
+          </span>
+        }
+        subtitle={C.techSubtitle}
+        description={C.techDescription}
+        badges={[{ kind: 'hangel' }]}
+      />
+
+      {/* Güven veren teknoloji ızgarası */}
+      <section className="bg-white py-24 border-b border-border">
+        <SectionHeading eyebrow={C.techGridEyebrow} title={C.techGridTitle} description={C.techGridDescription} />
+        <FeatureGrid items={techFeatures} columns={3} />
+        <CompareNote>{C.evolveNote}</CompareNote>
       </section>
 
       {/* Final CTA */}

@@ -16,6 +16,7 @@ import {
   UsersRound,
   Calculator,
   Globe,
+  ShieldCheck,
 } from 'lucide-react';
 
 import {
@@ -76,6 +77,28 @@ interface MerchantContent {
   growthTitle: string;
   growthSubtitle: string;
   growthDescription: string;
+
+  firstEyebrow: string;
+  firstTitle: string;
+  firstSubtitle: string;
+  firstDescription: string;
+  firstBadge: string;
+
+  trustEyebrow: string;
+  trustTitle: string;
+  trustSubtitle: string;
+  trustDescription: string;
+
+  securityEyebrow: string;
+  securityTitle: string;
+  securitySubtitle: string;
+  securityDescription: string;
+
+  evolveEyebrow: string;
+  evolveTitle: string;
+  evolveSubtitle: string;
+  evolveDescription: string;
+  evolveBadge: string;
 
   toolsEyebrow: string;
   toolsTitle: string;
@@ -143,6 +166,32 @@ const TR: MerchantContent = {
   growthSubtitle: 'Google · Meta · TikTok reklamları, müşteri ilişkileri ve roller.',
   growthDescription:
     'Google, Meta ve TikTok reklam hesaplarınızı panelden bağlayın; kampanyalarınızı hangel üzerinden yayınlayın. CRM ile müşteri ilişkilerinizi, ekip ve rol yönetimiyle yetkilerinizi, toplu mail/SMS ile iletişiminizi tek yerden yürütün.',
+
+  firstEyebrow: 'Bir ilk',
+  firstTitle: 'Bağış oranını ürün bazında gösteren ilk yaklaşım.',
+  firstSubtitle: 'Her ürünün yanında, o alışverişin ne kadarının iyiliğe gittiği yazar.',
+  firstDescription:
+    'hangel, sosyal fayda başına bağış oranını ürün bazında şeffaf gösteren öncü pazar yeri yaklaşımıdır. Bilinçli tüketici, sepetindeki her ürünün ne kadar iyilik ürettiğini alışverişten önce görür. Bu netlik, markanızı tercih edilir kılan Türkiye’ye özel bir ilk.',
+  firstBadge: 'Türkiye’de bir ilk',
+
+  trustEyebrow: 'Sertifika & güven',
+  trustTitle: 'İyiliğinizi belgeleyin, güveni kazanın.',
+  trustSubtitle: 'Etki sertifikası, sosyal fayda rozeti ve şeffaf komisyon.',
+  trustDescription:
+    'Markanız düzenli olarak, ürettiği toplam bağışı özetleyen bir etki sertifikası kazanır; bu belgeyi vitrininizde, sosyal medyada ve KSS raporlarınızda kullanın. Market listenizde görünen sosyal fayda rozeti, bilinçli tüketiciye markanızın iyiliğin tarafında olduğunu tek bakışta anlatır.',
+
+  securityEyebrow: 'Güvenlik & teknoloji',
+  securityTitle: 'Markanızın ve müşterinizin verisi güvende.',
+  securitySubtitle: 'KVKK-uyumlu işleme, Google Cloud altyapısı, rol-bazlı yetki.',
+  securityDescription:
+    'hangel, KVKK-uyumlu veri işleme ilkeleriyle çalışır; marka ve müşteri verileriniz Google Cloud ve Firebase üzerinde şifreli saklanır. Rol-bazlı yetkilendirmeyle her ekip üyesi yalnızca kendi kapsamını görür; giriş çift-yönlü doğrulamayla korunur, iletişim uçtan uca şifrelenir. Güven, altyapının kendisidir.',
+
+  evolveEyebrow: 'Sürekli gelişim',
+  evolveTitle: 'hangel sürekli gelişiyor.',
+  evolveSubtitle: 'Yeni özellikler, siz hiçbir şey yapmadan panelinize düşer.',
+  evolveDescription:
+    'Güncelleme, kurulum ya da ek ücret yok. Geri bildirimlerinizle şekillenen yol haritası her hafta büyür; markanız her zaman en güncel araçlarla satar. Bugün kaydolun, yarının özellikleri kendiliğinden gelsin.',
+  evolveBadge: 'Yeni',
 
   toolsEyebrow: 'Canlı araçlar',
   toolsTitle: 'Bugünden kullanabileceğiniz her şey.',
@@ -231,6 +280,19 @@ const TR: MerchantContent = {
       description:
         'Etkinizin demografik dağılımını inceleyin; markanızın bilinçli tüketiciye ulaşımını panelde görün.',
     },
+    {
+      icon: Award,
+      title: 'Etki Sertifikası & Sosyal Fayda Rozeti',
+      description:
+        'Ürettiğiniz toplam bağışı özetleyen etki sertifikası kazanın; market listenizde görünen sosyal fayda rozetiyle iyiliğin tarafında olduğunuzu kanıtlayın.',
+      badge: { kind: 'hangel' },
+    },
+    {
+      icon: ShieldCheck,
+      title: 'Veri Güvenliği (KVKK)',
+      description:
+        'KVKK-uyumlu işleme, Google Cloud altyapısı, rol-bazlı yetki ve çift-yönlü doğrulama. Markanızın ve müşterinizin verisi şifreli ve güvende.',
+    },
   ],
 
   roadmap: [
@@ -312,6 +374,32 @@ const EN: MerchantContent = {
   growthSubtitle: 'Google · Meta · TikTok ads, customer relations and roles.',
   growthDescription:
     'Connect your Google, Meta and TikTok ad accounts from the panel and publish campaigns through hangel. Run customer relations with the CRM, permissions with team and role management, and communication with bulk mail/SMS — all from one place.',
+
+  firstEyebrow: 'A first',
+  firstTitle: 'The first approach to show the donation rate per product.',
+  firstSubtitle: 'Next to every product, how much of that purchase goes to good.',
+  firstDescription:
+    'hangel is the pioneering marketplace approach that transparently shows the donation rate per social cause, product by product. The conscious consumer sees how much good each item in their cart creates — before they buy. That clarity is a first for Türkiye, and it makes your brand the preferred choice.',
+  firstBadge: 'A first in Türkiye',
+
+  trustEyebrow: 'Certificate & trust',
+  trustTitle: 'Document your good, earn the trust.',
+  trustSubtitle: 'Impact certificate, social-good badge and transparent commission.',
+  trustDescription:
+    'Your brand regularly earns an impact certificate summarizing the total donations it generated; use it in your storefront, on social media and in your CSR reports. The social-good badge on your market listing tells the conscious consumer at a glance that your brand is on the side of good.',
+
+  securityEyebrow: 'Security & technology',
+  securityTitle: 'Your brand’s and your customer’s data is safe.',
+  securitySubtitle: 'KVKK-compliant processing, Google Cloud infrastructure, role-based access.',
+  securityDescription:
+    'hangel runs on KVKK-compliant data-processing principles; your brand and customer data is stored encrypted on Google Cloud and Firebase. With role-based authorization, each team member sees only their own scope; sign-in is protected by two-factor authentication and communication is encrypted end to end. Trust is the infrastructure itself.',
+
+  evolveEyebrow: 'Continuous improvement',
+  evolveTitle: 'hangel keeps getting better.',
+  evolveSubtitle: 'New features land in your panel with nothing for you to do.',
+  evolveDescription:
+    'No updates, no installs, no extra cost. Shaped by your feedback, the roadmap grows every week, so your brand always sells with the most current tools. Sign up today, and tomorrow’s features arrive on their own.',
+  evolveBadge: 'New',
 
   toolsEyebrow: 'Live tools',
   toolsTitle: 'Everything you can use today.',
@@ -399,6 +487,19 @@ const EN: MerchantContent = {
       title: 'Demographics Analysis',
       description:
         'Explore the demographic distribution of your impact and see how your brand reaches the conscious consumer.',
+    },
+    {
+      icon: Award,
+      title: 'Impact Certificate & Social-Good Badge',
+      description:
+        'Earn an impact certificate summarizing the total donations you generated; prove you’re on the side of good with the social-good badge shown on your market listing.',
+      badge: { kind: 'hangel' },
+    },
+    {
+      icon: ShieldCheck,
+      title: 'Data Security (KVKK)',
+      description:
+        'KVKK-compliant processing, Google Cloud infrastructure, role-based access and two-factor authentication. Your brand’s and your customer’s data is encrypted and safe.',
     },
   ],
 
@@ -514,6 +615,36 @@ export default function MerchantAdvantagesPage() {
         image={{ url: 'https://images.unsplash.com/photo-1553413077-190dd305871c?q=80&w=2070&auto=format&fit=crop', hint: 'organized product catalog on warehouse shelves' }}
       />
 
+      {/* Statement — first: per-product donation rate */}
+      <AppleSection
+        eyebrow={C.firstEyebrow}
+        title={C.firstTitle}
+        subtitle={C.firstSubtitle}
+        description={C.firstDescription}
+        badges={[{ kind: 'hangel', label: C.firstBadge }]}
+        image={{ url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop', hint: 'clean product shelf with clear price labels' }}
+      />
+
+      {/* Statement — certificate & trust */}
+      <AppleSection
+        theme="dark"
+        eyebrow={C.trustEyebrow}
+        title={C.trustTitle}
+        subtitle={C.trustSubtitle}
+        description={C.trustDescription}
+        badges={[{ kind: 'hangel' }]}
+        image={{ url: 'https://images.unsplash.com/photo-1554774853-aae0a22c8aa4?q=80&w=2070&auto=format&fit=crop', hint: 'award certificate on a desk' }}
+      />
+
+      {/* Statement — security & technology */}
+      <AppleSection
+        eyebrow={C.securityEyebrow}
+        title={C.securityTitle}
+        subtitle={C.securitySubtitle}
+        description={C.securityDescription}
+        image={{ url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop', hint: 'secure encrypted data infrastructure' }}
+      />
+
       {/* Feature grid — live tools */}
       <AppleSection
         id="araclar"
@@ -538,6 +669,17 @@ export default function MerchantAdvantagesPage() {
         <FeatureGrid items={C.roadmap} columns={3} />
         <CompareNote>{C.compareNote}</CompareNote>
       </AppleSection>
+
+      {/* Statement — continuous improvement */}
+      <AppleSection
+        theme="dark"
+        eyebrow={C.evolveEyebrow}
+        title={C.evolveTitle}
+        subtitle={C.evolveSubtitle}
+        description={C.evolveDescription}
+        badges={[{ kind: 'yeni', label: C.evolveBadge }]}
+        image={{ url: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop', hint: 'team building software growth' }}
+      />
 
       {/* Final CTA */}
       <AppleSection
