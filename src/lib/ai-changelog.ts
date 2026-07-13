@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-07-13";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "e62bb7a3",
+    "date": "2026-07-13",
+    "subject": "feat(marketing): 'Daha Fazla Bilgi' 6 bilgi sayfasını zenginleştir (ilkler + güvenlik + sertifika)"
+  },
+  {
+    "hash": "1537a0b5",
+    "date": "2026-07-13",
+    "subject": "maliyet: Firestore okuma faturasını kes (%88 = 102M okuma/12gün)"
+  },
+  {
     "hash": "f3c29cd6",
     "date": "2026-07-13",
     "subject": "feat: telefon kodu key fix, etki metni, Live Activity, 7 özellik detay sayfası, hangel küçük harf, hibe metni"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "bf066222",
     "date": "2026-07-12",
     "subject": "feat(volunteering): rekor gönüllülük ilanına çevrildi + çok-nokta + foto + pin + tanıtım sayfası"
-  },
-  {
-    "hash": "7f5b6610",
-    "date": "2026-07-12",
-    "subject": "feat(events): profil fotoğrafı = +1 selfie referansı + worldcleanday/cleanday vanity kısa-linkleri"
-  },
-  {
-    "hash": "59801a88",
-    "date": "2026-07-12",
-    "subject": "feat(events): rekor etkinliği altyapısı — çok-nokta + kurumsal katılımcı + foto galeri + selfie ile bul"
   }
 ];

@@ -1,4 +1,5 @@
 'use client';
+import type { ReactNode } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,10 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Mail, Phone, MapPin, Cake, Globe, Clock, CalendarPlus, Smartphone, Monitor } from 'lucide-react';
+import { Mail, Phone, MapPin, Cake, Globe, Clock, CalendarPlus, Smartphone, Monitor, ShieldCheck, ShieldX, Bell, MessageSquare, MapPinned } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit, type Timestamp } from 'firebase/firestore';
+import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, doc, query, orderBy, limit, type Timestamp } from 'firebase/firestore';
 import { EntityMultiSelect } from './entity-multi-select';
 import type { UserRow } from './types';
 import { roleLabel } from './types';
@@ -47,6 +48,21 @@ export const ProfileViewDialog = ({ user, open, onOpenChange }: { user: UserRow 
     [db, user?.id],
   );
   const { data: sessions } = useCollection<SessionDoc>(sessionsQuery);
+
+  // Pazarlama izinleri (userMarketingConsent/{uid}) — e-posta / SMS onayı.
+  const consentRef = useMemoFirebase(
+    () => (user?.id ? doc(db, COLLECTIONS.userMarketingConsent, user.id) : null),
+    [db, user?.id],
+  );
+  const { data: consent } = useDoc<{ email?: { enabled?: boolean }; sms?: { enabled?: boolean } }>(consentRef);
+
+  // Bildirim (push) izni — users/{uid}/fcmTokens'ta kayıt varsa izin verilmiştir.
+  const fcmQuery = useMemoFirebase(
+    () => (user?.id ? query(collection(db, COLLECTIONS.users, user.id, COLLECTIONS.fcmTokens), limit(1)) : null),
+    [db, user?.id],
+  );
+  const { data: fcmTokens } = useCollection<{ id: string }>(fcmQuery);
+
   if (!user) return null;
 
   // Hesap oluşturma: user.createdAt → joinDate → en eski oturum createdAt
@@ -79,6 +95,11 @@ export const ProfileViewDialog = ({ user, open, onOpenChange }: { user: UserRow 
     address: Record<string, string | undefined>;
   }>;
   const addr = (pi.address || {}) as Record<string, string | undefined>;
+  // İzinler — kullanıcının verdiği onaylar.
+  const emailConsent = consent?.email?.enabled === true;
+  const smsConsent = consent?.sms?.enabled === true;
+  const pushConsent = Array.isArray(fcmTokens) && fcmTokens.length > 0;
+  const hasLocation = !!(addr.city || addr.district || addr.neighborhood || addr.country);
   const social = ((pi as { social?: Record<string, string | undefined> }).social || {}) as Record<string, string | undefined>;
   const vi = (user.volunteerInfo || {}) as Partial<{
     profession: string | null; sector: string | null; position: string | null;
@@ -140,17 +161,32 @@ export const ProfileViewDialog = ({ user, open, onOpenChange }: { user: UserRow 
             {pi.bloodType && <div className="flex items-center gap-2 text-sm"><span className="text-xs text-muted-foreground">Kan Grubu:</span> {pi.bloodType}</div>}
             {pi.nationality && <div className="flex items-center gap-2 text-sm"><span className="text-xs text-muted-foreground">Uyruk:</span> {pi.nationality}</div>}
           </div>
-          {(addr.country || addr.city || addr.district) && (
-            <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Adres</p>
+          {/* Konum — kullanıcı adres/konum paylaştıysa il / ilçe / mahalle */}
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Konum</p>
+            {hasLocation ? (
               <div className="flex items-start gap-2 text-sm">
-                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
-                  {[addr.neighborhood, addr.district, addr.city, addr.country].filter(Boolean).join(', ')}
+                <MapPinned className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div className="space-y-0.5">
+                  {addr.city && <div><span className="text-xs text-muted-foreground">İl:</span> {addr.city}</div>}
+                  {addr.district && <div><span className="text-xs text-muted-foreground">İlçe:</span> {addr.district}</div>}
+                  {addr.neighborhood && <div><span className="text-xs text-muted-foreground">Mahalle:</span> {addr.neighborhood}</div>}
+                  {addr.country && <div><span className="text-xs text-muted-foreground">Ülke:</span> {addr.country}</div>}
                 </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-sm text-muted-foreground italic">Kullanıcı konum bilgisi paylaşmadı.</p>
+            )}
+          </div>
+
+          {/* İzinler — kullanıcının verdiği onaylar (KVKK/İYS + bildirim) */}
+          <div className="space-y-2 rounded-xl border bg-muted/20 p-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">İzinler</p>
+            <ConsentRow icon={<Mail className="h-4 w-4" />} label="E-posta pazarlama (İYS)" granted={emailConsent} />
+            <ConsentRow icon={<MessageSquare className="h-4 w-4" />} label="SMS pazarlama (İYS)" granted={smsConsent} />
+            <ConsentRow icon={<Bell className="h-4 w-4" />} label="Bildirim (push)" granted={pushConsent} />
+            <ConsentRow icon={<MapPin className="h-4 w-4" />} label="Konum paylaşımı" granted={hasLocation} />
+          </div>
           <div className="space-y-2">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">İstatistikler</p>
             <div className="grid grid-cols-3 gap-2">
@@ -210,3 +246,20 @@ export const ProfileViewDialog = ({ user, open, onOpenChange }: { user: UserRow 
     </Dialog>
   );
 };
+
+// Tek izin satırı — verildi (yeşil onay) / verilmedi (gri çarpı).
+const ConsentRow = ({ icon, label, granted }: { icon: ReactNode; label: string; granted: boolean }) => (
+  <div className="flex items-center gap-2 text-sm">
+    <span className="text-muted-foreground shrink-0">{icon}</span>
+    <span className="flex-1">{label}</span>
+    {granted ? (
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
+        <ShieldCheck className="h-3.5 w-3.5" /> Verildi
+      </span>
+    ) : (
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+        <ShieldX className="h-3.5 w-3.5" /> Yok
+      </span>
+    )}
+  </div>
+);
