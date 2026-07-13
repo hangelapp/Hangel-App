@@ -29,9 +29,11 @@ struct DonationCampaignLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.center) {
                     VStack(spacing: 2) {
                         Text(context.attributes.campaignTitle)
-                            .font(.subheadline.bold()).lineLimit(1)
+                            .font(.subheadline.bold()).foregroundStyle(.primary)
+                            .lineLimit(2).minimumScaleFactor(0.85)
                         Text(context.attributes.ngoName)
-                            .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                            .font(.caption2).foregroundStyle(.secondary)
+                            .lineLimit(1).minimumScaleFactor(0.8)
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
@@ -55,23 +57,30 @@ struct DonationCampaignLiveActivity: Widget {
         VStack(spacing: 10) {
             HangelHeaderRow(kicker: "Bağış Kampanyası", tint: .hangelOrange)
 
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
                 HangelIconBadge(systemName: "heart.fill")
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(context.attributes.campaignTitle)
-                        .font(.headline).lineLimit(1)
-                    Text(context.attributes.ngoName)
-                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                        .font(.system(.headline, design: .rounded).weight(.bold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2).minimumScaleFactor(0.85)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Label(context.attributes.ngoName, systemImage: "building.2.crop.circle")
+                        .font(.caption).foregroundStyle(.secondary)
+                        .lineLimit(1).minimumScaleFactor(0.8)
                 }
-                Spacer(minLength: 0)
+                Spacer(minLength: 6)
 
                 VStack(alignment: .trailing, spacing: 0) {
                     Text(formatTRY(context.state.currentAmount))
-                        .font(.callout.bold()).foregroundStyle(Color.hangelOrange)
+                        .font(.system(.callout, design: .rounded).bold()).foregroundStyle(Color.hangelOrange)
+                        .lineLimit(1).minimumScaleFactor(0.7)
                     Text("/ \(formatTRY(context.state.goalAmount))")
                         .font(.caption2).foregroundStyle(.secondary)
+                        .lineLimit(1).minimumScaleFactor(0.7)
                 }
+                .frame(maxWidth: 110, alignment: .trailing)
             }
 
             ProgressView(value: ratio(context.state.currentAmount, context.state.goalAmount)) {

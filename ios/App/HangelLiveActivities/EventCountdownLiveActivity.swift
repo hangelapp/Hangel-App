@@ -44,7 +44,8 @@ struct EventCountdownLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.center) {
                     VStack(spacing: 2) {
                         Text(context.attributes.eventTitle)
-                            .font(.subheadline.bold()).lineLimit(1)
+                            .font(.subheadline.bold()).foregroundStyle(.primary)
+                            .lineLimit(2).minimumScaleFactor(0.85)
                         Text(context.state.statusLabel)
                             .font(.caption2).foregroundStyle(Color.hangelOrange)
                     }
@@ -73,19 +74,24 @@ struct EventCountdownLiveActivity: Widget {
             HangelHeaderRow(kicker: "Etkinlik", tint: .hangelOrange,
                             weatherEmoji: context.attributes.weatherEmoji, weatherTemp: context.attributes.weatherTemp)
 
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
                 HangelLogoOrIcon(logoName: context.attributes.orgLogoName, systemName: "calendar")
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(context.attributes.eventTitle)
-                        .font(.headline).lineLimit(1)
+                        .font(.system(.headline, design: .rounded).weight(.bold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                        .fixedSize(horizontal: false, vertical: true)
                     HStack(spacing: 6) {
                         roleChip(context.state.statusLabel)
                         Label(context.attributes.location, systemImage: "mappin.and.ellipse")
-                            .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                            .font(.caption).foregroundStyle(.secondary)
+                            .lineLimit(1).minimumScaleFactor(0.8)
                     }
                 }
-                Spacer(minLength: 0)
+                Spacer(minLength: 6)
                 trailingMetric(context, big: true)
             }
 
@@ -123,12 +129,11 @@ struct EventCountdownLiveActivity: Widget {
         switch phase(c) {
         case .before:
             if let s = startDate(c) {
-                Text(timerInterval: Date()...s, countsDown: true)
-                    .font(font).monospacedDigit().foregroundStyle(Color.hangelOrange)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: big ? 108 : 56, alignment: .trailing)
+                // Uzak tarihte "N gün", <24 saatte canlı sayaç → "1633:32:4" taşması yok.
+                HangelCountdownMetric(start: s, tint: .hangelOrange, big: big)
             } else {
-                Text(c.state.statusLabel).font(font).foregroundStyle(Color.hangelOrange).lineLimit(1)
+                Text(c.state.statusLabel).font(font).foregroundStyle(Color.hangelOrange)
+                    .lineLimit(1).minimumScaleFactor(0.7).frame(maxWidth: big ? 84 : 56, alignment: .trailing)
             }
         case .during:
             HStack(spacing: 4) {

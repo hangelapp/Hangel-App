@@ -34,6 +34,95 @@ func hangelGradient(_ top: Color, _ bottom: Color) -> LinearGradient {
     LinearGradient(colors: [top, bottom], startPoint: .topLeading, endPoint: .bottomTrailing)
 }
 
+// MARK: - Geri sayım metrik yardımcıları (paylaşılan)
+//
+// SORUN: Uzak bir başlangıç tarihinde `Text(timerInterval:)` HH:MM:SS gösterip
+// "1633:32:4" gibi absürt (1633 saat!) taşan bir sayaç üretiyordu — başlığı ezip
+// okunaksızlık yaratıyordu. ÇÖZÜM: >24 saat kaldıysa insan-okunur gün etiketi
+// ("68 gün", "yarın"), yalnızca <24 saatte canlı tıkır tıkır sayaç.
+
+/// Başlangıca kalan gün etiketi (Türkçe). now < start varsayılır.
+/// >1 gün → "N gün", ==1 → "yarın", aynı gün → nil (canlı sayaç kullanılmalı).
+@available(iOS 16.1, *)
+func hangelDayLabel(until start: Date, now: Date = Date()) -> String? {
+    let remaining = start.timeIntervalSince(now)
+    guard remaining > 0 else { return nil }
+    // 24 saatten az kaldıysa canlı sayaç anlamlı → gün etiketi kullanma.
+    if remaining < 24 * 3600 { return nil }
+    let days = Int(ceil(remaining / 86400.0))
+    return days <= 1 ? "yarın" : "\(days) gün"
+}
+
+/// Faz-öncesi (before) sağ metrik: uzaksa "N gün / kaldı", yakınsa canlı HH:MM:SS sayaç.
+/// Genişlik sabitlenir → asla taşmaz, başlığı ezmez.
+@available(iOS 16.1, *)
+struct HangelCountdownMetric: View {
+    let start: Date
+    var tint: Color = .hangelOrange
+    var big: Bool = true
+
+    var body: some View {
+        let numberFont: Font = big
+            ? .system(.title3, design: .rounded).bold()
+            : .system(.caption, design: .rounded).bold()
+        if let day = hangelDayLabel(until: start) {
+            // Uzak tarih → sabit genişlikli, taşmayan gün etiketi.
+            VStack(alignment: .trailing, spacing: 0) {
+                Text(day)
+                    .font(numberFont)
+                    .foregroundStyle(tint)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                Text("kaldı")
+                    .font(.system(size: big ? 10 : 9, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: big ? 68 : 46, alignment: .trailing)
+        } else {
+            // <24 saat → canlı tıkır tıkır sayaç (HH:MM:SS artık anlamlı).
+            VStack(alignment: .trailing, spacing: 0) {
+                Text(timerInterval: Date()...start, countsDown: true)
+                    .font(numberFont)
+                    .monospacedDigit()
+                    .foregroundStyle(tint)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: big ? 84 : 56, alignment: .trailing)
+                if big {
+                    Text("başlangıca")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+        }
+    }
+}
+
+/// Dynamic Island compactTrailing için tek satırlık, dar geri sayım.
+/// Uzaksa "N gün", yakınsa canlı sayaç.
+@available(iOS 16.1, *)
+struct HangelCompactCountdown: View {
+    let start: Date
+    var tint: Color = .hangelOrange
+
+    var body: some View {
+        if let day = hangelDayLabel(until: start) {
+            Text(day)
+                .font(.system(.caption, design: .rounded).bold())
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: 56)
+        } else {
+            Text(timerInterval: Date()...start, countsDown: true)
+                .font(.system(.caption, design: .rounded).bold())
+                .monospacedDigit()
+                .foregroundStyle(tint)
+                .frame(maxWidth: 54)
+        }
+    }
+}
+
 /// "hangel" wordmark — küçük marka etiketi (her zaman lowercase, marka kuralı).
 @available(iOS 16.1, *)
 struct HangelWordmark: View {
@@ -96,7 +185,9 @@ struct HangelLogoOrIcon: View {
     }
 }
 
-/// Hava durumu çipi (emoji + sıcaklık). İkisi de boşsa hiçbir şey çizmez.
+/// Hava durumu çipi (emoji + sıcaklık). İkisi de boşsa hiçbir şey çizmez —
+/// böylece hava verisi yokken (çoğu online görev) başlık satırı boşluk bırakmaz,
+/// düzen kasıtlı görünür.
 @available(iOS 16.1, *)
 struct HangelWeatherChip: View {
     let emoji: String
@@ -104,14 +195,14 @@ struct HangelWeatherChip: View {
     var body: some View {
         if !emoji.isEmpty || !temp.isEmpty {
             HStack(spacing: 3) {
-                if !emoji.isEmpty { Text(emoji).font(.system(size: 11)) }
+                if !emoji.isEmpty { Text(emoji).font(.system(size: 12)) }
                 if !temp.isEmpty {
-                    Text(temp).font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
+                    Text(temp).font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary)
                 }
             }
-            .padding(.horizontal, 6).padding(.vertical, 2)
-            .background(Capsule().fill(Color.secondary.opacity(0.12)))
+            .padding(.horizontal, 7).padding(.vertical, 2)
+            .background(Capsule().fill(Color.secondary.opacity(0.16)))
         }
     }
 }

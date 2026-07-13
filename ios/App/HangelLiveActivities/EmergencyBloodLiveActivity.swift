@@ -27,7 +27,8 @@ struct EmergencyBloodLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.center) {
                     VStack(spacing: 2) {
                         Text(context.attributes.hospitalName)
-                            .font(.subheadline.bold()).lineLimit(1)
+                            .font(.subheadline.bold()).foregroundStyle(.primary)
+                            .lineLimit(2).minimumScaleFactor(0.85)
                         Text(context.state.distance)
                             .font(.caption2).foregroundStyle(.secondary)
                     }
@@ -63,16 +64,20 @@ struct EmergencyBloodLiveActivity: Widget {
         VStack(spacing: 10) {
             HangelHeaderRow(kicker: "Acil Kan İhtiyacı", tint: .hangelEmergency)
 
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
                 HangelIconBadge(systemName: "drop.fill", top: .hangelEmergency, bottom: .hangelEmergencyDeep)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text(context.attributes.hospitalName)
-                        .font(.headline).lineLimit(1)
-                    Text("\(context.attributes.city) · \(context.state.distance)")
-                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                        .font(.system(.headline, design: .rounded).weight(.bold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(2).minimumScaleFactor(0.85)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Label("\(context.attributes.city) · \(context.state.distance)", systemImage: "mappin.and.ellipse")
+                        .font(.caption).foregroundStyle(.secondary)
+                        .lineLimit(1).minimumScaleFactor(0.8)
                 }
-                Spacer(minLength: 0)
+                Spacer(minLength: 6)
                 bloodTypePill(context.attributes.bloodType)
             }
 
