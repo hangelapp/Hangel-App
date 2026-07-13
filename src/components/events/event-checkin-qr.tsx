@@ -5,7 +5,7 @@
  *
  * Düzenleyici QR'ı kapıda gösterir (perde/tablet/basılı); katılımcı hangel app ile
  * okutur → kayıt (RSVP) ya da check-in olur. Dialog ayrıca canlı listeyi gösterir:
- *  - Kayıt QR  → kayıt olanlar
+ *  - Kayıt QR  → kayıt olanlar (RSVP "going") + link kopyala/indir/paylaş
  *  - Check-in QR → herkes; check-in yapanlar YEŞİL + yan sütunda "Check-in yaptı".
  *
  * Veri: GET /api/events/[id]/attendance (organizatör/super-admin yetkili).
@@ -15,7 +15,7 @@
 import React, { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { QrCode, ScanLine, Loader2, RefreshCw, CheckCircle2, Clock } from 'lucide-react';
+import { QrCode, ScanLine, Loader2, RefreshCw, CheckCircle2, Clock, Copy, Check, Download, Share2 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { LogoQr } from '@/components/shared/logo-qr';
@@ -39,6 +39,8 @@ export function EventCheckinQR({ eventId, logoUrl }: { eventId: string; logoUrl?
   const [mode, setMode] = useState<Mode | null>(null);
   const [data, setData] = useState<AttendanceResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   const scanUrl = useCallback((m: Mode) => {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
@@ -62,13 +64,50 @@ export function EventCheckinQR({ eventId, logoUrl }: { eventId: string; logoUrl?
   }, [eventId, user, toast]);
 
   const open = useCallback((m: Mode) => {
-    setMode(m); setData(null);
+    setMode(m); setData(null); setCopied(false);
     void loadList();
   }, [loadList]);
+
+  // Link işlemleri — kopyala / indir (PNG) / paylaş
+  const handleCopy = useCallback(async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast({ title: 'Kopyalandı' });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ variant: 'destructive', title: 'Kopyalanamadı' });
+    }
+  }, [toast]);
+
+  const handleDownload = useCallback(() => {
+    if (!qrDataUrl) { toast({ variant: 'destructive', title: 'İndirilemedi' }); return; }
+    const a = document.createElement('a');
+    a.href = qrDataUrl;
+    a.download = `kayit-qr-${eventId}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, [qrDataUrl, eventId, toast]);
+
+  const handleShare = useCallback(async (url: string) => {
+    const title = data?.event?.name || 'hangel';
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title, text: title, url });
+        return;
+      } catch (e) {
+        if (e instanceof Error && e.name === 'AbortError') return; // kullanıcı iptal etti
+        // diğer hatalarda kopyalamaya düş
+      }
+    }
+    void handleCopy(url);
+  }, [data, handleCopy]);
 
   const people = data?.people ?? [];
   const registered = people.filter((p) => p.registered);
   const list = mode === 'kayit' ? registered : people; // check-in: herkes (kayıtlı + check-in yapan)
+  const current = mode ?? 'checkin';
 
   return (
     <>
@@ -92,9 +131,22 @@ export function EventCheckinQR({ eventId, logoUrl }: { eventId: string; logoUrl?
           {/* Büyük QR */}
           <div className="flex flex-col items-center gap-2">
             <div className="rounded-2xl border bg-white p-2 shadow-sm">
-              <LogoQr value={scanUrl(mode ?? 'checkin')} logoUrl={logoUrl} size={216} className="rounded-lg" />
+              <LogoQr value={scanUrl(current)} logoUrl={logoUrl} size={216} className="rounded-lg" onDataUrl={setQrDataUrl} />
             </div>
-            <p className="break-all text-center text-xs text-muted-foreground">{scanUrl(mode ?? 'checkin')}</p>
+            <p className="break-all text-center text-xs text-muted-foreground">{scanUrl(current)}</p>
+            {/* Kopyala / İndir (PNG) / Paylaş */}
+            <div className="flex items-center justify-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => handleCopy(scanUrl(current))}>
+                {copied ? <Check className="mr-1.5 h-4 w-4 text-emerald-600" /> : <Copy className="mr-1.5 h-4 w-4" />}
+                Kopyala
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download className="mr-1.5 h-4 w-4" /> İndir
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleShare(scanUrl(current))}>
+                <Share2 className="mr-1.5 h-4 w-4" /> Paylaş
+              </Button>
+            </div>
           </div>
 
           {/* Sayaç + yenile */}
@@ -114,7 +166,7 @@ export function EventCheckinQR({ eventId, logoUrl }: { eventId: string; logoUrl?
             {loading && !data ? (
               <div className="flex items-center justify-center py-8 text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Yükleniyor…</div>
             ) : list.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">{mode === 'kayit' ? 'Henüz kayıt yok.' : 'Henüz katılımcı yok.'}</p>
+              <p className="py-8 text-center text-sm text-muted-foreground">{mode === 'kayit' ? 'Henüz kayıt olan yok.' : 'Henüz katılımcı yok.'}</p>
             ) : (
               list.map((p) => {
                 const green = mode === 'checkin' && p.checkedIn;

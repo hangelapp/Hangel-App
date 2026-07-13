@@ -6,6 +6,7 @@ import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/l
 import { startEventCountdownActivity } from '@/lib/native-live-activity';
 import { EventCountdown } from '@/components/events/event-countdown';
 import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
+import { shouldShowLiveActivity } from '@/lib/live-activity-timing';
 import { LiveEventSection } from '@/components/events/live-event-section';
 import { EventEvaluateButton } from '@/components/events/event-evaluate-button';
 import { EventCheckinScanButton } from '@/components/events/event-checkin-scan-button';
@@ -257,16 +258,15 @@ export default function EventDetailPage() {
     };
     const eventStartEpoch = toEpoch(event.startDate);
     const eventEndEpoch = toEpoch(event.endDate);
-    // Live Activity, katılım anından etkinlik BİTENE kadar kilit ekranında kalır
-    // (kullanıcı tercihi: "açtığı günden itibaren kalsın"). Uzak tarihte bile geri
-    // sayım gösterilir. TEK kısıt: bitmiş etkinlikte ya da geçerli tarih yoksa gösterme.
-    {
-      const nowMs = Date.now();
-      const noValidDate = !eventStartEpoch && !eventEndEpoch;
-      const alreadyEnded = eventEndEpoch > 0 && eventEndEpoch < nowMs;
-      if (noValidDate || alreadyEnded) return;
-    }
     const _role = getUserEventRole(event.contributors, authUser?.uid);
+    // ROL BAZLI zamanlama: Yönetici (super-admin / ilan sahibi / participant OLMAYAN
+    // contributor rolü — konuşmacı/organizatör vb.) için Live Activity YAYIN anından
+    // BİTİŞE kadar kalır (24 saat kısıtı yok). Katılımcı için yalnız başlangıca ≤ 24
+    // saat kala (veya etkinlik sürerken) düşer. shouldShowLiveActivity TEK KAYNAK;
+    // bitmiş/tarihsiz etkinlikte her iki rolde de false döner.
+    const timingRole: 'manager' | 'participant' =
+      (isManager || _role !== 'participant') ? 'manager' : 'participant';
+    if (!shouldShowLiveActivity({ role: timingRole, startEpoch: eventStartEpoch, endEpoch: eventEndEpoch, now: Date.now() })) return;
     const _roleLabel = _role === 'participant'
       ? 'Katılımcı'
       : (roleLabelTr(_role).charAt(0) + roleLabelTr(_role).slice(1).toLocaleLowerCase('tr'));
@@ -366,13 +366,29 @@ export default function EventDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUser, resolvedEventId, isGoing]);
 
-  // Etkinlik günü: "going" katılımcı sayfayı açınca kilit ekranı canlı
-  // etkinliğini (yeniden) başlat — RSVP anında açılan activity iOS tarafından
-  // saatler içinde sonlandırıldığından erken katılanlarda etkinlik günü
-  // görünmüyordu. Pencere: başlangıçtan 12 saat öncesi → bitiş.
+  // Sayfa açılışında kilit ekranı canlı etkinliğini (yeniden) başlat — RSVP anında
+  // açılan activity iOS tarafından saatler içinde sonlandırıldığından erken
+  // katılanlarda etkinlik günü görünmüyordu. ROL BAZLI (kullanıcı kuralı):
+  //  - Yönetici (super-admin / ilan sahibi / participant OLMAYAN contributor): RSVP
+  //    ŞART DEĞİL — sayfayı görüntülemesi yeter; zamanlama kontrolü
+  //    launchLiveActivity içindeki shouldShowLiveActivity('manager') tarafından yapılır
+  //    (yayın anından bitişe kadar, 24 saat kısıtı yok).
+  //  - Katılımcı: yalnız RSVP'liyse ("going") ve başlangıca 12 saatten az kaldıysa
+  //    (launchLiveActivity ayrıca ≤ 24 saat / süregelen kuralını da uygular).
   const liveActivityRef = useRef(false);
   useEffect(() => {
-    if (liveActivityRef.current || !isGoing || !authUser || !event || !resolvedEventId) return;
+    if (liveActivityRef.current || !authUser || !event || !resolvedEventId) return;
+    const _role = getUserEventRole(event.contributors, authUser?.uid);
+    const isManagerView = isManager || _role !== 'participant';
+    if (isManagerView) {
+      // Yönetici: RSVP/tarih penceresi kontrolü yok — launchLiveActivity içindeki
+      // rol bazlı gate karar verir (bitmiş/tarihsiz etkinlikte no-op).
+      liveActivityRef.current = true;
+      void launchLiveActivity();
+      return;
+    }
+    // Katılımcı yolu (mevcut davranış korunur): "going" + başlangıçtan 12 saat öncesi → bitiş.
+    if (!isGoing) return;
     const startMs = eventStart(event)?.getTime();
     if (!startMs) return;
     const endMs = eventEnd(event)?.getTime() ?? startMs + 3 * 3600_000;
@@ -382,7 +398,7 @@ export default function EventDetailPage() {
     void launchLiveActivity();
     // launchLiveActivity kasıtlı bağımlılık dışı (her render'da yeniden oluşur; ref guard tek sefer garantiler).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isGoing, authUser, event, resolvedEventId]);
+  }, [isGoing, isManager, authUser, event, resolvedEventId]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && event) {

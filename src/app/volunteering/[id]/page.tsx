@@ -39,6 +39,9 @@ import { scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
 import { useVerifiedAction } from '@/hooks/use-verified-action';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { startVolunteerTaskActivity } from '@/lib/native-live-activity';
+import { shouldShowLiveActivity } from '@/lib/live-activity-timing';
+import { useIsNgoAdmin } from '@/hooks/use-is-ngo-admin';
+import { Capacitor } from '@capacitor/core';
 import { celebrate } from '@/lib/celebrate';
 import { socialImpactValueTRY, formatTRY, socialImpactExplanation } from '@/lib/social-impact';
 import { extractListingHours } from '@/lib/volunteer/listing-impact';
@@ -91,7 +94,28 @@ export default function VolunteeringDetailPage() {
   const { data: userData } = useDoc<UserType & {
     volunteerInfo?: MatchingUserProfile['volunteerInfo'];
     personalInfo?: MatchingUserProfile['personalInfo'];
+    role?: string;
+    managedNgoId?: string;
   }>(userDocRef);
+
+  // ROL BAZLI Live Activity (kullanıcı kuralı):
+  //  - Yönetici (super-admin / ilanın STK'sını yöneten): Live Activity ilan
+  //    yayınlandığı andan bitişe kadar kilit ekranında kalır (24 saat kısıtı yok).
+  //  - Katılımcı (başvuran gönüllü): yalnız başlangıca ≤ 24 saat kala düşer.
+  // Kesin sahiplik: userData.managedNgoId === opportunity.ngoId. Yedek (proxy):
+  // useIsNgoAdmin() (ngo-admin/super-admin) — managedNgoId doc'ta yoksa da yönetici
+  // sinyali verir. Tradeoff: proxy, BAŞKA bir STK'yı yöneten admin'e de bu ilanda
+  // "yönetici" muamelesi yapabilir; kesin eşleşme önce denenir, o yüzden pratikte
+  // yalnız managedNgoId hiç yoksa proxy'ye düşülür.
+  const { isNgoAdmin } = useIsNgoAdmin();
+  const isOppManager = useMemo(() => {
+    if (!userData) return false;
+    if (userData.role === 'super-admin') return true;
+    if (opportunity?.ngoId && userData.managedNgoId && userData.managedNgoId === opportunity.ngoId) return true;
+    // Kesin eşleşme kurulamıyorsa (managedNgoId yok) ngo-admin proxy'sine düş.
+    if (!userData.managedNgoId && isNgoAdmin) return true;
+    return false;
+  }, [userData, opportunity?.ngoId, isNgoAdmin]);
 
   // Başvuru durumu — kullanıcının bu fırsata yaptığı başvuru var mı (events RSVP benzeri sinyal).
   const myApplicationsQuery = useMemoFirebase(() => {
@@ -208,6 +232,71 @@ export default function VolunteeringDetailPage() {
       .catch(() => { /* hava durumu best-effort; hata sayfayı bozmaz */ });
     return () => { active = false; };
   }, [opportunity, locType, coords?.lat, coords?.lon, oppCity, oppDistrict]);
+
+  // YÖNETİCİ yolu — Live Activity ilan yayınlandığı andan bitişe kadar kilit
+  // ekranında kalır (24 saat kısıtı yok). Katılımcı yolundan (handleApply) farklı:
+  // yönetici BAŞVURMADAN, ilanı görüntülemesi yeter. Ref + localStorage guard'ı
+  // (~12 saat) her render'da yeniden tetiklenmeyi + kilit ekranında çift kartı önler.
+  // Yalnız native'de (start fn web'de no-op ama gereksiz iş yapmayalım).
+  const managerLiveActivityRef = useRef(false);
+  useEffect(() => {
+    if (managerLiveActivityRef.current) return;
+    if (!Capacitor.isNativePlatform()) return;
+    if (!isOppManager || !authUser || !opportunity) return;
+    const dts = opportunity.dates as { eventStart?: string; eventStartTime?: string; eventEnd?: string; eventEndTime?: string } | undefined;
+    const toEpoch = (d?: string, t?: string): number => {
+      if (!d) return 0;
+      const base = d.slice(0, 10);
+      const s = t ? `${base} ${t}` : base;
+      const dt = parse(s, t ? 'yyyy-MM-dd HH:mm' : 'yyyy-MM-dd', new Date());
+      return isNaN(dt.getTime()) ? 0 : dt.getTime();
+    };
+    const startEpoch = toEpoch(dts?.eventStart, dts?.eventStartTime);
+    const endEpoch = toEpoch(dts?.eventEnd, dts?.eventEndTime);
+    // İlan "yayınlanmış/aktif" mi? Ayrı bir status alanı yok; yüklü + tarihi geçerli
+    // + bitmemiş olması aktif sayılır — shouldShowLiveActivity('manager') bunu uygular.
+    if (!shouldShowLiveActivity({ role: 'manager', startEpoch, endEpoch, now: Date.now() })) return;
+    managerLiveActivityRef.current = true;
+    const guardKey = `hangel:liveActivity:vol:${opportunity.id}`;
+    try {
+      const last = Number(localStorage.getItem(guardKey) || 0);
+      if (Date.now() - last < 12 * 3600_000) return;
+    } catch { /* yok say */ }
+    void (async () => {
+      let weatherEmoji = ''; let weatherTemp = '';
+      const vloc = opportunity.location;
+      if (vloc && (vloc.type === 'Saha' || vloc.type === 'Hibrit') && vloc.city) {
+        try {
+          const qs = vloc.coordinates
+            ? `lat=${vloc.coordinates.lat}&lon=${vloc.coordinates.lon}`
+            : `city=${encodeURIComponent(vloc.city)}&district=${encodeURIComponent(vloc.district || '')}`;
+          const wr = await fetch(`/api/weather?${qs}&days=7`);
+          if (wr.ok) {
+            const wj = await wr.json() as { days?: Array<{ date: string; emoji: string; tempMax: number }> };
+            const dayKey = (opportunity.dates?.eventStart || '').slice(0, 10);
+            const day = wj.days?.find(d => d.date === dayKey) || wj.days?.[0];
+            if (day) { weatherEmoji = day.emoji || ''; weatherTemp = `${day.tempMax}°`; }
+          }
+        } catch { /* hava durumu best-effort */ }
+      }
+      const activityId = await startVolunteerTaskActivity({
+        taskTitle: opportunity.title,
+        ngoName: opportunity.organization || '',
+        location: opportunity.location?.city || '',
+        taskId: opportunity.id,
+        weatherEmoji,
+        weatherTemp,
+        organizerLogoUrl: opportunity.eventLogoUrl || opportunity.organizerLogoUrl || ngo?.avatarUrl || '',
+        activityStartEpoch: startEpoch,
+        activityEndEpoch: endEpoch,
+      });
+      if (activityId) {
+        try { localStorage.setItem(guardKey, String(Date.now())); } catch { /* yok say */ }
+      }
+    })();
+    // startVolunteerTaskActivity / ngo kasıtlı bağımlılık dışı: ref + guard tek sefer garantiler.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOppManager, authUser, opportunity]);
 
   if (isOppLoading) {
     return (
@@ -565,11 +654,10 @@ export default function VolunteeringDetailPage() {
       // gösterme (ve geçerli bir tarih yoksa gösterme — absürt/boş sayaç olmasın).
       const startEpoch = toEpoch(dts?.eventStart, dts?.eventStartTime);
       const endEpoch = toEpoch(dts?.eventEnd, dts?.eventEndTime);
-      const nowMs = Date.now();
-      const noValidDate = !startEpoch && !endEpoch;
-      const alreadyEnded = endEpoch > 0 && endEpoch < nowMs;
-      if (noValidDate || alreadyEnded) {
-        return; // Live Activity başlatma — tarih yok ya da etkinlik bitmiş.
+      // Başvuran gönüllü = KATILIMCI: Live Activity yalnız başlangıca ≤ 24 saat kala
+      // (veya etkinlik hâlihazırda sürüyorsa) düşer. Bitmiş/tarihsiz ilanda da false.
+      if (!shouldShowLiveActivity({ role: 'participant', startEpoch, endEpoch, now: Date.now() })) {
+        return; // Live Activity başlatma — katılımcı için henüz zamanı değil (>24 saat) / bitmiş / tarihsiz.
       }
       await startVolunteerTaskActivity({
         taskTitle: opportunity.title,

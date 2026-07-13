@@ -5,32 +5,47 @@
  * (etkinlik yönetimindeki EventCheckinQR ile aynı prensip).
  *
  *  - Kayıt QR   → QR /volunteering/{id} (public ilan). Gönüllü okutur, başvurur.
+ *                 Dialog "Kayıt olan kullanıcılar" listesini gösterir (durum rozetli).
  *  - Check-in QR→ QR /v/{id}/checkin (yoklama). Onaylı gönüllü okutur, anında
  *                 yoklamaya girer. Dialog canlı listeyi gösterir: gelenler YEŞİL.
  *
- * Yoklama verisi: GET /api/volunteering/[id]/checkins.
+ * Veri: GET /api/volunteering/[id]/checkins (yoklama = onaylılar);
+ *       ?scope=all → ilana başvuran herkes (Kayıt QR listesi, durum rozetiyle).
  */
 
 import React, { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { QrCode, ScanLine, Loader2, RefreshCw, CheckCircle2, Clock } from 'lucide-react';
+import { QrCode, ScanLine, Loader2, RefreshCw, CheckCircle2, Clock, Copy, Check, Download, Share2 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { LogoQr } from '@/components/shared/logo-qr';
 
 interface Person {
   uid: string; name: string; email: string;
+  status?: string;
   checkedIn: boolean; checkedInAt: string | null;
 }
 interface CheckinsResponse {
   opp: { title: string };
   approvedCount: number;
+  registeredCount?: number;
   checkedInCount: number;
   people: Person[];
 }
 
 type Mode = 'kayit' | 'checkin';
+
+/** Başvuru durumuna göre küçük renkli rozet (Onaylı / Beklemede / Reddedildi). */
+function StatusBadge({ status }: { status?: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    'Onaylandı': { label: 'Onaylı', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' },
+    'Beklemede': { label: 'Beklemede', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400' },
+    'Reddedildi': { label: 'Reddedildi', cls: 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400' },
+  };
+  const s = map[status ?? 'Beklemede'] ?? map['Beklemede'];
+  return <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${s.cls}`}>{s.label}</span>;
+}
 
 export function VolunteeringCheckinQR({ oppId, logoUrl }: { oppId: string; logoUrl?: string | null }) {
   const { user } = useUser();
@@ -38,16 +53,20 @@ export function VolunteeringCheckinQR({ oppId, logoUrl }: { oppId: string; logoU
   const [mode, setMode] = useState<Mode | null>(null);
   const [data, setData] = useState<CheckinsResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
   const scanUrl = (m: Mode) => (m === 'kayit' ? `${origin}/volunteering/${oppId}` : `${origin}/v/${oppId}/checkin`);
 
-  const loadList = useCallback(async () => {
+  const loadList = useCallback(async (m: Mode) => {
     if (!user) { toast({ variant: 'destructive', title: 'Giriş gerekli' }); return; }
     setLoading(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch(`/api/volunteering/${oppId}/checkins`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store' });
+      // Kayıt QR → başvuran herkes (scope=all); Check-in QR → yalnız onaylılar.
+      const qs = m === 'kayit' ? '?scope=all' : '';
+      const res = await fetch(`/api/volunteering/${oppId}/checkins${qs}`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store' });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || 'Liste yüklenemedi');
       setData(body);
@@ -61,10 +80,48 @@ export function VolunteeringCheckinQR({ oppId, logoUrl }: { oppId: string; logoU
   const open = useCallback((m: Mode) => {
     setMode(m);
     setData(null);
-    if (m === 'checkin') void loadList(); // kayıt modunda listeye gerek yok
+    setCopied(false);
+    void loadList(m); // her iki modda da listeyi yükle
   }, [loadList]);
 
+  // Link işlemleri — kopyala / indir (PNG) / paylaş
+  const handleCopy = useCallback(async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast({ title: 'Kopyalandı' });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ variant: 'destructive', title: 'Kopyalanamadı' });
+    }
+  }, [toast]);
+
+  const handleDownload = useCallback(() => {
+    if (!qrDataUrl) { toast({ variant: 'destructive', title: 'İndirilemedi' }); return; }
+    const a = document.createElement('a');
+    a.href = qrDataUrl;
+    a.download = `kayit-qr-${oppId}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, [qrDataUrl, oppId, toast]);
+
+  const handleShare = useCallback(async (url: string) => {
+    const title = data?.opp?.title || 'hangel';
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title, text: title, url });
+        return;
+      } catch (e) {
+        if (e instanceof Error && e.name === 'AbortError') return; // kullanıcı iptal etti
+        // diğer hatalarda kopyalamaya düş
+      }
+    }
+    void handleCopy(url);
+  }, [data, handleCopy]);
+
   const people = data?.people ?? [];
+  const current = mode ?? 'checkin';
 
   return (
     <>
@@ -88,9 +145,22 @@ export function VolunteeringCheckinQR({ oppId, logoUrl }: { oppId: string; logoU
           {/* Büyük QR */}
           <div className="flex flex-col items-center gap-2">
             <div className="rounded-2xl border bg-white p-2 shadow-sm">
-              <LogoQr value={scanUrl(mode ?? 'checkin')} logoUrl={logoUrl} size={216} className="rounded-lg" />
+              <LogoQr value={scanUrl(current)} logoUrl={logoUrl} size={216} className="rounded-lg" onDataUrl={setQrDataUrl} />
             </div>
-            <p className="break-all text-center text-xs text-muted-foreground">{scanUrl(mode ?? 'checkin')}</p>
+            <p className="break-all text-center text-xs text-muted-foreground">{scanUrl(current)}</p>
+            {/* Kopyala / İndir (PNG) / Paylaş */}
+            <div className="flex items-center justify-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => handleCopy(scanUrl(current))}>
+                {copied ? <Check className="mr-1.5 h-4 w-4 text-emerald-600" /> : <Copy className="mr-1.5 h-4 w-4" />}
+                Kopyala
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download className="mr-1.5 h-4 w-4" /> İndir
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleShare(scanUrl(current))}>
+                <Share2 className="mr-1.5 h-4 w-4" /> Paylaş
+              </Button>
+            </div>
           </div>
 
           {/* Check-in modunda canlı yoklama listesi */}
@@ -100,7 +170,7 @@ export function VolunteeringCheckinQR({ oppId, logoUrl }: { oppId: string; logoU
                 <p className="text-sm font-semibold">
                   Yoklama: <span className="text-emerald-600">{data?.checkedInCount ?? 0}</span> / {data?.approvedCount ?? 0} onaylı gönüllü
                 </p>
-                <Button variant="ghost" size="sm" onClick={loadList} disabled={loading}>
+                <Button variant="ghost" size="sm" onClick={() => loadList('checkin')} disabled={loading}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                 </Button>
               </div>
@@ -129,11 +199,39 @@ export function VolunteeringCheckinQR({ oppId, logoUrl }: { oppId: string; logoU
             </>
           )}
 
+          {/* Kayıt modunda "Kayıt olan kullanıcılar" listesi (durum rozetli) */}
           {mode === 'kayit' && (
-            <p className="border-t pt-3 text-center text-xs text-muted-foreground">
-              Bu QR ilanın public sayfasını açar; gönüllü oradan başvurur. Başvurular
-              &ldquo;Başvurular&rdquo; sekmesinde onayına düşer.
-            </p>
+            <>
+              <div className="flex items-center justify-between border-t pt-3">
+                <p className="text-sm font-semibold">
+                  Kayıt olanlar: <span className="text-primary">{data?.registeredCount ?? people.length}</span>
+                </p>
+                <Button variant="ghost" size="sm" onClick={() => loadList('kayit')} disabled={loading}>
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                </Button>
+              </div>
+              <div className="max-h-64 space-y-1.5 overflow-y-auto">
+                {loading && !data ? (
+                  <div className="flex items-center justify-center py-8 text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Yükleniyor…</div>
+                ) : people.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">Henüz kayıt olan yok.</p>
+                ) : (
+                  people.map((p) => (
+                    <div key={p.uid} className="flex items-center justify-between gap-2 rounded-xl border border-border px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="break-words text-sm font-semibold">{p.name}</p>
+                        {p.email && <p className="truncate text-xs text-muted-foreground">{p.email}</p>}
+                      </div>
+                      <StatusBadge status={p.status} />
+                    </div>
+                  ))
+                )}
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                Bu QR ilanın public sayfasını açar; gönüllü oradan başvurur. Başvurular
+                &ldquo;Başvurular&rdquo; sekmesinde onayına düşer.
+              </p>
+            </>
           )}
         </DialogContent>
       </Dialog>

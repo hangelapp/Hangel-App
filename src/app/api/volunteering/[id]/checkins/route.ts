@@ -4,10 +4,15 @@
  * STK yöneticisi için YOKLAMA listesi: onaylanmış gönüllüler + kimin check-in
  * yaptığı (yeşil). Yönetim panelindeki "Yoklama QR" dialog'u bunu çeker.
  *
+ * ?scope=all → yalnız onaylılar değil, ilana başvuran HERKESİ döndürür
+ * (Kayıt QR dialog'unun "Kayıt olan kullanıcılar" listesi). Her kişide
+ * `status` (Beklemede|Onaylandı|Reddedildi) yer alır. Param yoksa davranış
+ * eskisiyle birebir aynıdır (yalnız onaylılar).
+ *
  * Yetki: super-admin VEYA ilan sahibi STK admini (opp.ngoId == actor.ngoId).
  *
  * Dönüş: { opp:{title}, approvedCount, checkedInCount,
- *          people:[{ uid, name, email, checkedIn, checkedInAt }] }
+ *          people:[{ uid, name, email, status, checkedIn, checkedInAt }] }
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
@@ -26,6 +31,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
   if (auth.error) return auth.error;
   const actor = auth.actor;
 
+  // scope=all → onay durumundan bağımsız TÜM başvuranlar (Kayıt QR listesi).
+  const scopeAll = req.nextUrl.searchParams.get('scope') === 'all';
+
   const db = getAdminFirestore();
   const oppRef = db.collection(COLLECTIONS.volunteering).doc(id);
   const oppSnap = await oppRef.get();
@@ -35,9 +43,12 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     return NextResponse.json({ message: 'Yetki yok' }, { status: 403 });
   }
 
-  // Onaylı başvurular + check-in kayıtları (paralel)
+  // Başvurular (scope=all → hepsi, aksi halde yalnız onaylılar) + check-in kayıtları (paralel)
+  const appsQuery = scopeAll
+    ? db.collection(COLLECTIONS.applications).where('entityId', '==', id)
+    : db.collection(COLLECTIONS.applications).where('entityId', '==', id).where('status', '==', 'Onaylandı');
   const [appsSnap, checkinsSnap] = await Promise.all([
-    db.collection(COLLECTIONS.applications).where('entityId', '==', id).where('status', '==', 'Onaylandı').get(),
+    appsQuery.get(),
     oppRef.collection(CHECKINS).get(),
   ]);
 
@@ -47,7 +58,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     checkedInAt[d.id] = ts?.toDate ? ts.toDate().toISOString() : null;
   });
 
-  const rows = appsSnap.docs.map((d) => d.data() as { userId?: string; userName?: string });
+  const rows = appsSnap.docs.map((d) => d.data() as { userId?: string; userName?: string; status?: string });
   const userIds = [...new Set(rows.map((r) => r.userId).filter(Boolean) as string[])];
 
   const emailByUid: Record<string, string> = {};
@@ -72,6 +83,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
         uid,
         name: (r.userName || '').trim() || (email ? email.split('@')[0] : 'Gönüllü'),
         email,
+        status: (r.status || 'Beklemede') as string,
         checkedIn: isIn,
         checkedInAt: isIn ? checkedInAt[uid] : null,
       };
@@ -80,7 +92,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 
   return NextResponse.json({
     opp: { title: opp.title || '' },
-    approvedCount: people.length,
+    // Yoklama sayacı her zaman ONAYLI gönüllü sayısıdır (scope=all olsa da tutarlı).
+    approvedCount: people.filter((p) => p.status === 'Onaylandı').length,
+    registeredCount: people.length,
     checkedInCount: people.filter((p) => p.checkedIn).length,
     people,
   });
