@@ -131,15 +131,15 @@ export default function MyApplicationsPage() {
             }
           : {})}
       >
-        <CardHeader className="flex flex-row items-start justify-between gap-4 p-4">
-          <div className="min-w-0">
+        <CardHeader className="flex flex-row items-start justify-between gap-3 p-4">
+          <div className="min-w-0 flex-1">
             <CardTitle className="text-base break-words">{app.title}</CardTitle>
             <CardDescription className="break-words">{app.org} - {app.location}</CardDescription>
           </div>
-          <div className='text-right flex-shrink-0 ml-4 space-y-1'>
-            <div className="flex items-center justify-end gap-2">
-              {StatusIcon}
-              <p className="font-semibold text-sm">{t(`dashboard.applications.statuses.${app.status}`)}</p>
+          <div className='shrink-0 space-y-1 text-right'>
+            <div className="flex items-center justify-end gap-1.5">
+              <span className="shrink-0">{StatusIcon}</span>
+              <p className="text-sm font-semibold">{t(`dashboard.applications.statuses.${app.status}`)}</p>
             </div>
             <p className='text-xs text-muted-foreground'>{app.date}</p>
           </div>
@@ -154,17 +154,17 @@ export default function MyApplicationsPage() {
           {/* Kart tıklanabilir olduğunda buton kendi navigasyonunu yapar;
               çift tetiklenmeyi ve dialog açılırken kart yönlendirmesini
               önlemek için buton satırında propagation durdurulur. */}
-          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-            <Button asChild variant="secondary" className="flex-1">
+          <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+            <Button asChild variant="secondary" className="min-w-0 flex-1 basis-40">
               <Link href={getEntityLink()}>
-                <Eye className="mr-2 h-4 w-4" /> {t('dashboard.applications.viewListing')}
+                <Eye className="mr-2 h-4 w-4 shrink-0" /> <span className="truncate">{t('dashboard.applications.viewListing')}</span>
               </Link>
             </Button>
             {app.status === 'Beklemede' && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="flex-1">
-                    <Trash2 className="mr-2 h-4 w-4" /> {t('dashboard.applications.withdrawCta')}
+                  <Button variant="destructive" className="min-w-0 flex-1 basis-40">
+                    <Trash2 className="mr-2 h-4 w-4 shrink-0" /> <span className="truncate">{t('dashboard.applications.withdrawCta')}</span>
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -265,10 +265,10 @@ export default function MyApplicationsPage() {
       ) : (
         <Tabs defaultValue="Gönüllülük" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="Gönüllülük">{t('dashboard.applications.tabVolunteer')}</TabsTrigger>
-            <TabsTrigger value="Kulüpler">{t('dashboard.applications.tabClubs')}</TabsTrigger>
-            <TabsTrigger value="STK">{t('dashboard.applications.tabNgo')}</TabsTrigger>
-            <TabsTrigger value="Marka">{t('dashboard.applications.tabBrand')}</TabsTrigger>
+            <TabsTrigger value="Gönüllülük" className="min-w-0 truncate px-1.5 text-xs sm:px-3 sm:text-sm">{t('dashboard.applications.tabVolunteer')}</TabsTrigger>
+            <TabsTrigger value="Kulüpler" className="min-w-0 truncate px-1.5 text-xs sm:px-3 sm:text-sm">{t('dashboard.applications.tabClubs')}</TabsTrigger>
+            <TabsTrigger value="STK" className="min-w-0 truncate px-1.5 text-xs sm:px-3 sm:text-sm">{t('dashboard.applications.tabNgo')}</TabsTrigger>
+            <TabsTrigger value="Marka" className="min-w-0 truncate px-1.5 text-xs sm:px-3 sm:text-sm">{t('dashboard.applications.tabBrand')}</TabsTrigger>
           </TabsList>
           {['Gönüllülük', 'Kulüpler', 'STK', 'Marka'].map(tab => (
             <TabsContent key={tab} value={tab} className='mt-4'>

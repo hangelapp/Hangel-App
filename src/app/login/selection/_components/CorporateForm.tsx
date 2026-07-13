@@ -1201,7 +1201,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="space-y-2">
                                 <FormLabel required>Telefon</FormLabel>
                                 <div className="grid grid-cols-[140px_1fr] gap-2">
-                                    <Select value={formData.phoneCountryCode} onValueChange={v => setFormData({...formData, phoneCountryCode: v})}>
+                                    <Select value={`${selectedCorporatePhone.iso}__${selectedCorporatePhone.code}`} onValueChange={v => setFormData({...formData, phoneCountryCode: v.split('__')[1]})}>
                                         <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
                                             <SelectValue>
                                                 <span className="text-base">{selectedCorporatePhone.flag}</span>
@@ -1210,7 +1210,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         </SelectTrigger>
                                         <SelectContent className="max-h-60">
                                             {COUNTRY_PHONE_CODES.map((c) => (
-                                                <SelectItem key={`${c.iso}-${c.code}`} value={c.code}>
+                                                <SelectItem key={`${c.iso}__${c.code}`} value={`${c.iso}__${c.code}`}>
                                                     <span className="text-base mr-2">{c.flag}</span>
                                                     {c.country} ({c.code})
                                                 </SelectItem>
@@ -1697,7 +1697,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="space-y-2">
                                 <FormLabel required>Telefon</FormLabel>
                                 <div className="grid grid-cols-[140px_1fr] gap-2">
-                                    <Select value={formData.phoneCountryCode} onValueChange={v => setFormData({...formData, phoneCountryCode: v})}>
+                                    <Select value={`${selectedCorporatePhone.iso}__${selectedCorporatePhone.code}`} onValueChange={v => setFormData({...formData, phoneCountryCode: v.split('__')[1]})}>
                                         <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
                                             <SelectValue>
                                                 <span className="text-base">{selectedCorporatePhone.flag}</span>
@@ -1706,7 +1706,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         </SelectTrigger>
                                         <SelectContent className="max-h-60">
                                             {COUNTRY_PHONE_CODES.map((c) => (
-                                                <SelectItem key={`${c.iso}-${c.code}`} value={c.code}>
+                                                <SelectItem key={`${c.iso}__${c.code}`} value={`${c.iso}__${c.code}`}>
                                                     <span className="text-base mr-2">{c.flag}</span>
                                                     {c.country} ({c.code})
                                                 </SelectItem>
@@ -1880,8 +1880,11 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <FormLabel required>Telefon</FormLabel>
                                 <div className="grid grid-cols-[140px_1fr] gap-2">
                                     <Select
-                                        value={formData.authorized.phoneCountryCode}
-                                        onValueChange={v => setFormData({...formData, authorized: {...formData.authorized, phoneCountryCode: v}})}
+                                        value={(() => {
+                                            const c = COUNTRY_PHONE_CODES.find(c => c.code === formData.authorized.phoneCountryCode) ?? COUNTRY_PHONE_CODES[0];
+                                            return `${c.iso}__${c.code}`;
+                                        })()}
+                                        onValueChange={v => setFormData({...formData, authorized: {...formData.authorized, phoneCountryCode: v.split('__')[1]}})}
                                     >
                                         <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
                                             <SelectValue>
@@ -1893,7 +1896,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         </SelectTrigger>
                                         <SelectContent className="max-h-60">
                                             {COUNTRY_PHONE_CODES.map((c) => (
-                                                <SelectItem key={`auth-${c.iso}-${c.code}`} value={c.code}>
+                                                <SelectItem key={`auth-${c.iso}__${c.code}`} value={`${c.iso}__${c.code}`}>
                                                     <span className="text-base mr-2">{c.flag}</span>
                                                     {c.country} ({c.code})
                                                 </SelectItem>

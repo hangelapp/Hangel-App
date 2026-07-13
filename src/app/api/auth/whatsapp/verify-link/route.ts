@@ -170,7 +170,7 @@ export async function GET(req: NextRequest) {
                             ? sendWelcomeMessage(data.phone, data.name || 'arkadaş', data.phoneCountryCode === '+90' ? 'tr' : 'en').catch((e) => console.warn('[verify-link] whatsapp welcome failed', e))
                             : Promise.resolve(),
                         db.collection(COLLECTIONS.messages).add({
-                            sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
+                            sender: { id: 'hangel-system', name: 'hangel Resmi', avatarUrl: '' },
                             senderId: 'hangel-system',
                             senderType: 'system',
                             recipient: { id: uid, name: data.name || '', avatarUrl: '' },

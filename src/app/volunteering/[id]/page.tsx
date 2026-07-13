@@ -338,13 +338,25 @@ export default function VolunteeringDetailPage() {
   const heroDateTime = formatDateWithTime(opp.dates?.eventStart, opp.dates?.eventStartTime);
   const heroDateLabel = heroDateTime !== '—' ? heroDateTime.split(',')[0] : undefined;
   const heroTimeLabel = heroDateTime !== '—' ? (heroDateTime.split(',')[1]?.trim() || undefined) : undefined;
+  // Çok noktalı ilanda konum etiketi: "6 il, 6 noktada" (eklenen nokta/il sayısına göre).
+  // Tek noktalı ilanda eski davranış (ilçe, il). "Türkiye Geneli" gibi statik metin
+  // yerine gerçek nokta sayısını yansıtır.
+  const oppSites = Array.isArray((opp as { sites?: Array<{ city?: string }> }).sites)
+    ? (opp as { sites?: Array<{ city?: string }> }).sites!
+    : [];
+  const siteCount = oppSites.length;
+  const distinctSiteCities = new Set(oppSites.map((s) => (s?.city || '').trim()).filter(Boolean)).size;
   const heroLocationLabel = locType === 'Online'
     ? 'Online'
-    : [oppLoc.district, oppLoc.city].filter(Boolean).join(', ') || undefined;
+    : siteCount > 1
+      ? `${distinctSiteCities > 0 ? `${distinctSiteCities} il, ` : ''}${siteCount} noktada`
+      : [oppLoc.district, oppLoc.city].filter(Boolean).join(', ') || undefined;
 
   // Sosyal Etki Mali Değeri — saat fallback zinciri (estimatedHours → hours.total →
   // varsayım) ile hesaplanır; aksi halde hours.total boş ilanlarda "0 ₺" görünüyordu.
   const impactValueTRY = formatTRY(socialImpactValueTRY(extractListingHours(opp)));
+  // ₺ ikonu rakamın ÖNÜNDE gösterilecek sürüm (kullanıcı isteği): "₺450".
+  const impactValueTRYPrefixed = `₺${new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(socialImpactValueTRY(extractListingHours(opp)))}`;
 
   // Yaka kartı için kullanıcı bilgisi (events pattern)
   const cardUser = (userData || {
@@ -547,6 +559,18 @@ export default function VolunteeringDetailPage() {
         const dt = parse(s, t ? 'yyyy-MM-dd HH:mm' : 'yyyy-MM-dd', new Date());
         return isNaN(dt.getTime()) ? 0 : dt.getTime();
       };
+      // Live Activity, gönüllü BAŞVURDUĞU andan (yani ilan açıkken) başlayıp etkinlik
+      // BİTENE kadar kilit ekranında kalır — kullanıcı tercihi: "açtığı günden itibaren
+      // kalsın". Uzak tarihte bile geri sayım gösterilir. TEK kısıt: bitmiş etkinlikte
+      // gösterme (ve geçerli bir tarih yoksa gösterme — absürt/boş sayaç olmasın).
+      const startEpoch = toEpoch(dts?.eventStart, dts?.eventStartTime);
+      const endEpoch = toEpoch(dts?.eventEnd, dts?.eventEndTime);
+      const nowMs = Date.now();
+      const noValidDate = !startEpoch && !endEpoch;
+      const alreadyEnded = endEpoch > 0 && endEpoch < nowMs;
+      if (noValidDate || alreadyEnded) {
+        return; // Live Activity başlatma — tarih yok ya da etkinlik bitmiş.
+      }
       await startVolunteerTaskActivity({
         taskTitle: opportunity.title,
         ngoName: opportunity.organization || '',
@@ -556,8 +580,8 @@ export default function VolunteeringDetailPage() {
         weatherTemp,
         // Önce ilana özel logo (eventLogoUrl), yoksa STK logosu → Live Activity'de logo hep görünür.
         organizerLogoUrl: opportunity.eventLogoUrl || organizerLogo || '',
-        activityStartEpoch: toEpoch(dts?.eventStart, dts?.eventStartTime),
-        activityEndEpoch: toEpoch(dts?.eventEnd, dts?.eventEndTime),
+        activityStartEpoch: startEpoch,
+        activityEndEpoch: endEpoch,
       });
     })();
 
@@ -649,9 +673,9 @@ export default function VolunteeringDetailPage() {
                         "profilini tamamla → daha iyi eşleşme" nudge'ı (her ilanda çalışır). */}
                     {authUser && hasProfile ? (
                         <div className="space-y-3">
-                            <div className="flex justify-between items-baseline">
-                                <span className="text-sm font-semibold text-muted-foreground tracking-tight">Profil uygunluğun</span>
-                                <span className={`text-2xl font-bold tracking-tight ${matchTone.text}`}>%{matchPercentage}</span>
+                            <div className="flex items-baseline justify-between gap-3">
+                                <span className="min-w-0 truncate text-sm font-semibold text-muted-foreground tracking-tight">Profil uygunluğun</span>
+                                <span className={`shrink-0 text-2xl font-bold tracking-tight ${matchTone.text}`}>%{matchPercentage}</span>
                             </div>
                             <Progress value={matchPercentage} className="h-2 rounded-full" />
                             {matchPercentage < 50 && (
@@ -696,7 +720,7 @@ export default function VolunteeringDetailPage() {
                                 return (
                                     <div className="flex items-start">
                                         {steps.map((s, i) => (
-                                            <div key={s.key} className="flex flex-1 flex-col items-center text-center">
+                                            <div key={s.key} className="flex min-w-0 flex-1 flex-col items-center text-center">
                                                 <div className="flex w-full items-center">
                                                     <div className={`h-0.5 flex-1 ${i === 0 ? 'opacity-0' : steps[i - 1].done ? 'bg-emerald-500' : 'bg-border'}`} />
                                                     <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
@@ -708,7 +732,7 @@ export default function VolunteeringDetailPage() {
                                                     </span>
                                                     <div className={`h-0.5 flex-1 ${i === steps.length - 1 ? 'opacity-0' : s.done ? 'bg-emerald-500' : 'bg-border'}`} />
                                                 </div>
-                                                <span className={`mt-1.5 text-[11px] font-semibold leading-tight ${
+                                                <span className={`mt-1.5 w-full break-words px-0.5 text-[10px] font-semibold leading-tight sm:text-[11px] ${
                                                     s.rejected ? 'text-destructive'
                                                         : s.done ? 'text-foreground'
                                                             : s.current ? 'text-primary'
@@ -795,6 +819,9 @@ export default function VolunteeringDetailPage() {
                             </Popover>
                             <p className="text-3xl md:text-4xl font-bold tracking-tight text-primary">{opportunity.points}</p>
                             <p className="mt-1 text-sm text-muted-foreground">Etki Puanı</p>
+                            <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground/80">
+                                Bu gönüllülük projesine katılırsanız <span className="font-semibold text-foreground/70">{opportunity.points}</span> etki puanı kazanacaksınız.
+                            </p>
                         </div>
                         <div className="relative bg-card p-6">
                             <Popover>
@@ -807,8 +834,11 @@ export default function VolunteeringDetailPage() {
                                     {socialImpactExplanation()}
                                 </PopoverContent>
                             </Popover>
-                            <p className="text-3xl md:text-4xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{impactValueTRY}</p>
+                            <p className="text-3xl md:text-4xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{impactValueTRYPrefixed}</p>
                             <p className="mt-1 text-sm text-muted-foreground">Sosyal Etki Mali Değeri</p>
+                            <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground/80">
+                                Bu gönüllülük projesine katılırsanız <span className="font-semibold text-foreground/70">{impactValueTRYPrefixed}</span> değerinde sosyal etki oluşturacaksınız.
+                            </p>
                         </div>
                     </section>
 

@@ -236,7 +236,7 @@ export default function CallCenterPage() {
           <p className="font-bold flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> KVKK / 6698 zorunlu</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Görüşme öncesi karşı tarafa otomatik anons: <em>"Hizmet kalitesi amacıyla görüşmeniz kaydedilmektedir. Devam etmek için 1'e basın."</em></li>
-            <li>Hangel privacy policy'ye çağrı kaydı saklama maddesi eklenir (varsayılan 6 ay, bilgi edinme talebi ile silme).</li>
+            <li>hangel privacy policy'ye çağrı kaydı saklama maddesi eklenir (varsayılan 6 ay, bilgi edinme talebi ile silme).</li>
             <li>Kayıtlar Storage'da encrypted-at-rest (Google KMS default).</li>
             <li>Kayıt erişimi sadece süper-admin + audit log (kim ne zaman dinledi).</li>
             <li>Agent (call center temsilcisi) ekrana ID gözükür, telefon numarası maskeli (last 4 digits)._</li>

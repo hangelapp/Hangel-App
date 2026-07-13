@@ -64,43 +64,43 @@ const TR = {
   navCta: 'Ücretsiz Başvur',
   back: 'Ana sayfa',
 
-  heroEyebrow: 'hangel STK',
-  heroTitle: 'Kurumunuz için sürdürülebilir geleceği bugün kurun.',
-  heroSubtitle: 'Şeffaflık, kaynak ve gönüllü gücü. Hepsi tek panelde, tamamen ücretsiz.',
+  heroEyebrow: 'hangel STK — STK Yönetim Yazılımı',
+  heroTitle: 'Kurumunuzun en güçlü yanını dünyaya gösterin.',
+  heroSubtitle: 'Güven, kaynak ve gönüllü gücü. Hepsi tek panelde, tamamen ücretsiz.',
   heroDescription:
-    'hangel, derneğinizi ve vakfınızı dijitalde güçlendiren, Türkiye’ye özel bütünleşik bir yönetim platformudur. Şeffaflığınızı görünür kılın, düzenli kaynak oluşturun, gönüllülerinizi yönetin; tek bir panelden. Kurulum dakikalar sürer, verileriniz güvende ve süreç baştan sona şeffaftır.',
+    'hangel; dernek ve vakıflar için Türkiye’ye özel, bütünleşik STK yönetim yazılımıdır. Şeffaflık endeksiyle güveninizi kanıtlayın, hibe ve bağışla düzenli kaynak oluşturun, gönüllü yönetimiyle doğru insanları doğru göreve buluşturun, her emeği sertifikayla taçlandırın — hepsi tek panelden. Kurulum dakikalar sürer, verileriniz güvende, süreç baştan sona şeffaftır. Derneğinizin dijitalleşmesi bugün başlar.',
   heroImage:
     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2400&auto=format&fit=crop',
   heroPrimary: 'Ücretsiz Başvur',
   heroLink: 'Daha Fazla',
 
   transparencyEyebrow: 'Şeffaflık Endeksi',
-  transparencyTitle: 'Güven, ölçülebilir hale geliyor.',
+  transparencyTitle: 'Güven, artık ölçülebilir.',
   transparencyDescription:
-    'Yasal belgelerinizi ve raporlarınızı yükleyin; kurumunuz 0–100 arası bir şeffaflık puanı kazansın. Bu puan profilinizde halka açık görünür ve destekçilerinize güveni kanıtlar.',
+    'Yasal belgelerinizi ve faaliyet raporlarınızı yükleyin; kurumunuz 0–100 arası bir şeffaflık puanı kazansın. Bu puan profilinizde halka açık görünür, destekçilerinize güveni kanıtlar ve kurumunuzu bir adım öne taşır. Şeffaflık, en güçlü yönünüz olsun.',
 
   donationEyebrow: 'hangel Bağışı',
-  donationTitle: 'Alışveriş, düzenli bağışa dönüşüyor.',
+  donationTitle: 'Her alışveriş, düzenli bağışa dönüşür.',
   donationDescription:
-    'Destekçileriniz anlaşmalı markalardan her alışveriş yaptığında kurumunuza gelir aktarılır. Marka, işlem ve komisyon bilgilerini panelinizden şeffaf biçimde takip edersiniz.',
+    'Destekçileriniz anlaşmalı markalardan her alışveriş yaptığında kurumunuza gelir aktarılır — cebinden ek kuruş çıkmadan. Marka, işlem ve komisyon bilgilerini panelinizden şeffafça takip eder, kaynağınızı düzenli hale getirirsiniz.',
 
-  volunteerEyebrow: 'Gönüllülük Yönetimi',
-  volunteerTitle: 'Doğru gönüllü, doğru göreve.',
+  volunteerEyebrow: 'Gönüllü Yönetimi',
+  volunteerTitle: 'Doğru gönüllü, doğru görevle buluşur.',
   volunteerDescription:
-    'Yetenek bazlı ilanlar yayınlayın. hangel, her gönüllüye otomatik yüzde uyum eşleştirmesi yapar; başvuruları tek ekrandan yönetirsiniz.',
+    'Yetenek bazlı ilanlar yayınlayın. hangel her gönüllüye otomatik yüzde uyum eşleştirmesi yapar; en uygun adayları öne çıkarır, tüm başvuruları tek ekrandan yönetirsiniz. Gönüllü gücünüzü büyütün.',
 
   certificatesEyebrow: 'Sertifikalar & Rozetler',
-  certificatesTitle: 'Her emeğin bir belgesi olsun.',
+  certificatesTitle: 'Her emek, bir belgeyle taçlansın.',
   certificatesDescription:
-    'Gönüllülerinize tek tıkla, kurumunuzun logosuyla otomatik katılım ve başarı sertifikaları ile yaka kartları üretin. Kurumunuz her ay, toplam bağış + gönüllü saati + sosyal etki değerini birleştiren otomatik bir etki sertifikası kazanır. Rozetler ve size özel rozetlerle gönüllü sadakatini ödüllendirin.',
+    'Gönüllülerinize tek tıkla, kurumunuzun logosuyla otomatik katılım ve başarı sertifikaları ile yaka kartları üretin. Kurumunuz her ay; toplam bağış, gönüllü saati ve sosyal etki değerini birleştiren otomatik bir etki sertifikası kazanır. Bu belge, güçlü yönlerinizi tek bakışta anlatan en somut kanıtınız olur. Rozetler ve size özel rozetlerle gönüllü sadakatini ödüllendirin.',
 
   compareTransparency:
     "Dünyada şeffaflık derecelendirmesi ve alışverişle bağış benzerleri çoğu zaman ücretli ve parçalıdır. hangel'de bu, Türkiye'ye özel, ücretsiz ve tek panelde.",
 
   toolsEyebrow: 'Tek Panel',
-  toolsTitle: 'Kurumunuzun her işi, tek panelde.',
+  toolsTitle: 'Derneğinizin her işi, tek panelde.',
   toolsDescription:
-    'Bağıştan gönüllüye, iletişimden etkinliğe kadar derneğinizin tüm operasyonu için tasarlanmış, yayında olan araçlar.',
+    'Bağış ve hibeden gönüllü yönetimine, şeffaflıktan etkinlik yönetimine kadar kurumunuzun tüm operasyonu için tasarlanmış, yayında olan araçlar. Dernek dijitalleşmesi için ihtiyacınız olan her şey.',
 
   soonEyebrow: 'Yol Haritası',
   soonTitle: 'Yakında panelinizde.',
@@ -111,13 +111,18 @@ const TR = {
   finalTitle: 'Dijital dönüşümü bugün başlatın.',
   finalSubtitle: 'Başvuru ücretsiz. Kurulum dakikalar sürer. Kredi kartı gerekmez.',
   finalDescription:
-    'Binlerce kurumun katıldığı harekete siz de katılın. Kurumunuzu hangel ile dakikalar içinde kaydedin; şeffaflığınızı, kaynağınızı ve etkinizi büyütmeye bugün başlayın. En güzel yarınları birlikte kuralım.',
+    'Binlerce kurumun katıldığı harekete siz de katılın. Kurumunuzu hangel ile dakikalar içinde kaydedin; güveninizi, kaynağınızı, gönüllü gücünüzü ve etkinizi büyütmeye bugün başlayın. En güçlü yönlerinizi görünür kılın, en güzel yarınları birlikte kuralım.',
   finalPrimary: 'Ücretsiz Başvur',
   finalSecondary: 'Daha Fazla',
 
   footerLabel: 'STK Başvuru',
 
   tools: {
+    grants: {
+      title: 'Hibeler ve Fonlar',
+      description:
+        'hangel, yüzlerce hibe ve fon veren ulusal ve uluslararası kurumu sizin yerinize sürekli tarar, her 10 günde bir günceller ve kurumunuza en uygun fonları yüzdelik uyumla öne çıkarır. Tümü panelinizde listelenir; başvuru taslaklarınızı bile hazırlar.',
+    },
     transparency: {
       title: 'Şeffaflık Endeksi',
       description:
@@ -256,10 +261,6 @@ const TR = {
       title: 'Tasarım Programları',
       description: 'Kurumsal görseller için entegre tasarım araçları.',
     },
-    grants: {
-      title: 'Hibeler ve Fonlar',
-      description: 'Uygun hibe ve fon fırsatlarını keşfedin, başvuru yönetin.',
-    },
     marketing: {
       title: 'Pazarlama İletişimi',
       description: 'Kampanya ve pazarlama iletişimi için bütünleşik araçlar.',
@@ -278,35 +279,35 @@ const EN: typeof TR = {
   navCta: 'Apply Free',
   back: 'Home',
 
-  heroEyebrow: 'hangel NGO',
-  heroTitle: 'Build a sustainable future for your organization, today.',
-  heroSubtitle: 'Transparency, resources and volunteer power. All in one panel, completely free.',
+  heroEyebrow: 'hangel NGO — NGO Management Software',
+  heroTitle: 'Show the world your organization’s greatest strength.',
+  heroSubtitle: 'Trust, resources and volunteer power. All in one panel, completely free.',
   heroDescription:
-    'hangel is an integrated management platform, tailored to Türkiye, that strengthens your association or foundation online. Make your transparency visible, generate steady resources, manage your volunteers; all from a single panel. Setup takes minutes, your data is safe, and the whole process is transparent end to end.',
+    'hangel is an integrated NGO management platform, tailored to Türkiye, for associations and foundations. Prove your trust with a transparency index, build steady resources through grants and donations, match the right people to the right roles with volunteer management, and crown every effort with a certificate — all from a single panel. Setup takes minutes, your data is safe, and the whole process is transparent end to end. Your organization’s digital transformation starts today.',
   heroImage:
     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2400&auto=format&fit=crop',
   heroPrimary: 'Apply Free',
   heroLink: 'Learn More',
 
   transparencyEyebrow: 'Transparency Index',
-  transparencyTitle: 'Trust, made measurable.',
+  transparencyTitle: 'Trust, now measurable.',
   transparencyDescription:
-    'Upload your legal documents and reports; let your organization earn a transparency score from 0 to 100. This score appears publicly on your profile and proves trust to your supporters.',
+    'Upload your legal documents and activity reports; let your organization earn a transparency score from 0 to 100. This score appears publicly on your profile, proves trust to your supporters and sets your organization apart. Make transparency your greatest strength.',
 
   donationEyebrow: 'hangel Donation',
-  donationTitle: 'Shopping turns into steady giving.',
+  donationTitle: 'Every purchase turns into steady giving.',
   donationDescription:
-    'Every time your supporters shop at partner brands, income is directed to your organization. Track brand, transaction and commission details transparently from your panel.',
+    'Every time your supporters shop at partner brands, income flows to your organization — with nothing extra out of their pocket. Track brand, transaction and commission details transparently from your panel and turn your funding into a steady stream.',
 
   volunteerEyebrow: 'Volunteer Management',
-  volunteerTitle: 'The right volunteer, for the right role.',
+  volunteerTitle: 'The right volunteer meets the right role.',
   volunteerDescription:
-    'Post skill-based listings. hangel automatically computes a percentage match for each volunteer; you manage applications from a single screen.',
+    'Post skill-based listings. hangel automatically computes a percentage match for each volunteer, surfaces the best candidates and lets you manage every application from a single screen. Grow your volunteer power.',
 
   certificatesEyebrow: 'Certificates & Badges',
-  certificatesTitle: 'Let every effort have its certificate.',
+  certificatesTitle: 'Let every effort be crowned with a certificate.',
   certificatesDescription:
-    "Generate automatic participation and achievement certificates and name badges for your volunteers in one click, with your organization's logo. Every month your organization earns an automatic impact certificate combining total donations + volunteer hours + social impact value. Reward volunteer loyalty with badges and your own custom badges.",
+    "Generate automatic participation and achievement certificates and name badges for your volunteers in one click, with your organization's logo. Every month your organization earns an automatic impact certificate combining total donations, volunteer hours and social impact value. This document becomes the clearest proof of your strengths at a single glance. Reward volunteer loyalty with badges and your own custom badges.",
 
   compareTransparency:
     'Worldwide, transparency ratings and shop-to-donate equivalents are often paid and fragmented. On hangel, this is tailored to Türkiye, free, and in a single panel.',
@@ -314,7 +315,7 @@ const EN: typeof TR = {
   toolsEyebrow: 'One Panel',
   toolsTitle: "Your organization's every job, in one panel.",
   toolsDescription:
-    'Live tools designed for your entire operation, from donations to volunteers, communication to events.',
+    'Live tools designed for your entire operation — from donations and grants to volunteer management, transparency to event management. Everything you need to take your NGO digital.',
 
   soonEyebrow: 'Roadmap',
   soonTitle: 'Coming soon to your panel.',
@@ -325,13 +326,18 @@ const EN: typeof TR = {
   finalTitle: 'Start your digital transformation today.',
   finalSubtitle: 'Applying is free. Setup takes minutes. No credit card required.',
   finalDescription:
-    'Join the movement thousands of organizations are already part of. Register your organization with hangel in minutes; start growing your transparency, resources and impact today. Let’s build brighter tomorrows, together.',
+    'Join the movement thousands of organizations are already part of. Register your organization with hangel in minutes; start growing your trust, resources, volunteer power and impact today. Make your greatest strengths visible, and let’s build brighter tomorrows, together.',
   finalPrimary: 'Apply Free',
   finalSecondary: 'Learn More',
 
   footerLabel: 'NGO Application',
 
   tools: {
+    grants: {
+      title: 'Grants and Funds',
+      description:
+        'hangel continuously scans hundreds of national and international grant- and fund-giving institutions for you, refreshes every 10 days and surfaces the funds best suited to your organization with a percentage match. All of them are listed in your panel — it even prepares your application drafts.',
+    },
     transparency: {
       title: 'Transparency Index',
       description:
@@ -470,10 +476,6 @@ const EN: typeof TR = {
       title: 'Design Programs',
       description: 'Integrated design tools for your corporate visuals.',
     },
-    grants: {
-      title: 'Grants and Funds',
-      description: 'Discover eligible grant and fund opportunities, manage applications.',
-    },
     marketing: {
       title: 'Marketing Communication',
       description: 'Integrated tools for campaigns and marketing communication.',
@@ -498,20 +500,21 @@ export default function NgoOnboardingPage() {
   const heroImage = cms.heroImageUrl || C.heroImage;
 
   const liveTools: FeatureItem[] = [
-    { icon: ShieldCheck, title: C.tools.transparency.title, description: C.tools.transparency.description, badge: { kind: 'hangel' } },
+    { icon: ShieldCheck, title: C.tools.transparency.title, description: C.tools.transparency.description, badge: { kind: 'hangel' }, href: '/features/seffaflik-endeksi' },
     { icon: HandCoins, title: C.tools.donation.title, description: C.tools.donation.description, badge: { kind: 'hangel' } },
-    { icon: HeartHandshake, title: C.tools.volunteer.title, description: C.tools.volunteer.description, badge: { kind: 'hangel' } },
-    { icon: BarChart3, title: C.tools.demographics.title, description: C.tools.demographics.description },
-    { icon: MessageSquare, title: C.tools.messaging.title, description: C.tools.messaging.description, badge: { kind: 'yeni' } },
-    { icon: Globe, title: C.tools.website.title, description: C.tools.website.description },
-    { icon: CalendarDays, title: C.tools.events.title, description: C.tools.events.description, badge: { kind: 'yeni' } },
+    { icon: HeartHandshake, title: C.tools.volunteer.title, description: C.tools.volunteer.description, badge: { kind: 'hangel' }, href: '/features/gonulluluk-yonetimi' },
+    { icon: Landmark, title: C.tools.grants.title, description: C.tools.grants.description, badge: { kind: 'yeni' } },
+    { icon: BarChart3, title: C.tools.demographics.title, description: C.tools.demographics.description, href: '/features/demografi-analizi' },
+    { icon: MessageSquare, title: C.tools.messaging.title, description: C.tools.messaging.description, badge: { kind: 'yeni' }, href: '/features/toplu-mesajlasma' },
+    { icon: Globe, title: C.tools.website.title, description: C.tools.website.description, href: '/features/web-sitesi' },
+    { icon: CalendarDays, title: C.tools.events.title, description: C.tools.events.description, badge: { kind: 'yeni' }, href: '/features/etkinlik-yonetimi' },
     { icon: Sparkles, title: C.tools.impact.title, description: C.tools.impact.description },
     { icon: Inbox, title: C.tools.inbox.title, description: C.tools.inbox.description },
     { icon: UserPlus, title: C.tools.invite.title, description: C.tools.invite.description },
     { icon: Users, title: C.tools.roles.title, description: C.tools.roles.description },
     { icon: QrCode, title: C.tools.presence.title, description: C.tools.presence.description },
     { icon: Megaphone, title: C.tools.ads.title, description: C.tools.ads.description, badge: { kind: 'beta' } },
-    { icon: PhoneCall, title: C.tools.callCenter.title, description: C.tools.callCenter.description, badge: { kind: 'beta' } },
+    { icon: PhoneCall, title: C.tools.callCenter.title, description: C.tools.callCenter.description, badge: { kind: 'beta' }, href: '/features/sanal-santral' },
     { icon: MessageCircle, title: C.tools.contactCenter.title, description: C.tools.contactCenter.description, badge: { kind: 'beta' } },
     { icon: IdCard, title: C.tools.applicantProfile.title, description: C.tools.applicantProfile.description, badge: { kind: 'yeni' } },
     { icon: ListChecks, title: C.tools.bulkApprove.title, description: C.tools.bulkApprove.description, badge: { kind: 'yeni' } },
@@ -529,7 +532,6 @@ export default function NgoOnboardingPage() {
     { icon: CreditCard, title: C.soon.pos.title, description: C.soon.pos.description, badge: { kind: 'yakinda' } },
     { icon: Video, title: C.soon.meeting.title, description: C.soon.meeting.description, badge: { kind: 'yakinda' } },
     { icon: Palette, title: C.soon.design.title, description: C.soon.design.description, badge: { kind: 'yakinda' } },
-    { icon: Landmark, title: C.soon.grants.title, description: C.soon.grants.description, badge: { kind: 'yakinda' } },
     { icon: Send, title: C.soon.marketing.title, description: C.soon.marketing.description, badge: { kind: 'yakinda' } },
     { icon: LineChart, title: C.soon.analytics.title, description: C.soon.analytics.description, badge: { kind: 'yakinda' } },
   ];

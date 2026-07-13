@@ -564,8 +564,8 @@ export default function WhatsAppTemplatesPage() {
                 <>
                   <span className="font-mono">{pendingDelete.name}</span> şablonu{' '}
                   {pendingDelete.status === 'draft'
-                    ? 'sadece Hangel\'den silinecek.'
-                    : 'hem Meta\'dan hem Hangel\'den silinecek.'}{' '}
+                    ? 'sadece hangel\'den silinecek.'
+                    : 'hem Meta\'dan hem hangel\'den silinecek.'}{' '}
                   Bu işlem geri alınamaz.
                 </>
               ) : (
@@ -614,7 +614,7 @@ export default function WhatsAppTemplatesPage() {
           <DialogHeader>
             <DialogTitle>Meta&apos;dan Şablon Sync</DialogTitle>
             <DialogDescription>
-              Seçtiğiniz numaraya bağlı tüm şablonlar Meta&apos;dan çekilir, Hangel
+              Seçtiğiniz numaraya bağlı tüm şablonlar Meta&apos;dan çekilir, hangel
               ile eşleştirilir.
             </DialogDescription>
           </DialogHeader>

@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
                     await Promise.all([
                         sendWelcomeMessage(fullPhone, name || 'arkadaş', phoneCountryCode === '+90' ? 'tr' : 'en').catch((e) => console.warn('[verify-otp] whatsapp welcome failed', e)),
                         db.collection(COLLECTIONS.messages).add({
-                            sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
+                            sender: { id: 'hangel-system', name: 'hangel Resmi', avatarUrl: '' },
                             senderId: 'hangel-system',
                             senderType: 'system',
                             recipient: { id: uid, name: name || '', avatarUrl: '' },

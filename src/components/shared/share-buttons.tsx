@@ -61,7 +61,7 @@ export function ShareButtons({
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
 
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap justify-end gap-2">
       <Dialog>
         <DialogTrigger asChild>
             <Button size="icon" variant="outline" className={cn("rounded-full h-9 w-9", buttonClassName)} aria-label="QR kodunu göster">

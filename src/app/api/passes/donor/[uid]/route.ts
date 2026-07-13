@@ -36,7 +36,7 @@ function resolveFullName(u: UserDoc): string {
   if (u.displayName) return u.displayName;
   const combined = [u.firstName, u.lastName].filter(Boolean).join(' ').trim();
   if (combined) return combined;
-  return u.username ?? 'Hangel Bağışçısı';
+  return u.username ?? 'hangel Bağışçısı';
 }
 
 function resolveDonorId(u: UserDoc, uid: string): string {

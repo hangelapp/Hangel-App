@@ -480,8 +480,8 @@ export default function ProfileSettingsPage() {
                             return (
                                 <div className="grid grid-cols-[140px_1fr] gap-2">
                                     <Select
-                                        value={currentPhoneCountryCode}
-                                        onValueChange={(v) => handleChange('personalInfo', 'phoneCountryCode', v)}
+                                        value={`${selectedPhone.iso}__${selectedPhone.code}`}
+                                        onValueChange={(v) => handleChange('personalInfo', 'phoneCountryCode', v.split('__')[1])}
                                     >
                                         <SelectTrigger className="h-10 rounded-xl font-bold">
                                             <SelectValue>
@@ -491,7 +491,7 @@ export default function ProfileSettingsPage() {
                                         </SelectTrigger>
                                         <SelectContent className="max-h-60">
                                             {COUNTRY_PHONE_CODES.map((c) => (
-                                                <SelectItem key={`${c.iso}-${c.code}`} value={c.code}>
+                                                <SelectItem key={`${c.iso}__${c.code}`} value={`${c.iso}__${c.code}`}>
                                                     <span className="text-base mr-2">{c.flag}</span>
                                                     {c.country} ({c.code})
                                                 </SelectItem>

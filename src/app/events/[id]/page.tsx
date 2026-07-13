@@ -257,6 +257,15 @@ export default function EventDetailPage() {
     };
     const eventStartEpoch = toEpoch(event.startDate);
     const eventEndEpoch = toEpoch(event.endDate);
+    // Live Activity, katılım anından etkinlik BİTENE kadar kilit ekranında kalır
+    // (kullanıcı tercihi: "açtığı günden itibaren kalsın"). Uzak tarihte bile geri
+    // sayım gösterilir. TEK kısıt: bitmiş etkinlikte ya da geçerli tarih yoksa gösterme.
+    {
+      const nowMs = Date.now();
+      const noValidDate = !eventStartEpoch && !eventEndEpoch;
+      const alreadyEnded = eventEndEpoch > 0 && eventEndEpoch < nowMs;
+      if (noValidDate || alreadyEnded) return;
+    }
     const _role = getUserEventRole(event.contributors, authUser?.uid);
     const _roleLabel = _role === 'participant'
       ? 'Katılımcı'

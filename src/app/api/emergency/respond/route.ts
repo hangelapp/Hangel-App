@@ -249,7 +249,7 @@ Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu sü
 
     // 1) Messages — kalıcı, /messages gelen kutusunda
     const msgRef = await fs.collection(COLLECTIONS.messages).add({
-      sender: { id: 'hangel-system', name: 'Hangel Acil', avatarUrl: '' },
+      sender: { id: 'hangel-system', name: 'hangel Acil', avatarUrl: '' },
       senderId: 'hangel-system',
       senderType: 'system',
       recipient: { id: caller.uid, name: caller.name, avatarUrl: '' },

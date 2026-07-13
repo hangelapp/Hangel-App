@@ -135,10 +135,22 @@ export function DetailHero({
         className="pointer-events-none absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black/85 via-black/40 to-transparent"
       />
 
-      {/* Sol üst: Geri */}
-      {backSlot && <div className="absolute top-3 left-3 z-20">{backSlot}</div>}
-      {/* Sağ üst: Paylaş */}
-      {shareSlot && <div className="absolute top-3 right-3 z-20">{shareSlot}</div>}
+      {/*
+        Üst aksiyon barı — geri (sol) + paylaş (sağ) TEK satırda, viewport'a
+        güvenli yaslı. shareSlot birden çok buton (QR + Paylaş) içerdiğinden,
+        dar ekranda (≤390px) sağ kenardan taşıp kırpılıyordu → satırı
+        justify-between + min-w-0 ile sınırla, paylaş grubunu sona hizala.
+      */}
+      {(backSlot || shareSlot) && (
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex items-start justify-between gap-2">
+          <div className="pointer-events-auto shrink-0">{backSlot}</div>
+          {shareSlot && (
+            <div className="pointer-events-auto flex min-w-0 shrink flex-wrap justify-end gap-2">
+              {shareSlot}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* KÜNYE overlay — afişin altına yaslı; beyaz metin + drop-shadow */}
       <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-3 p-5 text-white sm:p-7">

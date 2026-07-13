@@ -48,7 +48,7 @@ function resolveFullName(u: UserDoc): string {
   if (u.displayName) return u.displayName;
   const combined = [u.firstName, u.lastName].filter(Boolean).join(' ').trim();
   if (combined) return combined;
-  return u.username ?? 'Hangel Katılımcısı';
+  return u.username ?? 'hangel Katılımcısı';
 }
 
 function toDate(v: EventDoc['startDate']): Date | undefined {
@@ -127,7 +127,7 @@ export async function GET(
       uid: targetUid,
       eventId,
       fullName: resolveFullName(u),
-      eventTitle: e.title ?? e.name ?? 'Hangel Etkinliği',
+      eventTitle: e.title ?? e.name ?? 'hangel Etkinliği',
       ngoName: e.ngoName ?? e.organizer ?? undefined,
       location: resolveLocation(e.location),
       startDate,

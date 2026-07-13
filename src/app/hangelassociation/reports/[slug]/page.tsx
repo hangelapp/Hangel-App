@@ -21,7 +21,7 @@ const reportContents: Record<string, ReportContent> = {
     '5-yillik-etki': {
         title: "5 Yıllık Sosyal Fayda Raporu.",
         period: "2020 - 2025",
-        summary: "Social Business Global ve Hangel'in 5 yıllık dijital dönüşüm ve sosyal etki yolculuğunun şeffaf bilançosu.",
+        summary: "Social Business Global ve hangel'in 5 yıllık dijital dönüşüm ve sosyal etki yolculuğunun şeffaf bilançosu.",
         stats: [
             { label: "Toplam Erişim", value: "1.2M+" },
             { label: "Aktarılan Bağış", value: "12.5M ₺" },

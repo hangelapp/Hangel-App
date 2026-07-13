@@ -225,6 +225,8 @@ export interface FeatureItem {
   title: string;
   description: string;
   badge?: { kind: BadgeKind; label?: string };
+  /** Verilirse kart tıklanabilir olur → bu route'a (özellik detay sayfası) gider. */
+  href?: string;
 }
 
 /** Özellik kartları ızgarası — her kart isteğe bağlı ikon + durum rozeti taşır. */
@@ -243,14 +245,14 @@ export function FeatureGrid({
     <div className={cn('mx-auto max-w-6xl px-6 grid gap-5', cols)}>
       {items.map((it, i) => {
         const Icon = it.icon;
-        return (
-          <div
-            key={i}
-            className={cn(
-              'rounded-3xl p-6 text-left border transition-shadow hover:shadow-lg',
-              dark ? 'bg-white/[0.04] border-white/10' : 'bg-white border-black/5 shadow-sm',
-            )}
-          >
+        // href varsa kart tıklanabilir (Link); yoksa statik kart (div).
+        const cardClass = cn(
+          'group block rounded-3xl p-6 text-left border transition-shadow hover:shadow-lg',
+          dark ? 'bg-white/[0.04] border-white/10' : 'bg-white border-black/5 shadow-sm',
+          it.href && 'cursor-pointer',
+        );
+        const inner = (
+          <>
             <div className="mb-4 flex items-center justify-between gap-2">
               {Icon ? (
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
@@ -261,9 +263,20 @@ export function FeatureGrid({
               )}
               {it.badge && <AppleBadge kind={it.badge.kind} label={it.badge.label} />}
             </div>
-            <h3 className="text-lg font-bold mb-1.5 tracking-tight">{it.title}</h3>
+            <h3 className={cn('text-lg font-bold mb-1.5 tracking-tight', it.href && 'group-hover:text-primary transition-colors')}>{it.title}</h3>
             <p className={cn('text-sm leading-relaxed', dark ? 'text-white/60' : 'text-muted-foreground')}>{it.description}</p>
-          </div>
+            {it.href && (
+              <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                Detaylı incele
+                <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </span>
+            )}
+          </>
+        );
+        return it.href ? (
+          <Link key={i} href={it.href} className={cardClass}>{inner}</Link>
+        ) : (
+          <div key={i} className={cardClass}>{inner}</div>
         );
       })}
     </div>

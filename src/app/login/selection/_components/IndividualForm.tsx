@@ -665,7 +665,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     <div className="space-y-2">
                         <FormLabel required>Telefon</FormLabel>
                         <div className="grid grid-cols-[140px_1fr] gap-2">
-                            <Select value={phoneCountryCode} onValueChange={setPhoneCountryCode}>
+                            <Select value={`${selectedIndividualPhone.iso}__${selectedIndividualPhone.code}`} onValueChange={(v) => setPhoneCountryCode(v.split('__')[1])}>
                                 <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
                                     <SelectValue>
                                         <span className="text-base">{selectedIndividualPhone.flag}</span>
@@ -674,7 +674,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                                 </SelectTrigger>
                                 <SelectContent className="max-h-60">
                                     {COUNTRY_PHONE_CODES.map((c) => (
-                                        <SelectItem key={`${c.iso}-${c.code}`} value={c.code}>
+                                        <SelectItem key={`${c.iso}__${c.code}`} value={`${c.iso}__${c.code}`}>
                                             <span className="text-base mr-2">{c.flag}</span>
                                             {c.country} ({c.code})
                                         </SelectItem>
@@ -767,7 +767,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     <div className="space-y-2">
                         <FormLabel required>WhatsApp Telefonu</FormLabel>
                         <div className="grid grid-cols-[140px_1fr] gap-2">
-                            <Select value={phoneCountryCode} onValueChange={setPhoneCountryCode}>
+                            <Select value={`${selectedIndividualPhone.iso}__${selectedIndividualPhone.code}`} onValueChange={(v) => setPhoneCountryCode(v.split('__')[1])}>
                                 <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
                                     <SelectValue>
                                         <span className="text-base">{selectedIndividualPhone.flag}</span>
@@ -776,7 +776,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                                 </SelectTrigger>
                                 <SelectContent className="max-h-60">
                                     {COUNTRY_PHONE_CODES.map((c) => (
-                                        <SelectItem key={`wa-${c.iso}-${c.code}`} value={c.code}>
+                                        <SelectItem key={`wa-${c.iso}__${c.code}`} value={`${c.iso}__${c.code}`}>
                                             <span className="text-base mr-2">{c.flag}</span>
                                             {c.country} ({c.code})
                                         </SelectItem>
@@ -981,7 +981,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 <div className="space-y-2">
                     <FormLabel required>Telefon</FormLabel>
                     <div className="grid grid-cols-[140px_1fr] gap-2">
-                        <Select value={phoneCountryCode} onValueChange={setPhoneCountryCode}>
+                        <Select value={`${selectedIndividualPhone.iso}__${selectedIndividualPhone.code}`} onValueChange={(v) => setPhoneCountryCode(v.split('__')[1])}>
                             <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
                                 <SelectValue>
                                     <span className="text-base">{selectedIndividualPhone.flag}</span>
@@ -990,7 +990,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                             </SelectTrigger>
                             <SelectContent className="max-h-60">
                                 {COUNTRY_PHONE_CODES.map((c) => (
-                                    <SelectItem key={`${c.iso}-${c.code}`} value={c.code}>
+                                    <SelectItem key={`${c.iso}__${c.code}`} value={`${c.iso}__${c.code}`}>
                                         <span className="text-base mr-2">{c.flag}</span>
                                         {c.country} ({c.code})
                                     </SelectItem>

@@ -167,7 +167,7 @@ export default function AssociationAboutPage() {
             <section className="py-32 px-6 bg-background">
                 <div className="container mx-auto max-w-4xl text-center space-y-12">
                     <SectionHeading 
-                        badge="NEDEN HANGEL?"
+                        badge="neden hangel?"
                         title="Birleştirici Bir Güç."
                         desc="hangel ve Social Business Global, yalnızca sosyal fayda bilincine sahip olmakla kalmayıp, kalıcı sosyal etki için aktif olarak çalışan çocuklar, gençler, iş insanları ve sivil toplum liderleri için bir köprüdür."
                     />

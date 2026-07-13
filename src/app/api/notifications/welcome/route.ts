@@ -24,7 +24,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 export const runtime = 'nodejs';
 
 const HANGEL_SYSTEM_UID = 'hangel-system';
-const HANGEL_SYSTEM_NAME = 'Hangel Resmi';
+const HANGEL_SYSTEM_NAME = 'hangel Resmi';
 const HANGEL_SYSTEM_AVATAR = ''; // Logo URL eklenebilir (apphosting public dosyası)
 
 const WELCOME_MESSAGE_TR =

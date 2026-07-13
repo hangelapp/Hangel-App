@@ -619,7 +619,7 @@ export default function OutreachHubPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold font-headline">Outreach / Tanıtım Veritabanı</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Hangel'i tanıştırmak için kullandığımız harici kuruluş kontak veritabanı.
+            hangel'i tanıştırmak için kullandığımız harici kuruluş kontak veritabanı.
             Resmi kütüklerden + manuel ekleme ile derler, toplu mail / SMS atarız.
           </p>
         </div>

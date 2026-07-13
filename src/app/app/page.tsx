@@ -104,14 +104,12 @@ const STORE_PLATFORMS: PlatformCard[] = [
   },
   {
     // Rakuten Cashback benzeri tarayıcı eklentisi — alışverişte otomatik STK desteği.
-    // Yayınlanınca: href'e Chrome Web Store linki girilecek, available: true yapılıp
-    // 'yakında' badge'i kaldırılacak.
+    // Canlı: Chrome Web Store linki netleşince href güncellenecek.
     name: 'Chrome Uzantısı',
     description: 'Chrome / Edge — alışverişte otomatik STK desteği',
     icon: Chrome,
-    href: '#',
-    badge: 'yakında',
-    available: false,
+    href: 'https://hangel.org/',
+    available: true,
     iconColor: 'text-amber-600',
   },
 ];

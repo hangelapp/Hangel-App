@@ -64,7 +64,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { label: "Mac App",         href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // canlı — Designed for iPad (macOS 11+)
         { label: "Apple Vision",    href: "https://apps.apple.com/tr/app/hangel/id6664058822", status: 'yakında' },              // yakında — visionOS target yok
         { label: "Microsoft Store", href: "https://hangel.org/", status: 'PWA' },                          // Web zaten PWA
-        { label: "Chrome Uzantısı", href: "https://hangel.org/", status: 'yakında' },                       // Chrome Web Store pending
+        { label: "Chrome Uzantısı", href: "https://hangel.org/" },                                          // Chrome / Edge — canlı
     ];
     
     const socialLinks = [
