@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-14";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "cd83666a",
+    "date": "2026-07-14",
+    "subject": "giriş: eksik alan hatası netleştirildi (Samara m.7)"
+  },
+  {
     "hash": "688be375",
     "date": "2026-07-14",
     "subject": "Samara raporu düzeltmeleri (güvenli grup): yasal belge + market dili + acil kan görünürlük + web temizlik + VERBİS + STK uyarı"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "ec8bb639",
     "date": "2026-07-12",
     "subject": "santral: temsilci performans özeti + panel bildirimleri (cevapsız/geri arama)"
-  },
-  {
-    "hash": "ebf0b1dc",
-    "date": "2026-07-12",
-    "subject": "santral: kara liste (rahatsız etme) + çağrı geçmişi CSV dışa aktar"
   }
 ];
