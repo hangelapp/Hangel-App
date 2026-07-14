@@ -56,11 +56,16 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
       for (const k of keys) {
         result = result?.[k];
       }
-      // P2-5d: empty strings ("yet untranslated") fall through to the TR fallback
-      // instead of rendering blank. Real intentionally-blank values are not used in this codebase.
+      // P2-5d: empty strings ("yet untranslated") fall through instead of rendering
+      // blank. Real intentionally-blank values are not used in this codebase.
       return typeof result === 'string' && result.length > 0 ? result : undefined;
     };
-    return lookup(language) ?? lookup('tr') ?? key;
+    // Fallback zinciri: seçili dil → İNGİLİZCE → Türkçe → anahtar.
+    // (Samara m.3) Kısmen çevrilmiş dillerde (ru/ar/fa/es/ha) eksik anahtar artık
+    // Türkçe yerine İNGİLİZCE'ye düşer — çok dilli kullanıcı için çok daha tutarlı
+    // bir deneyim (Arapça + İngilizce karışımı, Arapça + Türkçe'den iyidir).
+    // en %100 dolu değilse tr devreye girer, böylece asla ham "key" görünmez.
+    return lookup(language) ?? lookup('en') ?? lookup('tr') ?? key;
   };
 
   return (

@@ -3,6 +3,11 @@ export const AI_CHANGELOG_GENERATED = "2026-07-14";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "aa5bde68",
+    "date": "2026-07-14",
+    "subject": "Samara m.10 + m.12: beyaz şerit + giriş dil seçici"
+  },
+  {
     "hash": "df636c16",
     "date": "2026-07-14",
     "subject": "feat(super-admin): Outreach Veritabanı ana panelde görünür kart"
@@ -121,10 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "eebfa406",
     "date": "2026-07-12",
     "subject": "santral: bağış hunisi (pipeline) + aşama + hangel üyesi ikonu"
-  },
-  {
-    "hash": "58a44a8f",
-    "date": "2026-07-12",
-    "subject": "santral: kampanya (peş peşe) arama modu + AI çağrı özeti"
   }
 ];
