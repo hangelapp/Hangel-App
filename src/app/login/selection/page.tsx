@@ -3,8 +3,10 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from 'lucide-react';
+import { Loader2, Globe } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { languages, useTranslation } from '@/components/providers/language-provider';
 import { HangelLogo } from '@/components/icons';
 import { IndividualForm } from './_components/IndividualForm';
 import { CorporateForm } from './_components/CorporateForm';
@@ -27,6 +29,7 @@ const resolveNext = (raw: string | null): string => {
 const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { language, changeLanguage } = useTranslation();
     const tab = searchParams.get('tab') || 'individual';
     const entity = searchParams.get('entity') || 'NGO';
     const nextPath = resolveNext(searchParams.get('next'));
@@ -51,6 +54,20 @@ const FormRenderer = () => {
         // büyük boşluk kalkar. Alt tarafta da home-indicator payı bırakılır.
         <div className="min-h-dvh bg-secondary flex items-start justify-center px-4 pt-[calc(var(--sat)+0.75rem)] pb-[calc(var(--sab)+1rem)]">
             <div className="w-full max-w-sm">
+                {/* Dil seçici — giriş ekranında da dil değiştirilebilsin (Samara m.12) */}
+                <div className="flex justify-end mb-2">
+                    <Select value={language} onValueChange={changeLanguage}>
+                        <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-8 px-2 text-xs font-medium text-muted-foreground hover:text-foreground focus:ring-0">
+                            <Globe className="h-3.5 w-3.5" />
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {languages.map(lang => (
+                                <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
                 <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
                     <CardHeader className="text-center pt-8 pb-5">
                         <HangelLogo className="text-3xl mx-auto mb-2" />

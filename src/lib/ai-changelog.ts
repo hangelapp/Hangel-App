@@ -3,6 +3,16 @@ export const AI_CHANGELOG_GENERATED = "2026-07-14";
 export interface AiChangelogEntry { hash: string; date: string; subject: string; }
 export const AI_CHANGELOG: AiChangelogEntry[] = [
   {
+    "hash": "df636c16",
+    "date": "2026-07-14",
+    "subject": "feat(super-admin): Outreach Veritabanı ana panelde görünür kart"
+  },
+  {
+    "hash": "e174e935",
+    "date": "2026-07-14",
+    "subject": "i18n: İngilizce'deki 260 eksik çeviri tamamlandı (Samara m.3)"
+  },
+  {
     "hash": "cd83666a",
     "date": "2026-07-14",
     "subject": "giriş: eksik alan hatası netleştirildi (Samara m.7)"
@@ -116,15 +126,5 @@ export const AI_CHANGELOG: AiChangelogEntry[] = [
     "hash": "58a44a8f",
     "date": "2026-07-12",
     "subject": "santral: kampanya (peş peşe) arama modu + AI çağrı özeti"
-  },
-  {
-    "hash": "b22bfe42",
-    "date": "2026-07-12",
-    "subject": "fix(detail): useSearchParams kaldırıldı → window.location.search (Next 15 Suspense'siz useSearchParams prod'da etkinlik+gönüllülük detayını notFound'a düşürüyordu)"
-  },
-  {
-    "hash": "ec8bb639",
-    "date": "2026-07-12",
-    "subject": "santral: temsilci performans özeti + panel bildirimleri (cevapsız/geri arama)"
   }
 ];

@@ -251,6 +251,10 @@
     overflow-x: clip;
   }
   html {
+    /* Arka planı body ile aynı tema rengine sabitle. Aksi halde status bar
+       bölgesi (--sat) ve overscroll alanı html'in VARSAYILAN beyazını gösterir
+       → koyu temada bile üstte beyaz şerit görünür (Samara raporu, madde 10). */
+    @apply bg-background;
     overscroll-behavior-y: contain;
     overflow-x: clip;
   }
