@@ -364,8 +364,12 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             return;
         }
         const cleanPhone = phone.replace(/\D/g, '');
-        if (!name.trim() || cleanPhone.length < 7) {
-            toast({ variant: 'destructive', title: 'Eksik bilgi', description: 'Ad soyad ve geçerli telefon gerekli.' });
+        if (!name.trim()) {
+            toast({ variant: 'destructive', title: 'Adını yaz', description: 'Devam etmek için adını girmen yeterli (giriş için kayıttakiyle birebir aynı olması gerekmez).' });
+            return;
+        }
+        if (cleanPhone.length < 7) {
+            toast({ variant: 'destructive', title: 'Telefon eksik', description: 'Geçerli bir telefon numarası gir.' });
             return;
         }
         if (!auth) return;
@@ -544,8 +548,15 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             return false;
         }
         const cleanPhone = phone.replace(/\D/g, '');
-        if (!name.trim() || cleanPhone.length < 7) {
-            toast({ variant: 'destructive', title: 'Eksik bilgi', description: 'Ad soyad ve geçerli telefon gerekli.' });
+        // Hangi alan eksik: net söyle (Samara raporu m.7 — sessiz başarısızlık yerine
+        // anlaşılır hata). Not: giriş için adın kayıttaki ile BİREBİR aynı olması
+        // GEREKMEZ; numara doğrulaması yeterli. Ad yalnız yeni kayıtta görünen isimdir.
+        if (!name.trim()) {
+            toast({ variant: 'destructive', title: 'Adını yaz', description: 'Devam etmek için adını girmen yeterli (giriş için kayıttakiyle birebir aynı olması gerekmez).' });
+            return false;
+        }
+        if (cleanPhone.length < 7) {
+            toast({ variant: 'destructive', title: 'Telefon eksik', description: 'Geçerli bir telefon numarası gir.' });
             return false;
         }
         return true;
