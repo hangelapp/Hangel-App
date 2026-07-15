@@ -437,17 +437,29 @@ export default function EventDetailPage() {
     .join(' — ');
   useEffect(() => {
     if (evLocType !== 'Fiziksel' || evCoords) return;
-    const q = [evAddress, evDistrict, evCity].filter(Boolean).join(', ').trim();
-    if (!q) return;
+    // Tam adres (salon adı vб.) çoğu zaman geocode edilemez (NOT_FOUND). Bu yüzden
+    // sırayla dene: (1) tam adres+ilçe+il, (2) ilçe+il, (3) sadece il. İlki tutan
+    // koordinat mesafe rozetini besler. Böylece "mesafe hiç görünmüyor" çözülür.
+    const candidates = [
+      [evAddress, evDistrict, evCity].filter(Boolean).join(', ').trim(),
+      [evDistrict, evCity].filter(Boolean).join(', ').trim(),
+      (evCity || '').trim(),
+    ].filter((q, i, arr) => q && arr.indexOf(q) === i);
+    if (candidates.length === 0) return;
     let active = true;
-    fetch(`/api/geocode?q=${encodeURIComponent(q)}`)
-      .then(r => (r.ok ? r.json() : null))
-      .then((j: { lat?: number; lon?: number } | null) => {
-        if (active && j && typeof j.lat === 'number' && typeof j.lon === 'number') {
-          setGeocoded({ lat: j.lat, lon: j.lon });
-        }
-      })
-      .catch(() => { /* geocode best-effort; sessiz başarısız */ });
+    (async () => {
+      for (const q of candidates) {
+        try {
+          const r = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
+          if (!r.ok) continue;
+          const j = (await r.json()) as { lat?: number; lon?: number };
+          if (active && typeof j.lat === 'number' && typeof j.lon === 'number') {
+            setGeocoded({ lat: j.lat, lon: j.lon });
+            return;
+          }
+        } catch { /* sıradaki adaya geç */ }
+      }
+    })();
     return () => { active = false; };
   }, [evLocType, evCoords, evAddress, evCity, evDistrict]);
 
@@ -830,14 +842,14 @@ export default function EventDetailPage() {
                                 {contributors.map((c, i) => {
                                     const u = c.userId ? contributorUserById[c.userId] : undefined;
                                     const photo = u?.avatarUrl;
-                                    return (
-                                        <div key={c.userId || `${c.name}-${i}`} className="flex items-center gap-4 py-4 px-4 sm:px-6">
+                                    const inner = (
+                                        <>
                                             <Avatar className="h-12 w-12 shrink-0 border">
                                                 {photo && <AvatarImage src={photo} alt={c.name} className="object-cover" />}
                                                 <AvatarFallback className="bg-primary/10 text-primary font-bold">{getInitials(c.name)}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-foreground break-words">{c.name}</p>
+                                                <p className="font-bold text-foreground break-words group-hover:text-primary transition-colors">{c.name}</p>
                                                 {c.title && (
                                                     <p className="text-xs text-muted-foreground font-medium truncate">{c.title}</p>
                                                 )}
@@ -845,6 +857,19 @@ export default function EventDetailPage() {
                                             <Badge variant="secondary" className="shrink-0 text-xs font-bold uppercase tracking-wider">
                                                 {roleLabelTr(c.role)}
                                             </Badge>
+                                        </>
+                                    );
+                                    return c.userId ? (
+                                        <Link
+                                            key={c.userId || `${c.name}-${i}`}
+                                            href={`/profile/${c.userId}`}
+                                            className="group flex items-center gap-4 py-4 px-4 sm:px-6 hover:bg-primary/5 transition-colors"
+                                        >
+                                            {inner}
+                                        </Link>
+                                    ) : (
+                                        <div key={c.userId || `${c.name}-${i}`} className="flex items-center gap-4 py-4 px-4 sm:px-6">
+                                            {inner}
                                         </div>
                                     );
                                 })}

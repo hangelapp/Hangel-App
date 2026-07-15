@@ -203,6 +203,9 @@ export default function VolunteeringDetailPage() {
   const coords = opportunity?.location?.coordinates;
   const oppCity = opportunity?.location?.city;
   const oppDistrict = opportunity?.location?.district;
+  // Kayıtlı koordinat yoksa adresten BİR KEZ geocode et (mesafe rozeti için).
+  // Etkinlikteki fallback zinciriyle aynı: adres → ilçe+il → il.
+  const [oppGeocoded, setOppGeocoded] = useState<{ lat: number; lon: number } | null>(null);
   // Güvenli location objesi — render'da doğrudan oppLoc.X okunursa
   // (location undefined/string ise) TypeError → sayfa açılmıyordu.
   const oppLoc = (opportunity && typeof opportunity.location === 'object' && opportunity.location !== null
@@ -216,6 +219,31 @@ export default function VolunteeringDetailPage() {
   const oppShareMessage = [opportunity?.title, oppShareLocation, 'Detaylı Bilgi ve Başvuru Formu hangel gönüllülük ilanı']
     .filter(Boolean)
     .join(' — ');
+  // Koordinat yoksa adresten geocode et → mesafe rozeti çalışsın (etkinlikle aynı zincir).
+  useEffect(() => {
+    if (coords || (locType !== 'Saha' && locType !== 'Hibrit')) return;
+    const candidates = [
+      [oppLoc.address, oppDistrict, oppCity].filter(Boolean).join(', ').trim(),
+      [oppDistrict, oppCity].filter(Boolean).join(', ').trim(),
+      (oppCity || '').trim(),
+    ].filter((q, i, arr) => q && arr.indexOf(q) === i);
+    if (candidates.length === 0) return;
+    let active = true;
+    (async () => {
+      for (const q of candidates) {
+        try {
+          const r = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
+          if (!r.ok) continue;
+          const j = (await r.json()) as { lat?: number; lon?: number };
+          if (active && typeof j.lat === 'number' && typeof j.lon === 'number') {
+            setOppGeocoded({ lat: j.lat, lon: j.lon });
+            return;
+          }
+        } catch { /* sıradaki adaya geç */ }
+      }
+    })();
+    return () => { active = false; };
+  }, [coords, locType, oppLoc.address, oppDistrict, oppCity]);
   useEffect(() => {
     if (!opportunity) return;
     if (locType !== 'Saha' && locType !== 'Hibrit') {
@@ -1367,7 +1395,7 @@ export default function VolunteeringDetailPage() {
                             </Button>
                             {/* Adres Tarifi Al'ın ALTINDA mesafe: araç (km · sürüş dk) +
                                 yürüyüş (km · yürüme dk). İzin yoksa "Konumumu kullan" CTA'sı. */}
-                            <DistanceBadge target={coords ? { lat: coords.lat, lon: coords.lon } : null} />
+                            <DistanceBadge target={coords ? { lat: coords.lat, lon: coords.lon } : oppGeocoded} />
                         </section>
                     )}
 
