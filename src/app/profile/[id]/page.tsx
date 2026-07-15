@@ -559,6 +559,12 @@ export default function PublicProfilePage() {
             <p className="text-sm">Bu kullanıcı profilini henüz tamamlamamış.</p>
           </div>
         )}
+
+        {!isNgoAdmin && (
+          <p className="mt-6 text-center text-xs italic text-muted-foreground">
+            Bazı kişisel bilgiler KVKK gereği kısıtlanmıştır.
+          </p>
+        )}
       </div>
     </div>
   );
