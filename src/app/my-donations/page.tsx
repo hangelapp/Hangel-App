@@ -23,6 +23,7 @@ import { useTranslation } from '@/components/providers/language-provider';
 import { normalizeRates, computeDonationSplit, type DonationRates } from '@/lib/donation-split';
 import { DonationTimeline } from '@/components/donations/donation-timeline';
 import { shareImpact } from '@/lib/share-impact';
+import { MissingPurchaseClaim } from '@/components/donations/missing-purchase-claim';
 
 type NgoSplitEntry = { ngoId: string; ngoName: string; amount: number };
 
@@ -271,6 +272,18 @@ export default function MyDonationsPage() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* "Alışverişim görünmüyor" — conversion postback gecikince/gelmeyince bağışı
+          düşmeyen kullanıcı buradan talep açar; talep super-admin'e (purchaseClaims)
+          düşer. Her zaman görünür (pending kart olsun olmasın). */}
+      {authUser && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border bg-muted/30 px-4 py-3">
+          <p className="text-sm text-muted-foreground">
+            Tamamladığın bir alışveriş burada görünmüyor mu?
+          </p>
+          <MissingPurchaseClaim />
+        </div>
       )}
 
       <Card>

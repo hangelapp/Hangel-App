@@ -121,6 +121,13 @@ export const COLLECTIONS = {
 
   // Donations / funds / earnings
   donations: 'donations',
+  // Kullanıcı "alışverişim/bağışım bağışlarım sayfasına düşmedi" talepleri.
+  // Kullanıcı my-donations sayfasındaki formdan oluşturur (create); super-admin
+  // /super-admin/purchase-claims sayfasında gruplu inceler, çoklu seçip toplu
+  // mail atar, status günceller. Alanlar: userId, userName, userEmail, brandName,
+  // orderNumber?, purchaseDate?, amount?, network?, note?, contactEmail,
+  // status('open'|'resolved'|'rejected'), createdAt, resolvedAt?, resolvedBy?.
+  purchaseClaims: 'purchaseClaims',
   funds: 'funds',
   fundApplications: 'fundApplications',
   monthlyEarnings: 'monthlyEarnings',

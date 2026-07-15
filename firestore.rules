@@ -1020,6 +1020,15 @@ service cloud.firestore {
       allow update, delete: if isSuperAdmin();
     }
 
+    // "Alışverişim/bağışım bağışlarım sayfasına düşmedi" talepleri.
+    // Kullanıcı kendi talebini oluşturur ve kendi taleplerini görür ("taleplerim");
+    // inceleme/güncelleme/silme yalnız super-admin.
+    match /purchaseClaims/{claimId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, list: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isSuperAdmin();
+    }
+
     // E-posta kuyruğu (sadece Admin SDK; istemci hiçbir şey yapamaz)
     match /mailQueue/{mailId} {
       allow read, write: if false;

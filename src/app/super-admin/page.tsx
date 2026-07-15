@@ -87,6 +87,7 @@ const SUPER_ADMIN_BADGE_CONFIG: Record<string, BadgeConfig> = {
     '/super-admin/emergency': { kind: 'collection', collectionName: COLLECTIONS.emergencyRequests, status: 'pending' },
     '/super-admin/support': { kind: 'collection', collectionName: COLLECTIONS.supportTickets, status: 'open' },
     '/super-admin/donations': { kind: 'collection', collectionName: COLLECTIONS.donations },
+    '/super-admin/purchase-claims': { kind: 'collection', collectionName: COLLECTIONS.purchaseClaims, status: 'open' },
     '/super-admin/posts': { kind: 'collection', collectionName: COLLECTIONS.posts },
     '/super-admin/communications': { kind: 'collection', collectionName: COLLECTIONS.messages },
     '/super-admin/users': { kind: 'collection', collectionName: COLLECTIONS.users },
@@ -160,6 +161,7 @@ const superAdminNavSections = [
         title: 'Finans & Sosyal Etki',
         items: [
             { href: '/super-admin/donations', label: 'Bağış Yönetimi', icon: 'HandCoins', description: 'Tüm bağış işlemlerini ve STK hak edişlerini yönetin.' },
+            { href: '/super-admin/purchase-claims', label: 'Bağış Talepleri', icon: 'HandCoins', description: 'Kullanıcıların "alışverişim/bağışım görünmüyor" taleplerini mağazaya göre gruplu incele; seçip toplu e-posta gönder.' },
             { href: '/super-admin/funds', label: 'Fon & Hibe Programları', icon: 'HandCoins', description: 'STK\'ların başvurabileceği hibe programlarını ve fon kaynaklarını yönetin.' },
             { href: '/super-admin/ngo-ads', label: 'STK Reklam Yönetimi', icon: 'Megaphone', description: 'STK\'ların Google Ad Grants (ayda 10.000$) ve sonraki platform reklam hesaplarını yönet — ajans paneli.' },
             { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'Yüklenen belgeleri kontrol et ve onayla.' },
