@@ -50,8 +50,23 @@ export async function tryTakeToken(
     const now = Date.now();
     const data = snap.exists ? snap.data()! : {};
 
-    const secAt: number = (data.secAt as Timestamp | undefined)?.toMillis() ?? 0;
-    const minAt: number = (data.minAt as Timestamp | undefined)?.toMillis() ?? 0;
+    // secAt/minAt tip-güvenli oku: Timestamp, {seconds}, ISO string veya number
+    // olabilir (eski/bozuk doc'lar Timestamp DEĞİL → .toMillis() 'is not a function'
+    // atıp HER worker tick'ini 500 ile öldürüyordu = kuyruk hiç işlenmiyordu).
+    const toMs = (v: unknown): number => {
+      if (v instanceof Timestamp) return v.toMillis();
+      if (typeof v === 'number') return v;
+      if (v && typeof v === 'object' && typeof (v as { toMillis?: unknown }).toMillis === 'function') {
+        return (v as Timestamp).toMillis();
+      }
+      if (v && typeof v === 'object' && typeof (v as { _seconds?: unknown })._seconds === 'number') {
+        return (v as { _seconds: number })._seconds * 1000;
+      }
+      if (typeof v === 'string') { const t = Date.parse(v); return Number.isNaN(t) ? 0 : t; }
+      return 0;
+    };
+    const secAt: number = toMs(data.secAt);
+    const minAt: number = toMs(data.minAt);
     let secTokens: number = typeof data.secTokens === 'number' ? data.secTokens : cfg.perSecond;
     let minTokens: number = typeof data.minTokens === 'number' ? data.minTokens : cfg.perMinute;
 
@@ -74,8 +89,10 @@ export async function tryTakeToken(
       {
         secTokens,
         minTokens,
-        secAt: now - secAt >= 1000 ? Timestamp.fromMillis(now) : data.secAt ?? Timestamp.fromMillis(now),
-        minAt: now - minAt >= 60_000 ? Timestamp.fromMillis(now) : data.minAt ?? Timestamp.fromMillis(now),
+        // Her zaman Timestamp yaz (data.secAt'i olduğu gibi geri yazma — bozuk tip
+        // kalıcılaşmasın). Pencere dolmadıysa bilinen millis'i Timestamp'e çevir.
+        secAt: Timestamp.fromMillis(now - secAt >= 1000 ? now : secAt || now),
+        minAt: Timestamp.fromMillis(now - minAt >= 60_000 ? now : minAt || now),
         perSecond: cfg.perSecond,
         perMinute: cfg.perMinute,
         updatedAt: Timestamp.fromMillis(now),
