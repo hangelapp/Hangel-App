@@ -105,10 +105,18 @@ interface HasOffersConfig {
  */
 function buildAffiliateLink(config: HasOffersConfig, previewUrl: string, subId?: string): string {
   if (!previewUrl) return '';
-  const replaced = previewUrl
+  let working = previewUrl
     .replace(/\{aff_id\}/g, config.affiliateId)
-    .replace(/\{affiliate_id\}/g, config.affiliateId)
-    .replace(/\{transaction_id\}/g, subId ? encodeURIComponent(subId) : '');
+    .replace(/\{affiliate_id\}/g, config.affiliateId);
+  // Attribution KRİTİK: subId verildi ama link'te {transaction_id} yeri YOKSA,
+  // clickId hiçbir yere gömülemez → satış kullanıcıya bağlanamaz → bağış oluşmaz.
+  // (2026-07 bug: GelirOrtakları banner/direct URL'leri {transaction_id} içermiyordu.)
+  // Bu durumda aff_sub parametresini EKLE (postback route'unun okuduğu adlardan biri).
+  if (subId && !/\{transaction_id\}/i.test(working)) {
+    const sep = working.includes('?') ? '&' : '?';
+    working = `${working}${sep}aff_sub={transaction_id}`;
+  }
+  const replaced = working.replace(/\{transaction_id\}/g, subId ? encodeURIComponent(subId) : '');
   // Remove query params left empty after placeholder replacement
   try {
     const url = new URL(replaced);
@@ -387,7 +395,8 @@ async function fetchHasOffersTemplates(config: HasOffersConfig): Promise<Resolve
 
       const rawPreviewUrl = offer.preview_url || offer.offer_url || '';
       const hasPlaceholder = /\{aff_id\}|\{affiliate_id\}/i.test(rawPreviewUrl);
-      // {transaction_id} placeholder'ı korunur — fallback tracking URL'ine de eklenir.
+      // {transaction_id} eksikse subId enjeksiyonu buildLinkWithSubId→buildAffiliateLink
+      // katmanında (per-click) yapılır; burada ham template korunur.
       const template = hasPlaceholder
         ? rawPreviewUrl
         : `https://${config.trackingDomain}/aff_c?offer_id=${offer.id}&aff_id=${config.affiliateId}&aff_sub={transaction_id}`;
