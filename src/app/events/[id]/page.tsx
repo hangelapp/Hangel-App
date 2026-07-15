@@ -420,12 +420,13 @@ export default function EventDetailPage() {
   // erişimler bu güvenli `evLoc` üzerinden yapılır.
   const evLoc = (event && typeof event.location === 'object' && event.location !== null
     ? event.location
-    : {}) as { type?: string; coordinates?: { lat: number; lon: number }; address?: string; city?: string; district?: string };
+    : {}) as { type?: string; coordinates?: { lat: number; lon: number }; address?: string; city?: string; district?: string; neighborhood?: string };
   const evLocType = evLoc.type;
   const evCoords = evLoc.coordinates;
   const evAddress = evLoc.address;
   const evCity = evLoc.city;
   const evDistrict = evLoc.district;
+  const evNeighborhood = evLoc.neighborhood;
   useEffect(() => {
     if (evLocType !== 'Fiziksel' || evCoords) return;
     const q = [evAddress, evDistrict, evCity].filter(Boolean).join(', ').trim();
@@ -621,7 +622,7 @@ export default function EventDetailPage() {
                 title={event.name}
                 dateLabel={formatDateTime(event.startDate).split(',')[0]}
                 timeLabel={formatDateTime(event.startDate).split(',')[1]?.trim() || undefined}
-                locationLabel={evLoc.type === 'Online' ? 'Online' : `${evLoc.district}, ${evLoc.city}`}
+                locationLabel={evLoc.type === 'Online' ? 'Online' : [evNeighborhood, evDistrict, evCity].filter(Boolean).join(', ')}
                 backSlot={
                   <Button onClick={() => router.back()} variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-11 w-11" aria-label="Geri">
                     <ArrowLeft className="h-5 w-5" />
@@ -709,6 +710,10 @@ export default function EventDetailPage() {
                                 <InfoRow icon={MapPin} label="Adres">
                                     <div className="flex flex-col gap-2">
                                         <span>{evLoc.type === 'Online' ? 'Online' : `${evLoc.address}`}</span>
+                                        {/* Mahalle / İlçe / İl — açık adresin altında net konum satırı */}
+                                        {evLoc.type !== 'Online' && [evNeighborhood, evDistrict, evCity].filter(Boolean).length > 0 && (
+                                            <span className="text-sm text-muted-foreground">{[evNeighborhood, evDistrict, evCity].filter(Boolean).join(', ')}</span>
+                                        )}
                                         {evLoc.type !== 'Online' && (
                                             <Button variant="outline" size="sm" className="w-fit h-10 rounded-xl text-xs font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evLoc.address + ' ' + evLoc.district + ' ' + evLoc.city)}`, '_blank')}>
                                                 <Map className="h-3 w-3" /> Adres Tarifi Al

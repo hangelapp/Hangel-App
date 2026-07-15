@@ -207,7 +207,7 @@ export default function VolunteeringDetailPage() {
   // (location undefined/string ise) TypeError → sayfa açılmıyordu.
   const oppLoc = (opportunity && typeof opportunity.location === 'object' && opportunity.location !== null
     ? opportunity.location
-    : {}) as { type?: string; coordinates?: { lat: number; lon: number }; address?: string; city?: string; district?: string };
+    : {}) as { type?: string; coordinates?: { lat: number; lon: number }; address?: string; city?: string; district?: string; neighborhood?: string };
   useEffect(() => {
     if (!opportunity) return;
     if (locType !== 'Saha' && locType !== 'Hibrit') {
@@ -942,7 +942,7 @@ export default function VolunteeringDetailPage() {
                             <div className="flex items-center gap-4 py-4">
                                 <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
                                 <dt className="sr-only">Konum</dt>
-                                <dd className="text-base text-foreground">{oppLoc.city}, {oppLoc.district} ({oppLoc.type})</dd>
+                                <dd className="text-base text-foreground">{[oppLoc.neighborhood, oppLoc.district, oppLoc.city].filter(Boolean).join(', ')} ({oppLoc.type})</dd>
                             </div>
                             <div className="flex items-center gap-4 py-4">
                                 <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -1351,7 +1351,7 @@ export default function VolunteeringDetailPage() {
                                     <div className="flex items-start gap-3"><MapPin className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" /> <span className="text-foreground leading-snug">{oppLoc.address}</span></div>
                                 )}
                                 <div className="flex items-center gap-3 text-muted-foreground">
-                                    <MapPin className="h-5 w-5 shrink-0" /> <span>{oppLoc.district}, {oppLoc.city}</span>
+                                    <MapPin className="h-5 w-5 shrink-0" /> <span>{[oppLoc.neighborhood, oppLoc.district, oppLoc.city].filter(Boolean).join(', ')}</span>
                                 </div>
                             </div>
                             <Button variant="outline" size="sm" className="w-full h-11 rounded-2xl text-sm font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5" onClick={() => window.open(directionsUrl, '_blank')}>
