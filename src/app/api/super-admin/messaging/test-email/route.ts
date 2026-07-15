@@ -12,8 +12,10 @@
 import { NextResponse } from 'next/server';
 import { requireSuperAdmin } from '@/lib/messaging/server-auth';
 import { getEmailProvider } from '@/lib/messaging/providers/email';
+import { getEmailProviderForNgo } from '@/lib/messaging/providers/email/ngo-provider';
 import { render } from '@/lib/messaging/template';
 import { normalizeEmail, isValidEmail } from '@/lib/messaging/email';
+import { htmlToPlainText } from '@/lib/messaging/html-to-text';
 
 export const runtime = 'nodejs';
 
@@ -55,13 +57,20 @@ export async function POST(req: Request) {
   }
 
   try {
-    const provider = getEmailProvider();
+    // Test maili gerçek gönderimle AYNI yoldan gitmeli (deliverability eşleşsin):
+    // önce platform Workspace SMTP (mailAccounts/__platform), bağlı değilse Resend'e düş.
+    const renderedHtml = render(html, SAMPLE_VARS);
+    const text = htmlToPlainText(renderedHtml);
+    const workspace = await getEmailProviderForNgo('__platform').catch(() => null);
+    const provider = workspace ? workspace.provider : getEmailProvider();
     const result = await provider.send({
       to,
       subject: `[TEST] ${render(subject, SAMPLE_VARS)}`,
-      html: render(html, SAMPLE_VARS),
-      fromEmail,
-      fromName,
+      html: renderedHtml,
+      text,
+      // Workspace bağlıysa gönderen adres o hesaptan zorlanır; değilse wizard değeri.
+      fromEmail: workspace ? workspace.fromEmail : fromEmail,
+      fromName: workspace ? workspace.fromName : fromName,
       useCase: 'transactional', // test maili işlemseldir; unsubscribe footer eklenmez
       tags: { kind: 'wizard-test' },
     });

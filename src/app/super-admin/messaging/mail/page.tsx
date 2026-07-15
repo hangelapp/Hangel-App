@@ -151,7 +151,10 @@ export default function EasyMailPage() {
   const [subject, setSubject] = useState('');
   const [bodyHtml, setBodyHtml] = useState('');
   const [fromName, setFromName] = useState('hangel');
-  const [fromEmail, setFromEmail] = useState('merhaba@hangel.org');
+  // Platform toplu mail'i, bağlı Google Workspace SMTP hesabından (mailAccounts/__platform)
+  // gider; gönderen adres worker tarafından o hesaptan zorlanır — burada yalnız
+  // önizleme/etiket için tutulur.
+  const [fromEmail, setFromEmail] = useState('ismailhilmi@hangel.org');
 
   // Şablonlar — mevcut messageTemplates koleksiyonu (yalnız email + aktif olanlar).
   const tplQuery = useMemoFirebase(
@@ -341,6 +344,10 @@ export default function EasyMailPage() {
         senderId: 'hangel',
         fromEmail,
         fromName,
+        // Platform toplu mail'i Resend yerine bağlı Workspace SMTP'den gönder.
+        // Worker, ngoId='__platform' için mailAccounts/__platform hesabını kullanır.
+        mailWorkspace: true,
+        ngoId: '__platform',
         spec,
         scheduledAt: scheduleMode === 'later' ? new Date(scheduledAt).toISOString() : null,
         ...(needsTypeConfirm && recipientCount ? { doubleConfirmCount: recipientCount } : {}),
@@ -689,7 +696,17 @@ export default function EasyMailPage() {
               <div className="flex flex-wrap items-center gap-3 rounded-2xl border bg-muted/30 px-4 py-2.5 text-xs">
                 <span className="font-bold uppercase tracking-wide text-muted-foreground">Gönderen</span>
                 <Input value={fromName} onChange={(e) => setFromName(e.target.value)} className="h-8 w-32 rounded-lg" aria-label="Gönderen adı" />
-                <Input value={fromEmail} onChange={(e) => setFromEmail(e.target.value)} className="h-8 w-56 rounded-lg font-mono" aria-label="Gönderen e-posta" />
+                <Input
+                  value={fromEmail}
+                  readOnly
+                  disabled
+                  className="h-8 w-56 rounded-lg font-mono"
+                  aria-label="Gönderen e-posta"
+                  title="Workspace hesabından gönderilir"
+                />
+                <span className="text-[11px] text-muted-foreground">
+                  Workspace hesabından gönderilir ({fromEmail})
+                </span>
               </div>
             </CardContent>
           </Card>

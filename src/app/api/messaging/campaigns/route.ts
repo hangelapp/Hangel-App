@@ -29,6 +29,8 @@ interface CreateCampaignBody {
   scheduledAt?: string | null;
   doubleConfirmCount?: number;
   ngoId?: string | null;
+  // Toplu mail'i STK/platform Workspace SMTP'sinden gönder (Resend yerine).
+  mailWorkspace?: boolean;
   whatsapp?: {
     templateName: string;
     templateLanguage: string;
@@ -175,6 +177,7 @@ export async function POST(req: Request) {
     fromName: payload.fromName ?? null,
     replyTo: payload.replyTo ?? null,
     ngoId: payload.ngoId ?? null,
+    mailWorkspace: payload.mailWorkspace ?? false,
     whatsapp: payload.whatsapp ?? null,
     recipients: {
       sourceSummary: resolved.summary,
