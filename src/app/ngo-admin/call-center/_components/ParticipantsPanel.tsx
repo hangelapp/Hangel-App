@@ -82,8 +82,11 @@ function toCsv(rows: ParticipantRow[]): string {
   return '﻿' + [header.map(esc).join(','), ...lines].join('\n'); // BOM → Excel TR karakter
 }
 
-export function ParticipantsPanel({ source }: { source: Source }) {
+export function ParticipantsPanel({ source, ngoId }: { source: Source; ngoId?: string }) {
   const { user } = useUser();
+  // super-admin üst switcher'dan başka STK'ya bakarken API'ye o ngoId'yi geçir;
+  // ngo-admin'de boş kalır, sunucu kendi managedNgoId'sine düşer.
+  const ngoQ = ngoId ? `&ngoId=${encodeURIComponent(ngoId)}` : '';
   const { toast } = useToast();
   const [rows, setRows] = useState<ParticipantRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,7 +111,7 @@ export function ParticipantsPanel({ source }: { source: Source }) {
     setError(null);
     try {
       const token = await user.getIdToken();
-      const url = `/api/ngo-admin/participants?source=${source}${query ? `&q=${encodeURIComponent(query)}` : ''}`;
+      const url = `/api/ngo-admin/participants?source=${source}${ngoQ}${query ? `&q=${encodeURIComponent(query)}` : ''}`;
       const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Liste yüklenemedi.');
@@ -119,7 +122,7 @@ export function ParticipantsPanel({ source }: { source: Source }) {
     } finally {
       setLoading(false);
     }
-  }, [user, source]);
+  }, [user, source, ngoQ]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -148,7 +151,7 @@ export function ParticipantsPanel({ source }: { source: Source }) {
       const res = await fetch('/api/ngo-admin/participants/actions', {
         method: 'POST',
         headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'assign', ids, assignedToUid: member?.userId ?? null, assignedToName: member?.name }),
+        body: JSON.stringify({ action: 'assign', ids, assignedToUid: member?.userId ?? null, assignedToName: member?.name, ...(ngoId ? { ngoId } : {}) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Atama başarısız.');
@@ -167,7 +170,7 @@ export function ParticipantsPanel({ source }: { source: Source }) {
       const res = await fetch('/api/ngo-admin/participants/sync', {
         method: 'POST',
         headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ source }),
+        body: JSON.stringify({ source, ...(ngoId ? { ngoId } : {}) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Senkronizasyon başarısız.');
@@ -191,7 +194,7 @@ export function ParticipantsPanel({ source }: { source: Source }) {
       const res = await fetch('/api/ngo-admin/participants/actions', {
         method: 'POST',
         headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'attendance', ids, value }),
+        body: JSON.stringify({ action: 'attendance', ids, value, ...(ngoId ? { ngoId } : {}) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Yoklama kaydedilemedi.');
@@ -214,7 +217,7 @@ export function ParticipantsPanel({ source }: { source: Source }) {
       const res = await fetch('/api/ngo-admin/participants/actions', {
         method: 'POST',
         headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'broadcast', ids, channel: msgChannel, message: msgBody, subject: msgSubject }),
+        body: JSON.stringify({ action: 'broadcast', ids, channel: msgChannel, message: msgBody, subject: msgSubject, ...(ngoId ? { ngoId } : {}) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Gönderim başarısız.');

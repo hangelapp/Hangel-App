@@ -370,10 +370,10 @@ export default function NgoCallCenterPage() {
                 <CallLists ngoId={ngoId} />
               </TabsContent>
               <TabsContent value="etkinlik" className="mt-4">
-                <ParticipantsPanel source="event" />
+                <ParticipantsPanel source="event" ngoId={ngoId} />
               </TabsContent>
               <TabsContent value="gonullu" className="mt-4">
-                <ParticipantsPanel source="volunteer" />
+                <ParticipantsPanel source="volunteer" ngoId={ngoId} />
               </TabsContent>
             </Tabs>
           ) : (

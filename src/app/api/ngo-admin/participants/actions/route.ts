@@ -24,23 +24,39 @@ export const dynamic = 'force-dynamic';
 const CONTACTS = 'santralContacts';
 const MAX_IDS = 2000;
 
+const OWNER_EMAIL = 'ismailhilmi@hangel.org';
+
+interface Identity { uid: string; managedNgoId?: string; role?: string; email?: string; token: string; }
 interface CallerContext { uid: string; ngoId: string; token: string; }
 
-async function authorize(req: NextRequest): Promise<CallerContext | null> {
+async function identify(req: NextRequest): Promise<Identity | null> {
   const authHeader = req.headers.get('authorization') || '';
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
   if (!idToken) return null;
   try {
-    const decoded = await getAdminAuth().verifyIdToken(idToken);
+    const decoded = (await getAdminAuth().verifyIdToken(idToken)) as { uid: string; email?: string };
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
     const d = snap.data() as { role?: string; managedNgoId?: string };
-    if (!d?.managedNgoId) return null;
-    if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
-    return { uid: decoded.uid, ngoId: d.managedNgoId, token: idToken };
+    return { uid: decoded.uid, managedNgoId: d?.managedNgoId, role: d?.role, email: decoded.email, token: idToken };
   } catch {
     return null;
   }
+}
+
+// super-admin/sahip body'deki ngoId'yi kullanır; ngo-admin kendi managedNgoId'sine sabit.
+// Ayrıca loadOwnedContacts her id'nin bu ngoId'ye ait olduğunu doğruladığından
+// cross-tenant yazma yine engellenir.
+function resolveNgo(id: Identity, requestedNgoId: string | null): CallerContext | null {
+  const isOwner = id.role === 'super-admin' || id.email === OWNER_EMAIL;
+  if (isOwner) {
+    const target = (requestedNgoId || '').trim() || id.managedNgoId;
+    if (!target) return null;
+    return { uid: id.uid, ngoId: target, token: id.token };
+  }
+  if (id.role !== 'ngo-admin' || !id.managedNgoId) return null;
+  if (requestedNgoId && requestedNgoId.trim() && requestedNgoId.trim() !== id.managedNgoId) return null;
+  return { uid: id.uid, ngoId: id.managedNgoId, token: id.token };
 }
 
 /** Verilen id'lerin bu STK'ya ait olduğunu doğrula + doc verilerini döndür. */
@@ -52,12 +68,16 @@ async function loadOwnedContacts(ngoId: string, ids: string[]) {
 }
 
 export async function POST(req: NextRequest) {
-  const ctx = await authorize(req);
-  if (!ctx) {
-    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'NGO admin yetkisi gerekli.' }, { status: 403 });
+  const id = await identify(req);
+  if (!id) {
+    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Oturum gerekli.' }, { status: 403 });
   }
-  let body: { action?: string; ids?: unknown; value?: string; channel?: string; message?: string; subject?: string; assignedToUid?: string | null; assignedToName?: string };
+  let body: { action?: string; ids?: unknown; value?: string; channel?: string; message?: string; subject?: string; assignedToUid?: string | null; assignedToName?: string; ngoId?: string };
   try { body = await req.json(); } catch { body = {}; }
+  const ctx = resolveNgo(id, body.ngoId ?? null);
+  if (!ctx) {
+    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Bu STK için yetkiniz yok.' }, { status: 403 });
+  }
 
   const ids = Array.isArray(body.ids) ? body.ids.filter((x): x is string => typeof x === 'string' && !!x) : [];
   if (ids.length === 0) {

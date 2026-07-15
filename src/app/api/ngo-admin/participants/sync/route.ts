@@ -33,26 +33,40 @@ const CONTACTS = 'santralContacts';
 const CALL_SESSIONS = 'callSessions';
 const BATCH_SIZE = 400;
 
+const OWNER_EMAIL = 'ismailhilmi@hangel.org';
+
+interface Identity { uid: string; managedNgoId?: string; role?: string; email?: string; }
 interface CallerContext {
   uid: string;
   ngoId: string;
 }
 
-async function authorize(req: NextRequest): Promise<CallerContext | null> {
+async function identify(req: NextRequest): Promise<Identity | null> {
   const authHeader = req.headers.get('authorization') || '';
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
   if (!idToken) return null;
   try {
-    const decoded = await getAdminAuth().verifyIdToken(idToken);
+    const decoded = (await getAdminAuth().verifyIdToken(idToken)) as { uid: string; email?: string };
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
     const d = snap.data() as { role?: string; managedNgoId?: string };
-    if (!d?.managedNgoId) return null;
-    if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
-    return { uid: decoded.uid, ngoId: d.managedNgoId };
+    return { uid: decoded.uid, managedNgoId: d?.managedNgoId, role: d?.role, email: decoded.email };
   } catch {
     return null;
   }
+}
+
+// super-admin/sahip body'deki ngoId'yi kullanır; ngo-admin kendi managedNgoId'sine sabit.
+function resolveNgo(id: Identity, requestedNgoId: string | null): CallerContext | null {
+  const isOwner = id.role === 'super-admin' || id.email === OWNER_EMAIL;
+  if (isOwner) {
+    const target = (requestedNgoId || '').trim() || id.managedNgoId;
+    if (!target) return null;
+    return { uid: id.uid, ngoId: target };
+  }
+  if (id.role !== 'ngo-admin' || !id.managedNgoId) return null;
+  if (requestedNgoId && requestedNgoId.trim() && requestedNgoId.trim() !== id.managedNgoId) return null;
+  return { uid: id.uid, ngoId: id.managedNgoId };
 }
 
 type Person = {
@@ -151,12 +165,16 @@ async function collectVolunteerParticipants(ngoId: string): Promise<Person[]> {
 }
 
 export async function POST(req: NextRequest) {
-  const ctx = await authorize(req);
-  if (!ctx) {
-    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'NGO admin yetkisi gerekli.' }, { status: 403 });
+  const id = await identify(req);
+  if (!id) {
+    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Oturum gerekli.' }, { status: 403 });
   }
-  let body: { source?: string };
+  let body: { source?: string; ngoId?: string };
   try { body = await req.json(); } catch { body = {}; }
+  const ctx = resolveNgo(id, body.ngoId ?? null);
+  if (!ctx) {
+    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Bu STK için yetkiniz yok.' }, { status: 403 });
+  }
   const source = body.source === 'volunteer' ? 'volunteer' : body.source === 'event' ? 'event' : null;
   if (!source) {
     return NextResponse.json({ errorCode: 'BAD_INPUT', message: "source 'event' veya 'volunteer' olmalı." }, { status: 400 });
