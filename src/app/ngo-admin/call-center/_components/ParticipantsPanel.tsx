@@ -91,8 +91,6 @@ export function ParticipantsPanel({ source }: { source: Source }) {
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  // Zaman filtresi: tümü / gelecek / geçmiş (kaynak tarihine göre).
-  const [when, setWhen] = useState<'all' | 'upcoming' | 'past'>('all');
 
   // Toplu mesaj diyalogu
   const [msgOpen, setMsgOpen] = useState(false);
@@ -251,23 +249,55 @@ export function ParticipantsPanel({ source }: { source: Source }) {
   const allSelected = rows.length > 0 && selected.size === rows.length;
   const toggleAll = () => setSelected(allSelected ? new Set() : new Set(rows.map((r) => r.id)));
 
-  // Zaman filtresi: kişinin en ileri kaynak tarihi bugünden sonra ise "gelecek",
-  // tüm kaynakları geçmişte ise "geçmiş". Tarih parse edilemezse "gelecek" say
-  // (kaybolmasın). 'all' hepsini gösterir.
-  const visibleRows = useMemo(() => {
-    if (when === 'all') return rows;
-    const now = Date.now();
-    return rows.filter((r) => {
-      const times = r.sources
-        .map((s) => (s.when ? Date.parse(s.when) : NaN))
-        .filter((t) => Number.isFinite(t)) as number[];
-      if (times.length === 0) return when === 'upcoming'; // tarihsiz → gelecek varsay
-      const latest = Math.max(...times);
-      return when === 'upcoming' ? latest >= now : latest < now;
-    });
-  }, [rows, when]);
-
   const attendedCount = useMemo(() => rows.filter((r) => r.attendance === 'attended').length, [rows]);
+
+  // Etkinliğe/gönüllülüğe göre grupla: her kişi KATILDIĞI HER kaynağın altında
+  // görünür (aynı kişi 2 etkinlikteyse iki grupta çıkar → grup başına sayı gerçek
+  // katılım). Ayrı zaman filtresi YOK: geçmiş+gelecek TEK listede, kronolojik
+  // (en yeni/yaklaşan üstte → eskiye) sıralı. Kaynaksız kişiler "Kaynağı belirsiz"
+  // grubunda en üstte. now çizgisi, geçmiş/gelecek rozeti için kullanılır.
+  const groups = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity -- geçmiş/gelecek rozeti için anlık zaman; rows değişince yeniden hesaplanır
+    const now = Date.now();
+    type Group = { key: string; label: string; when: string; ts: number; isPast: boolean; rows: ParticipantRow[] };
+    const map = new Map<string, Group>();
+    const NO_SRC = '__no_src__';
+    for (const r of rows) {
+      const srcs = r.sources.length > 0 ? r.sources : [{ label: '', refId: NO_SRC, when: '' }];
+      for (const s of srcs) {
+        const t = s.when ? Date.parse(s.when) : NaN;
+        const key = s.refId || NO_SRC;
+        if (!map.has(key)) {
+          map.set(key, {
+            key,
+            label: s.label || (key === NO_SRC ? 'Kaynağı belirsiz' : 'İsimsiz'),
+            when: s.when || '',
+            ts: Number.isFinite(t) ? (t as number) : Number.MAX_SAFE_INTEGER, // tarihsiz en üstte
+            isPast: Number.isFinite(t) ? (t as number) < now : false,
+            rows: [],
+          });
+        }
+        map.get(key)!.rows.push(r);
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => b.ts - a.ts);
+  }, [rows]);
+
+  // Toplamlar: benzersiz kişi, grup sayısı, toplam katılım (grup satırları).
+  const totals = useMemo(() => {
+    const uniquePeople = new Set(rows.map((r) => r.id)).size;
+    const participations = groups.reduce((n, g) => n + g.rows.length, 0);
+    return { groupCount: groups.length, uniquePeople, participations };
+  }, [groups, rows]);
+
+  // Katlanır gruplar — varsayılan hepsi AÇIK (kullanıcı istediğini kapatır).
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const toggleGroup = (key: string) => setCollapsed((prev) => {
+    const n = new Set(prev);
+    if (n.has(key)) n.delete(key); else n.add(key);
+    return n;
+  });
+
   const SourceIcon = source === 'event' ? Calendar : HeartHandshake;
   const title = source === 'event' ? 'Etkinlik Katılımcıları' : 'Gönüllü Katılımcıları';
   const shareText = `${title.replace(' Katılımcıları', '')} hakkında hangel üzerinden ulaşıyoruz. 🧡`;
@@ -283,7 +313,7 @@ export function ParticipantsPanel({ source }: { source: Source }) {
           <div className="min-w-0">
             <h2 className="font-bold text-sm leading-tight">{title}</h2>
             <p className="text-xs text-muted-foreground">
-              {when === 'all' ? `${rows.length} kişi` : `${visibleRows.length} / ${rows.length} kişi`}
+              {`${totals.uniquePeople} kişi`}
               {source === 'event' && attendedCount > 0 ? ` · ${attendedCount} geldi` : ''}
             </p>
           </div>
@@ -310,24 +340,35 @@ export function ParticipantsPanel({ source }: { source: Source }) {
         />
       </div>
 
-      {/* Zaman filtresi: geçmiş / gelecek etkinlik-gönüllülük katılımcıları */}
-      <div className="flex gap-1.5">
-        {([
-          { key: 'all', label: 'Tümü' },
-          { key: 'upcoming', label: source === 'event' ? 'Gelecek etkinlikler' : 'Gelecek' },
-          { key: 'past', label: 'Geçmiş' },
-        ] as const).map((f) => (
-          <Button
-            key={f.key}
-            size="sm"
-            variant={when === f.key ? 'default' : 'outline'}
-            className="rounded-xl"
-            onClick={() => setWhen(f.key)}
-          >
-            {f.label}
-          </Button>
-        ))}
-      </div>
+      {/* Toplam rakamlar — etkinlik/gönüllülük sayısı · benzersiz kişi · katılım.
+          Geçmiş+gelecek tek listede kronolojik; ayrı zaman filtresi yok. */}
+      {rows.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-muted/40 px-3 py-2 text-xs">
+          <span className="flex items-center gap-1.5">
+            <SourceIcon className="h-3.5 w-3.5 text-primary" />
+            <span className="font-bold tabular-nums">{totals.groupCount}</span>
+            <span className="text-muted-foreground">{source === 'event' ? 'etkinlik' : 'gönüllülük'}</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-primary" />
+            <span className="font-bold tabular-nums">{totals.uniquePeople}</span>
+            <span className="text-muted-foreground">benzersiz kişi</span>
+          </span>
+          {totals.participations !== totals.uniquePeople && (
+            <span className="flex items-center gap-1.5">
+              <span className="font-bold tabular-nums">{totals.participations}</span>
+              <span className="text-muted-foreground">toplam katılım</span>
+            </span>
+          )}
+          {source === 'event' && attendedCount > 0 && (
+            <span className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+              <span className="font-bold tabular-nums">{attendedCount}</span>
+              <span className="text-muted-foreground">geldi</span>
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Seçim + toplu aksiyon çubuğu */}
       {rows.length > 0 && (
@@ -392,17 +433,100 @@ export function ParticipantsPanel({ source }: { source: Source }) {
               : 'Kuruluşuna gönüllü başvurusu yapan kişileri görmek için "Güncelle"ye bas.'}
           </p>
         </div>
-      ) : visibleRows.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground text-sm px-6">
-          {when === 'upcoming' ? 'Gelecek tarihli katılımcı yok.' : when === 'past' ? 'Geçmiş katılımcı yok.' : 'Katılımcı yok.'}
-        </div>
       ) : (
-        <div className="space-y-2">
-          {visibleRows.map((p) => {
-            const disp = p.lastDisposition ? DISPOSITION[p.lastDisposition] : null;
-            const isSel = selected.has(p.id);
+        <div className="space-y-3">
+          {groups.map((g) => {
+            const isCollapsed = collapsed.has(g.key);
+            // Grubun tarihi (varsa) — "10 Tem 2026 14:00" gibi kısa TR gösterim.
+            let dateLabel = '';
+            if (g.when) {
+              const d = new Date(g.when.replace(' ', 'T'));
+              if (!Number.isNaN(d.getTime())) {
+                dateLabel = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+              }
+            }
+            // Bu gruptaki kişilerin kaçı seçili — grup toplu-seçim için.
+            const groupIds = g.rows.map((r) => r.id);
+            const groupAllSel = groupIds.length > 0 && groupIds.every((id) => selected.has(id));
+            const toggleGroupSel = () => setSelected((prev) => {
+              const n = new Set(prev);
+              if (groupAllSel) groupIds.forEach((id) => n.delete(id));
+              else groupIds.forEach((id) => n.add(id));
+              return n;
+            });
             return (
-              <Card key={p.id} className={`rounded-2xl transition-colors ${isSel ? 'ring-2 ring-primary/40' : ''}`}>
+              <div key={g.key} className="rounded-2xl border border-border overflow-hidden">
+                {/* Grup başlığı — etkinlik/gönüllülük adı + kişi sayısı + tarih + geçmiş/gelecek */}
+                <div className="flex items-center gap-2 bg-muted/50 px-3 py-2.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(g.key)}
+                    className="flex items-center gap-2 min-w-0 flex-1 text-left"
+                    aria-expanded={!isCollapsed}
+                  >
+                    <ChevronRight className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isCollapsed ? '' : 'rotate-90'}`} />
+                    <SourceIcon className="h-4 w-4 shrink-0 text-primary" />
+                    <span className="min-w-0">
+                      <span className="font-bold text-sm leading-tight break-words">{g.label}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        <span className="font-semibold tabular-nums">{g.rows.length}</span> kişi
+                        {dateLabel ? ` · ${dateLabel}` : ''}
+                        {g.key !== '__no_src__' ? ` · ${g.isPast ? 'geçmiş' : 'yaklaşan'}` : ''}
+                      </span>
+                    </span>
+                  </button>
+                  <label className="flex items-center shrink-0 cursor-pointer pl-1" title="Bu grubu seç">
+                    <Checkbox checked={groupAllSel} onCheckedChange={toggleGroupSel} />
+                  </label>
+                </div>
+                {!isCollapsed && (
+                  <div className="space-y-2 p-2">
+                    {g.rows.map((p) => renderCard(p, g.key))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Toplu mesaj diyalogu */}
+      <Dialog open={msgOpen} onOpenChange={setMsgOpen}>
+        <DialogContent className="rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>Toplu mesaj — {selected.size} kişi</DialogTitle>
+            <DialogDescription>SMS ya da e-posta ile seçili katılımcılara gönder. Kota santral mesaj cüzdanından düşer.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Button type="button" variant={msgChannel === 'sms' ? 'default' : 'outline'} size="sm" className="rounded-xl flex-1" onClick={() => setMsgChannel('sms')}>
+                <Smartphone className="h-4 w-4 mr-1.5" /> SMS
+              </Button>
+              <Button type="button" variant={msgChannel === 'mail' ? 'default' : 'outline'} size="sm" className="rounded-xl flex-1" onClick={() => setMsgChannel('mail')}>
+                <Mail className="h-4 w-4 mr-1.5" /> E-posta
+              </Button>
+            </div>
+            {msgChannel === 'mail' && (
+              <Input value={msgSubject} onChange={(e) => setMsgSubject(e.target.value)} placeholder="Konu" className="rounded-xl" />
+            )}
+            <Textarea value={msgBody} onChange={(e) => setMsgBody(e.target.value)} placeholder="Mesajınız…" rows={5} className="rounded-xl" />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMsgOpen(false)} className="rounded-xl">Vazgeç</Button>
+            <Button onClick={sendBroadcast} disabled={sending} className="rounded-xl">
+              {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />} Gönder
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+
+  function renderCard(p: ParticipantRow, keyPrefix: string) {
+    const disp = p.lastDisposition ? DISPOSITION[p.lastDisposition] : null;
+    const isSel = selected.has(p.id);
+    return (
+              <Card key={`${keyPrefix}:${p.id}`} className={`rounded-2xl transition-colors ${isSel ? 'ring-2 ring-primary/40' : ''}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <Checkbox checked={isSel} onCheckedChange={() => toggle(p.id)} className="mt-1 shrink-0" />
@@ -506,40 +630,6 @@ export function ParticipantsPanel({ source }: { source: Source }) {
                   </div>
                 </CardContent>
               </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Toplu mesaj diyalogu */}
-      <Dialog open={msgOpen} onOpenChange={setMsgOpen}>
-        <DialogContent className="rounded-3xl">
-          <DialogHeader>
-            <DialogTitle>Toplu mesaj — {selected.size} kişi</DialogTitle>
-            <DialogDescription>SMS ya da e-posta ile seçili katılımcılara gönder. Kota santral mesaj cüzdanından düşer.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="flex gap-2">
-              <Button type="button" variant={msgChannel === 'sms' ? 'default' : 'outline'} size="sm" className="rounded-xl flex-1" onClick={() => setMsgChannel('sms')}>
-                <Smartphone className="h-4 w-4 mr-1.5" /> SMS
-              </Button>
-              <Button type="button" variant={msgChannel === 'mail' ? 'default' : 'outline'} size="sm" className="rounded-xl flex-1" onClick={() => setMsgChannel('mail')}>
-                <Mail className="h-4 w-4 mr-1.5" /> E-posta
-              </Button>
-            </div>
-            {msgChannel === 'mail' && (
-              <Input value={msgSubject} onChange={(e) => setMsgSubject(e.target.value)} placeholder="Konu" className="rounded-xl" />
-            )}
-            <Textarea value={msgBody} onChange={(e) => setMsgBody(e.target.value)} placeholder="Mesajınız…" rows={5} className="rounded-xl" />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setMsgOpen(false)} className="rounded-xl">Vazgeç</Button>
-            <Button onClick={sendBroadcast} disabled={sending} className="rounded-xl">
-              {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />} Gönder
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+    );
+  }
 }
