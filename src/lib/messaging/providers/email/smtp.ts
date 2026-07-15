@@ -42,6 +42,14 @@ export class SmtpEmailProvider implements EmailProvider {
         user: config.user,
         pass: config.password,
       },
+      // Agresif timeout ZORUNLU: App Hosting (Cloud Run) worker tick'i içinde
+      // timeout'suz bir SMTP bağlantısı asılı kalırsa tick maxDuration'a kadar
+      // bekler, sonra TÜM tick 500 ile ölür ve job'lar 'leased'de kilitlenir →
+      // kuyruk hiç ilerlemez (yaşanan tam arıza buydu). Sınırlı bekleme ile job
+      // ya hızlı gider ya hızlı hata verip retry'a düşer, tick'i bloklamaz.
+      connectionTimeout: 10_000, // TCP bağlantısı
+      greetingTimeout: 10_000,   // sunucu selamı (EHLO)
+      socketTimeout: 20_000,     // komut/veri soketi
     });
   }
 
