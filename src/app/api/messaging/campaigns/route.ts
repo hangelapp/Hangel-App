@@ -124,13 +124,16 @@ export async function POST(req: Request) {
   const perRecipientWithVat = resolved.recipients.length > 0
     ? +(costDetail.total / resolved.recipients.length).toFixed(4)
     : 0;
-  const cost = {
+  // Firestore 'undefined' değeri REDDEDER → doc yazımı 500 verir. Email/WhatsApp
+  // kampanyada encoding ve smsSegments undefined olabilir; undefined alanları hiç
+  // koyma. (Yaşanan sihirbaz 500'ü: "Cannot use undefined ... field cost.encoding".)
+  const cost: Record<string, unknown> = {
     ...costDetail,
-    encoding: costDetail.encoding,
-    smsSegments: payload.channel === 'sms' ? segmentInfo(payload.body).segments : undefined,
     estimatedCost: costDetail.total,
     perRecipientWithVat,
   };
+  if (costDetail.encoding !== undefined) cost.encoding = costDetail.encoding;
+  if (payload.channel === 'sms') cost.smsSegments = segmentInfo(payload.body).segments;
 
   // 3.5) Wallet pre-flight: NGO scope'lu kampanyalarda atomik reserve
   if (payload.ngoId) {

@@ -40,8 +40,21 @@ export function getAdminAuth(): Auth {
     return getAuth(getAdminApp());
 }
 
+let firestoreInstance: Firestore | null = null;
 export function getAdminFirestore(): Firestore {
-    return getFirestore(getAdminApp());
+    if (firestoreInstance) return firestoreInstance;
+    const db = getFirestore(getAdminApp());
+    // ignoreUndefinedProperties: undefined alanlar Firestore'a yazılırken hata
+    // ('Cannot use undefined as a Firestore value') atıp 500 vermesin — sessizce
+    // atlansın. settings() yalnız ilk kullanımdan önce çağrılabilir; instance'ı
+    // cache'leyip tekrar settings çağrısından kaçınıyoruz.
+    try {
+        db.settings({ ignoreUndefinedProperties: true });
+    } catch {
+        // settings zaten uygulanmış (başka yol init etmiş) — yok say.
+    }
+    firestoreInstance = db;
+    return db;
 }
 
 export function getAdminMessaging(): Messaging {
