@@ -208,6 +208,14 @@ export default function VolunteeringDetailPage() {
   const oppLoc = (opportunity && typeof opportunity.location === 'object' && opportunity.location !== null
     ? opportunity.location
     : {}) as { type?: string; coordinates?: { lat: number; lon: number }; address?: string; city?: string; district?: string; neighborhood?: string };
+  // WhatsApp/paylaşım şablonu: "Başlık — Konum — Detaylı Bilgi ve Başvuru Formu hangel gönüllülük ilanı"
+  // (URL ShareButtons tarafından sona eklenir). Konum online ise "Online".
+  const oppShareLocation = oppLoc.type === 'Online'
+    ? 'Online'
+    : [oppLoc.city, oppLoc.district].filter(Boolean).join(', ');
+  const oppShareMessage = [opportunity?.title, oppShareLocation, 'Detaylı Bilgi ve Başvuru Formu hangel gönüllülük ilanı']
+    .filter(Boolean)
+    .join(' — ');
   useEffect(() => {
     if (!opportunity) return;
     if (locType !== 'Saha' && locType !== 'Hibrit') {
@@ -739,7 +747,7 @@ export default function VolunteeringDetailPage() {
                 </Button>
             }
             shareSlot={
-                <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük İlanı`} buttonClassName="text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full backdrop-blur-md h-11 w-11" />
+                <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük İlanı`} shareMessage={oppShareMessage} buttonClassName="text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full backdrop-blur-md h-11 w-11" />
             }
         />
 
@@ -1388,7 +1396,7 @@ export default function VolunteeringDetailPage() {
                         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground pt-2">
                             <HeartHandshake className="h-4 w-4 text-primary" /> Bu ilanı paylaş
                         </div>
-                        <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük İlanı`} />
+                        <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük İlanı`} shareMessage={oppShareMessage} />
                     </section>
                 </aside>
             </div>

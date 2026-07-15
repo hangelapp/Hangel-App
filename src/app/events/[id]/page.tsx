@@ -427,6 +427,14 @@ export default function EventDetailPage() {
   const evCity = evLoc.city;
   const evDistrict = evLoc.district;
   const evNeighborhood = evLoc.neighborhood;
+  // WhatsApp/paylaşım şablonu: "Başlık — Konum — Detaylı Bilgi ve Kayıt Formu hangel etkinliği"
+  // (URL ShareButtons tarafından sona eklenir). Konum: il, ilçe (online ise "Online").
+  const evShareLocation = evLoc.type === 'Online'
+    ? 'Online'
+    : [evCity, evDistrict].filter(Boolean).join(', ');
+  const eventShareMessage = [event?.name, evShareLocation, 'Detaylı Bilgi ve Kayıt Formu hangel etkinliği']
+    .filter(Boolean)
+    .join(' — ');
   useEffect(() => {
     if (evLocType !== 'Fiziksel' || evCoords) return;
     const q = [evAddress, evDistrict, evCity].filter(Boolean).join(', ').trim();
@@ -629,7 +637,7 @@ export default function EventDetailPage() {
                   </Button>
                 }
                 shareSlot={
-                  <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} buttonClassName="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-11 w-11" />
+                  <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} shareMessage={eventShareMessage} buttonClassName="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-11 w-11" />
                 }
                 ctaSlot={
                   <Button
@@ -1178,7 +1186,7 @@ export default function EventDetailPage() {
 
             {/* Paylaşım — ayrı satır, ferah */}
             <div className="pt-1">
-              <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} />
+              <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} shareMessage={eventShareMessage} />
             </div>
 
             {/* Katılımcılar — kurumsal/özel katılımcılar (türe göre gruplu), en altta */}

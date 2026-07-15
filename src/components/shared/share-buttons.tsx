@@ -21,6 +21,7 @@ export function ShareButtons({
   qrTitle,
   buttonClassName,
   agency,
+  shareMessage,
 }: {
   url: string;
   title: string;
@@ -37,6 +38,12 @@ export function ShareButtons({
    * dışı kullanımlarda (etkinlik/gönüllülük) geçilmez → rozet görünmez.
    */
   agency?: string | null;
+  /**
+   * WhatsApp / Telegram paylaşımında gönderilecek TAM metin (URL hariç; URL sona
+   * eklenir). Verilmezse `title` kullanılır. Etkinlik/gönüllülük çağıranları
+   * "Başlık — Konum — Detaylı Bilgi ve Kayıt Formu hangel etkinliği" formatını geçer.
+   */
+  shareMessage?: string;
 }) {
   const { toast } = useToast();
 
@@ -59,6 +66,10 @@ export function ShareButtons({
   };
 
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+
+  // WhatsApp/paylaşım metni: özel shareMessage verildiyse onu, yoksa title. URL sona eklenir.
+  const shareBody = (shareMessage || title).trim();
+  const shareText = `${shareBody} ${url}`.trim();
 
   return (
     <div className="flex flex-wrap justify-end gap-2">
@@ -107,13 +118,13 @@ export function ShareButtons({
                 E-posta ile Paylaş
               </Button>
             </a>
-            <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer" onClick={() => logHangelEvent(EVENTS.share_app, { channel: 'telegram' })}>
+            <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareBody)}`} target="_blank" rel="noopener noreferrer" onClick={() => logHangelEvent(EVENTS.share_app, { channel: 'telegram' })}>
               <Button variant="outline" className="w-full justify-start">
                 <Send className="mr-2 h-4 w-4" />
                 Telegram ile Paylaş
               </Button>
             </a>
-            <a href={`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`} target="_blank" rel="noopener noreferrer" onClick={() => logHangelEvent(EVENTS.share_app, { channel: 'whatsapp' })}>
+            <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" onClick={() => logHangelEvent(EVENTS.share_app, { channel: 'whatsapp' })}>
               <Button variant="outline" className="w-full justify-start">
                 <MessageSquare className="mr-2 h-4 w-4" />
                 WhatsApp ile Paylaş
