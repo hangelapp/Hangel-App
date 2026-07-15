@@ -870,19 +870,6 @@ export default function VolunteeringDetailPage() {
                         Tek konumlu ilanlarda (points boş) hiçbir şey render edilmez. */}
                     <VolunteeringPoints opp={opportunity} />
 
-                    {/* Fotoğraflar — herkese açık foto merkezi (galeri + yükle + QR/link). */}
-                    <div>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="lg"
-                            onClick={() => setPhotosOpen(true)}
-                            className="h-12 rounded-2xl font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5"
-                        >
-                            <Camera className="h-5 w-5" /> 📷 Fotoğraflar
-                        </Button>
-                    </div>
-
                     {/* Açıklama — büyük, okunur özet */}
                     <section className="space-y-4">
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Genel bakış</h2>
@@ -1103,6 +1090,19 @@ export default function VolunteeringDetailPage() {
                         >
                             <CalendarPlus className="h-5 w-5 shrink-0" />
                             <span className="text-[11px] text-center leading-tight break-words">Takvime ekle</span>
+                        </Button>
+                        {/* Fotoğraflar — yaka kartı/wallet gibi ONAYLI gönüllüye açık;
+                            onaylı araçlar grid'inde, yaka kartının yanında. */}
+                        <Button
+                            size="lg"
+                            variant="secondary"
+                            onClick={() => setPhotosOpen(true)}
+                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0"
+                            aria-label="Fotoğraflar"
+                            title="Fotoğraflar"
+                        >
+                            <Camera className="h-5 w-5 shrink-0" />
+                            <span className="text-[11px] text-center leading-tight break-words">Fotoğraflar</span>
                         </Button>
                         {approvedCompletion && (
                             <Button

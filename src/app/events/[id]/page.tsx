@@ -1147,6 +1147,18 @@ export default function EventDetailPage() {
                   />
                 )}
 
+                {/* Fotoğraflar — yaka kartını GÖREN (katılan/isGoing) kullanıcı görür;
+                    yaka kartı butonunun yanında. Etkinliğin foto merkezini açar. */}
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  onClick={() => setPhotosOpen(true)}
+                  className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words"
+                  aria-label="Etkinlik Fotoğrafları"
+                  title="Etkinlik Fotoğrafları"
+                >
+                  📷 Fotoğraflar
+                </Button>
                 {/* Etkinlik bittiyse: sertifika + değerlendir */}
                 {isEventFinished && (
                   <>
@@ -1158,20 +1170,6 @@ export default function EventDetailPage() {
                 )}
               </div>
             )}
-
-            {/* Fotoğraflar — herkese açık (isGoing gerekmez); foto merkezi dialog'unu açar */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 min-w-0 pt-1">
-              <Button
-                size="lg"
-                variant="secondary"
-                onClick={() => setPhotosOpen(true)}
-                className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words"
-                aria-label="Etkinlik Fotoğrafları"
-                title="Etkinlik Fotoğrafları"
-              >
-                📷 Fotoğraflar
-              </Button>
-            </div>
 
             {/* Paylaşım — ayrı satır, ferah */}
             <div className="pt-1">
