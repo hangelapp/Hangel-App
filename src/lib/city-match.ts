@@ -46,6 +46,20 @@ export function cityMatches(dropdownCity: string | undefined | null, dataCity: s
  * harfi (case KORUNUR — veri orijinal büyük harfle). "Afyonkarahisar"→"Afyon".
  * il >= prefix AND il <= prefix+ aralığı bu ortak kökü yakalar.
  */
+/**
+ * districtMatches — ilçe filtresi ESNEK eşleşme (kütük verisi ↔ dropdown).
+ * İlçe verisi kütükte alan olarak (ilce/district) bazen boş, büyük/küçük ve
+ * diakritik farkları olabilir ("Yüreğir"↔"YÜREĞIR"). Boş filtre → her zaman true.
+ */
+export function districtMatches(dropdownDistrict: string | undefined | null, dataDistrict: string | undefined | null): boolean {
+  const d = normCity(dropdownDistrict);
+  if (!d) return true; // filtre yok
+  const rd = normCity(dataDistrict);
+  if (!rd) return false;
+  // İki yönlü içerir eşleşme — veri/dropdown biri diğerinde geçiyorsa yeter.
+  return rd === d || rd.includes(d) || d.includes(rd);
+}
+
 export function cityPrefixFor(dropdownCity: string | undefined | null): string | null {
   const raw = (dropdownCity ?? '').trim();
   if (!raw) return null;

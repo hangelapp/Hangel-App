@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
-import { allProvinces } from '@/lib/data';
+import { allProvinces, districtsData } from '@/lib/data';
 import { ArrowLeft, Loader2, Link2, Send, CheckCircle2, Users, X, Database, Lock } from 'lucide-react';
 
 interface Connection { configured: boolean; connected: boolean; fromEmail?: string; signature?: string }
@@ -62,6 +62,8 @@ export default function PlatformWorkspaceMailPage() {
   const [facetTypes, setFacetTypes] = useState<FacetType[]>([]);
   const [filterType, setFilterType] = useState('GençlikSporMüdürlüğü');
   const [filterCity, setFilterCity] = useState('');
+  // İlçe seçili il'e bağlı; il değişince sıfırlanır. Boş = tüm ilçeler.
+  const [filterDistrict, setFilterDistrict] = useState('');
   const [list, setList] = useState<string[]>([]);
   // "Yüklenen Liste" KALICI: localStorage'da tutulur — kullanıcı 'Temizle'/× ile
   // silmedikçe sayfa yenilense/kapansa da kalır. İlk mount yazımı atlanır ki
@@ -191,14 +193,19 @@ export default function PlatformWorkspaceMailPage() {
   };
   const removeOne = (em: string) => setList((p) => p.filter((x) => x !== em));
 
+  // İl/ilçe filtresi opsiyonel; ilçe yalnız il seçiliyken anlamlı gönderilir.
+  const locFilter = () => ({
+    city: filterCity.trim() || undefined,
+    district: (filterCity && filterDistrict.trim()) ? filterDistrict.trim() : undefined,
+  });
   const buildSourcePayload = () =>
     source === 'inline'
       ? { source: 'inline' as const, inlineRecipients: list.map((email) => ({ email })) }
       : source === 'vakif'
-        ? { source: 'vakif' as const, filter: { city: filterCity.trim() || undefined } }
+        ? { source: 'vakif' as const, filter: locFilter() }
         : source === 'dernek'
-          ? { source: 'dernek' as const, filter: { city: filterCity.trim() || undefined } }
-          : { source: 'outreach' as const, filter: { type: filterType || undefined, city: filterCity.trim() || undefined } };
+          ? { source: 'dernek' as const, filter: locFilter() }
+          : { source: 'outreach' as const, filter: { type: filterType || undefined, ...locFilter() } };
 
   const doPreview = async () => {
     if (source === 'inline' && list.length === 0) { toast({ variant: 'destructive', title: 'Liste boş' }); return; }
@@ -360,12 +367,22 @@ export default function PlatformWorkspaceMailPage() {
                             : 'Yalnız e-postası olan kayıtlar listelenir (boş türler görünmez).'}
                       </p>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label>Şehir (opsiyonel)</Label>
-                      <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={filterCity} onChange={(e) => { setFilterCity(e.target.value); setPreview(null); }}>
-                        <option value="">Tümü</option>
-                        {allProvinces.map((c) => <option key={c} value={c}>{c}</option>)}
-                      </select>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label>İl (opsiyonel)</Label>
+                        <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={filterCity} onChange={(e) => { setFilterCity(e.target.value); setFilterDistrict(''); setPreview(null); }}>
+                          <option value="">Tümü</option>
+                          {allProvinces.map((c) => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>İlçe (opsiyonel)</Label>
+                        {/* İlçe seçenekleri seçili il'e bağlı; il seçilmeden pasif. */}
+                        <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50" value={filterDistrict} disabled={!filterCity} onChange={(e) => { setFilterDistrict(e.target.value); setPreview(null); }}>
+                          <option value="">Tümü</option>
+                          {(filterCity ? (districtsData[filterCity] ?? []) : []).map((d) => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                      </div>
                     </div>
                   </div>
                   {source === 'dernek' && (

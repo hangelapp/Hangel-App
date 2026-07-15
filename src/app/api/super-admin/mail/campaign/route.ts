@@ -9,7 +9,7 @@
  * Body: {
  *   subject, body,
  *   source: 'outreach' | 'inline',
- *   filter?: { type?: string; city?: string },   // source='outreach'
+ *   filter?: { type?: string; city?: string; district?: string },   // source='outreach'/'vakif'/'dernek'
  *   inlineRecipients?: { email: string; name?: string }[],  // source='inline'
  *   dryRun?: boolean,   // sadece alıcı sayısını döndür, gönderme
  * }
@@ -22,7 +22,7 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { resolveRecipients } from '@/lib/messaging/resolver';
 import { enqueueCampaign } from '@/lib/messaging/queue/enqueue';
-import { cityMatches } from '@/lib/city-match';
+import { cityMatches, districtMatches } from '@/lib/city-match';
 import { isMailConfigured } from '@/lib/mail/credential-crypto';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { Query } from 'firebase-admin/firestore';
@@ -43,7 +43,7 @@ function withSignature(body: string, signature?: string): string {
   return `${body}<br/><br/>—<br/>${sig.replace(/\n/g, '<br/>')}`;
 }
 
-interface OutreachFilter { type?: string; city?: string }
+interface OutreachFilter { type?: string; city?: string; district?: string }
 interface InlineRec { email: string; name?: string }
 interface Body {
   subject?: string;
@@ -116,10 +116,11 @@ export async function POST(req: Request) {
     // registryVakiflar — e-posta alanı ePosta; il (şehir) kodda süzülür.
     const snap = await db.collection('registryVakiflar').limit(MAX_RECIPIENTS * 4).get();
     for (const d of snap.docs) {
-      const data = d.data() as { ePosta?: string; name?: string; il?: string };
+      const data = d.data() as { ePosta?: string; name?: string; il?: string; ilce?: string };
       const email = (data.ePosta ?? '').trim().toLowerCase();
       if (!EMAIL_RE.test(email) || collected.has(email)) continue;
       if (!cityMatches(body.filter?.city, data.il)) continue;
+      if (!districtMatches(body.filter?.district, data.ilce)) continue;
       collected.set(email, { email, name: data.name });
       if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
     }
@@ -129,10 +130,11 @@ export async function POST(req: Request) {
     try {
       const snap = await db.collection('registryDernekler').orderBy('ePosta').limit(MAX_RECIPIENTS).get();
       for (const d of snap.docs) {
-        const data = d.data() as { ePosta?: string; name?: string; il?: string };
+        const data = d.data() as { ePosta?: string; name?: string; il?: string; ilce?: string };
         const email = (data.ePosta ?? '').trim().toLowerCase();
         if (!EMAIL_RE.test(email) || collected.has(email)) continue;
         if (!cityMatches(body.filter?.city, data.il)) continue;
+        if (!districtMatches(body.filter?.district, data.ilce)) continue;
         collected.set(email, { email, name: data.name });
         if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
       }
@@ -145,11 +147,12 @@ export async function POST(req: Request) {
     if (filter.type) q = q.where('type', '==', filter.type);
     const snap = await q.limit(MAX_RECIPIENTS * 4).get();
     for (const d of snap.docs) {
-      const data = d.data() as { email?: string; name?: string; city?: string; status?: string };
+      const data = d.data() as { email?: string; name?: string; city?: string; district?: string; status?: string };
       if (data.status && data.status !== 'active') continue;
       const email = (data.email ?? '').trim().toLowerCase();
       if (!EMAIL_RE.test(email) || collected.has(email)) continue;
       if (!cityMatches(filter.city, data.city)) continue;
+      if (!districtMatches(filter.district, data.district)) continue;
       collected.set(email, { email, name: data.name });
       if (collected.size >= MAX_RECIPIENTS) { capped = true; break; }
     }
