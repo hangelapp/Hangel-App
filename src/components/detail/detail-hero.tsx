@@ -114,25 +114,51 @@ export function DetailHero({
       style={frameSizing.style}
     >
       {hasImage ? (
-        <Image
-          src={imageUrl as string}
-          alt={imageAlt}
-          fill
-          className="object-cover"
-          priority={priority}
-          sizes={sizes}
-        />
+        <>
+          {/*
+            ARKA PLAN — aynı görselin bulanık/büyütülmüş object-cover kopyası.
+            Portre afiş/A4 dikey gibi çerçeveye oturmayan görsellerde yanları
+            siyah bar yerine görselin KENDİ renkleriyle yumuşakça doldurur
+            (Apple Photos / Music'in off-ratio artwork tekniği).
+          */}
+          <Image
+            src={imageUrl as string}
+            alt=""
+            aria-hidden
+            fill
+            className="scale-110 object-cover opacity-60 blur-2xl"
+            priority={priority}
+            sizes={sizes}
+          />
+          {/* Bulanık zemin üstüne hafif koyu tint — kontrastı toparlar. */}
+          <div className="pointer-events-none absolute inset-0 bg-black/25" />
+
+          {/*
+            ÖN PLAN — afişin tamamı: object-contain ile hiç kırpılmadan,
+            ortalanmış. Köşelere değmemesi için hafif iç boşluk (çerçeve hissi).
+          */}
+          <Image
+            src={imageUrl as string}
+            alt={imageAlt}
+            fill
+            className="object-contain p-1.5 sm:p-2"
+            priority={priority}
+            sizes={sizes}
+          />
+        </>
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-muted via-muted to-primary/10" />
       )}
 
       {/*
         GÜÇLÜ gradient scrim — beyaz künye okunabilirliği için.
-        Alt 2/3'ten yukarı koyulaşan üç duraklı geçiş; tasarım kuralı:
-        from-black/80 → via-black/35 → to-transparent (güçlendirilmiş).
+        object-contain ile afiş alta kadar inmeyebilir; alttaki künye metni
+        (başlık/tarih/konum) açık renkli afiş + bulanık zemin üzerinde de
+        okunur kalsın diye alt scrim güçlendirildi:
+        from-black/90 → via-black/45 → to-transparent.
       */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black/85 via-black/40 to-transparent"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black/90 via-black/45 to-transparent"
       />
 
       {/*

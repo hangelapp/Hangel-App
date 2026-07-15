@@ -19,7 +19,7 @@ export async function generateMetadata({
     const db = getAdminFirestore();
     // Detay sayfasıyla aynı çözümleme: önce slug, yoksa doc id.
     let data:
-      | { name?: string; title?: string; description?: string; imageUrl?: string; eventLogoUrl?: string }
+      | { name?: string; title?: string; description?: string; imageUrl?: string; eventLogoUrl?: string; organizerLogoUrl?: string }
       | undefined;
     const bySlug = await db
       .collection(COLLECTIONS.events)
@@ -40,7 +40,10 @@ export async function generateMetadata({
 
     const title = (data.name || data.title || 'Etkinlik').trim();
     const description = (data.description || '').trim().slice(0, 160);
-    const image = data.eventLogoUrl || data.imageUrl || '/opengraph-image.png';
+    // Paylaşım önizlemesi görsel önceliği: afiş (büyük, en iyi önizleme) →
+    // etkinliğe özel logo → düzenleyen kurumun logosu → varsayılan hangel OG.
+    // (Etkinlik logosu yoksa kurum logosuna düşer — kullanıcı kuralı.)
+    const image = data.imageUrl || data.eventLogoUrl || data.organizerLogoUrl || '/opengraph-image.png';
 
     return {
       metadataBase: new URL(APP_URL),
