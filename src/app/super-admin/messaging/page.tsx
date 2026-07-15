@@ -127,6 +127,25 @@ export default function MessagingHub() {
         </Card>
       </Link>
 
+      {/* Outreach Veritabanı — dernek / vakıf / il müdürlükleri iletişim verisi.
+          Belirgin buton (eskiden yalnız accordion'da gömülüydü → bulunamıyordu). */}
+      <Link href="/super-admin/outreach" className="block group">
+        <Card className="border-primary/30 bg-primary/5 hover:shadow-md transition-shadow">
+          <CardContent className="flex items-center gap-4 p-5 md:p-6">
+            <div className="h-12 w-12 shrink-0 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Database className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg md:text-xl font-bold font-headline break-words">Outreach Veritabanı</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground break-words">
+                Dernek, vakıf ve il müdürlükleri iletişim (telefon / e-posta) verisi — ara, filtrele, kampanyaya gönder.
+              </p>
+            </div>
+            <ArrowRight className="h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
+          </CardContent>
+        </Card>
+      </Link>
+
       {/* İkinci sıra — üç orta kart */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {SECONDARY_CARDS.map((item) => {
