@@ -203,6 +203,38 @@ export async function startDonationCampaignActivity(input: {
   }
 }
 
+/**
+ * Entity başına başlatılan Live Activity'nin activityId'sini localStorage'da sakla.
+ * Böylece kullanıcı check-in yaptığında (veya başka bir tamamlama anında) doğru
+ * activity sonlandırılabilir. Web/native fark etmez — sadece string saklar.
+ * key kalıbı: hangel:laId:event:{id} / hangel:laId:vol:{id}
+ */
+export function laIdKeyFor(kind: 'event' | 'vol', id: string): string {
+  return `hangel:laId:${kind}:${id}`;
+}
+
+export function storeLiveActivityId(kind: 'event' | 'vol', id: string, activityId: string): void {
+  try { localStorage.setItem(laIdKeyFor(kind, id), activityId); } catch { /* yok say */ }
+}
+
+/**
+ * Entity için saklanmış activityId varsa Live Activity'yi sonlandır ve key'i temizle.
+ * Check-in başarısında çağrılır. Native değilse / kayıt yoksa no-op (best-effort).
+ */
+export async function endStoredLiveActivity(kind: 'event' | 'vol', id: string): Promise<void> {
+  try {
+    const key = laIdKeyFor(kind, id);
+    let activityId: string | null = null;
+    try { activityId = localStorage.getItem(key); } catch { /* yok say */ }
+    if (activityId) {
+      await endLiveActivity(activityId);
+    }
+    try { localStorage.removeItem(key); } catch { /* yok say */ }
+  } catch (e) {
+    console.warn('[live-activity] endStoredLiveActivity failed', e);
+  }
+}
+
 export async function endLiveActivity(activityId: string): Promise<boolean> {
   if (!Capacitor.isNativePlatform()) return false;
   try {

@@ -15,6 +15,7 @@ import { useUser, useFirestore } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { setQrOnboard, suppressStartupPopups } from '@/lib/onboarding/qr-onboarding';
 import { Button } from '@/components/ui/button';
+import { endStoredLiveActivity } from '@/lib/native-live-activity';
 import { Loader2, CheckCircle2, XCircle, LogIn, CalendarCheck, PartyPopper } from 'lucide-react';
 
 type Mode = 'kayit' | 'checkin';
@@ -51,6 +52,8 @@ export function EventAction({ eventId, mode }: { eventId: string; mode: Mode }) 
           setState('success');
           if (mode === 'checkin') import('@/lib/celebrate').then((m) => m.celebrate()).catch(() => undefined);
         }
+        // Check-in başarılı (yeni ya da zaten) → kilit ekranı Live Activity'yi sonlandır (native; web no-op).
+        if (mode === 'checkin') void endStoredLiveActivity('event', eventId);
       } catch (e) {
         setMsg(e instanceof Error ? e.message : 'Bağlantı hatası.');
         setState('error');

@@ -23,6 +23,7 @@ import { useUser } from '@/firebase';
 import { UserCheck, Loader2, CheckCircle2, KeyRound } from 'lucide-react';
 import { celebrate } from '@/lib/celebrate';
 import { checkinCodeFor, normalizeCode } from '@/lib/checkin-code';
+import { endStoredLiveActivity } from '@/lib/native-live-activity';
 
 // QR içeriğinden ilan id'sini çöz: …/v/{id}/checkin  → id
 function oppIdFromQr(raw: string): string | null {
@@ -34,14 +35,26 @@ export function VolunteeringCheckinButton({
   oppId,
   className,
   disabled,
+  open: controlledOpen,
+  onOpenChange,
 }: {
   oppId: string;
   className?: string;
   disabled?: boolean;
+  // Kontrollü açılış (opsiyonel) — verilmezse dahili state (mevcut davranış).
+  // ?checkin=1 ile detay sayfasından dışarıdan açmak için.
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const { toast } = useToast();
   const { user } = useUser();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (v: boolean) => {
+    if (!isControlled) setInternalOpen(v);
+    onOpenChange?.(v);
+  };
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -90,6 +103,8 @@ export function VolunteeringCheckinButton({
         title: data?.already ? 'Zaten check-in yapmışsın 🧡' : 'Check-in yapıldı! 🧡',
         description: 'Yoklaman kaydedildi.',
       });
+      // Yoklama alındı → kilit ekranı Live Activity'yi sonlandır (native; web no-op).
+      void endStoredLiveActivity('vol', oppId);
       setTimeout(() => setOpen(false), 1600);
     } catch { setStatus('error'); setErrMsg('Bağlantı hatası. Tekrar dene.'); }
   }, [user, oppId, toast]);

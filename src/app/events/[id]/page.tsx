@@ -3,7 +3,7 @@ import { notFound, useRouter, useParams } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, where, limit, documentId } from 'firebase/firestore';
 import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/lib/types';
-import { startEventCountdownActivity } from '@/lib/native-live-activity';
+import { startEventCountdownActivity, storeLiveActivityId } from '@/lib/native-live-activity';
 import { EventCountdown } from '@/components/events/event-countdown';
 import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
 import { shouldShowLiveActivity } from '@/lib/live-activity-timing';
@@ -86,6 +86,8 @@ export default function EventDetailPage() {
   const [profileUrl, setProfileUrl] = useState('');
   // Fotoğraf merkezi dialog'u — ?photos=1 ile otomatik açılır (QR/link/admin paneli).
   const [photosOpen, setPhotosOpen] = useState(false);
+  // Check-in dialog'u — ?checkin=1 ile otomatik açılır (Live Activity dokunuşu detaya + ?checkin=1 düşürür).
+  const [checkinOpen, setCheckinOpen] = useState(false);
   const { toast } = useToast();
   const requireAuth = useRequireAuth();
   const cardFrontRef = useRef<HTMLDivElement>(null);
@@ -257,7 +259,13 @@ export default function EventDetailPage() {
       return isNaN(d.getTime()) ? 0 : d.getTime();
     };
     const eventStartEpoch = toEpoch(event.startDate);
-    const eventEndEpoch = toEpoch(event.endDate);
+    let eventEndEpoch = toEpoch(event.endDate);
+    // Swift `during` fazındaki ProgressView(timerInterval:) yalnız start < end iken
+    // dolar. Bitiş 0 (tarihsiz) veya başlangıçtan küçük/eşitse akış-line boş kalıyordu
+    // → 2 saatlik varsayılan aralık ver ki çubuk dolabilsin.
+    if (eventStartEpoch > 0 && eventEndEpoch <= eventStartEpoch) {
+      eventEndEpoch = eventStartEpoch + 2 * 60 * 60 * 1000;
+    }
     const _role = getUserEventRole(event.contributors, authUser?.uid);
     // ROL BAZLI zamanlama: Yönetici (super-admin / ilan sahibi / participant OLMAYAN
     // contributor rolü — konuşmacı/organizatör vb.) için Live Activity YAYIN anından
@@ -295,10 +303,17 @@ export default function EventDetailPage() {
       statusLabel: _roleLabel,
       weatherEmoji,
       weatherTemp,
-      organizerLogoUrl: event.organizerLogoUrl || '',
+      // Önce etkinliğe özel logo (eventLogoUrl), yoksa organizatör logosu → LA'da logo hep görünür.
+      // organizerLogo/organizerEntity aşağıda tanımlı (TDZ); burada event alanlarından türet.
+      organizerLogoUrl: event.eventLogoUrl
+        || (event as { organizerLogoUrl?: string }).organizerLogoUrl
+        || (event as { organizerAvatarUrl?: string }).organizerAvatarUrl
+        || '',
     });
     if (activityId) {
       try { localStorage.setItem(guardKey, String(Date.now())); } catch { /* yok say */ }
+      // Check-in anında sonlandırabilmek için activityId'yi entity başına sakla.
+      storeLiveActivityId('event', resolvedEventId, activityId);
     }
   };
 
@@ -411,6 +426,14 @@ export default function EventDetailPage() {
   useEffect(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('photos') === '1') {
       setPhotosOpen(true);
+    }
+  }, []);
+
+  // ?checkin=1 → check-in popup'ını otomatik aç (Live Activity dokunuşu bununla iner).
+  // ?photos=1 ile aynı kalıp: useSearchParams() yerine window.location.search (Next 15 Suspense).
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('checkin') === '1') {
+      setCheckinOpen(true);
     }
   }, []);
 
@@ -1177,10 +1200,13 @@ export default function EventDetailPage() {
                 </Button>
                 )}
 
-                {/* QR ile Check-in — kamera açılıp kapıdaki check-in QR'ını okur. */}
+                {/* QR ile Check-in — kamera açılıp kapıdaki check-in QR'ını okur.
+                    Kontrollü açılış: ?checkin=1 (veya Live Activity dokunuşu) bu popup'ı açar. */}
                 {!event.completed && (
                   <EventCheckinScanButton
                     eventId={resolvedEventId || ''}
+                    open={checkinOpen}
+                    onOpenChange={setCheckinOpen}
                     className="h-14 w-full min-w-0 rounded-2xl text-xs font-black flex items-center justify-center text-center gap-1 px-1 break-words"
                   />
                 )}
@@ -1224,6 +1250,18 @@ export default function EventDetailPage() {
                 eventName={event.name}
                 open={photosOpen}
                 onOpenChange={setPhotosOpen}
+              />
+            )}
+
+            {/* ?checkin=1 fallback: görünür check-in butonu render edilmiyorsa
+                (kullanıcı "going" değil vб.) kontrollü popup'ı yine de aç. Butonu
+                sr-only ile gizle — yalnız dialog açılışı için. */}
+            {resolvedEventId && checkinOpen && !(isGoing && !event.completed) && (
+              <EventCheckinScanButton
+                eventId={resolvedEventId}
+                open={checkinOpen}
+                onOpenChange={setCheckinOpen}
+                className="sr-only"
               />
             )}
                 </div>{/* end aksiyon butonları */}

@@ -38,7 +38,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
 import { useVerifiedAction } from '@/hooks/use-verified-action';
 import { useRequireAuth } from '@/hooks/use-require-auth';
-import { startVolunteerTaskActivity } from '@/lib/native-live-activity';
+import { startVolunteerTaskActivity, storeLiveActivityId } from '@/lib/native-live-activity';
 import { shouldShowLiveActivity } from '@/lib/live-activity-timing';
 import { useIsNgoAdmin } from '@/hooks/use-is-ngo-admin';
 import { Capacitor } from '@capacitor/core';
@@ -147,6 +147,8 @@ export default function VolunteeringDetailPage() {
 
   // Fotoğraflar dialog durumu — ?photos=1 ile otomatik açılır (QR/paylaşım linkinden gelen).
   const [photosOpen, setPhotosOpen] = useState(false);
+  // Check-in dialog durumu — ?checkin=1 ile otomatik açılır (Live Activity dokunuşu detaya + ?checkin=1 düşürür).
+  const [checkinOpen, setCheckinOpen] = useState(false);
   // Kurumsal katılımcı başvurusu dialog durumu.
   const [corpApplyOpen, setCorpApplyOpen] = useState(false);
   // NOT: useSearchParams() Next 15'te Suspense gerektirip prod'da sayfayı bozuyordu →
@@ -154,6 +156,14 @@ export default function VolunteeringDetailPage() {
   useEffect(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('photos') === '1') {
       setPhotosOpen(true);
+    }
+  }, []);
+
+  // ?checkin=1 → check-in popup'ını otomatik aç (Live Activity dokunuşu bununla iner).
+  // ?photos=1 ile aynı kalıp: useSearchParams() yerine window.location.search (Next 15 Suspense).
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('checkin') === '1') {
+      setCheckinOpen(true);
     }
   }, []);
 
@@ -289,7 +299,12 @@ export default function VolunteeringDetailPage() {
       return isNaN(dt.getTime()) ? 0 : dt.getTime();
     };
     const startEpoch = toEpoch(dts?.eventStart, dts?.eventStartTime);
-    const endEpoch = toEpoch(dts?.eventEnd, dts?.eventEndTime);
+    let endEpoch = toEpoch(dts?.eventEnd, dts?.eventEndTime);
+    // Swift `during` ProgressView(timerInterval:) yalnız start < end iken dolar.
+    // Bitiş 0/başlangıçtan küçük-eşitse akış-line boş kalır → 2 saat varsayılan aralık.
+    if (startEpoch > 0 && endEpoch <= startEpoch) {
+      endEpoch = startEpoch + 2 * 60 * 60 * 1000;
+    }
     // İlan "yayınlanmış/aktif" mi? Ayrı bir status alanı yok; yüklü + tarihi geçerli
     // + bitmemiş olması aktif sayılır — shouldShowLiveActivity('manager') bunu uygular.
     if (!shouldShowLiveActivity({ role: 'manager', startEpoch, endEpoch, now: Date.now() })) return;
@@ -329,6 +344,8 @@ export default function VolunteeringDetailPage() {
       });
       if (activityId) {
         try { localStorage.setItem(guardKey, String(Date.now())); } catch { /* yok say */ }
+        // Check-in anında sonlandırabilmek için activityId'yi entity başına sakla.
+        storeLiveActivityId('vol', opportunity.id, activityId);
       }
     })();
     // startVolunteerTaskActivity / ngo kasıtlı bağımlılık dışı: ref + guard tek sefer garantiler.
@@ -690,13 +707,18 @@ export default function VolunteeringDetailPage() {
       // kalsın". Uzak tarihte bile geri sayım gösterilir. TEK kısıt: bitmiş etkinlikte
       // gösterme (ve geçerli bir tarih yoksa gösterme — absürt/boş sayaç olmasın).
       const startEpoch = toEpoch(dts?.eventStart, dts?.eventStartTime);
-      const endEpoch = toEpoch(dts?.eventEnd, dts?.eventEndTime);
+      let endEpoch = toEpoch(dts?.eventEnd, dts?.eventEndTime);
+      // Swift `during` ProgressView(timerInterval:) yalnız start < end iken dolar.
+      // Bitiş 0/başlangıçtan küçük-eşitse akış-line boş kalır → 2 saat varsayılan aralık.
+      if (startEpoch > 0 && endEpoch <= startEpoch) {
+        endEpoch = startEpoch + 2 * 60 * 60 * 1000;
+      }
       // Başvuran gönüllü = KATILIMCI: Live Activity yalnız başlangıca ≤ 24 saat kala
       // (veya etkinlik hâlihazırda sürüyorsa) düşer. Bitmiş/tarihsiz ilanda da false.
       if (!shouldShowLiveActivity({ role: 'participant', startEpoch, endEpoch, now: Date.now() })) {
         return; // Live Activity başlatma — katılımcı için henüz zamanı değil (>24 saat) / bitmiş / tarihsiz.
       }
-      await startVolunteerTaskActivity({
+      const activityId = await startVolunteerTaskActivity({
         taskTitle: opportunity.title,
         ngoName: opportunity.organization || '',
         location: opportunity.location?.city || '',
@@ -708,6 +730,8 @@ export default function VolunteeringDetailPage() {
         activityStartEpoch: startEpoch,
         activityEndEpoch: endEpoch,
       });
+      // Check-in anında sonlandırabilmek için activityId'yi entity başına sakla.
+      if (activityId) storeLiveActivityId('vol', opportunity.id, activityId);
     })();
 
     // Gerçek yazımı BEKLE — başarı toast'ı + yönlendirme yalnızca yazma çözülünce
@@ -1095,9 +1119,12 @@ export default function VolunteeringDetailPage() {
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
                         <AskManagerButton orgId={opportunity.ngoId} subject={`${opportunity.title} — gönüllülük hakkında`} />
                         {/* Check-in Yap — QR okut ya da yöneticinin ekranındaki 6 haneli kodu gir.
-                            Yalnız ONAYLI gönüllüye görünür (bu grid isApproved bloğunda). */}
+                            Yalnız ONAYLI gönüllüye görünür (bu grid isApproved bloğunda).
+                            Kontrollü açılış: ?checkin=1 (veya Live Activity dokunuşu) bu popup'ı açar. */}
                         <VolunteeringCheckinButton
                             oppId={opportunity.id}
+                            open={checkinOpen}
+                            onOpenChange={setCheckinOpen}
                             className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0"
                         />
                         <Button
@@ -1465,6 +1492,17 @@ export default function VolunteeringDetailPage() {
             open={photosOpen}
             onOpenChange={setPhotosOpen}
         />
+
+        {/* ?checkin=1 fallback: görünür check-in butonu render edilmiyorsa (kullanıcı
+            onaylı değil) kontrollü popup'ı yine de aç. sr-only ile gizle. */}
+        {checkinOpen && !isApproved && (
+            <VolunteeringCheckinButton
+                oppId={opportunity.id}
+                open={checkinOpen}
+                onOpenChange={setCheckinOpen}
+                className="sr-only"
+            />
+        )}
 
         {/* Kurumsal katılımcı başvuru formu */}
         <CorporateApplyDialog

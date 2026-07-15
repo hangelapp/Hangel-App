@@ -12,6 +12,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
+import { endStoredLiveActivity } from '@/lib/native-live-activity';
 import { Loader2, CheckCircle2, XCircle, LogIn, PartyPopper } from 'lucide-react';
 
 type State = 'init' | 'working' | 'success' | 'already' | 'error' | 'login';
@@ -57,6 +58,8 @@ export function VolunteerAction({ volunteeringId }: { volunteeringId: string }) 
           setState('success');
           import('@/lib/celebrate').then((m) => m.celebrate()).catch(() => undefined);
         }
+        // Yoklama başarılı (yeni ya da zaten) → kilit ekranı Live Activity'yi sonlandır (native; web no-op).
+        void endStoredLiveActivity('vol', volunteeringId);
       } catch (e) {
         setMsg(e instanceof Error ? e.message : 'Bağlantı hatası.');
         setState('error');
