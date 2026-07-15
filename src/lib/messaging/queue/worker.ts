@@ -20,6 +20,7 @@ import { takeToken, getEffectiveRate } from './rateLimiter';
 import { isTerminal, MAX_ATTEMPTS, nextAttemptAt } from './retry';
 import { render } from '../template';
 import { appendEmailUnsubscribeFooter, appendGenericOptOutFooter, buildUnsubscribeUrl, ensureUnsubscribeToken } from '../unsubscribe';
+import { htmlToPlainText } from '../html-to-text';
 import { debit, refund } from '../wallet';
 
 const DEFAULT_LEASE_MS = 60_000;
@@ -217,6 +218,10 @@ async function dispatch(job: JobDoc): Promise<SendResult> {
   }
 
   const subject = render(job.payload.subject ?? '', vars);
+  // Düz metin (text/plain) versiyonu — multipart/alternative. HTML-only mailler
+  // Gmail'de "Tanıtımlar/Güncellemeler"e düşer; düz metin eşlik edince "Birincil"e
+  // düşme ve teslim/erişilebilirlik olasılığı artar.
+  const text = htmlToPlainText(html);
 
   if (job.mailWorkspace === true) {
     // STK Workspace Toplu Mail: per-STK SMTP; fromEmail/fromName mailAccounts'tan zorlanır.
@@ -228,6 +233,7 @@ async function dispatch(job: JobDoc): Promise<SendResult> {
       to: job.to,
       subject,
       html,
+      text,
       fromEmail: ngoProv.fromEmail,
       fromName: ngoProv.fromName,
       replyTo: job.payload.replyTo ?? undefined,
@@ -240,8 +246,9 @@ async function dispatch(job: JobDoc): Promise<SendResult> {
     to: job.to,
     subject,
     html,
+    text,
     fromEmail: job.payload.fromEmail ?? process.env.DEFAULT_FROM_EMAIL ?? 'noreply@hangel.org',
-    fromName: job.payload.fromName ?? process.env.DEFAULT_FROM_NAME ?? 'Hangel',
+    fromName: job.payload.fromName ?? process.env.DEFAULT_FROM_NAME ?? 'hangel',
     replyTo: job.payload.replyTo ?? undefined,
     unsubscribeUrl,
     useCase: job.useCase,
