@@ -1347,13 +1347,12 @@ export default function VolunteeringDetailPage() {
                                     <MapPin className="h-5 w-5 shrink-0" /> <span>{oppLoc.district}, {oppLoc.city}</span>
                                 </div>
                             </div>
-                            {/* Adres altı mesafe: izin verene km · dk; vermeyene "Konumumu kullan" metin butonu (DistanceBadge içinde) */}
-                            <div className="pl-8">
-                                <DistanceBadge target={coords ? { lat: coords.lat, lon: coords.lon } : null} />
-                            </div>
                             <Button variant="outline" size="sm" className="w-full h-11 rounded-2xl text-sm font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5" onClick={() => window.open(directionsUrl, '_blank')}>
                                 <Map className="h-4 w-4" /> Adres tarifi al
                             </Button>
+                            {/* Adres Tarifi Al'ın ALTINDA mesafe: araç (km · sürüş dk) +
+                                yürüyüş (km · yürüme dk). İzin yoksa "Konumumu kullan" CTA'sı. */}
+                            <DistanceBadge target={coords ? { lat: coords.lat, lon: coords.lon } : null} />
                         </section>
                     )}
 
