@@ -191,6 +191,8 @@ export type Event = {
   imageHint?: string;
   description: string;
   providesCertificate?: boolean;
+  // Sertifika teslim türü — online (varsayılan) veya fiziksel. Yalnız sertifika verilirken anlamlı.
+  certificateDelivery?: 'online' | 'physical';
   organizerId?: string;
   organizerLogoUrl?: string; // Etkinliği düzenleyen kulübün/STK'nın logosu (Live Activity + yaka kartı)
   eventLogoUrl?: string; // Etkinliğe özel logo (kurum logosundan ayrı; canlı ekran + paylaşım önizlemesi).
@@ -350,6 +352,8 @@ export type Volunteering = {
       accommodation: boolean;
     };
     providesCertificate: boolean;
+    // Sertifika teslim türü — online (varsayılan) veya fiziksel. Yalnız sertifika verilirken anlamlı.
+    certificateDelivery?: 'online' | 'physical';
     earnedBadges: string[];
     hasPreTraining: boolean;
     description: string;

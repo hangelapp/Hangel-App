@@ -69,6 +69,7 @@ import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-enti
 import { useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type {
     EventContributor,
     EventContributorRole,
@@ -487,6 +488,8 @@ export default function EventManagementPage() {
     const [evCapacity, setEvCapacity] = useState('');
     const [evLanguage, setEvLanguage] = useState('Türkçe');
     const [evCertificate, setEvCertificate] = useState(false);
+    // Sertifika teslim türü — varsayılan online. Yalnız sertifika verilirken görünür/anlamlı.
+    const [evCertificateDelivery, setEvCertificateDelivery] = useState<'online' | 'physical'>('online');
     // Konuşmacılar / Sanatçılar. Kişi hangel üyesiyse TELEFONLA sorgulanır; üyeyse
     // adı otomatik gelir + userId bağlanır (isim kilitlenir, ünvan elle girilir).
     // Üye değilse isim-soyisim elle yazılır, userId boş kalır.
@@ -658,6 +661,7 @@ export default function EventManagementPage() {
         setEvCapacity('');
         setEvLanguage('Türkçe');
         setEvCertificate(false);
+        setEvCertificateDelivery('online');
         setContributors([]);
         setContributorLookups([]);
         setAgenda([]);
@@ -686,6 +690,7 @@ export default function EventManagementPage() {
         const e = ev as ClubEventDoc & {
             time?: string; endDate?: string; tags?: string[]; type?: string;
             capacity?: { max?: number }; language?: string; providesCertificate?: boolean;
+            certificateDelivery?: 'online' | 'physical';
             location?: { address?: string; city?: string; district?: string; neighborhood?: string; lat?: string; lon?: string };
             description?: string; imageUrl?: string; eventLogoUrl?: string;
             contributors?: EventContributor[]; agenda?: EventAgendaItem[];
@@ -708,6 +713,7 @@ export default function EventManagementPage() {
         setEvCapacity(e.capacity?.max ? String(e.capacity.max) : '');
         setEvLanguage(e.language || 'Türkçe');
         setEvCertificate(Boolean(e.providesCertificate));
+        setEvCertificateDelivery(e.certificateDelivery === 'physical' ? 'physical' : 'online');
         const contribs = e.contributors || [];
         setContributors(contribs.map((c) => ({ name: c.name || '', title: c.title || '', role: c.role || 'speaker', ...(c.userId ? { userId: c.userId } : {}) })));
         setContributorLookups(contribs.map((c) => ({ phone: '', status: c.userId ? 'member' as const : 'idle' as const, locked: Boolean(c.userId) })));
@@ -937,6 +943,7 @@ export default function EventManagementPage() {
                         capacity: { max: Number(evCapacity) || 0 },
                         participationCondition: 'Herkese Açık',
                         providesCertificate: evCertificate,
+                        certificateDelivery: evCertificate ? evCertificateDelivery : null,
                         location: {
                             type: 'Fiziksel',
                             address: evAddress.trim(),
@@ -989,6 +996,7 @@ export default function EventManagementPage() {
                 capacity: { current: 0, max: Number(evCapacity) || 0 },
                 participationCondition: 'Herkese Açık' as const,
                 providesCertificate: evCertificate,
+                certificateDelivery: evCertificate ? evCertificateDelivery : null,
                 location: {
                     type: 'Fiziksel' as const,
                     address: evAddress.trim(),
@@ -1370,6 +1378,27 @@ export default function EventManagementPage() {
                             <Checkbox checked={evCertificate} onCheckedChange={(c) => setEvCertificate(c === true)} />
                             <span>Bu etkinlik katılımcılara <strong>sertifika</strong> veriyor</span>
                         </label>
+
+                        {/* Sertifika türü — yalnız sertifika verilirken görünür, varsayılan Online */}
+                        {evCertificate && (
+                            <div className="space-y-2 p-3 border rounded-xl bg-card">
+                                <Label className="text-sm">Sertifika türü</Label>
+                                <RadioGroup
+                                    value={evCertificateDelivery}
+                                    onValueChange={(v) => setEvCertificateDelivery(v === 'physical' ? 'physical' : 'online')}
+                                    className="grid grid-cols-2 gap-2"
+                                >
+                                    <label className="flex items-center gap-2 text-sm cursor-pointer rounded-lg border p-2.5 has-[:checked]:border-primary has-[:checked]:bg-primary/[0.04]">
+                                        <RadioGroupItem value="online" id="ev-cert-online" />
+                                        <span>Online <span className="text-xs text-muted-foreground">(varsayılan)</span></span>
+                                    </label>
+                                    <label className="flex items-center gap-2 text-sm cursor-pointer rounded-lg border p-2.5 has-[:checked]:border-primary has-[:checked]:bg-primary/[0.04]">
+                                        <RadioGroupItem value="physical" id="ev-cert-physical" />
+                                        <span>Fiziksel</span>
+                                    </label>
+                                </RadioGroup>
+                            </div>
+                        )}
 
                         {/* Konuşmacılar / Sanatçılar */}
                         <div className="space-y-2">

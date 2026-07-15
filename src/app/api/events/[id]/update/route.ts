@@ -25,7 +25,7 @@ function errJson(errorCode: string, message: string, status: number) {
 // Düzenlenebilir alanların izinli listesi (status/organizerId/createdBy yazılmaz).
 const EDITABLE_KEYS = [
   'name', 'date', 'startDate', 'endDate', 'time', 'type', 'tags', 'language',
-  'capacity', 'participationCondition', 'providesCertificate', 'location',
+  'capacity', 'participationCondition', 'providesCertificate', 'certificateDelivery', 'location',
   'description', 'imageUrl', 'contributors', 'agenda', 'organizerLogoUrl',
   'eventLogoUrl', 'corporateParticipants', 'points',
 ] as const;

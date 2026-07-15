@@ -170,25 +170,12 @@ export default function BrandProfilePage() {
     if (!brand.link) return;
 
     setIsDonating(true);
-    // GERÇEK bağış kaydı, alışveriş onaylandıktan sonra affiliate postback'i
-    // tarafından oluşturulur. Burada donations koleksiyonuna YAZMIYORUZ — aksi
-    // takdirde kullanıcı alışveriş yapmadan "bağış işlendi" sanır.
-    // Dışa giden link `/api/affiliate/go?brandId=...` üzerinden açılır: route
-    // clickId üretip affiliateClicks doc'unu yazar, subId'i affiliate URL'ine
-    // enjekte eder ve 302 ile markaya yönlendirir. Böylece satış kullanıcıya
-    // bağlanır. Route hata verirse fallback olarak brand.link doğrudan açılır.
-    await goToAffiliate({ brandId: brand.id, authUser, fallbackUrl: brand.link });
-
-    toast({
-        title: 'Alışveriş başlatıldı',
-        description: `Alışverişini tamamladığında bağışın otomatik hesabına işlenecek. İşlenmesi markaya göre birkaç dakika–saat sürebilir; "Bağışlarım" sayfasından takip edebilirsin.`,
-    });
-
-    // Tıklama izi (best-effort): "bağışın işleniyor" durumunu /my-donations'ta
-    // göstermek için işaretli bir bildirim yazılır. Bağış kaydı DEĞİL — gerçek
-    // bağış conversion onayı gelince affiliate postback'inden oluşur ve donations
-    // listesinde "İşleme Alındı" olarak görünür. createdBy = uid (rules gereği).
-    // data.affiliatePending: my-donations bunu "bağışın işleniyor 🧡" olarak ayıklar.
+    // ÖNCE bildirim/iz yaz, SONRA dışa yönlendir. (Kritik sıra düzeltmesi:
+    // goToAffiliate harici tarayıcı/sekme açıp sayfayı terk ettiği için, eskiden
+    // yönlendirmeden SONRA yazılan bildirim/addDoc bazı cihazlarda (özellikle
+    // native app + harici tarayıcı) hiç çalışmıyordu → kullanıcı "bağış işleniyor"
+    // bildirimini hiç görmüyordu. Artık await ile önce yazılıyor.)
+    // GERÇEK bağış kaydı yine alışveriş onaylanınca affiliate postback'inden oluşur.
     if (db) {
         try {
             await addDoc(collection(db, COLLECTIONS.notifications), {
@@ -210,6 +197,17 @@ export default function BrandProfilePage() {
             // Bildirim yazımı başarısız olsa bile alışveriş akışı devam eder.
         }
     }
+
+    toast({
+        title: 'Alışveriş başlatıldı',
+        description: `Alışverişini tamamladığında bağışın otomatik hesabına işlenecek. İşlenmesi markaya göre birkaç dakika–saat sürebilir; "Bağışlarım" sayfasından takip edebilirsin.`,
+    });
+
+    // Dışa giden link `/api/affiliate/go?brandId=...` üzerinden açılır: route
+    // clickId üretip affiliateClicks doc'unu yazar, subId'i affiliate URL'ine
+    // enjekte eder ve markaya yönlendirir. Böylece satış kullanıcıya bağlanır.
+    // Route hata verirse fallback olarak brand.link doğrudan açılır.
+    await goToAffiliate({ brandId: brand.id, authUser, fallbackUrl: brand.link });
 
     setIsDonating(false);
   };

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, MapPin } from 'lucide-react';
 import { PlaceAutocomplete } from '@/components/shared/place-autocomplete';
@@ -165,6 +166,8 @@ type StoredVolunteering = {
     preTraining?: boolean;
     providesCertificate?: boolean;
   };
+  // Sertifika teslim türü — online (varsayılan) veya fiziksel. Top-level (events ile tutarlı).
+  certificateDelivery?: 'online' | 'physical';
   taskTypeId?: string;
   estimatedHours?: number;
   eventLogoUrl?: string;
@@ -244,6 +247,8 @@ function NewOpportunityForm() {
   const [accommodation, setAccommodation] = useState(false);
   const [preTraining, setPreTraining] = useState(false);
   const [providesCertificate, setProvidesCertificate] = useState(false);
+  // Sertifika teslim türü — varsayılan online. Yalnız sertifika verilirken görünür/anlamlı.
+  const [certificateDelivery, setCertificateDelivery] = useState<'online' | 'physical'>('online');
   const [taskTypeId, setTaskTypeId] = useState('');
   const [estimatedHours, setEstimatedHours] = useState('');
 
@@ -343,6 +348,7 @@ function NewOpportunityForm() {
     setAccommodation(!!o.amenities?.accommodation);
     setPreTraining(!!o.amenities?.preTraining);
     setProvidesCertificate(!!o.amenities?.providesCertificate);
+    setCertificateDelivery(o.certificateDelivery === 'physical' ? 'physical' : 'online');
 
     setTaskTypeId(o.taskTypeId || '');
     setEstimatedHours(o.estimatedHours != null ? String(o.estimatedHours) : '');
@@ -550,6 +556,7 @@ function NewOpportunityForm() {
           preTraining,
           providesCertificate,
         },
+        certificateDelivery: providesCertificate ? certificateDelivery : null,
         education: education || null,
         taskTypeId: selectedTask.id,
         taskTypeName: selectedTask.taskType,
@@ -909,6 +916,26 @@ function NewOpportunityForm() {
               <Label htmlFor="provides-certificate" className="font-medium">Sertifika verilecek mi?</Label>
               <Switch id="provides-certificate" checked={providesCertificate} onCheckedChange={setProvidesCertificate} />
             </div>
+            {/* Sertifika türü — yalnız sertifika verilirken görünür, varsayılan Online */}
+            {providesCertificate && (
+              <div className="space-y-2 p-4 border rounded-lg">
+                <Label className="text-sm font-medium">Sertifika türü</Label>
+                <RadioGroup
+                  value={certificateDelivery}
+                  onValueChange={(v) => setCertificateDelivery(v === 'physical' ? 'physical' : 'online')}
+                  className="grid grid-cols-2 gap-2"
+                >
+                  <label className="flex items-center gap-2 text-sm cursor-pointer rounded-lg border p-2.5 has-[:checked]:border-primary has-[:checked]:bg-primary/[0.04]">
+                    <RadioGroupItem value="online" id="vol-cert-online" />
+                    <span>Online <span className="text-xs text-muted-foreground">(varsayılan)</span></span>
+                  </label>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer rounded-lg border p-2.5 has-[:checked]:border-primary has-[:checked]:bg-primary/[0.04]">
+                    <RadioGroupItem value="physical" id="vol-cert-physical" />
+                    <span>Fiziksel</span>
+                  </label>
+                </RadioGroup>
+              </div>
+            )}
             <div className="space-y-3 border-t pt-4 mt-2">
               <div>
                 <Label className="text-sm font-bold">İş Kalemi ve Süre (Süper-Admin Kataloğu)</Label>

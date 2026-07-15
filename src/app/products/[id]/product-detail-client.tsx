@@ -201,29 +201,11 @@ export function ProductDetailClient({ id }: { id: string }) {
 
     setIsGoing(true);
 
-    if (product.brandId) {
-      // Affiliate redirect endpoint'i (subId enjeksiyonu + click kaydı route'ta).
-      // Gerçek ürün linki yoksa mağaza arama URL'ini fallback olarak veririz.
-      await goToAffiliate({
-        brandId: product.brandId,
-        authUser,
-        fallbackUrl: productLinkTarget,
-      });
-    } else if (productLinkTarget) {
-      // Markaya bağlı değil → izlenemez; kullanıcıyı yine de mağazaya götür.
-      void openExternalUrl(productLinkTarget);
-    }
-
-    toast({
-      title: 'Alışveriş başlatıldı',
-      description: 'Alışverişini tamamladığında bağışın otomatik hesabına işlenecek. "Bağışlarım" sayfasından takip edebilirsin.',
-    });
-
-    // Tıklama izi (best-effort): "bağışın işleniyor" durumunu /my-donations'ta
-    // göstermek için işaretli bir bildirim yazılır. Bağış kaydı DEĞİL — gerçek
-    // bağış conversion onayı gelince affiliate postback'inden oluşur ve donations
-    // listesinde "İşleme Alındı" olarak görünür. createdBy = uid (rules gereği).
-    // data.affiliatePending: my-donations bunu "bağışın işleniyor 🧡" olarak ayıklar.
+    // ÖNCE bildirim/iz yaz, SONRA dışa yönlendir. (Kritik sıra düzeltmesi:
+    // goToAffiliate/openExternalUrl harici tarayıcı açıp sayfayı terk ettiği için,
+    // eskiden yönlendirmeden SONRA yazılan bildirim bazı cihazlarda — özellikle
+    // native app — hiç çalışmıyordu; kullanıcı "bağış işleniyor" bildirimini
+    // göremiyordu. Artık await ile önce yazılıyor.)
     if (db) {
       try {
         await addDoc(collection(db, COLLECTIONS.notifications), {
@@ -245,6 +227,24 @@ export function ProductDetailClient({ id }: { id: string }) {
       } catch {
         // Bildirim yazımı başarısız olsa bile alışveriş akışı devam eder.
       }
+    }
+
+    toast({
+      title: 'Alışveriş başlatıldı',
+      description: 'Alışverişini tamamladığında bağışın otomatik hesabına işlenecek. "Bağışlarım" sayfasından takip edebilirsin.',
+    });
+
+    if (product.brandId) {
+      // Affiliate redirect endpoint'i (subId enjeksiyonu + click kaydı route'ta).
+      // Gerçek ürün linki yoksa mağaza arama URL'ini fallback olarak veririz.
+      await goToAffiliate({
+        brandId: product.brandId,
+        authUser,
+        fallbackUrl: productLinkTarget,
+      });
+    } else if (productLinkTarget) {
+      // Markaya bağlı değil → izlenemez; kullanıcıyı yine de mağazaya götür.
+      void openExternalUrl(productLinkTarget);
     }
 
     setIsGoing(false);

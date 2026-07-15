@@ -755,7 +755,7 @@ export default function EventDetailPage() {
                                 </InfoRow>
                                 <InfoRow icon={Users} label="Kapasite">{event.capacity?.current ?? 0} / {event.capacity?.max ?? 0}</InfoRow>
                                 <InfoRow icon={UserCheck} label="Katılım Koşulu">{event.participationCondition}</InfoRow>
-                                <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? `Veriliyor (${evLoc.type}, ${event.language})` : 'Verilmiyor'}</InfoRow>
+                                <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? `Veriliyor (${event.certificateDelivery === 'physical' ? 'Fiziksel' : 'Online'}, ${event.language})` : 'Verilmiyor'}</InfoRow>
                                 
                                 <InfoRow icon={Tag} label="Etkinlik Türü">
                                     <Link href={`/events?tag=${encodeURIComponent(event.type)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{event.type}</Badge></Link>

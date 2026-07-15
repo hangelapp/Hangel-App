@@ -960,7 +960,7 @@ export default function VolunteeringDetailPage() {
                             <div className="flex items-center gap-4 py-4">
                                 <Award className="h-5 w-5 text-muted-foreground shrink-0" />
                                 <dt className="sr-only">Sertifika</dt>
-                                <dd className="text-base text-foreground">Sertifika: {providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</dd>
+                                <dd className="text-base text-foreground">Sertifika: {providesCertificate ? `Veriliyor (${opp.certificateDelivery === 'physical' ? 'Fiziksel' : 'Online'})` : 'Verilmiyor'}</dd>
                             </div>
                             <div className="flex items-start gap-4 py-4">
                                 <Users className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
