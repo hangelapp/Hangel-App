@@ -95,14 +95,28 @@ export async function workerTick(opts: { batch?: number; workerId?: string; camp
   };
   // campaignId verilirse tick o kampanyaya KISITLI çalışır (panelden kampanya-bazlı
   // drip). İki eşitlik filtresi index birleştirmeyle çalışır — composite index gerekmez.
-  let pendingQuery: FirebaseFirestore.Query = db
-    .collection(COLLECTIONS.messageJobs)
-    .where('status', '==', 'pending');
-  if (opts.campaignId) pendingQuery = pendingQuery.where('campaignId', '==', opts.campaignId);
-  const pendingSnap = await pendingQuery
-    .limit(Math.max(batchSize * 4, 200))
-    .get();
-  const candidateDocs = pendingSnap.docs
+  const buildQuery = (status: JobStatus): FirebaseFirestore.Query => {
+    let q: FirebaseFirestore.Query = db
+      .collection(COLLECTIONS.messageJobs)
+      .where('status', '==', status);
+    if (opts.campaignId) q = q.where('campaignId', '==', opts.campaignId);
+    return q.limit(Math.max(batchSize * 4, 200));
+  };
+
+  const pendingSnap = await buildQuery('pending').get();
+  // STALE-LEASE RECLAIM: worker bir job'u lease edip (SMTP timeout / cold-start kill /
+  // OOM nedeniyle) persistResult'a ulaşamadan ölürse, job 'leased'de KALICI kilitlenir
+  // ve bir daha asla çekilmezdi. leasedUntil süresi geçmiş leased job'ları da aday
+  // havuzuna al → yeniden lease edilip gönderilirler. (Önceden "Faz 8" olarak ertelenmiş,
+  // eksikliği Workspace mail kuyruğunu tıkıyordu.)
+  const leasedSnap = await buildQuery('leased').get();
+  const leasedUntilMs = (d: FirebaseFirestore.QueryDocumentSnapshot): number => {
+    const lu = (d.data() as { leasedUntil?: Timestamp }).leasedUntil;
+    return lu instanceof Timestamp ? lu.toMillis() : 0;
+  };
+  const staleLeased = leasedSnap.docs.filter((d) => leasedUntilMs(d) <= nowMs);
+
+  const candidateDocs = [...pendingSnap.docs, ...staleLeased]
     .filter((d) => naMs(d) <= nowMs)
     .sort((a, b) => naMs(a) - naMs(b))
     .slice(0, batchSize);
@@ -121,7 +135,14 @@ export async function workerTick(opts: { batch?: number; workerId?: string; camp
       const fresh = await tx.get(candidate.ref);
       if (!fresh.exists) return null;
       const job = fresh.data() as JobDoc;
-      if (job.status !== 'pending') return null;
+      // 'pending' her zaman lease edilebilir. 'leased' yalnızca lease'i GERÇEKTEN
+      // dolmuşsa reclaim edilir (başka canlı worker'ın job'ını çalmayalım).
+      if (job.status === 'leased') {
+        const luMs = job.leasedUntil instanceof Timestamp ? job.leasedUntil.toMillis() : 0;
+        if (luMs > Date.now()) return null;
+      } else if (job.status !== 'pending') {
+        return null;
+      }
       tx.update(candidate.ref, {
         status: 'leased' as JobStatus,
         workerId,
