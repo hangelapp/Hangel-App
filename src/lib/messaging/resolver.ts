@@ -93,6 +93,50 @@ function userVars(user: UserDoc | undefined, userId: string | null): Record<stri
   };
 }
 
+// STK yönetici alıcıları için ngos dokümanından türetilen değişkenler.
+interface NgoDoc {
+  name?: string;
+  legalTitle?: string;
+  type?: string;
+  kutukNo?: string;
+  address?: { city?: string };
+}
+function ngoVars(ngo: NgoDoc | undefined, fullName: string): Record<string, string> {
+  if (!ngo) return {};
+  const stkAdi = ngo.legalTitle || ngo.name || '';
+  const kutuk = ngo.kutukNo || '';
+  const tur = ngo.type || '';
+  const sehir = ngo.address?.city || '';
+  // Hazır ünvan cümlesi: "Sayın <STK adı> yöneticisi <Ad Soyad>"
+  const sayin = stkAdi
+    ? `Sayın ${stkAdi} yöneticisi${fullName ? ` ${fullName}` : ''}`
+    : (fullName ? `Sayın ${fullName}` : '');
+  return {
+    stk_adi: stkAdi,
+    kutuk_no: kutuk,
+    stk_turu: tur,
+    stk_sehir: sehir,
+    sayin_yonetici: sayin,
+  };
+}
+
+// Aday kullanıcıların managedNgoId'lerini TOPLU çek (tek tek okuma = maliyet).
+async function loadNgosByIds(ngoIds: string[]): Promise<Map<string, NgoDoc>> {
+  const out = new Map<string, NgoDoc>();
+  const unique = [...new Set(ngoIds.filter(Boolean))];
+  if (unique.length === 0) return out;
+  const db = getAdminFirestore();
+  for (let i = 0; i < unique.length; i += 100) {
+    const chunk = unique.slice(i, i + 100);
+    const refs = chunk.map((id) => db.collection(COLLECTIONS.ngos).doc(id));
+    const docs = await db.getAll(...refs);
+    for (const d of docs) {
+      if (d.exists) out.set(d.id, d.data() as NgoDoc);
+    }
+  }
+  return out;
+}
+
 function matchesFilters(user: UserDoc, filters: SegmentFilters): boolean {
   if (filters.roles && filters.roles.length > 0) {
     if (!filters.roles.includes((user.role as 'user' | 'ngo-admin' | 'super-admin') ?? 'user')) {
@@ -302,13 +346,21 @@ export async function resolveRecipients(spec: RecipientSourceSpec): Promise<Reso
   let invalidAddress = 0;
   const byAddress = new Map<string, ResolvedRecipient>();
 
+  // STK yönetici alıcıları için yönettikleri STK'ları TOPLU çek (maliyet: tek okuma/STK).
+  const ngoMap = await loadNgosByIds(
+    candidates.map((c) => c.user?.managedNgoId).filter((x): x is string => !!x),
+  );
+
   for (const c of candidates) {
     const addr = c.channelAddress ?? deriveAddress(spec.channel, c.user);
     if (!addr) {
       invalidAddress += 1;
       continue;
     }
-    const vars = c.varsOverride ?? userVars(c.user, c.userId);
+    const baseVars = c.varsOverride ?? userVars(c.user, c.userId);
+    // Kullanıcı bir STK yönetiyorsa STK değişkenlerini de ekle (stk_adi, kutuk_no…).
+    const ngo = c.user?.managedNgoId ? ngoMap.get(c.user.managedNgoId) : undefined;
+    const vars = ngo ? { ...baseVars, ...ngoVars(ngo, baseVars.tam_ad ?? '') } : baseVars;
     byAddress.set(addr, {
       userId: c.userId,
       channelAddress: addr,

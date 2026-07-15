@@ -56,13 +56,34 @@ const AUDIENCES: Array<{ key: AudienceKey; label: string; desc: string; icon: Re
   { key: 'manual', label: 'E-posta listesi', desc: 'Adresleri yapıştır (dış liste)', icon: ClipboardList },
 ];
 
-// Önizleme/test için örnek kişiselleştirme değerleri (resolver user vars adları).
+// Önizleme/test için örnek kişiselleştirme değerleri (resolver user + ngo vars adları).
 const SAMPLE_VARS: Record<string, string> = {
   ad: 'Ayşe', tam_ad: 'Ayşe Yılmaz', kullanici: 'ayse',
   sehir: 'İstanbul', ilce: 'Kadıköy', meslek: 'Öğretmen',
+  // STK yöneticisi değişkenleri (örnek):
+  stk_adi: 'Uluslararası Sosyal Fayda Derneği',
+  kutuk_no: '34-262-102',
+  stk_turu: 'Dernek',
+  stk_sehir: 'İstanbul',
+  sayin_yonetici: 'Sayın Uluslararası Sosyal Fayda Derneği yöneticisi Ayşe Yılmaz',
 };
 
-const VARIABLE_HINTS = ['{ad}', '{tam_ad}', '{sehir}', '{ilce}', '{meslek}'];
+// İmleç konumuna tek tıkla eklenen değişken butonları (RichTextEditor'a geçirilir).
+const VARIABLE_BUTTONS: { token: string; label: string }[] = [
+  // Kişisel
+  { token: 'ad', label: 'Ad' },
+  { token: 'tam_ad', label: 'Tam ad' },
+  { token: 'sehir', label: 'Şehir' },
+  { token: 'ilce', label: 'İlçe' },
+  { token: 'meslek', label: 'Meslek' },
+  // STK bilgileri
+  { token: 'stk_adi', label: 'STK adı' },
+  { token: 'kutuk_no', label: 'Kütük no' },
+  { token: 'stk_turu', label: 'STK türü' },
+  { token: 'stk_sehir', label: 'STK şehri' },
+  // Hazır ünvan cümlesi
+  { token: 'sayin_yonetici', label: 'Sayın … yöneticisi …' },
+];
 
 function parseEmails(text: string): string[] {
   const out = new Set<string>();
@@ -153,8 +174,8 @@ export default function EasyMailPage() {
   const [fromName, setFromName] = useState('hangel');
   // Platform toplu mail'i, bağlı Google Workspace SMTP hesabından (mailAccounts/__platform)
   // gider; gönderen adres worker tarafından o hesaptan zorlanır — burada yalnız
-  // önizleme/etiket için tutulur.
-  const [fromEmail, setFromEmail] = useState('ismailhilmi@hangel.org');
+  // önizleme/etiket için tutulur (sabit, değiştirilemez).
+  const fromEmail = 'ismailhilmi@hangel.org';
 
   // Şablonlar — mevcut messageTemplates koleksiyonu (yalnız email + aktif olanlar).
   const tplQuery = useMemoFirebase(
@@ -644,7 +665,7 @@ export default function EasyMailPage() {
                 Ne yazacaksın?
               </CardTitle>
               <CardDescription className="text-xs">
-                Kişiselleştirme: {VARIABLE_HINTS.join(' ')} — mesaja aynen yaz, her alıcı için otomatik doldurulur.
+                Kişiselleştirme: imleci koy, editördeki <strong>“Otomatik bilgi”</strong> butonlarına bas — her alıcı için o bilgi (ad, STK adı, kütük no…) otomatik dolar. Görsel için araç çubuğundaki resim simgesini kullan.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -692,7 +713,13 @@ export default function EasyMailPage() {
                 className="rounded-xl font-semibold"
                 maxLength={200}
               />
-              <RichTextEditor value={bodyHtml} onChange={setBodyHtml} />
+              <RichTextEditor
+                value={bodyHtml}
+                onChange={setBodyHtml}
+                enableImageUpload
+                imageUploadPath="mail-images"
+                variableButtons={VARIABLE_BUTTONS}
+              />
               <div className="flex flex-wrap items-center gap-3 rounded-2xl border bg-muted/30 px-4 py-2.5 text-xs">
                 <span className="font-bold uppercase tracking-wide text-muted-foreground">Gönderen</span>
                 <Input value={fromName} onChange={(e) => setFromName(e.target.value)} className="h-8 w-32 rounded-lg" aria-label="Gönderen adı" />

@@ -127,6 +127,15 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // Toplu mail gövdesine eklenen görseller — super-admin yükler; okuma HERKESE
+    // AÇIK olmalı çünkü alıcının mail istemcisi (Gmail/Outlook) auth'suz <img src> çeker.
+    match /mail-images/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSuperAdmin()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     // Varsayılan: kimliği doğrulanmış kullanıcı okuyabilir, sadece super-admin yazabilir
     match /{allPaths=**} {
       allow read: if request.auth != null;

@@ -19,7 +19,7 @@ const ALLOWED_TAGS = [
     'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
 ];
 
-const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'id', 'colspan', 'rowspan', 'scope', 'align'];
+const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'id', 'colspan', 'rowspan', 'scope', 'align', 'width', 'height'];
 
 /**
  * Sanitizes untrusted HTML strings before rendering with `dangerouslySetInnerHTML`.
