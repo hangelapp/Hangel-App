@@ -138,17 +138,18 @@ export function DistanceBadge({
     );
   }
 
-  // unknown / denied → tıklanabilir CTA
+  // unknown / denied → Apple-temiz, davetkâr CTA. Konum izni verilince mesafe
+  // (araç + yürüyüş) otomatik görünür.
   return (
     <button
       type="button"
       onClick={request}
-      className={cn('inline-flex items-start gap-1 text-xs font-medium text-primary/90 hover:text-primary underline-offset-2 hover:underline text-left', className)}
+      className={cn('inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 text-left', className)}
     >
-      <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+      <MapPin className="h-3.5 w-3.5 shrink-0" />
       <span className="min-w-0 break-words">{status === 'denied'
-        ? 'Konum kapalı — açıp dokun, ne kadar uzakta olduğunu göstereyim'
-        : 'Konum izni verirsen ne kadar uzakta olduğunu (km · süre) gösteririm'}</span>
+        ? 'Konumu aç — mesafeyi ve süreyi göster'
+        : 'Konumumu kullan — ne kadar uzakta olduğumu göster'}</span>
     </button>
   );
 }

@@ -135,13 +135,14 @@ export function DetailHero({
 
           {/*
             ÖN PLAN — afişin tamamı: object-contain ile hiç kırpılmadan,
-            ortalanmış. Köşelere değmemesi için hafif iç boşluk (çerçeve hissi).
+            ortalanmış. İç boşluk/çerçeve YOK (kullanıcı isteği); afiş tam kenara
+            oturur ama contain sayesinde kesilmez, blur zemin boşlukları doldurur.
           */}
           <Image
             src={imageUrl as string}
             alt={imageAlt}
             fill
-            className="object-contain p-1.5 sm:p-2"
+            className="object-contain"
             priority={priority}
             sizes={sizes}
           />
