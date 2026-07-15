@@ -232,6 +232,14 @@ env:
     value: "8fA0eNuzIF9S9cvpJq1RD7hYneZdztZPniqMAwYOAT0"
     availability:
       - RUNTIME
+  # Affiliate conversion postback güvenlik anahtarı. Ağ paneline girilen postback
+  # URL'ine ?key=<bu değer> eklenir; endpoint (api/affiliate/postback) key eşleşmezse
+  # conversion'ı reddeder → sahte bağış üretilemez. Set edilmezse postback imzasız
+  # (herkese açık) çalışır — production'da ZORUNLU.
+  - variable: AFFILIATE_POSTBACK_SECRET
+    value: "Eu1Z5-WpITFs1khTwRp2eyJwPaSAl08A"
+    availability:
+      - RUNTIME
 
   # ── Affiliate onay senkron cron ────────────────────────────────────────────
   # App Hosting NATIVE cron desteklemez → burada schedule tanımlanamaz, sadece
