@@ -24,6 +24,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { FieldValue } from 'firebase-admin/firestore';
 import { createHash } from 'crypto';
+import { checkinCodeFor, normalizeCode } from '@/lib/checkin-code';
 
 export const runtime = 'nodejs';
 
@@ -31,12 +32,13 @@ export const runtime = 'nodejs';
 // Anonim (App Clip dev_) check-in'lerde puan verilmez (kullanıcı yok).
 const CHECKIN_POINTS = 5;
 
-type ClipCheckinSource = 'qr' | 'nfc';
+type ClipCheckinSource = 'qr' | 'nfc' | 'code';
 
 interface ClipCheckinBody {
   eventId?: string;
   source?: ClipCheckinSource;
   tagId?: string;
+  code?: string;
 }
 
 function hashDeviceId(deviceId: string): string {
@@ -100,11 +102,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!eventId) {
     return NextResponse.json({ errorCode: 'MISSING_EVENT_ID' }, { status: 400 });
   }
-  if (source !== 'qr' && source !== 'nfc') {
+  if (source !== 'qr' && source !== 'nfc' && source !== 'code') {
     return NextResponse.json(
-      { errorCode: 'INVALID_SOURCE', message: "source: 'qr' veya 'nfc'." },
+      { errorCode: 'INVALID_SOURCE', message: "source: 'qr', 'nfc' veya 'code'." },
       { status: 400 },
     );
+  }
+
+  // QR'sız kod ile check-in — istemci kontrolü bypass edilebilir; sunucuda da
+  // deterministik kodu yeniden hesaplayıp karşılaştır (ek savunma).
+  if (source === 'code') {
+    if (normalizeCode(body.code) !== checkinCodeFor('event', eventId)) {
+      return NextResponse.json({ ok: false, message: 'Kod hatalı' }, { status: 400 });
+    }
   }
 
   try {

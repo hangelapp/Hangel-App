@@ -1,13 +1,15 @@
 'use client';
 
 /**
- * EventCheckinScanButton — etkinlik detay sayfasında "Check-in Yap" butonu.
- * Tıklanınca kamera açılır, kapıdaki Check-in QR'ını (…/e/{id}/checkin) okur ve
- * POST /api/clip/checkin ile check-in yapar. QR'dan okunan etkinlik id'si sayfadaki
- * etkinlikle eşleşmiyorsa uyarır (yanlış etkinlik QR'ı). Kamera açılmazsa, kullanıcı
- * zaten bu etkinliğin sayfasında olduğundan "QR'sız check-in" seçeneği sunulur.
+ * VolunteeringCheckinButton — gönüllülük detay sayfasında ONAYLI gönüllüye "Check-in Yap".
+ * Tıklanınca kamera açılır, kapıdaki Check-in QR'ını (…/v/{id}/checkin) okur ve
+ * POST /api/volunteering/{id}/checkin ile yoklamaya girer. Kamera açılmazsa,
+ * yöneticinin ekranındaki 6 haneli QR'sız kodu girerek de check-in yapılabilir.
  *
- * Kamera/QR motoru qr-scan-dialog.tsx kalıbından uyarlandı (native ML Kit + jsQR).
+ * NOT: Yoklamaya YALNIZ onaylı gönüllüler girer (sunucu applications:Onaylandı
+ * şartını uygular); kod, o şartı BYPASS etmez — ek "geldi" kanıtıdır.
+ *
+ * Kamera/QR motoru event-checkin-scan-button.tsx kalıbından uyarlandı (native ML Kit + jsQR).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
@@ -18,22 +20,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
-import { QrCode, Loader2, CheckCircle2, KeyRound } from 'lucide-react';
+import { UserCheck, Loader2, CheckCircle2, KeyRound } from 'lucide-react';
 import { celebrate } from '@/lib/celebrate';
 import { checkinCodeFor, normalizeCode } from '@/lib/checkin-code';
 
-// QR içeriğinden etkinlik id'sini çöz: …/e/{id}/checkin  → id
-function eventIdFromQr(raw: string): string | null {
-  const m = raw.match(/\/e\/([^/?#]+)\/checkin/i);
+// QR içeriğinden ilan id'sini çöz: …/v/{id}/checkin  → id
+function oppIdFromQr(raw: string): string | null {
+  const m = raw.match(/\/v\/([^/?#]+)\/checkin/i);
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-export function EventCheckinScanButton({
-  eventId,
+export function VolunteeringCheckinButton({
+  oppId,
   className,
   disabled,
 }: {
-  eventId: string;
+  oppId: string;
   className?: string;
   disabled?: boolean;
 }) {
@@ -57,51 +59,53 @@ export function EventCheckinScanButton({
     if (streamRef.current) { streamRef.current.getTracks().forEach((t) => t.stop()); streamRef.current = null; }
   }, []);
 
-  // Check-in çağrısı — okunan QR'ın etkinlik id'si (varsa) sayfadaki ile eşleşmeli.
-  // opts.source: 'qr' (varsayılan, QR/kamera veya QR'sız) ya da 'code' (kodla giriş).
-  // opts.code: 'code' kaynağında sunucuya da gönderilen 6 haneli kod (ek doğrulama).
+  // Yoklama çağrısı — okunan QR'ın ilan id'si (varsa) sayfadaki ile eşleşmeli.
+  // opts.source: 'qr' (varsayılan) ya da 'code' (kodla giriş; sunucuya kod da gider).
   const doCheckin = useCallback(async (
     scannedId: string | null,
     opts?: { source?: 'qr' | 'code'; code?: string },
   ) => {
     if (!user) { setStatus('error'); setErrMsg('Check-in için giriş yapmalısın.'); return; }
-    if (scannedId && scannedId !== eventId) {
+    if (scannedId && scannedId !== oppId) {
       setStatus('error');
-      setErrMsg('Bu QR farklı bir etkinliğe ait. Lütfen bu etkinliğin check-in QR kodunu okut.');
+      setErrMsg('Bu QR farklı bir ilana ait. Lütfen bu ilanın check-in QR kodunu okut.');
       return;
     }
     setStatus('submitting');
     try {
       const idToken = await user.getIdToken();
-      const res = await fetch('/api/clip/checkin', {
+      const res = await fetch(`/api/volunteering/${oppId}/checkin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
         body: JSON.stringify({
-          eventId,
           source: opts?.source ?? 'qr',
           ...(opts?.source === 'code' ? { code: opts.code } : {}),
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) { setStatus('error'); setErrMsg(data?.message || data?.errorCode || 'Check-in yapılamadı.'); return; }
+      if (!res.ok) { setStatus('error'); setErrMsg(data?.message || 'Check-in yapılamadı.'); return; }
       setStatus('done');
       celebrate();
-      toast({ title: 'Check-in yapıldı! 🧡', description: 'Katılımın kaydedildi.' });
+      toast({
+        title: data?.already ? 'Zaten check-in yapmışsın 🧡' : 'Check-in yapıldı! 🧡',
+        description: 'Yoklaman kaydedildi.',
+      });
       setTimeout(() => setOpen(false), 1600);
     } catch { setStatus('error'); setErrMsg('Bağlantı hatası. Tekrar dene.'); }
-  }, [user, eventId, toast]);
+  }, [user, oppId, toast]);
 
   // Kod ile check-in — önce istemcide karşılaştır (yanlışsa sunucuya gitme),
-  // eşleşirse QR yolunun aynısını 'code' kaynağıyla çağır (sunucu da doğrular).
+  // eşleşirse QR yolunun aynısını 'code' kaynağıyla çağır (sunucu da doğrular +
+  // onaylı gönüllü şartını korur).
   const doCodeCheckin = useCallback(() => {
     const entered = normalizeCode(code);
     if (entered.length === 0) { toast({ variant: 'destructive', title: 'Kod gir' }); return; }
-    if (entered !== checkinCodeFor('event', eventId)) {
+    if (entered !== checkinCodeFor('volunteering', oppId)) {
       toast({ variant: 'destructive', title: 'Kod hatalı', description: 'Yöneticinin ekranındaki kodu kontrol et.' });
       return;
     }
     void doCheckin(null, { source: 'code', code: entered });
-  }, [code, eventId, doCheckin, toast]);
+  }, [code, oppId, doCheckin, toast]);
 
   const startCam = useCallback(async () => {
     handledRef.current = false;
@@ -117,9 +121,9 @@ export function EventCheckinScanButton({
       if (!ctx || canvas.width === 0) { rafRef.current = requestAnimationFrame(scan); return; }
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(img.data, img.width, img.height);
-      if (code?.data && !handledRef.current) {
-        const scannedId = eventIdFromQr(code.data);
+      const qr = jsQR(img.data, img.width, img.height);
+      if (qr?.data && !handledRef.current) {
+        const scannedId = oppIdFromQr(qr.data);
         if (scannedId) { handledRef.current = true; stop(); void doCheckin(scannedId); return; }
       }
       rafRef.current = requestAnimationFrame(scan);
@@ -168,7 +172,7 @@ export function EventCheckinScanButton({
           ? 'Kamera izni reddedildi. Ayarlar → hangel → İzinler → Kamera açık olmalı.'
           : name === 'NotFoundError'
             ? 'Kamera bulunamadı.'
-            : 'Kameraya erişilemedi. QR olmadan da check-in yapabilirsin.',
+            : 'Kameraya erişilemedi. Kod ile de check-in yapabilirsin.',
       );
     }
   }, [doCheckin, stop]);
@@ -179,8 +183,8 @@ export function EventCheckinScanButton({
     setErrMsg('');
     const raw = await scanQrNative();
     if (handledRef.current) return;
-    if (raw == null) { setStatus('error'); setErrMsg('Tarama tamamlanmadı. QR olmadan da check-in yapabilirsin.'); return; }
-    const scannedId = eventIdFromQr(raw);
+    if (raw == null) { setStatus('error'); setErrMsg('Tarama tamamlanmadı. Kod ile de check-in yapabilirsin.'); return; }
+    const scannedId = oppIdFromQr(raw);
     if (scannedId) { handledRef.current = true; void doCheckin(scannedId); }
     else { setStatus('error'); setErrMsg('Bu bir hangel check-in QR kodu değil.'); }
   }, [doCheckin]);
@@ -196,19 +200,23 @@ export function EventCheckinScanButton({
     <>
       <Button
         type="button"
-        variant="outline"
+        size="lg"
+        variant="secondary"
         className={className}
         disabled={disabled}
         onClick={() => { setStatus('scanning'); setCode(''); setOpen(true); }}
+        aria-label="Check-in Yap"
+        title="Check-in Yap"
       >
-        <QrCode className="h-5 w-5 mr-2" /> Check-in Yap
+        <UserCheck className="h-5 w-5 shrink-0" />
+        <span className="text-[11px] text-center leading-tight break-words">Check-in</span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Check-in Yap</DialogTitle>
-            <DialogDescription>Etkinlik girişindeki check-in QR kodunu kameraya göster.</DialogDescription>
+            <DialogDescription>İlan girişindeki check-in QR kodunu kameraya göster.</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center gap-3 py-2">
             {status === 'done' ? (
@@ -217,13 +225,9 @@ export function EventCheckinScanButton({
                 <p className="font-semibold">Check-in yapıldı 🧡</p>
               </div>
             ) : status === 'error' ? (
-              <div className="flex h-[260px] flex-col items-center justify-center gap-3 text-center px-2">
+              <div className="flex min-h-[120px] flex-col items-center justify-center gap-3 text-center px-2">
                 <p className="text-sm text-muted-foreground">{errMsg}</p>
-                <div className="flex flex-col gap-2 w-full">
-                  <Button onClick={() => void (useNativeScan ? runNativeScan() : startCam())}>Tekrar Dene</Button>
-                  {/* Kullanıcı zaten bu etkinliğin sayfasında → QR olmadan check-in. */}
-                  <Button variant="outline" onClick={() => void doCheckin(null)}>QR olmadan check-in yap</Button>
-                </div>
+                <Button onClick={() => void (useNativeScan ? runNativeScan() : startCam())}>Tekrar Dene</Button>
               </div>
             ) : (
               <div className="relative h-[260px] w-full overflow-hidden rounded-xl bg-black">
@@ -244,8 +248,7 @@ export function EventCheckinScanButton({
               </div>
             )}
 
-            {/* Kod ile check-in — kamera/QR çalışmasa da her zaman görünür
-                (check-in başarıyla bitince gizle). Yöneticinin ekranındaki 6 haneli kod. */}
+            {/* Kod ile check-in — kamera/QR çalışmasa da her zaman görünür (bitince gizle). */}
             {status !== 'done' && (
               <div className="w-full space-y-2 border-t pt-3">
                 <p className="flex items-center gap-1.5 text-sm font-semibold">

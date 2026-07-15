@@ -19,6 +19,7 @@ import { QrCode, ScanLine, Loader2, RefreshCw, CheckCircle2, Clock, Copy, Check,
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { LogoQr } from '@/components/shared/logo-qr';
+import { checkinCodeFor } from '@/lib/checkin-code';
 
 interface Person {
   uid: string; name: string; email: string;
@@ -40,7 +41,11 @@ export function EventCheckinQR({ eventId, logoUrl }: { eventId: string; logoUrl?
   const [data, setData] = useState<AttendanceResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+
+  // QR'sız check-in kodu — etkinlik id'sinden deterministik (DB'ye yazılmaz).
+  const checkinCode = checkinCodeFor('event', eventId);
 
   const scanUrl = useCallback((m: Mode) => {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
@@ -64,9 +69,21 @@ export function EventCheckinQR({ eventId, logoUrl }: { eventId: string; logoUrl?
   }, [eventId, user, toast]);
 
   const open = useCallback((m: Mode) => {
-    setMode(m); setData(null); setCopied(false);
+    setMode(m); setData(null); setCopied(false); setCodeCopied(false);
     void loadList();
   }, [loadList]);
+
+  // QR'sız check-in kodunu panoya kopyala.
+  const handleCopyCode = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(checkinCode);
+      setCodeCopied(true);
+      toast({ title: 'Kod kopyalandı' });
+      setTimeout(() => setCodeCopied(false), 2000);
+    } catch {
+      toast({ variant: 'destructive', title: 'Kopyalanamadı' });
+    }
+  }, [checkinCode, toast]);
 
   // Link işlemleri — kopyala / indir (PNG) / paylaş
   const handleCopy = useCallback(async (url: string) => {
@@ -148,6 +165,25 @@ export function EventCheckinQR({ eventId, logoUrl }: { eventId: string; logoUrl?
               </Button>
             </div>
           </div>
+
+          {/* QR'sız Check-in Kodu — kamera/QR çalışmayan katılımcı için (yalnız Check-in QR modu) */}
+          {mode === 'checkin' && (
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">QR&apos;sız Check-in Kodu</p>
+              <div className="flex items-center gap-2">
+                <span className="select-all rounded-xl bg-background px-4 py-2 font-mono text-2xl font-bold tracking-[0.35em] text-primary shadow-sm">
+                  {checkinCode}
+                </span>
+                <Button variant="outline" size="sm" onClick={handleCopyCode}>
+                  {codeCopied ? <Check className="mr-1.5 h-4 w-4 text-emerald-600" /> : <Copy className="mr-1.5 h-4 w-4" />}
+                  Kopyala
+                </Button>
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                Katılımcı, <span className="font-semibold">Check-in Yap → kod gir</span> ile bu kodu girerek check-in olabilir.
+              </p>
+            </div>
+          )}
 
           {/* Sayaç + yenile */}
           <div className="flex items-center justify-between border-t pt-3">

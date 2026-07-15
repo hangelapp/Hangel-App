@@ -49,6 +49,7 @@ import { DetailHero } from '@/components/detail/detail-hero';
 import { DetailStickyBar } from '@/components/detail/detail-body';
 import { downloadDataUrlSmart } from '@/lib/native-file';
 import { VolunteeringPoints } from '@/components/volunteering/volunteering-points';
+import { VolunteeringCheckinButton } from '@/components/volunteering/volunteering-checkin-button';
 import { EventPhotosDialog } from '@/components/events/event-photos-dialog';
 import { CorporateApplyDialog } from '@/components/volunteering/corporate-apply-dialog';
 import { VolunteeringCorporateParticipants } from '@/components/volunteering/volunteering-corporate-participants';
@@ -1057,6 +1058,12 @@ export default function VolunteeringDetailPage() {
                         )}
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
                         <AskManagerButton orgId={opportunity.ngoId} subject={`${opportunity.title} — gönüllülük hakkında`} />
+                        {/* Check-in Yap — QR okut ya da yöneticinin ekranındaki 6 haneli kodu gir.
+                            Yalnız ONAYLI gönüllüye görünür (bu grid isApproved bloğunda). */}
+                        <VolunteeringCheckinButton
+                            oppId={opportunity.id}
+                            className="h-16 rounded-2xl font-semibold flex-col gap-1.5 px-2 min-w-0"
+                        />
                         <Button
                             size="lg"
                             variant="secondary"

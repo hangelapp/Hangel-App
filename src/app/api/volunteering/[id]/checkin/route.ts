@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
+import { checkinCodeFor, normalizeCode } from '@/lib/checkin-code';
 
 export const runtime = 'nodejs';
 
@@ -39,12 +40,27 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ message: 'Geçersiz oturum' }, { status: 401 });
   }
 
+  const raw = (await req.json().catch(() => ({}))) as {
+    source?: string;
+    code?: string;
+    location?: { latitude?: number; longitude?: number };
+  };
+
+  // QR'sız kod ile check-in — istemci kontrolü bypass edilebilir; sunucuda da
+  // deterministik kodu yeniden hesaplayıp karşılaştır (ek savunma). Kod, onaylı
+  // gönüllü şartını BYPASS ETMEZ; o şart aşağıda ayrıca uygulanır.
+  if (raw?.source === 'code') {
+    if (normalizeCode(raw.code) !== checkinCodeFor('volunteering', id)) {
+      return NextResponse.json({ ok: false, message: 'Kod hatalı' }, { status: 400 });
+    }
+  }
+
   const db = getAdminFirestore();
   const oppRef = db.collection(COLLECTIONS.volunteering).doc(id);
   const oppSnap = await oppRef.get();
   if (!oppSnap.exists) return NextResponse.json({ message: 'İlan bulunamadı' }, { status: 404 });
 
-  // Onaylı başvuru şartı
+  // Onaylı başvuru şartı — kod ile gelse bile korunur (kod ek kanıt, bypass değil).
   const appSnap = await db
     .collection(COLLECTIONS.applications)
     .where('entityId', '==', id)
@@ -63,12 +79,12 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const existing = await checkinRef.get();
   if (existing.exists) return NextResponse.json({ ok: true, already: true });
 
-  const raw = (await req.json().catch(() => ({}))) as { source?: string; location?: { latitude?: number; longitude?: number } };
   const loc = raw?.location;
   await checkinRef.set({
     userId: uid,
     checkedInAt: FieldValue.serverTimestamp(),
-    method: raw?.source === 'qr' ? 'qr' : 'manual',
+    // Yoklama yöntemi: QR okutma, kod ile giriş ya da elle (varsayılan).
+    method: raw?.source === 'qr' ? 'qr' : raw?.source === 'code' ? 'code' : 'manual',
     ...(loc && typeof loc.latitude === 'number' && typeof loc.longitude === 'number'
       ? { location: { latitude: loc.latitude, longitude: loc.longitude } }
       : {}),
