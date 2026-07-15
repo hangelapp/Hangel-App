@@ -101,6 +101,8 @@ export default function NgoCallCenterPage() {
   const db = useFirestore();
   // Kontrollü sekme — İletişim Merkezi hub'ı CTA'larından Çağrı Merkezi'ne geçebilsin.
   const [tab, setTab] = useState<string | null>(null);
+  // "Arama Listeleri" sekmesinin içindeki alt sekme (listeler / etkinlik / gönüllü).
+  const [listSubTab, setListSubTab] = useState('listeler');
 
   const userRef = useMemoFirebase(
     () => (user ? doc(db, 'users', user.uid) : null),
@@ -213,17 +215,9 @@ export default function NgoCallCenterPage() {
             <PhoneCall className="h-4 w-4" /> Çağrı Merkezi
             {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
           </TabsTrigger>
-          {/* Arama Listeleri ve hemen ALTINDA katılımcı sekmeleri (istenen sıra) */}
+          {/* Arama Listeleri — içinde Etkinlik/Gönüllü Katılımcıları alt sekmeleri */}
           <TabsTrigger value="listeler" className="flex items-center gap-1.5">
             <ListChecks className="h-4 w-4" /> Arama Listeleri
-            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
-          </TabsTrigger>
-          <TabsTrigger value="etkinlik-katilimcilari" className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4" /> Etkinlik Katılımcıları
-            {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
-          </TabsTrigger>
-          <TabsTrigger value="gonullu-katilimcilari" className="flex items-center gap-1.5">
-            <HeartHandshake className="h-4 w-4" /> Gönüllü Katılımcıları
             {!isApproved && <Lock className="h-3 w-3 text-muted-foreground" />}
           </TabsTrigger>
 
@@ -354,28 +348,34 @@ export default function NgoCallCenterPage() {
           )}
         </TabsContent>
 
-        {/* Etkinlik Katılımcıları — RSVP'lerden senkron; tek-tuş arama + not */}
-        <TabsContent value="etkinlik-katilimcilari" className="mt-4">
-          {isApproved && ccDoc ? (
-            <ParticipantsPanel source="event" />
-          ) : (
-            <LockedNotice title="Etkinlik Katılımcıları kilitli" status={status} />
-          )}
-        </TabsContent>
-
-        {/* Gönüllü Katılımcıları — gönüllü başvurularından senkron */}
-        <TabsContent value="gonullu-katilimcilari" className="mt-4">
-          {isApproved && ccDoc ? (
-            <ParticipantsPanel source="volunteer" />
-          ) : (
-            <LockedNotice title="Gönüllü Katılımcıları kilitli" status={status} />
-          )}
-        </TabsContent>
-
-        {/* Sekme — Arama Listeleri (yalnızca onaylı STK) */}
+        {/* Sekme — Arama Listeleri (yalnızca onaylı STK). İçinde alt sekmeler:
+            Arama Listeleri · Etkinlik Katılımcıları · Gönüllü Katılımcıları */}
         <TabsContent value="listeler" className="mt-4">
           {isApproved && ccDoc ? (
-            <CallLists ngoId={ngoId} />
+            <Tabs value={listSubTab} onValueChange={setListSubTab} className="w-full">
+              <div className="-mx-4 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0">
+                <TabsList className="w-max">
+                  <TabsTrigger value="listeler" className="flex items-center gap-1.5">
+                    <ListChecks className="h-4 w-4" /> Arama Listeleri
+                  </TabsTrigger>
+                  <TabsTrigger value="etkinlik" className="flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4" /> Etkinlik Katılımcıları
+                  </TabsTrigger>
+                  <TabsTrigger value="gonullu" className="flex items-center gap-1.5">
+                    <HeartHandshake className="h-4 w-4" /> Gönüllü Katılımcıları
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+              <TabsContent value="listeler" className="mt-4">
+                <CallLists ngoId={ngoId} />
+              </TabsContent>
+              <TabsContent value="etkinlik" className="mt-4">
+                <ParticipantsPanel source="event" />
+              </TabsContent>
+              <TabsContent value="gonullu" className="mt-4">
+                <ParticipantsPanel source="volunteer" />
+              </TabsContent>
+            </Tabs>
           ) : (
             <LockedNotice title="Arama Listeleri kilitli" status={status} />
           )}
