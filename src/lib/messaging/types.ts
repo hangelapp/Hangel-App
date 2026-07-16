@@ -111,6 +111,7 @@ export interface SegmentFilters {
   roles?: Array<'user' | 'ngo-admin' | 'super-admin'>;
   cities?: string[];
   districts?: string[];
+  neighborhoods?: string[];
   supportedNgoIds?: string[];
   volunteerNgoIds?: string[];
   interests?: string[];

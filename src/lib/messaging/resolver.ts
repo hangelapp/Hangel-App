@@ -46,7 +46,7 @@ interface UserDoc {
   personalInfo?: {
     email?: string;
     phone?: string;
-    address?: { city?: string; district?: string };
+    address?: { city?: string; district?: string; neighborhood?: string };
     profession?: string;
     bloodType?: string;
   };
@@ -150,6 +150,10 @@ function matchesFilters(user: UserDoc, filters: SegmentFilters): boolean {
   if (filters.districts && filters.districts.length > 0) {
     const district = user.personalInfo?.address?.district;
     if (!district || !filters.districts.includes(district)) return false;
+  }
+  if (filters.neighborhoods && filters.neighborhoods.length > 0) {
+    const neighborhood = user.personalInfo?.address?.neighborhood;
+    if (!neighborhood || !filters.neighborhoods.includes(neighborhood)) return false;
   }
   if (filters.supportedNgoIds && filters.supportedNgoIds.length > 0) {
     const supported = user.supportedNgos ?? [];

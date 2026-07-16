@@ -43,7 +43,11 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { messagingFetch } from '@/lib/messaging/client';
 import { render, extractVariables } from '@/lib/messaging/template';
 import { sanitizeHtml } from '@/lib/sanitize-html';
-import { allProvinces } from '@/lib/data';
+import type { SignatureOption } from '@/components/ui/rich-text-editor';
+import { MAIL_TEMPLATES } from '@/lib/messaging/invite-templates';
+import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
+
+type NeighborhoodsMap = Record<string, Record<string, string[]>>;
 
 /* ── Kitle tanımları ─────────────────────────────────────────────────────── */
 
@@ -83,6 +87,34 @@ const VARIABLE_BUTTONS: { token: string; label: string }[] = [
   { token: 'stk_sehir', label: 'STK şehri' },
   // Hazır ünvan cümlesi
   { token: 'sayin_yonetici', label: 'Sayın … yöneticisi …' },
+];
+
+// Editöre tek tıkla eklenen hazır imzalar (çoklu). Mail istemcileriyle uyumlu
+// olması için inline stil + basit HTML. İleride Firestore'dan yönetilebilir.
+const SIGNATURES: SignatureOption[] = [
+  {
+    id: 'hangel-kurumsal',
+    label: 'hangel — kurumsal',
+    html:
+      '<p><br></p><p style="color:#6e6e73">—</p>' +
+      '<p><strong style="color:#f34723">hangel</strong><br>' +
+      '<span style="color:#6e6e73">Sosyal Fayda Platformu</span><br>' +
+      '<a href="https://hangel.org">hangel.org</a> · <a href="mailto:info@hangel.org">info@hangel.org</a></p>',
+  },
+  {
+    id: 'ismail-hilmi',
+    label: 'İsmail Hilmi Adıgüzel',
+    html:
+      '<p><br></p><p style="color:#6e6e73">—</p>' +
+      '<p><strong>İsmail Hilmi Adıgüzel</strong><br>' +
+      '<span style="color:#6e6e73">Kurucu · hangel</span><br>' +
+      '<a href="https://hangel.org">hangel.org</a></p>',
+  },
+  {
+    id: 'kisa',
+    label: 'Kısa (Sevgiler)',
+    html: '<p><br></p><p>Sevgiler,<br><strong style="color:#f34723">hangel</strong> ekibi 🧡</p>',
+  },
 ];
 
 function parseEmails(text: string): string[] {
@@ -159,14 +191,36 @@ export default function EasyMailPage() {
   const [audience, setAudience] = useState<AudienceKey>('all');
   const [cities, setCities] = useState<string[]>([]);
   const [cityInput, setCityInput] = useState('');
+  // İl/ilçe/mahalle daraltma — "Şehre göre" kitlesinde tek il seçilince ilçe,
+  // ilçe seçilince mahalle daraltması yapılabilir (cascading). cities çoklu il
+  // için kalır; districtSel/neighborhoodSel tek il akışını daraltır.
+  const [districtSel, setDistrictSel] = useState<string[]>([]);
+  const [neighborhoodSel, setNeighborhoodSel] = useState<string[]>([]);
   const [manualText, setManualText] = useState('');
   const manualEmails = useMemo(() => parseEmails(manualText), [manualText]);
+
+  // Tek il seçiliyken ilçe listesi; tek ilçe seçiliyken mahalle listesi.
+  const soleCity = cities.length === 1 ? cities[0] : null;
+  const districtOptions = useMemo(() => (soleCity ? (districtsData[soleCity] ?? []) : []), [soleCity]);
+  const soleDistrict = districtSel.length === 1 ? districtSel[0] : null;
+  const neighborhoodOptions = useMemo(
+    () => (soleCity && soleDistrict ? ((neighborhoodsData as NeighborhoodsMap)[soleCity]?.[soleDistrict] ?? []) : []),
+    [soleCity, soleDistrict],
+  );
 
   // Alıcı sayacı (users tabanlı kitleler) — cache + debounce (maliyet!)
   const [counting, setCounting] = useState(false);
   const [summary, setSummary] = useState<ResolveSummary | null>(null);
   const [countError, setCountError] = useState('');
   const cacheRef = useRef<Map<string, ResolveSummary>>(new Map());
+
+  // Gidecek alıcı listesi (isteğe bağlı) — "kimlere gidiyor" görünümü + tek tek
+  // çıkarma. Listeyi getirince, çıkarılmayanlar gönderimde inlineRecipients olur.
+  interface RecipientLite { userId: string | null; email: string; name: string; ngo: string; city: string }
+  const [listRows, setListRows] = useState<RecipientLite[] | null>(null);
+  const [listLoading, setListLoading] = useState(false);
+  const [listTruncated, setListTruncated] = useState(false);
+  const [excluded, setExcluded] = useState<Set<string>>(new Set()); // email set
 
   // 2) Ne
   const [subject, setSubject] = useState('');
@@ -194,6 +248,14 @@ export default function EasyMailPage() {
 
   const applyTemplate = (id: string) => {
     setSelectedTplId(id);
+    // Önce hazır (built-in) şablonlara bak, sonra Firestore şablonlarına.
+    const builtin = MAIL_TEMPLATES.find((x) => x.id === id);
+    if (builtin) {
+      setSubject(builtin.subject);
+      setBodyHtml(builtin.body);
+      toast({ title: 'Hazır şablon yüklendi', description: `${builtin.name} — logoları ve tarih/mekanı düzenle.` });
+      return;
+    }
     const t = emailTemplates.find((x) => x.id === id);
     if (!t) return;
     setSubject(t.subject ?? '');
@@ -248,14 +310,54 @@ export default function EasyMailPage() {
     const base = { channel: 'email' as const, useCase: 'marketing' as const };
     if (audience === 'all') return { ...base, filters: {} };
     if (audience === 'ngoAdmins') return { ...base, filters: { roles: ['ngo-admin' as const] } };
-    if (audience === 'city') return cities.length > 0 ? { ...base, filters: { cities } } : null;
+    if (audience === 'city') {
+      if (cities.length === 0) return null;
+      const filters: { cities: string[]; districts?: string[]; neighborhoods?: string[] } = { cities };
+      // Daraltma yalnız tek il seçiliyken anlamlı (cascading).
+      if (soleCity && districtSel.length > 0) filters.districts = districtSel;
+      if (soleCity && soleDistrict && neighborhoodSel.length > 0) filters.neighborhoods = neighborhoodSel;
+      return { ...base, filters };
+    }
     // manual
     return manualEmails.length > 0
       ? { ...base, inlineRecipients: manualEmails.map((email) => ({ email })) }
       : null;
-  }, [audience, cities, manualEmails]);
+  }, [audience, cities, soleCity, districtSel, soleDistrict, neighborhoodSel, manualEmails]);
 
   const isUsersAudience = audience !== 'manual';
+
+  // Kitle değişince önceki liste/çıkarma geçersiz — temizle.
+  useEffect(() => {
+    setListRows(null);
+    setExcluded(new Set());
+    setListTruncated(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(spec)]);
+
+  // "Kimlere gidiyor" — tam listeyi çek (?list=1). Maliyetli olduğundan yalnız
+  // kullanıcı butona basınca çağrılır.
+  const loadRecipientList = useCallback(async () => {
+    if (!spec) return;
+    setListLoading(true);
+    try {
+      const res = await messagingFetch<{ recipients: RecipientLite[]; truncated: boolean; total: number }>(
+        '/api/messaging/resolve-recipients?list=1',
+        { method: 'POST', body: JSON.stringify(spec) },
+      );
+      setListRows(res.recipients);
+      setListTruncated(res.truncated);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Liste alınamadı', description: e instanceof Error ? e.message : 'Hata' });
+    } finally {
+      setListLoading(false);
+    }
+  }, [spec, toast]);
+
+  // Çıkarılmayan alıcılar (liste açıksa).
+  const keptRecipients = useMemo(
+    () => (listRows ? listRows.filter((r) => !excluded.has(r.email)) : null),
+    [listRows, excluded],
+  );
 
   // Canlı sayaç — yalnız users tabanlı kitlelerde ve kitle değişince (debounce + cache).
   useEffect(() => {
@@ -327,6 +429,8 @@ export default function EasyMailPage() {
     const match = allProvinces.find((p) => p.toLocaleLowerCase('tr') === c.toLocaleLowerCase('tr'));
     if (!match) { toast({ variant: 'destructive', title: 'Şehir bulunamadı', description: 'Listeden geçerli bir il seç.' }); return; }
     if (!cities.includes(match)) setCities((prev) => [...prev, match]);
+    // Yeni il eklenince (artık çoklu il olabilir) ilçe/mahalle daraltmasını sıfırla.
+    setDistrictSel([]); setNeighborhoodSel([]);
     setCityInput('');
   }, [cityInput, cities, toast]);
 
@@ -354,6 +458,17 @@ export default function EasyMailPage() {
       toast({ variant: 'destructive', title: 'Geçmiş tarih', description: 'Gönderim zamanı ileride olmalı.' });
       return;
     }
+    // Kullanıcı listeyi açıp bazılarını çıkardıysa, GÖNDERİM tam o kesin listeye
+    // yapılır (inlineRecipients). Aksi halde filtre bazlı spec sunucuda çözülür.
+    const useExactList = keptRecipients !== null && excluded.size > 0;
+    const effectiveSpec = useExactList
+      ? {
+          channel: 'email' as const,
+          useCase: 'marketing' as const,
+          inlineRecipients: keptRecipients!.map((r) => ({ email: r.email, name: r.name || undefined })),
+        }
+      : spec;
+    const effectiveCount = useExactList ? keptRecipients!.length : recipientCount;
     setSending(true);
     try {
       const payload = {
@@ -369,9 +484,9 @@ export default function EasyMailPage() {
         // Worker, ngoId='__platform' için mailAccounts/__platform hesabını kullanır.
         mailWorkspace: true,
         ngoId: '__platform',
-        spec,
+        spec: effectiveSpec,
         scheduledAt: scheduleMode === 'later' ? new Date(scheduledAt).toISOString() : null,
-        ...(needsTypeConfirm && recipientCount ? { doubleConfirmCount: recipientCount } : {}),
+        ...(needsTypeConfirm && effectiveCount ? { doubleConfirmCount: effectiveCount } : {}),
       };
       const res = await messagingFetch<{ campaignId: string; status: string }>(
         '/api/messaging/campaigns',
@@ -545,8 +660,8 @@ export default function EasyMailPage() {
           <Link href="/super-admin/messaging" aria-label="Geri"><ArrowLeft className="h-5 w-5" /></Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-black">Mail Gönder</h1>
-          <p className="text-sm text-muted-foreground">Kitle seç, yaz, gönder — gerisi sunucuda otomatik.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Mail Gönder</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">Kitle seç, yaz, gönder — gerisi sunucuda otomatik.</p>
         </div>
       </div>
 
@@ -604,11 +719,72 @@ export default function EasyMailPage() {
                       {cities.map((c) => (
                         <Badge key={c} variant="secondary" className="gap-1 rounded-full px-2.5 py-1">
                           {c}
-                          <button type="button" aria-label={`${c} kaldır`} onClick={() => setCities((prev) => prev.filter((x) => x !== c))}>
+                          <button
+                            type="button"
+                            aria-label={`${c} kaldır`}
+                            onClick={() => {
+                              setCities((prev) => prev.filter((x) => x !== c));
+                              setDistrictSel([]); setNeighborhoodSel([]);
+                            }}
+                          >
                             <X className="h-3 w-3" />
                           </button>
                         </Badge>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Tek il seçiliyken ilçe daraltma; tek ilçe seçiliyken mahalle daraltma. */}
+                  {soleCity && districtOptions.length > 0 && (
+                    <div className="space-y-2 rounded-2xl border border-dashed bg-muted/20 p-3">
+                      <p className="text-[11px] font-semibold text-muted-foreground">
+                        İsteğe bağlı daraltma — <span className="text-foreground">{soleCity}</span> içinde ilçe/mahalle seç (boş bırakırsan tüm il)
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {districtOptions.map((d) => {
+                          const on = districtSel.includes(d);
+                          return (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => {
+                                setDistrictSel((prev) => on ? prev.filter((x) => x !== d) : [...prev, d]);
+                                setNeighborhoodSel([]);
+                              }}
+                              className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition ${
+                                on ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-muted'
+                              }`}
+                            >
+                              {d}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {soleDistrict && neighborhoodOptions.length > 0 && (
+                        <div className="space-y-1.5 border-t pt-2">
+                          <p className="text-[11px] font-semibold text-muted-foreground">
+                            <span className="text-foreground">{soleDistrict}</span> mahalleleri (boş = tüm ilçe)
+                          </p>
+                          <div className="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
+                            {neighborhoodOptions.map((n) => {
+                              const on = neighborhoodSel.includes(n);
+                              return (
+                                <button
+                                  key={n}
+                                  type="button"
+                                  onClick={() => setNeighborhoodSel((prev) => on ? prev.filter((x) => x !== n) : [...prev, n])}
+                                  className={`rounded-full border px-2 py-0.5 text-[10px] transition ${
+                                    on ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-muted'
+                                  }`}
+                                >
+                                  {n}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -654,6 +830,78 @@ export default function EasyMailPage() {
                   </span>
                 )}
               </div>
+
+              {/* "Kimlere gidiyor" — tam listeyi getir, tek tek çıkar. Yalnız users
+                  tabanlı kitlelerde (elle listede zaten adresler görünür). */}
+              {isUsersAudience && audienceReady && (
+                <div className="space-y-2">
+                  {!listRows ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => void loadRecipientList()}
+                      disabled={listLoading}
+                    >
+                      {listLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Users className="mr-1.5 h-3.5 w-3.5" />}
+                      Kimlere gidiyor? Listeyi göster
+                    </Button>
+                  ) : (
+                    <div className="rounded-2xl border">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/30 px-3 py-2">
+                        <span className="text-xs font-bold">
+                          {keptRecipients?.length ?? 0} alıcı
+                          {excluded.size > 0 && <span className="ml-1 font-medium text-muted-foreground">({excluded.size} çıkarıldı)</span>}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {excluded.size > 0 && (
+                            <Button type="button" variant="ghost" size="sm" className="h-7 rounded-lg text-[11px]" onClick={() => setExcluded(new Set())}>
+                              Çıkarmaları geri al
+                            </Button>
+                          )}
+                          <Button type="button" variant="ghost" size="sm" className="h-7 rounded-lg text-[11px]" onClick={() => { setListRows(null); setExcluded(new Set()); }}>
+                            Listeyi kapat
+                          </Button>
+                        </div>
+                      </div>
+                      <ul className="max-h-64 divide-y overflow-y-auto">
+                        {listRows.map((r) => {
+                          const off = excluded.has(r.email);
+                          return (
+                            <li key={r.email} className={`flex items-center gap-2 px-3 py-1.5 text-xs ${off ? 'opacity-40' : ''}`}>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-medium">
+                                  {r.ngo || r.name || r.email}
+                                  {r.city && <span className="ml-1.5 text-[10px] text-muted-foreground">{r.city}</span>}
+                                </p>
+                                <p className="truncate font-mono text-[10px] text-muted-foreground">{r.email}</p>
+                              </div>
+                              <button
+                                type="button"
+                                title={off ? 'Geri ekle' : 'Bu alıcıyı çıkar'}
+                                onClick={() => setExcluded((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(r.email)) next.delete(r.email); else next.add(r.email);
+                                  return next;
+                                })}
+                                className={`shrink-0 rounded-full p-1 transition ${off ? 'text-primary hover:bg-primary/10' : 'text-muted-foreground hover:bg-destructive/10 hover:text-destructive'}`}
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      {listTruncated && (
+                        <p className="border-t px-3 py-1.5 text-[10px] text-amber-700">
+                          Liste çok uzun — ilk 2000 gösterildi. Gönderim yine de tüm eşleşen alıcılara yapılır (çıkarma yalnız gösterilenlere uygulanır).
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -679,12 +927,18 @@ export default function EasyMailPage() {
                     </span>
                   </SelectTrigger>
                   <SelectContent>
-                    {emailTemplates.length === 0 ? (
-                      <div className="px-3 py-2 text-xs text-muted-foreground">Henüz e-posta şablonu yok</div>
-                    ) : (
-                      emailTemplates.map((t) => (
-                        <SelectItem key={t.id} value={t.id}>{t.name || t.subject || t.id}</SelectItem>
-                      ))
+                    {/* Hazır (built-in) şablonlar — ör. Gelir Modeli daveti (il il) */}
+                    <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Hazır şablonlar</div>
+                    {MAIL_TEMPLATES.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                    {emailTemplates.length > 0 && (
+                      <>
+                        <div className="mt-1 border-t px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Kayıtlı şablonların</div>
+                        {emailTemplates.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>{t.name || t.subject || t.id}</SelectItem>
+                        ))}
+                      </>
                     )}
                   </SelectContent>
                 </Select>
@@ -719,6 +973,7 @@ export default function EasyMailPage() {
                 enableImageUpload
                 imageUploadPath="mail-images"
                 variableButtons={VARIABLE_BUTTONS}
+                signatures={SIGNATURES}
               />
               <div className="flex flex-wrap items-center gap-3 rounded-2xl border bg-muted/30 px-4 py-2.5 text-xs">
                 <span className="font-bold uppercase tracking-wide text-muted-foreground">Gönderen</span>
