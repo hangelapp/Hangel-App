@@ -103,6 +103,30 @@ interface HasOffersConfig {
  * (anonim tıklama, eski extension/click yolu) eskisi gibi '' ile silinir —
  * imza geriye uyumlu, mevcut çağıranlar (fetchHasOffersOffers) etkilenmez.
  */
+/**
+ * Bir offer için KESİN tracking URL şablonunu (`{transaction_id}` placeholder'lı)
+ * döndürür. HasOffers/Tune ağlarında bir tıklamanın conversion olarak sayılması
+ * için tıklamanın ÖNCE ağın tracking domain'ine (ör. tr.rdrtr.com) uğraması,
+ * oradan 302 ile markaya yönlenmesi gerekir.
+ *
+ * ⚠️ 2026-07 kök neden: GelirOrtakları'nın bazı offer'larının `preview_url`'ü
+ * tracking domain'den GEÇMİYOR — doğrudan marka sitesine + UTM ile gidiyor
+ * (ör. https://www.ucuzabilet.com/?utm_source=gelirortaklari&...&pfx={transaction_id}).
+ * Böyle bir link'e tıklama ağ tarafından HİÇ görülmez → 0 conversion. Bu yüzden:
+ *   - preview_url ZATEN tracking domain'den geçiyorsa (aff_c/click path) onu kullan
+ *     (placeholder'lar korunur; ağın istediği ekstra parametreler bozulmasın).
+ *   - GEÇMİYORSA preview_url'ü YOK SAY ve ağın standart tracking şablonunu kur:
+ *     https://<trackingDomain>/aff_c?offer_id=<id>&aff_id=<affId>&aff_sub={transaction_id}
+ *     (Bu format GelirOrtakları'nın generateTrackingLink API'siyle birebir doğrulandı.)
+ */
+function trackingTemplateForOffer(config: HasOffersConfig, offerId: string, rawPreviewUrl: string): string {
+  const isTracked =
+    rawPreviewUrl.includes(config.trackingDomain) ||
+    /\/aff_c\b|\/click\b|\.hasoffers\.com/i.test(rawPreviewUrl);
+  if (rawPreviewUrl && isTracked) return rawPreviewUrl;
+  return `https://${config.trackingDomain}/aff_c?offer_id=${offerId}&aff_id=${config.affiliateId}&aff_sub={transaction_id}`;
+}
+
 function buildAffiliateLink(config: HasOffersConfig, previewUrl: string, subId?: string): string {
   if (!previewUrl) return '';
   let working = previewUrl
@@ -207,11 +231,9 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
       // component error event'inde tekrar fallback chain'i çalıştırır.
       const logoUrl = thumbnailUrl || `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 
-      // Use preview_url if it has affiliate placeholders; otherwise fall back to HasOffers tracking URL
-      const hasPlaceholder = /\{aff_id\}|\{affiliate_id\}/i.test(rawPreviewUrl);
-      const previewUrl = hasPlaceholder
-        ? rawPreviewUrl
-        : `https://${config.trackingDomain}/aff_c?offer_id=${offer.id}&aff_id=${config.affiliateId}`;
+      // preview_url tracking domain'den geçiyorsa kullan; geçmiyorsa (direkt siteye
+      // giden UTM linki → tıklama ağca sayılmaz) standart tracking şablonunu kur.
+      const previewUrl = trackingTemplateForOffer(config, String(offer.id), rawPreviewUrl);
 
       let category = 'Genel';
       const cats = entry?.OfferCategory;
@@ -394,12 +416,10 @@ async function fetchHasOffersTemplates(config: HasOffersConfig): Promise<Resolve
       if (nameLower.includes('fashfed_deneme') || nameLower.includes('fashfed deneme')) continue;
 
       const rawPreviewUrl = offer.preview_url || offer.offer_url || '';
-      const hasPlaceholder = /\{aff_id\}|\{affiliate_id\}/i.test(rawPreviewUrl);
-      // {transaction_id} eksikse subId enjeksiyonu buildLinkWithSubId→buildAffiliateLink
-      // katmanında (per-click) yapılır; burada ham template korunur.
-      const template = hasPlaceholder
-        ? rawPreviewUrl
-        : `https://${config.trackingDomain}/aff_c?offer_id=${offer.id}&aff_id=${config.affiliateId}&aff_sub={transaction_id}`;
+      // preview_url tracking domain'den geçiyorsa korunur; geçmiyorsa standart
+      // tracking şablonu kurulur (tıklamanın ağca sayılması için). {transaction_id}
+      // eksikse subId enjeksiyonu buildLinkWithSubId→buildAffiliateLink katmanında.
+      const template = trackingTemplateForOffer(config, String(offer.id), rawPreviewUrl);
 
       const parsedRate = parseRate(offer.percent_payout);
       out.push({
