@@ -21,7 +21,7 @@ import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Languages, UserCheck, Clock, ChevronRight, Map, Mic2 } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Languages, UserCheck, Clock, ChevronRight, Map, Mic2, Maximize2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -672,7 +672,15 @@ export default function EventDetailPage() {
                   </Button>
                 }
                 shareSlot={
-                  <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} shareMessage={eventShareMessage} buttonClassName="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-11 w-11" />
+                  <div className="flex items-center gap-2">
+                    {/* Sunum ekranı — QR'ı projeksiyon/TV'de göstermek için tam sayfa */}
+                    <Button asChild size="icon" variant="outline" className="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-11 w-11" aria-label="Sunum ekranı (büyük QR)">
+                      <Link href={`/events/${event.slug || slug}/qr`}>
+                        <Maximize2 className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} shareMessage={eventShareMessage} buttonClassName="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-11 w-11" />
+                  </div>
                 }
                 ctaSlot={
                   <Button

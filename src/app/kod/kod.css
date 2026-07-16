@@ -1,0 +1,141 @@
+/* /kod — kod ile katılım. Apple estetiği, koyu/açık tema. */
+
+.kod-stage {
+  --kod-bg: #fbfbfd;
+  --kod-ink: #1d1d1f;
+  --kod-ink-2: #6e6e73;
+  --kod-hangel: #f34723;
+  --kod-card: #ffffff;
+  --kod-hairline: rgba(0, 0, 0, 0.10);
+  --kod-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.18), 0 8px 22px -10px rgba(0, 0, 0, 0.10);
+  --kod-danger: #d70015;
+  --kod-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  min-height: 100dvh;
+  background: var(--kod-bg);
+  color: var(--kod-ink);
+  font-family: var(--kod-font);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 32px 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .kod-stage {
+    --kod-bg: #000000;
+    --kod-ink: #f5f5f7;
+    --kod-ink-2: #a1a1a6;
+    --kod-card: #1c1c1e;
+    --kod-hairline: rgba(255, 255, 255, 0.14);
+    --kod-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.9);
+    --kod-danger: #ff453a;
+  }
+}
+:root[data-theme="dark"] .kod-stage {
+  --kod-bg: #000000; --kod-ink: #f5f5f7; --kod-ink-2: #a1a1a6; --kod-card: #1c1c1e;
+  --kod-hairline: rgba(255, 255, 255, 0.14); --kod-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.9); --kod-danger: #ff453a;
+}
+:root[data-theme="light"] .kod-stage {
+  --kod-bg: #fbfbfd; --kod-ink: #1d1d1f; --kod-ink-2: #6e6e73; --kod-card: #ffffff;
+  --kod-hairline: rgba(0, 0, 0, 0.10); --kod-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.18), 0 8px 22px -10px rgba(0, 0, 0, 0.10); --kod-danger: #d70015;
+}
+
+.kod-card {
+  background: var(--kod-card);
+  border-radius: 28px;
+  box-shadow: var(--kod-shadow);
+  padding: clamp(28px, 5vw, 48px);
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(18px, 3vh, 28px);
+  text-align: center;
+}
+
+.kod-icon-wrap {
+  display: grid; place-items: center;
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--kod-hangel) 12%, transparent);
+  color: var(--kod-hangel);
+}
+.kod-icon-wrap svg { width: 28px; height: 28px; }
+
+.kod-head { display: flex; flex-direction: column; gap: 6px; }
+.kod-title {
+  margin: 0;
+  font-size: clamp(24px, 5vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.kod-sub { margin: 0; font-size: 15px; color: var(--kod-ink-2); }
+
+.kod-inputs { display: flex; gap: clamp(6px, 2vw, 10px); }
+.kod-digit {
+  width: clamp(40px, 12vw, 54px);
+  height: clamp(52px, 15vw, 66px);
+  text-align: center;
+  font-size: clamp(24px, 6vw, 32px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--kod-ink);
+  background: color-mix(in srgb, var(--kod-ink) 5%, transparent);
+  border: 1.5px solid var(--kod-hairline);
+  border-radius: 14px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.kod-digit:focus {
+  border-color: var(--kod-hangel);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--kod-hangel) 22%, transparent);
+}
+.kod-digit-error { border-color: var(--kod-danger); }
+
+.kod-message { margin: 0; font-size: 14px; color: var(--kod-danger); font-weight: 500; }
+
+.kod-submit {
+  width: 100%;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 999px;
+  background: var(--kod-hangel);
+  color: #fff;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.05s ease;
+}
+.kod-submit svg { width: 18px; height: 18px; }
+.kod-submit:hover:not(:disabled) { filter: brightness(1.05); }
+.kod-submit:active:not(:disabled) { transform: scale(0.99); }
+.kod-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+.kod-submit:focus-visible { outline: 2px solid var(--kod-ink); outline-offset: 2px; }
+
+.kod-spin { width: 20px; height: 20px; animation: kod-rot 0.9s linear infinite; }
+@keyframes kod-rot { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .kod-spin { animation-duration: 2s; } }
+
+.kod-hint {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--kod-ink-2);
+  max-width: 34ch;
+}
+
+.kod-footer { font-size: 14px; font-weight: 500; color: var(--kod-ink-2); letter-spacing: -0.01em; }
+.kod-dot { color: var(--kod-hangel); }
