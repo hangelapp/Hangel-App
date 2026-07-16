@@ -34,12 +34,18 @@ const FormRenderer = () => {
     const entity = searchParams.get('entity') || 'NGO';
     const nextPath = resolveNext(searchParams.get('next'));
 
-    // Etkinlik-QR akışıyla gelen kullanıcı için Kurumsal tab'ini gizle (yalnız
-    // bireysel kayıt). localStorage client-only olduğundan mount sonrası okunur
-    // (hidrasyon uyuşmazlığını önler; kısa bir an iki tab görünür, sonra tekleşir).
+    // Etkinlik/gönüllülük katılımından gelen kullanıcı için Kurumsal tab'ini gizle
+    // (yalnız bireysel kayıt — kurumsal sekmesi katılımcıyı karıştırıyordu). İki yol:
+    //  (1) QR onboarding akışı (getQrOnboard marker'ı) — localStorage, mount sonrası.
+    //  (2) "Katıl/Başvur" butonundan gelen requireAuth: next= /events/… ya da
+    //      /volunteering/… detay sayfasına işaret eder (server'da da bilinir → SSR uyumlu).
+    const nextIsParticipation = /^\/(events|volunteering)\//.test(nextPath);
     const [qrFlow, setQrFlow] = useState(false);
     useEffect(() => { setQrFlow(!!getQrOnboard()); }, []);
-    const effectiveTab = qrFlow ? 'individual' : tab;
+    // participationFlow: kurumsal sekmesi gizlenecek mi? next tabanlı kısım SSR'da
+    // da bilindiği için hidrasyon uyuşmazlığı olmaz; qrFlow mount sonrası eklenir.
+    const participationFlow = qrFlow || nextIsParticipation;
+    const effectiveTab = participationFlow ? 'individual' : tab;
 
     // BUG-18: Logged-in kullanıcılar da /login/selection'da bireysel + kurumsal
     // kayıt başvuru formlarını her zaman açabilmeli. Önceki redirect (PDF-3)
@@ -74,9 +80,9 @@ const FormRenderer = () => {
                         <CardTitle className="text-3xl font-black tracking-tighter">Merhaba</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6 px-6 sm:px-8 pb-10">
-                        <Tabs value={effectiveTab} onValueChange={(val) => { if (qrFlow) return; router.push(`/login/selection?tab=${val}&entity=${entity}`); }}>
-                            {/* Etkinlik-QR akışında Kurumsal tab gizli — yalnız bireysel kayıt. */}
-                            {!qrFlow && (
+                        <Tabs value={effectiveTab} onValueChange={(val) => { if (participationFlow) return; router.push(`/login/selection?tab=${val}&entity=${entity}`); }}>
+                            {/* Etkinlik/gönüllülük katılımından gelindiğinde Kurumsal tab gizli — yalnız bireysel kayıt. */}
+                            {!participationFlow && (
                                 <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
                                     <TabsTrigger value="individual" className="rounded-lg font-bold">Bireysel</TabsTrigger>
                                     <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
@@ -115,7 +121,7 @@ const FormRenderer = () => {
                                     router.push(isNewUser ? '/welcome' : nextPath);
                                 }} />
                             </TabsContent>
-                            {!qrFlow && (
+                            {!participationFlow && (
                                 <TabsContent value="corporate" className="pt-4">
                                     <CorporateForm initialEntity={entity} />
                                 </TabsContent>
