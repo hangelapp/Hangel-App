@@ -1,7 +1,10 @@
 /**
  * Satıcı Sayısı Stamp Robotu (stampSellerCountsDaily).
  *
- * Schedule: her gün 04:00 Europe/Istanbul.
+ * Schedule: her PAZAR 04:00 Europe/Istanbul.
+ *   (2026-07 maliyet: her gün 2M ürün taraması = ~27 TL/gün = ana Firestore
+ *   gideriydi; haftada 1'e çekildi → ~115 TL/ay. Satıcı sayısı yavaş değişir,
+ *   rozet en fazla 6 gün eski olur — pratikte fark etmez.)
  *
  * Ne yapar (local script `scripts/stamp-seller-counts.ts` ile BİREBİR aynı mantık,
  * ama sunucuda çalışır — böylece yerel Firestore kotasını yakmaz):
@@ -50,7 +53,7 @@ interface GroupAgg {
 
 export const stampSellerCountsDaily = onSchedule(
   {
-    schedule: 'every day 04:00',
+    schedule: 'every sunday 04:00',
     timeZone: TIMEZONE,
     region: REGION,
     memory: '512MiB',
