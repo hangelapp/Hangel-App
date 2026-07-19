@@ -18,6 +18,7 @@ import {
   Building2,
   Lightbulb,
   Rocket,
+  Play,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -35,33 +36,35 @@ const YERLESKE_HREF = '/bergama/yerleske';
 const FORUM_HREF = '/bergama/forum';
 
 function PillarCard({
-  eyebrow, title, description, href, icon: Icon, meta,
+  eyebrow, title, description, href, sunumHref, icon: Icon, meta,
 }: {
-  eyebrow: string; title: string; description: string; href: string; icon: React.ElementType; meta: string;
+  eyebrow: string; title: string; description: string; href: string; sunumHref: string; icon: React.ElementType; meta: string;
 }) {
+  // Başlığa/karta tıklama → sunumu açar (kullanıcı isteği). Alt kısımda ayrıca
+  // "Detay sayfası" linki, gerçek sayfaya götürür.
   return (
-    <Link
-      href={href}
-      className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-black/5 bg-white p-8 text-left shadow-sm transition-all hover:shadow-xl hover:-translate-y-0.5 md:p-10"
-    >
-      <div>
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-black/5 bg-white p-8 text-left shadow-sm transition-all hover:shadow-xl hover:-translate-y-0.5 md:p-10">
+      <Link href={sunumHref} className="block" aria-label={`${title} sunumunu izle`}>
         <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
           <Icon className="h-7 w-7 text-primary" aria-hidden="true" />
         </div>
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{eyebrow}</p>
-        <h3 className="mt-2 text-2xl font-bold tracking-tight text-[#1d1d1f] md:text-3xl">{title}</h3>
+        <h3 className="mt-2 text-2xl font-bold tracking-tight text-[#1d1d1f] transition-colors group-hover:text-primary md:text-3xl">{title}</h3>
         <p className="mt-3 text-base leading-relaxed text-muted-foreground">{description}</p>
-      </div>
-      <div className="mt-8 flex items-center justify-between">
+        <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-md transition group-hover:shadow-lg">
+          <Play className="h-4 w-4 fill-current" /> Sunumu izle
+        </span>
+      </Link>
+      <div className="mt-8 flex items-center justify-between border-t border-black/5 pt-5">
         <span className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
           <MapPin className="h-4 w-4" /> {meta}
         </span>
-        <span className="inline-flex items-center gap-1 text-sm font-bold text-primary">
-          Keşfet
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </span>
+        <Link href={href} className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
+          Detay sayfası
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -114,6 +117,7 @@ export default function BergamaPage() {
             title="Sosyal İnovasyon Yerleşkesi"
             description="Tarihi Bergama Bedesteni'ni; STK'ların, girişimcilerin ve gönüllülerin birlikte ürettiği bir sosyal inovasyon ve sivil toplum yerleşkesine dönüştürüyoruz."
             href={YERLESKE_HREF}
+            sunumHref={`${YERLESKE_HREF}/sunum`}
             icon={Landmark}
             meta="Bergama Bedesteni"
           />
@@ -122,6 +126,7 @@ export default function BergamaPage() {
             title="Pergamon İnovasyon Mirası Forumu"
             description="Geçmiş, bugün ve geleceğin konuşulduğu; bilim insanlarını, tasarımcıları ve sivil toplumu Bergama'da buluşturan uluslararası bir forum."
             href={FORUM_HREF}
+            sunumHref={`${FORUM_HREF}/sunum`}
             icon={Globe2}
             meta="Bergama · her yıl Eylül"
           />
@@ -181,16 +186,17 @@ export default function BergamaPage() {
         </div>
       </section>
 
-      {/* KAPANIŞ */}
+      {/* KAPANIŞ — sunumlar */}
       <section className="bg-primary py-16 text-center text-primary-foreground md:py-20">
         <div className="mx-auto max-w-2xl px-6">
-          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">İki kolu daha yakından tanı</h2>
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Sunumları izle</h2>
+          <p className="mt-2 text-sm opacity-90">Her iki başlığın tam sunumunu tam ekran izleyebilirsin.</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Button asChild size="lg" variant="secondary" className="h-12 rounded-full bg-white px-8 font-bold text-primary hover:bg-white/90">
-              <Link href={YERLESKE_HREF}>Sosyal İnovasyon Yerleşkesi</Link>
+            <Button asChild size="lg" variant="secondary" className="h-12 rounded-full bg-white px-7 font-bold text-primary hover:bg-white/90">
+              <Link href={`${YERLESKE_HREF}/sunum`}><Play className="mr-2 h-4 w-4 fill-current" /> Yerleşke sunumu</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="h-12 rounded-full border-white/40 bg-transparent px-6 font-bold text-white hover:bg-white hover:text-primary">
-              <Link href={FORUM_HREF}>Pergamon İnovasyon Mirası Forumu</Link>
+            <Button asChild size="lg" variant="secondary" className="h-12 rounded-full bg-white px-7 font-bold text-primary hover:bg-white/90">
+              <Link href={`${FORUM_HREF}/sunum`}><Play className="mr-2 h-4 w-4 fill-current" /> Forum sunumu</Link>
             </Button>
           </div>
         </div>

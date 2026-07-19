@@ -95,7 +95,10 @@ export default function YerleskePage() {
         subtitle="Tarihi Bergama Bedesteni'ni, sivil toplumun ortak evine dönüştürüyoruz."
         description="Yüzyıllarca ticaretin ve buluşmanın kalbi olan Bergama Bedesteni; şimdi STK'ların, girişimcilerin, gönüllülerin ve öğrencilerin birlikte ürettiği bir sosyal inovasyon yerleşkesine dönüşüyor. Kalıcı, paylaşımlı ve kolektif akılla yönetilen bir mekân."
         badges={[{ kind: 'yeni' }]}
-        actions={[{ label: 'Başvuruda bulun', href: '#basvuru', variant: 'primary' }]}
+        actions={[
+          { label: 'Sunumu izle', href: '/bergama/yerleske/sunum', variant: 'primary' },
+          { label: 'Başvuruda bulun', href: '#basvuru', variant: 'link' },
+        ]}
       />
 
       {/* NE SUNUYOR */}

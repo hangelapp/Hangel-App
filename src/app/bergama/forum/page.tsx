@@ -119,8 +119,8 @@ export default function ForumPage() {
         description="Binlerce yıl önce dünyanın bilgi başkentlerinden biri olan Pergamon'da; mirası, inovasyonu ve sivil toplumu buluşturan uluslararası bir forum. Her yıl Bergama'da, insanlığın ortak geleceğini konuşmak için toplanıyoruz."
         badges={[{ kind: 'yeni' }]}
         actions={[
-          { label: 'Başvuruda bulun', href: '#basvuru', variant: 'primary' },
-          { label: 'Programı gör', href: '#program', variant: 'secondary' },
+          { label: 'Sunumu izle', href: '/bergama/forum/sunum', variant: 'primary' },
+          { label: 'Başvuruda bulun', href: '#basvuru', variant: 'secondary' },
         ]}
       />
 
