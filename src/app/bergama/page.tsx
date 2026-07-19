@@ -1,27 +1,22 @@
 'use client';
 
 /**
- * /bergama — hangel derneğinin Bergama girişimi. İki ana kol:
- *   1) Bergama Sosyal İnovasyon Yerleşkesi (Bedesten dönüşümü — kalıcı mekân)
+ * /bergama — Bergama girişimi ana sayfası. İki kol:
+ *   1) Sosyal İnovasyon Yerleşkesi (Bedesten dönüşümü — kalıcı mekân)
  *   2) Pergamon İnovasyon Mirası Forumu (yılda bir, uluslararası)
- *
- * hangel apple-kit (MarketingNav/AppleSection/FeatureGrid/SectionHeading) ile
- * site kimliğine (Apple/iOS, narçiçeği #f34723) uyumlu. İçerik inline TR.
+ * Sade yapı: bu sayfa + iki detay sayfası. Marka/dernek adı geçmez.
  */
 
 import {
   Landmark,
-  Sparkles,
-  Users,
   Globe2,
   Recycle,
+  History,
   HandHeart,
-  CalendarDays,
   MapPin,
   ArrowRight,
   Building2,
   Lightbulb,
-  History,
   Rocket,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -34,25 +29,15 @@ import {
 } from '@/components/marketing/apple-kit';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Button } from '@/components/ui/button';
+import { BergamaForm } from '@/components/bergama/bergama-form';
 
 const YERLESKE_HREF = '/bergama/yerleske';
 const FORUM_HREF = '/bergama/forum';
 
-/** İki ana kolu tanıtan büyük seçim kartları. */
 function PillarCard({
-  eyebrow,
-  title,
-  description,
-  href,
-  icon: Icon,
-  meta,
+  eyebrow, title, description, href, icon: Icon, meta,
 }: {
-  eyebrow: string;
-  title: string;
-  description: string;
-  href: string;
-  icon: React.ElementType;
-  meta: string;
+  eyebrow: string; title: string; description: string; href: string; icon: React.ElementType; meta: string;
 }) {
   return (
     <Link
@@ -83,39 +68,36 @@ function PillarCard({
 const DEGERLER: FeatureItem[] = [
   {
     icon: Recycle,
-    title: 'Kolektif akıl',
-    description:
-      'Yerleşke tek bir kurumun değil, ortak bir bilincin eseri. Karar, kaynak ve mekân; katılan herkesle birlikte paylaşılıyor.',
+    title: 'Kolektif bilinç',
+    description: 'Yerleşke tek bir kurumun değil, ortak bir bilincin eseri. Karar, kaynak ve mekân; katılan herkesle birlikte paylaşılıyor.',
   },
   {
     icon: History,
     title: 'Mirası geleceğe taşımak',
-    description:
-      'Pergamon 2.300 yıl önce dünyanın bilim ve kültür başkentlerindendi. Bu birikimi bugünün sosyal inovasyonuyla buluşturuyoruz.',
+    description: 'Pergamon binlerce yıl önce dünyanın bilim ve kültür başkentlerindendi. Bu birikimi bugünün sosyal inovasyonuyla buluşturuyoruz.',
   },
   {
     icon: HandHeart,
     title: 'Sivil topluma açık',
-    description:
-      'Dernekler, vakıflar, kooperatifler ve gönüllüler için ortak bir çatı. Kimse yalnız çalışmasın; herkes aynı masaya otursun.',
+    description: 'Dernekler, vakıflar, kooperatifler ve gönüllüler için ortak bir çatı. Kimse yalnız çalışmasın; herkes aynı masaya otursun.',
   },
 ];
 
 export default function BergamaPage() {
   return (
     <div className="bg-white">
-      <MarketingNav label="Bergama · hangel" ctaLabel="Destek Ol" ctaHref="/donate" />
+      <MarketingNav label="Bergama" ctaLabel="Başvuruda bulun" ctaHref="#basvuru" backLabel="Ana sayfa" />
 
       {/* HERO */}
       <AppleSection
-        eyebrow="hangel derneği · Bergama girişimi"
+        eyebrow="bergama"
         title="Bergama'da miras, geleceğe ilham oluyor"
-        subtitle="İki cesur adım: kalıcı bir sosyal inovasyon yerleşkesi ve dünyaya açılan bir miras forumu."
-        description="Pergamon'un binlerce yıllık bilgi, sanat ve dayanışma mirasını; bugünün sivil toplumu, girişimciliği ve kolektif aklıyla yeniden hayata geçiriyoruz. Bu, hangel derneğinin Bergama'ya ve geleceğe verdiği sözdür."
-        badges={[{ kind: 'yeni' }, { kind: 'hangel', label: 'hangel derneği' }]}
+        subtitle="Bergama · sosyal inovasyon yerleşkesi ve İnovasyon Forumu"
+        description="Pergamon'un binlerce yıllık bilgi, sanat ve dayanışma mirasını; bugünün sivil toplumu olarak, sosyal inovasyon ve kolektif bilinçle yeniden hayata geçiriyoruz. Bu, Bergamalı atalarımız gibi bizlerin de geleceğe mirasıdır."
+        badges={[{ kind: 'yeni' }]}
         actions={[
-          { label: 'İki başlığı keşfet', href: '#kollar', variant: 'primary' },
-          { label: 'hangel derneği', href: '/about', variant: 'link' },
+          { label: 'Başvuruda bulun', href: '#basvuru', variant: 'primary' },
+          { label: 'İki kolu keşfet', href: '#kollar', variant: 'link' },
         ]}
       />
 
@@ -129,8 +111,8 @@ export default function BergamaPage() {
         <div className="mx-auto grid max-w-5xl gap-6 px-6 md:grid-cols-2">
           <PillarCard
             eyebrow="Kalıcı mekân"
-            title="Bergama Sosyal İnovasyon Yerleşkesi"
-            description="Tarihi Bergama Bedesteni'ni; STK'ların, girişimcilerin ve gönüllülerin birlikte üretttiği bir sosyal inovasyon ve sivil toplum yerleşkesine dönüştürüyoruz."
+            title="Sosyal İnovasyon Yerleşkesi"
+            description="Tarihi Bergama Bedesteni'ni; STK'ların, girişimcilerin ve gönüllülerin birlikte ürettiği bir sosyal inovasyon ve sivil toplum yerleşkesine dönüştürüyoruz."
             href={YERLESKE_HREF}
             icon={Landmark}
             meta="Bergama Bedesteni"
@@ -156,43 +138,9 @@ export default function BergamaPage() {
         <FeatureGrid items={DEGERLER} columns={3} />
       </AppleSection>
 
-      {/* HANGEL BAĞI */}
-      <section className="border-b border-black/5 bg-black py-20 text-white md:py-28">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
-            <Sparkles className="h-7 w-7 text-primary" aria-hidden="true" />
-          </div>
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">hangel derneği faaliyeti</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-5xl">
-            İyiliği ölçeklendiren teknolojiyle, taşın hafızasını buluşturuyoruz
-          </h2>
-          <p className="mt-5 text-base leading-relaxed text-white/70 md:text-lg">
-            hangel; bağışı, gönüllülüğü ve sivil toplumu tek çatı altında büyüten bir sosyal fayda platformu.
-            Bergama girişimi, bu birikimi sahaya taşıyor: dijitalde kurduğumuz dayanışmayı, Bergama'da taşa ve
-            insana dokunan kalıcı bir esere dönüştürüyoruz.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Button asChild size="lg" className="h-12 rounded-full px-8 font-bold">
-              <Link href={YERLESKE_HREF}>Yerleşkeyi keşfet</Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="h-12 rounded-full border-white/20 bg-transparent px-6 font-bold text-white hover:bg-white hover:text-black"
-            >
-              <Link href={FORUM_HREF}>Forumu keşfet</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* KISA YOLCULUK ŞERİDİ */}
-      <AppleSection
-        compact
-        eyebrow="Yol haritası"
-        title="Adım adım, birlikte"
-      >
+      {/* YOL HARİTASI */}
+      <section className="border-b border-black/5 bg-white py-20 md:py-28">
+        <SectionHeading eyebrow="Yol haritası" title="Adım adım, birlikte" />
         <div className="mx-auto grid max-w-5xl gap-5 px-6 sm:grid-cols-3">
           {[
             { icon: Building2, step: '01', title: 'Mekânı hazırlıyoruz', text: 'Bergama Bedesteni, koruma-kullanma dengesiyle yerleşkeye dönüştürülüyor.' },
@@ -201,7 +149,7 @@ export default function BergamaPage() {
           ].map((s) => {
             const Icon = s.icon;
             return (
-              <div key={s.step} className="rounded-3xl border border-black/5 bg-white p-6 text-left shadow-sm">
+              <div key={s.step} className="rounded-3xl border border-black/5 bg-[#f5f5f7] p-6 text-left">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
                     <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
@@ -214,27 +162,37 @@ export default function BergamaPage() {
             );
           })}
         </div>
-      </AppleSection>
+      </section>
 
-      {/* KAPANIŞ CTA */}
-      <section className="bg-primary py-20 text-center text-primary-foreground md:py-28">
+      {/* BAŞVURU FORMU */}
+      <section id="basvuru" className="bg-[#f5f5f7] py-20 md:py-28">
+        <SectionHeading
+          eyebrow="Katıl"
+          title="Bu hikâyenin bir parçası ol"
+          description="İster yerleşkede üret, ister foruma katıl. Bergama'da geleceği birlikte yazalım — bilgilerini bırak, seninle iletişime geçelim."
+        />
+        <div className="px-6">
+          <BergamaForm
+            kaynak="genel"
+            title="Başvuruda bulun"
+            description="Bergama girişimine katılmak, katkı sunmak veya bilgi almak için."
+            ilgiSecenekleri={['Yerleşke', 'Forum', 'Gönüllülük', 'Kurumsal iş birliği', 'Bireysel destek']}
+          />
+        </div>
+      </section>
+
+      {/* KAPANIŞ */}
+      <section className="bg-primary py-16 text-center text-primary-foreground md:py-20">
         <div className="mx-auto max-w-2xl px-6">
-          <CalendarDays className="mx-auto mb-5 h-10 w-10" aria-hidden="true" />
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Bu hikâyenin bir parçası ol</h2>
-          <p className="mt-4 text-base leading-relaxed opacity-90 md:text-lg">
-            İster mekânı birlikte kuralım, ister foruma katıl. Bergama'da geleceği hep beraber yazıyoruz.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">İki kolu daha yakından tanı</h2>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" variant="secondary" className="h-12 rounded-full bg-white px-8 font-bold text-primary hover:bg-white/90">
-              <Link href="/bergama/yerleske/katil">Yerleşkeye katıl</Link>
+              <Link href={YERLESKE_HREF}>Sosyal İnovasyon Yerleşkesi</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="h-12 rounded-full border-white/40 bg-transparent px-6 font-bold text-white hover:bg-white hover:text-primary">
-              <Link href="/bergama/forum/kayit">Forum kaydı</Link>
+              <Link href={FORUM_HREF}>Pergamon İnovasyon Mirası Forumu</Link>
             </Button>
           </div>
-          <p className="mt-6 flex items-center justify-center gap-2 text-sm opacity-80">
-            <Users className="h-4 w-4" /> hangel derneği · Bergama girişimi
-          </p>
         </div>
       </section>
 
