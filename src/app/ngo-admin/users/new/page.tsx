@@ -16,6 +16,7 @@ import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/fires
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { COLLECTIONS } from '@/firebase/collections';
 import { AdminList } from '@/app/ngo-admin/users/_components/admin-list';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 const roles = [
     { id: 'Genel Yönetici', label: 'Genel Yönetici', description: 'Tüm yetkilere sahiptir. Profil, finans, gönüllü ve içerik yönetimini tam yetkiyle gerçekleştirebilir.' },
@@ -53,7 +54,11 @@ export default function NewUserPage() {
     const [role, setRole] = useState('Genel Yönetici');
     const [isSending, setIsSending] = useState(false);
 
-    const ngoId = searchParams.get('id') || authUser?.uid || null;
+    // Aktif kurum (panelde hangi kurumdaysa) — context URL/localStorage/fallback ile
+    // çözer. invite route'una orgId+kind geçmek için ŞART: yoksa çok-kurumlu yönetici
+    // yanlış (ilk) kuruma davet eder. searchParams.get('id') yalnız yedek.
+    const { id: activeId, kind: activeKind } = useActiveEntity();
+    const ngoId = activeId || searchParams.get('id') || authUser?.uid || null;
 
     // Tüm üyeleri çek (telefon eşleştirmesi için)
     const usersQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.users) : null), [db]);
@@ -145,7 +150,12 @@ export default function NewUserPage() {
             const apiRes = await fetch('/api/ngo-admin/users/invite', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ inviteeUserId: matchedUser.id, role }),
+                // orgId + kind: AKTİF kuruma ata (çok-kurumlu yöneticide doğru kurum).
+                body: JSON.stringify({
+                    inviteeUserId: matchedUser.id,
+                    role,
+                    ...(activeId && activeKind ? { orgId: activeId, kind: activeKind } : {}),
+                }),
             });
             const apiJson = await apiRes.json().catch(() => ({} as Record<string, unknown>));
             if (!apiRes.ok) {

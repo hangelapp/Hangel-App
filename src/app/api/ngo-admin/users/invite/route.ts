@@ -11,6 +11,11 @@ type EntityCol = 'ngo' | 'brand' | 'club';
 interface InviteBody {
   inviteeUserId: string;
   role: string;
+  // AKTİF kurum — panelde hangi kurumdayken davet edildiği. Client (users/new)
+  // gönderir. Verilmezse caller'ın ilk managed*Id'sine düşülür (eski davranış).
+  // KRİTİK: bu olmadan çok-kurumlu yönetici hep ilk (genelde yanlış) kuruma atar.
+  orgId?: string;
+  kind?: EntityCol;
 }
 
 const KIND_TO_COL: Record<EntityCol, string> = {
@@ -67,7 +72,7 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Geçersiz JSON' }, { status: 400 });
   }
-  const { inviteeUserId, role } = body;
+  const { inviteeUserId, role, orgId: bodyOrgId, kind: bodyKind } = body;
   if (!inviteeUserId || typeof inviteeUserId !== 'string') {
     return NextResponse.json({ error: 'inviteeUserId zorunlu' }, { status: 400 });
   }
@@ -90,9 +95,25 @@ export async function POST(req: NextRequest) {
 
   let kind: EntityCol | null = null;
   let entityId: string | null = null;
-  if (callerData.managedNgoId) { kind = 'ngo'; entityId = callerData.managedNgoId; }
-  else if (callerData.managedBrandId) { kind = 'brand'; entityId = callerData.managedBrandId; }
-  else if (callerData.managedClubId) { kind = 'club'; entityId = callerData.managedClubId; }
+
+  // 1) AKTİF kurum body'den geldiyse (client panelde hangi kurumdaysa) onu kullan —
+  //    AMA caller'ın o kuruma gerçekten yetkili olduğunu doğrula (güvenlik: biri
+  //    body ile başka kuruma atama yapamasın). Super-admin her kuruma yetkili.
+  if (bodyOrgId && (bodyKind === 'ngo' || bodyKind === 'brand' || bodyKind === 'club')) {
+    const managedField = KIND_TO_MANAGED[bodyKind];
+    const yetkili = isSuperAdmin || callerData[managedField] === bodyOrgId;
+    if (!yetkili) {
+      return NextResponse.json({ error: 'Bu kuruluş için yetkiniz yok' }, { status: 403 });
+    }
+    kind = bodyKind;
+    entityId = bodyOrgId;
+  } else {
+    // 2) Body'de aktif kurum yoksa eski davranış: caller'ın ilk managed*Id'si.
+    //    (Tek kurum yöneten kullanıcılar için doğru; çok-kurumluda body şart.)
+    if (callerData.managedNgoId) { kind = 'ngo'; entityId = callerData.managedNgoId; }
+    else if (callerData.managedBrandId) { kind = 'brand'; entityId = callerData.managedBrandId; }
+    else if (callerData.managedClubId) { kind = 'club'; entityId = callerData.managedClubId; }
+  }
 
   if (!isSuperAdmin && (!kind || !entityId)) {
     return NextResponse.json({ error: 'Kuruluş yönetici yetkiniz yok' }, { status: 403 });
