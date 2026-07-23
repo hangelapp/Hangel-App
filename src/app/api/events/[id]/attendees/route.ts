@@ -49,6 +49,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     date?: string; startDate?: string;
     location?: { address?: string; district?: string; city?: string };
     managerUids?: string[];
+    color?: string;
+    sponsors?: { id?: string; name?: string; logoUrl?: string }[];
+    agenda?: { time?: string; title?: string }[];
   };
   const managerSet = new Set(ev.managerUids || []);
 
@@ -109,7 +112,19 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const locationStr = loc ? [loc.address, loc.district, loc.city].map((s) => (s || '').trim()).filter(Boolean).join(', ') : '';
 
   return NextResponse.json({
-    event: { name: ev.name || '', date: ev.startDate || ev.date || '', location: locationStr },
+    event: {
+      name: ev.name || '',
+      date: ev.startDate || ev.date || '',
+      location: locationStr,
+      color: ev.color || '',
+      // Yaka kartı için sponsor logo şeridi + program (arka yüz).
+      sponsors: Array.isArray(ev.sponsors)
+        ? ev.sponsors.filter((s) => s?.logoUrl).map((s) => ({ name: s.name || '', logoUrl: s.logoUrl || '' }))
+        : [],
+      agenda: Array.isArray(ev.agenda)
+        ? ev.agenda.filter((x) => x?.title).map((x) => ({ time: x.time || '', title: x.title || '' }))
+        : [],
+    },
     attendees,
   });
 }

@@ -203,6 +203,12 @@ export type Event = {
   // Kurumsal/özel katılımcılar (belediye/valilik/marka/üniversite/STK) — logo+ad+web ile
   // etkinlik detayının altında gruplu başlıklarla yayınlanır.
   corporateParticipants?: CorporateParticipant[];
+  // Sponsorlar/destekleyenler — ad + logo + web; detay sayfası, yaka kartı ve
+  // sertifikada logo şeridi olarak görünür (corporateParticipants'tan ayrı).
+  sponsors?: EventSponsor[];
+  // Etkinlik tema rengi (hex, örn. "#f34723"). Yaka kartı + detay vurgularında
+  // kullanılır. Boşsa hangel turuncusu varsayılır.
+  color?: string;
   // Canlı etkinlik modu — organizatör "Canlı yayını başlat" deyince true olur.
   live?: boolean;
   liveStartedAt?: unknown;
@@ -244,6 +250,15 @@ export type CorporateParticipantType = 'stk' | 'belediye' | 'valilik' | 'marka' 
 export type CorporateParticipant = {
   id: string;
   type: CorporateParticipantType;
+  name: string;
+  logoUrl?: string;
+  website?: string;
+};
+
+/** Etkinlik sponsoru/destekleyeni — ad + logo + web. Detay/yaka kartı/sertifikada
+ *  logo şeridi olarak yayınlanır. corporateParticipants'tan ayrı (tür/başlık yok). */
+export type EventSponsor = {
+  id: string;
   name: string;
   logoUrl?: string;
   website?: string;

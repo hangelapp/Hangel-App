@@ -27,7 +27,7 @@ const EDITABLE_KEYS = [
   'name', 'date', 'startDate', 'endDate', 'time', 'type', 'tags', 'language',
   'capacity', 'participationCondition', 'providesCertificate', 'certificateDelivery', 'location',
   'description', 'imageUrl', 'contributors', 'agenda', 'organizerLogoUrl',
-  'eventLogoUrl', 'corporateParticipants', 'points',
+  'eventLogoUrl', 'corporateParticipants', 'points', 'sponsors', 'color',
 ] as const;
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {

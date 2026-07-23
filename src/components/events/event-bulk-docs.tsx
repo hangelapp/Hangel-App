@@ -27,7 +27,9 @@ import { buildEventCertificateJpeg } from '@/lib/event-certificate';
 import { buildVolunteerCertificateJpeg } from '@/lib/volunteer-certificate';
 
 type Attendee = { name?: string; email?: string; userId?: string; isManager?: boolean };
-type EventInfo = { name?: string; date?: string; location?: string };
+type SponsorLite = { name?: string; logoUrl?: string };
+type AgendaLite = { time?: string; title?: string };
+type EventInfo = { name?: string; date?: string; location?: string; color?: string; sponsors?: SponsorLite[]; agenda?: AgendaLite[] };
 type DocKind = 'badge' | 'cert';
 type OrgKind = 'event' | 'volunteer';
 
@@ -68,49 +70,84 @@ async function qrDataUri(text: string, size = 220): Promise<string> {
   }
 }
 
-function badgeCardHtml(a: Attendee, ev: EventInfo, ngoName: string, logoUrl: string | undefined, backQr: string, orgKind: OrgKind) {
-  // Bu ilana atanmış yönetici → "KOORDİNATÖR"; değilse gönüllü/katılımcı.
-  const roleLabel = a.isManager ? 'KOORDİNATÖR' : orgKind === 'volunteer' ? 'GÖNÜLLÜ' : 'KATILIMCI';
+function badgeCardHtml(a: Attendee, ev: EventInfo, ngoName: string, logoUrl: string | undefined, qr: string, orgKind: OrgKind) {
+  // Bu ilana atanmış yönetici → "GÖREVLİ"; değilse gönüllü/katılımcı.
+  const roleLabel = a.isManager ? 'GÖREVLİ' : orgKind === 'volunteer' ? 'GÖNÜLLÜ' : 'KATILIMCI';
   const logo = logoUrl ? `<img class="b-logo" src="${esc(logoUrl)}" alt="">` : `<div class="b-logo b-logo-ph">${esc((ngoName || 'H').charAt(0))}</div>`;
-  // A6 kart = üstte ÖN (A7), altta ARKA (A7, katlama çizgisi). Katlanınca ön görünür.
-  return `<div class="badge">
+  const dateLine = esc(ev.date || '');
+  const locLine = esc(ev.location || '');
+  // Sponsor logo şeridi (ön yüz altı) — en fazla 4 logo.
+  const sponsors = (ev.sponsors || []).filter((s) => s.logoUrl).slice(0, 4);
+  const sponsorStrip = sponsors.length
+    ? `<div class="b-sponsors">${sponsors.map((s) => `<img src="${esc(s.logoUrl || '')}" alt="${esc(s.name || '')}">`).join('')}</div>`
+    : '';
+  // Program (arka yüz) — agenda saat+başlık satırları.
+  const agenda = (ev.agenda || []).filter((x) => x.title).slice(0, 8);
+  const programRows = agenda.length
+    ? agenda.map((x) => `<div class="b-prow"><span class="b-ptime">${esc(x.time || '')}</span><span class="b-ptitle">${esc(x.title || '')}</span></div>`).join('')
+    : `<div class="b-pempty">Program etkinlik günü paylaşılacaktır.</div>`;
+
+  // A6 kart = üstte ÖN (A7), altta ARKA (A7). Ortada tek kesikli katlama çizgisi.
+  // ÖN: logo+kurum, rol, ad, ünvan, tarih/saat/yer, giriş QR'ı, sponsor şeridi.
+  // ARKA: PROGRAM + iletişim QR'ı (180° döner ki katlanınca düz okunur).
+  const acc = /^#[0-9a-fA-F]{6}$/.test(ev.color || '') ? ev.color : '#ff5722';
+  return `<div class="badge" style="--acc:${acc}">
     <div class="b-front">
       <div class="b-top">${logo}<span class="b-ngo">${esc(ngoName)}</span></div>
-      <div class="b-mid">
-        <div class="b-name">${esc(a.name || (orgKind === 'volunteer' ? 'Gönüllü' : 'Katılımcı'))}</div>
-        <div class="b-role">${roleLabel}</div>
-      </div>
+      <div class="b-role">${roleLabel}</div>
+      <div class="b-name">${esc(a.name || (orgKind === 'volunteer' ? 'Gönüllü' : 'Katılımcı'))}</div>
       <div class="b-ev">${esc(ev.name || '')}</div>
-      <div class="b-meta">${esc([ev.date, ev.location].filter(Boolean).join(' · '))}</div>
+      <div class="b-meta">${[dateLine, locLine].filter(Boolean).join('<br>')}</div>
+      <div class="b-entry">
+        ${qr ? `<img class="b-qr-sm" src="${qr}" alt="QR">` : ''}
+        <span class="b-entry-t">Etkinliğe giriş için<br>karekodu okutun</span>
+      </div>
+      ${sponsorStrip}
     </div>
-    <div class="b-fold"><span>katlama çizgisi</span></div>
+    <div class="b-fold"><span class="b-fold-line"></span></div>
     <div class="b-back">
-      ${backQr ? `<img class="b-qr" src="${backQr}" alt="QR">` : ''}
-      <div class="b-back-t">${esc(ev.name || 'hangel')}</div>
-      <div class="b-back-s">Doğrulamak / detay için okut · hangel.org</div>
+      <div class="b-back-title">PROGRAM</div>
+      <div class="b-program">${programRows}</div>
+      <div class="b-entry b-entry-back">
+        ${qr ? `<img class="b-qr-sm" src="${qr}" alt="QR">` : ''}
+        <span class="b-entry-t">Tüm bilgiler için<br>karekodu okutun · hangel.org</span>
+      </div>
     </div>
   </div>`;
 }
 
 const BADGE_STYLES = `
   .sheet{padding:8mm;display:grid;grid-template-columns:1fr 1fr;gap:0;justify-items:center;align-content:start}
-  .badge{width:105mm;height:148mm;display:flex;flex-direction:column;border:1px dashed #d0d0d5;box-sizing:border-box;page-break-inside:avoid;overflow:hidden}
-  .b-front{height:calc(50% - 4mm);display:flex;flex-direction:column;padding:8mm 8mm 2mm;text-align:center}
-  .b-top{display:flex;align-items:center;gap:6px;justify-content:center}
-  .b-logo{width:30px;height:30px;border-radius:8px;object-fit:contain;background:#fff}
-  .b-logo-ph{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:800 16px system-ui;color:#ff5722;background:#fff2ee}
-  .b-ngo{font:700 12px/1.15 system-ui;color:#ff5722;max-width:60mm}
-  .b-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
-  .b-name{font:800 22px/1.1 -apple-system,system-ui;letter-spacing:-.02em;color:#1c1c1e}
-  .b-role{font:700 10px/1 system-ui;letter-spacing:.18em;color:#8e8e93;background:rgba(120,120,128,.12);padding:5px 11px;border-radius:980px}
-  .b-ev{font:700 12px/1.2 system-ui;color:#1c1c1e}
-  .b-meta{font:500 10px/1.3 system-ui;color:#8e8e93;margin-top:2px}
-  .b-fold{height:8mm;display:flex;align-items:center;justify-content:center;border-top:1px dashed #c7c7cc;border-bottom:1px dashed #c7c7cc;background:#fafafa}
-  .b-fold span{font:600 7px/1 system-ui;letter-spacing:.15em;color:#c7c7cc;text-transform:uppercase}
-  .b-back{height:calc(50% - 4mm);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8mm;text-align:center;transform:rotate(180deg)}
-  .b-qr{width:34mm;height:34mm}
-  .b-back-t{font:700 12px/1.2 system-ui;color:#1c1c1e}
-  .b-back-s{font:500 9px/1.3 system-ui;color:#8e8e93;max-width:70mm}
+  /* --acc = etkinlik tema rengi (badgeCardHtml sarıcısı inline set eder). */
+  .badge{width:105mm;height:148mm;display:flex;flex-direction:column;border:1px dashed #d0d0d5;box-sizing:border-box;page-break-inside:avoid;overflow:hidden;--acc:#ff5722}
+  /* Sol dış renk şeridi (kimlik hissi) her iki yarıda da görünür. */
+  .b-front,.b-back{position:relative;height:calc(50% - 4mm);display:flex;flex-direction:column;padding:7mm 7mm 3mm;text-align:center;box-sizing:border-box}
+  .b-front::before,.b-back::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4mm;background:var(--acc)}
+  .b-top{display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:2mm}
+  .b-logo{width:28px;height:28px;border-radius:7px;object-fit:contain;background:#fff}
+  .b-logo-ph{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font:800 15px system-ui;color:var(--acc);background:rgba(0,0,0,.04)}
+  .b-ngo{font:700 11px/1.15 system-ui;color:var(--acc);max-width:58mm;text-align:left}
+  .b-role{font:700 9px/1 system-ui;letter-spacing:.2em;color:var(--acc);text-transform:uppercase;margin-bottom:1mm}
+  .b-name{font:800 20px/1.05 -apple-system,system-ui;letter-spacing:-.02em;color:#1c1c1e;margin-bottom:1mm}
+  .b-ev{font:700 10.5px/1.25 system-ui;color:#1c1c1e;margin-top:1mm}
+  .b-meta{font:500 8.5px/1.35 system-ui;color:#6e6e73;margin-top:1mm;flex:1}
+  .b-entry{display:flex;align-items:center;gap:5px;justify-content:center;margin-top:auto}
+  .b-qr-sm{width:16mm;height:16mm}
+  .b-entry-t{font:600 7.5px/1.25 system-ui;color:#3a3a3c;text-align:left}
+  .b-sponsors{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2mm;flex-wrap:wrap}
+  .b-sponsors img{height:8mm;max-width:22mm;object-fit:contain;filter:grayscale(1);opacity:.75}
+  .b-fold{height:8mm;display:flex;align-items:center;justify-content:center;background:#fff}
+  /* Tek kesikli katlama çizgisi (------) — belirgin tire+boşluk, katlama kılavuzu. */
+  .b-fold-line{display:block;width:100%;height:1.6px;background:repeating-linear-gradient(to right,#9a9aa0 0 7px,transparent 7px 14px)}
+  /* Arka yüz 180° döner → kart katlanınca program düz okunur. */
+  .b-back{transform:rotate(180deg)}
+  .b-back-title{font:800 9px/1 system-ui;letter-spacing:.22em;color:var(--acc);text-transform:uppercase;margin-bottom:2mm}
+  .b-program{flex:1;display:flex;flex-direction:column;gap:1.5mm;width:100%;text-align:left;overflow:hidden}
+  .b-prow{display:flex;gap:5px;align-items:baseline}
+  .b-ptime{font:700 8px/1.2 system-ui;color:var(--acc);min-width:16mm;white-space:nowrap}
+  .b-ptitle{font:500 8px/1.25 system-ui;color:#1c1c1e;flex:1}
+  .b-pempty{font:500 8.5px/1.4 system-ui;color:#8e8e93;flex:1;display:flex;align-items:center;justify-content:center;text-align:center}
+  .b-entry-back{margin-top:2mm}
   @page{size:A4 portrait;margin:0}
   @media print{ body{zoom:1 !important} .badge{border-color:#e5e5ea} }
 `;

@@ -76,6 +76,7 @@ import type {
     EventAgendaItem,
     CorporateParticipant,
     CorporateParticipantType,
+    EventSponsor,
     EventPoint,
 } from '@/lib/types';
 import { fireOrgLifecycle } from '@/lib/org-lifecycle-client';
@@ -116,6 +117,19 @@ const CORPORATE_PARTICIPANT_TYPE_OPTIONS: { value: CorporateParticipantType; lab
     { value: 'valilik', label: 'Valilik' },
     { value: 'marka', label: 'Marka' },
     { value: 'universite', label: 'Üniversite' },
+];
+
+// Etkinlik tema rengi hazır paleti — seçilen renk yaka kartına (--acc) ve
+// detay vurgularına yansır. Boş = hangel turuncusu.
+const EVENT_COLOR_PALETTE: { value: string; label: string }[] = [
+    { value: '#ff5722', label: 'hangel turuncu' },
+    { value: '#e11d48', label: 'Kırmızı' },
+    { value: '#7c3aed', label: 'Mor' },
+    { value: '#2563eb', label: 'Mavi' },
+    { value: '#0891b2', label: 'Turkuaz' },
+    { value: '#059669', label: 'Yeşil' },
+    { value: '#ca8a04', label: 'Altın' },
+    { value: '#1f2937', label: 'Antrasit' },
 ];
 
 type EventStatus = 'Beklemede' | 'Yayında' | 'Aktif' | 'Reddedildi';
@@ -507,10 +521,16 @@ export default function EventManagementPage() {
     const [agenda, setAgenda] = useState<EventAgendaItem[]>([]);
     // Kurumsal / özel katılımcılar (STK / belediye / valilik / marka / üniversite).
     const [corporateParticipants, setCorporateParticipants] = useState<CorporateParticipant[]>([]);
+    // Sponsorlar / destekleyenler (ad + logo + web) — katılımcılardan ayrı.
+    const [sponsors, setSponsors] = useState<EventSponsor[]>([]);
+    // Etkinlik tema rengi (hex) — yaka kartı + detay vurgularına yansır.
+    const [eventColor, setEventColor] = useState<string>('');
     // Katılım noktaları — çok-noktalı etkinlik (81 il vb.). Tek-noktalı etkinlikte boş kalır.
     const [points, setPoints] = useState<EventPoint[]>([]);
     // Katılımcı logo yükleme durumu (satır id → yükleniyor mu).
     const [participantLogoUploading, setParticipantLogoUploading] = useState<Record<string, boolean>>({});
+    // Sponsor logo yükleme durumu (satır id → yükleniyor mu).
+    const [sponsorLogoUploading, setSponsorLogoUploading] = useState<Record<string, boolean>>({});
     const posterInputRef = useRef<HTMLInputElement>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
 
@@ -607,6 +627,36 @@ export default function EventManagementPage() {
         }
     };
 
+    // ── Sponsorlar (katılımcı deseniyle aynı; tür/başlık yok) ──
+    const addSponsor = () =>
+        setSponsors((prev) => [...prev, { id: crypto.randomUUID(), name: '', website: '', logoUrl: '' }]);
+    const updateSponsor = (idx: number, patch: Partial<EventSponsor>) =>
+        setSponsors((prev) => prev.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
+    const removeSponsor = (idx: number) =>
+        setSponsors((prev) => prev.filter((_, i) => i !== idx));
+    const handleSponsorLogoFile = async (idx: number, file: File | null) => {
+        if (!file || !activeEntity) return;
+        if (file.size > 3 * 1024 * 1024) {
+            toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'Logo en fazla 3 MB olmalı.' });
+            return;
+        }
+        const rowId = sponsors[idx]?.id || crypto.randomUUID();
+        setSponsorLogoUploading((prev) => ({ ...prev, [rowId]: true }));
+        try {
+            const storage = getStorage();
+            const ext = (file.name.split('.').pop() || 'png').toLowerCase();
+            const r = storageRef(storage, `event-sponsors/${activeEntity.data.id}/${rowId}.${ext}`);
+            await uploadBytes(r, file, { contentType: file.type });
+            const url = await getDownloadURL(r);
+            updateSponsor(idx, { logoUrl: url });
+        } catch (uploadErr) {
+            console.error('Sponsor logo upload failed', uploadErr);
+            toast({ variant: 'destructive', title: 'Logo yüklenemedi', description: 'Tekrar deneyin.' });
+        } finally {
+            setSponsorLogoUploading((prev) => ({ ...prev, [rowId]: false }));
+        }
+    };
+
     // ── Katılım noktaları (çok-noktalı etkinlik) ──
     const addPoint = () =>
         setPoints((prev) => [...prev, { id: crypto.randomUUID(), name: '', address: '', city: '', district: '', mapsUrl: '' }]);
@@ -669,6 +719,8 @@ export default function EventManagementPage() {
         setContributorLookups([]);
         setAgenda([]);
         setCorporateParticipants([]);
+        setSponsors([]);
+        setEventColor('');
         setPoints([]);
         setParticipantLogoUploading({});
         if (evPosterPreview) URL.revokeObjectURL(evPosterPreview);
@@ -699,6 +751,7 @@ export default function EventManagementPage() {
             description?: string; imageUrl?: string; eventLogoUrl?: string;
             contributors?: EventContributor[]; agenda?: EventAgendaItem[];
             corporateParticipants?: CorporateParticipant[]; points?: EventPoint[];
+            sponsors?: EventSponsor[]; color?: string;
         };
         setEvName(e.name || '');
         setEvDate(e.date || (e.startDate || '').split(' ')[0] || '');
@@ -731,6 +784,15 @@ export default function EventManagementPage() {
                 logoUrl: c.logoUrl || '',
             })),
         );
+        setSponsors(
+            (e.sponsors || []).map((s) => ({
+                id: s.id || crypto.randomUUID(),
+                name: s.name || '',
+                website: s.website || '',
+                logoUrl: s.logoUrl || '',
+            })),
+        );
+        setEventColor(e.color || '');
         setPoints(
             (e.points || []).map((p) => ({
                 id: p.id || crypto.randomUUID(),
@@ -919,6 +981,23 @@ export default function EventManagementPage() {
                     return out;
                 });
 
+            // Sponsorlar — ismi olan satırları al, boş opsiyonelleri yazma.
+            const cleanSponsors: EventSponsor[] = sponsors
+                .map((s) => ({
+                    id: s.id || crypto.randomUUID(),
+                    name: (s.name || '').trim(),
+                    website: (s.website || '').trim(),
+                    logoUrl: (s.logoUrl || '').trim(),
+                }))
+                .filter((s) => s.name.length > 0)
+                .map((s) => {
+                    const out: EventSponsor = { id: s.id, name: s.name };
+                    if (s.website) out.website = s.website;
+                    if (s.logoUrl) out.logoUrl = s.logoUrl;
+                    return out;
+                });
+            const cleanColor = /^#[0-9a-fA-F]{6}$/.test(eventColor) ? eventColor : '';
+
             // Katılım noktaları — adı VEYA adresi olan satırları al.
             const cleanPoints: EventPoint[] = points
                 .map((p) => ({
@@ -978,6 +1057,8 @@ export default function EventManagementPage() {
                         contributors: cleanContributors,
                         agenda: cleanAgenda,
                         corporateParticipants: cleanCorporateParticipants,
+                        sponsors: cleanSponsors,
+                        color: cleanColor,
                         points: cleanPoints,
                         organizerLogoUrl,
                     }),
@@ -1031,6 +1112,8 @@ export default function EventManagementPage() {
                 contributors: cleanContributors,
                 agenda: cleanAgenda,
                 corporateParticipants: cleanCorporateParticipants,
+                sponsors: cleanSponsors,
+                color: cleanColor,
                 points: cleanPoints,
                 organizerLogoUrl,
                 status: 'Beklemede' as EventStatus,
@@ -1644,6 +1727,109 @@ export default function EventManagementPage() {
                                     })}
                                 </div>
                             )}
+                        </div>
+
+                        {/* Sponsorlar / Destekleyenler */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label className="flex items-center gap-2">
+                                    <Building2 className="h-4 w-4 text-muted-foreground" /> Sponsorlar / Destekleyenler
+                                </Label>
+                                <Button type="button" variant="outline" size="sm" onClick={addSponsor}>
+                                    <Plus className="h-3.5 w-3.5 mr-1.5" /> Ekle
+                                </Button>
+                            </div>
+                            {sponsors.length === 0 ? (
+                                <p className="text-xs text-muted-foreground px-1">
+                                    Etkinliği destekleyen sponsorların logosunu eklemek için “Ekle”ye dokun. Logolar etkinlik sayfasında, yaka kartında ve sertifikada görünür.
+                                </p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {sponsors.map((s, idx) => {
+                                        const uploading = Boolean(sponsorLogoUploading[s.id]);
+                                        return (
+                                            <div key={s.id} className="p-3 border rounded-xl bg-card space-y-2">
+                                                <div className="space-y-1">
+                                                    <Label className="text-xs text-muted-foreground">Sponsor adı</Label>
+                                                    <Input
+                                                        value={s.name}
+                                                        onChange={(e) => updateSponsor(idx, { name: e.target.value })}
+                                                        placeholder="Örn. Social Business Global"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <Label className="text-xs text-muted-foreground">Web sitesi</Label>
+                                                    <Input
+                                                        type="url"
+                                                        value={s.website || ''}
+                                                        onChange={(e) => updateSponsor(idx, { website: e.target.value })}
+                                                        placeholder="https://…"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <Label className="text-xs text-muted-foreground">Logo</Label>
+                                                    <div className="flex items-center gap-3">
+                                                        {s.logoUrl ? (
+                                                            <div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden border bg-muted">
+                                                                <NextImage src={s.logoUrl} alt={`${s.name} logosu`} fill className="object-contain" unoptimized />
+                                                            </div>
+                                                        ) : null}
+                                                        <input
+                                                            id={`sponsor-logo-${s.id}`}
+                                                            type="file"
+                                                            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                                            className="hidden"
+                                                            onChange={(e) => handleSponsorLogoFile(idx, e.target.files?.[0] || null)}
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            disabled={uploading}
+                                                            onClick={() => document.getElementById(`sponsor-logo-${s.id}`)?.click()}
+                                                        >
+                                                            {uploading
+                                                                ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Yükleniyor…</>
+                                                                : <><Upload className="h-3.5 w-3.5 mr-1.5" /> {s.logoUrl ? 'Değiştir' : 'Logo yükle'}</>}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-end">
+                                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeSponsor(idx)}>
+                                                        <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Sil
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Etkinlik Rengi — yaka kartı + detay vurgu rengi */}
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                                <span className="inline-block h-4 w-4 rounded-full border" style={{ background: eventColor || '#ff5722' }} /> Etkinlik Rengi
+                            </Label>
+                            <p className="text-xs text-muted-foreground px-1">
+                                Seçtiğin renk yaka kartına ve etkinlik vurgularına yansır. Boş bırakırsan hangel turuncusu kullanılır.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {EVENT_COLOR_PALETTE.map((col) => {
+                                    const active = (eventColor || '#ff5722').toLowerCase() === col.value.toLowerCase();
+                                    return (
+                                        <button
+                                            key={col.value}
+                                            type="button"
+                                            title={col.label}
+                                            aria-label={col.label}
+                                            onClick={() => setEventColor(col.value)}
+                                            className={`h-9 w-9 rounded-full border-2 transition ${active ? 'border-foreground ring-2 ring-offset-2 ring-foreground/30' : 'border-transparent'}`}
+                                            style={{ background: col.value }}
+                                        />
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         {/* Katılım Noktaları (çok-noktalı etkinlik) */}

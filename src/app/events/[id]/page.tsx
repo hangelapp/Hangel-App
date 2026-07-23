@@ -1248,6 +1248,29 @@ export default function EventDetailPage() {
               <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} shareMessage={eventShareMessage} />
             </div>
 
+            {/* Sponsorlar / Destekleyenler — logo şeridi (varsa) */}
+            {Array.isArray(event.sponsors) && event.sponsors.filter((s) => s.logoUrl).length > 0 && (
+              <div className="pt-2">
+                <h2 className="text-sm font-bold tracking-wide text-muted-foreground uppercase mb-3">Sponsorlar & Destekleyenler</h2>
+                <div className="flex flex-wrap items-center gap-4">
+                  {event.sponsors.filter((s) => s.logoUrl).map((s) => {
+                    const inner = (
+                      <div className="relative h-12 w-28 rounded-lg bg-white border flex items-center justify-center overflow-hidden p-1.5">
+                        <img src={s.logoUrl} alt={s.name || 'Sponsor'} className="max-h-full max-w-full object-contain" />
+                      </div>
+                    );
+                    return s.website ? (
+                      <a key={s.id} href={s.website} target="_blank" rel="noopener noreferrer" title={s.name} className="transition hover:opacity-80">
+                        {inner}
+                      </a>
+                    ) : (
+                      <div key={s.id} title={s.name}>{inner}</div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Katılımcılar — kurumsal/özel katılımcılar (türe göre gruplu), en altta */}
             <EventParticipants event={event} />
 
