@@ -271,7 +271,7 @@ function VolunteerCompletionsReport() {
   const db = useFirestore();
   const { user: authUser } = useUser();
   const { toast } = useToast();
-  const { id: activeId, isLoading: entityLoading } = useActiveEntity();
+  const { id: activeId, isLoading: entityLoading, withEntityHeaders } = useActiveEntity();
   const { isNgoAdmin, isLoading: adminLoading } = useIsNgoAdmin();
 
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -339,7 +339,7 @@ function VolunteerCompletionsReport() {
     }
     setBusyId(completionId);
     try {
-      const res = await fetch(`/api/ngo-admin/volunteer-completions/${completionId}/approve`, {
+      const res = await fetch(`/api/ngo-admin/volunteer-completions/${completionId}/approve`, withEntityHeaders({
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -349,7 +349,7 @@ function VolunteerCompletionsReport() {
           approved: true,
           ...(adjustedHours !== undefined ? { adjustedHours } : {}),
         }),
-      });
+      }));
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { errorCode?: string };
         const friendly =

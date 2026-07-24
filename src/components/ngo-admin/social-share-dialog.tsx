@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 // AI flow ile birebir uyumlu (src/ai/flows/social-share-types.ts).
 type SocialPlatform = 'x' | 'instagram' | 'facebook' | 'linkedin' | 'whatsapp';
@@ -57,6 +58,7 @@ const PLATFORM_META: Record<SocialPlatform, { label: string; badge: string }> = 
 export function SocialShareButton({ kind, item }: { kind: 'event' | 'volunteering'; item: SocialShareItem }) {
   const { user } = useUser();
   const { toast } = useToast();
+  const { withEntityHeaders } = useActiveEntity();
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -95,11 +97,11 @@ export function SocialShareButton({ kind, item }: { kind: 'event' | 'volunteerin
     setLoading(true);
     try {
       const idToken = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/social-share', {
+      const res = await fetch('/api/ngo-admin/social-share', withEntityHeaders({
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
         body: JSON.stringify({ kind, ...item }),
-      });
+      }));
       const data = (await res.json().catch(() => null)) as { ok?: boolean; posts?: SocialPost[]; message?: string } | null;
       if (!res.ok || !data?.posts) {
         throw new Error(data?.message || 'Paylaşım metni oluşturulamadı.');

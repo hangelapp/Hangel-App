@@ -59,7 +59,7 @@ export default function UsersPage() {
   const { t } = useTranslation();
 
   // Aktif kuruluş (banner ile aynı kaynak) — yalnız başlık/isim ve gating için.
-  const { id: activeId, kind: activeKind } = useActiveEntity();
+  const { id: activeId, kind: activeKind, withEntityHeaders } = useActiveEntity();
   const { data: activeDoc } = useActiveEntityDoc<ManagedEntityDoc>();
   const activeEntity = useMemo(
     () => (activeId && activeKind && activeDoc ? { kind: activeKind, data: activeDoc } : null),
@@ -83,7 +83,7 @@ export default function UsersPage() {
       const params = new URLSearchParams();
       if (activeId && activeKind) { params.set('orgId', activeId); params.set('kind', activeKind); }
       const qs = params.toString();
-      const res = await fetch(`/api/ngo-admin/users/managers${qs ? `?${qs}` : ''}`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`/api/ngo-admin/users/managers${qs ? `?${qs}` : ''}`, withEntityHeaders({ headers: { Authorization: `Bearer ${token}` } }));
       if (!res.ok) throw new Error(`list ${res.status}`);
       const data = (await res.json()) as { managers?: AdminRow[]; viewer?: ViewerInfo };
       setAdminRows(Array.isArray(data.managers) ? data.managers : []);
@@ -112,11 +112,11 @@ export default function UsersPage() {
   const callRoute = async (path: string, payload: Record<string, unknown>) => {
     if (!authUser) throw new Error('Oturum bulunamadı.');
     const token = await authUser.getIdToken();
-    const res = await fetch(path, {
+    const res = await fetch(path, withEntityHeaders({
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-    });
+    }));
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error((data as { message?: string })?.message || `Hata (${res.status})`);
     return data;

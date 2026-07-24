@@ -111,7 +111,7 @@ export default function NgoCallCenterPage() {
   const { data: userDoc, isLoading: userDocLoading } = useDoc<UserDocLite>(userRef);
   // Aktif entity (üst switcher: ?id=&type=STK). Super-admin başka STK'ya bakınca
   // doğru ngoId buradan gelir; düz ngo-admin'de managedNgoId'ye düşer.
-  const { id: activeEntityId, kind: activeEntityKind, isLoading: entityLoading } = useActiveEntity();
+  const { id: activeEntityId, kind: activeEntityKind, isLoading: entityLoading, withEntityHeaders } = useActiveEntity();
   const ngoId = (activeEntityKind === 'ngo' ? activeEntityId : null) ?? userDoc?.managedNgoId ?? null;
 
   // ngoCallCenter durumu — client Firestore read rule'una takıldığı için server
@@ -127,9 +127,9 @@ export default function NgoCallCenterPage() {
       if (!cancelled) setCcLoading(true);
       try {
         const token = await user.getIdToken();
-        const res = await fetch(`/api/ngo-admin/call-center/status?ngoId=${encodeURIComponent(ngoId)}`, {
+        const res = await fetch(`/api/ngo-admin/call-center/status?ngoId=${encodeURIComponent(ngoId)}`, withEntityHeaders({
           headers: { Authorization: `Bearer ${token}` },
-        });
+        }));
         const data = await res.json();
         if (!cancelled) setCcDoc(res.ok && data.ok ? (data.callCenter ?? null) : null);
       } catch {

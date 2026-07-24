@@ -36,10 +36,28 @@ async function authorize(req: NextRequest): Promise<Ctx | null> {
     const decoded = await getAdminAuth().verifyIdToken(idToken);
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
-    const d = snap.data() as { role?: string; managedNgoId?: string };
-    if (!d?.managedNgoId) return null;
+    const d = snap.data() as { role?: string; managedNgoId?: string; managedBrandId?: string; managedClubId?: string };
     if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
-    return { uid: decoded.uid, ngoId: d.managedNgoId };
+    const isSuperAdmin = d.role === 'super-admin';
+
+    const hdrKindRaw = req.headers.get('x-org-kind');
+    const hdrKind = (hdrKindRaw === 'ngo' || hdrKindRaw === 'brand' || hdrKindRaw === 'club') ? hdrKindRaw : undefined;
+    const hdrOrgId = req.headers.get('x-org-id') || undefined;
+
+    let ngoId: string | undefined;
+    if (hdrOrgId && hdrKind) {
+      const isMember =
+        (hdrKind === 'ngo' && d.managedNgoId === hdrOrgId) ||
+        (hdrKind === 'brand' && d.managedBrandId === hdrOrgId) ||
+        (hdrKind === 'club' && d.managedClubId === hdrOrgId);
+      if (!isMember && !isSuperAdmin) return null;
+      ngoId = hdrOrgId;
+    } else {
+      ngoId = d.managedNgoId || d.managedBrandId || d.managedClubId;
+    }
+
+    if (!ngoId) return null;
+    return { uid: decoded.uid, ngoId };
   } catch {
     return null;
   }

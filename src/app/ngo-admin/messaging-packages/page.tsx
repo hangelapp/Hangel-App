@@ -55,7 +55,7 @@ export default function MessagingPackagesPage() {
     const router = useRouter();
     const db = useFirestore();
     const { user: authUser } = useUser();
-    const { id: ngoId, kind } = useActiveEntity();
+    const { id: ngoId, kind, withEntityHeaders } = useActiveEntity();
 
     const [purchasingId, setPurchasingId] = useState<string | null>(null);
     const [uploadingKey, setUploadingKey] = useState<RequiredDoc['key'] | null>(null);
@@ -88,11 +88,11 @@ export default function MessagingPackagesPage() {
         setPurchasingId(pkg.id);
         try {
             const token = await authUser?.getIdToken();
-            const res = await fetch('/api/ngo-admin/messaging/quota/purchase', {
+            const res = await fetch('/api/ngo-admin/messaging/quota/purchase', withEntityHeaders({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ ngoId, packageId: pkg.id }),
-            });
+            }));
             const data = await res.json();
             if (!res.ok) {
                 toast({

@@ -126,7 +126,7 @@ export default function NewWabaNumberPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user: authUser, isUserLoading } = useUser();
-  const { id: ngoId, isLoading: entityLoading } = useActiveEntity();
+  const { id: ngoId, isLoading: entityLoading, withEntityHeaders } = useActiveEntity();
 
   const [stepIdx, setStepIdx] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -175,7 +175,7 @@ export default function NewWabaNumberPage() {
     setSubmitting(true);
     try {
       const token = await authUser.getIdToken();
-      const res = await fetch('/api/ngo-admin/whatsapp-business/numbers', {
+      const res = await fetch('/api/ngo-admin/whatsapp-business/numbers', withEntityHeaders({
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -186,7 +186,7 @@ export default function NewWabaNumberPage() {
           appSecret: form.appSecret.trim(),
           displayName: form.displayName.trim(),
         }),
-      });
+      }));
       const data = await res.json().catch(() => null) as
         | { id?: string; verified?: boolean; message?: string }
         | null;

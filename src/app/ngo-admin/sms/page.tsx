@@ -155,7 +155,7 @@ export default function NgoAdminBulkSmsPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user: authUser } = useUser();
-  const { id: ngoId } = useActiveEntity();
+  const { id: ngoId, withEntityHeaders } = useActiveEntity();
 
   // Wallet (TRY balance) — real-time
   const walletRef = useMemoFirebase(
@@ -233,9 +233,9 @@ export default function NgoAdminBulkSmsPage() {
       setListsLoading(true);
       try {
         const token = await authUser.getIdToken();
-        const res = await fetch('/api/ngo-admin/call-center/lists', {
+        const res = await fetch('/api/ngo-admin/call-center/lists', withEntityHeaders({
           headers: { Authorization: `Bearer ${token}` },
-        });
+        }));
         const data = (await res.json()) as { lists?: ListRow[] };
         if (!cancelled) setLists(Array.isArray(data.lists) ? data.lists : []);
       } catch {
@@ -256,9 +256,9 @@ export default function NgoAdminBulkSmsPage() {
     setJobsLoading(true);
     try {
       const token = await authUser.getIdToken();
-      const res = await fetch('/api/ngo-admin/messaging/jobs?limit=50', {
+      const res = await fetch('/api/ngo-admin/messaging/jobs?limit=50', withEntityHeaders({
         headers: { Authorization: `Bearer ${token}` },
-      });
+      }));
       const data = (await res.json()) as { jobs?: JobRow[] };
       setJobs(Array.isArray(data.jobs) ? data.jobs : []);
     } catch {
@@ -274,9 +274,9 @@ export default function NgoAdminBulkSmsPage() {
     setTemplatesLoading(true);
     try {
       const token = await authUser.getIdToken();
-      const res = await fetch('/api/ngo-admin/messaging/templates', {
+      const res = await fetch('/api/ngo-admin/messaging/templates', withEntityHeaders({
         headers: { Authorization: `Bearer ${token}` },
-      });
+      }));
       const data = (await res.json()) as { templates?: TemplateRow[] };
       setTemplates(Array.isArray(data.templates) ? data.templates : []);
     } catch {
@@ -342,7 +342,7 @@ export default function NgoAdminBulkSmsPage() {
         const token = await authUser.getIdToken();
         const res = await fetch(
           `/api/ngo-admin/messaging/list-phones?listId=${encodeURIComponent(selectedListId)}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          withEntityHeaders({ headers: { Authorization: `Bearer ${token}` } }),
         );
         if (!res.ok) {
           if (!cancelled) setListRecipientCount(0);
@@ -390,7 +390,7 @@ export default function NgoAdminBulkSmsPage() {
         const token = await authUser.getIdToken();
         const res = await fetch(
           `/api/ngo-admin/messaging/list-phones?listId=${encodeURIComponent(selectedListId)}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          withEntityHeaders({ headers: { Authorization: `Bearer ${token}` } }),
         );
         const data = (await res.json()) as { phones?: string[] };
         recipientsToSend = Array.from(new Set((data.phones ?? []).filter((p) => p)));
@@ -406,7 +406,7 @@ export default function NgoAdminBulkSmsPage() {
     setSendResult(null);
     try {
       const token = await authUser?.getIdToken();
-      const res = await fetch('/api/ngo-admin/messaging/send-now', {
+      const res = await fetch('/api/ngo-admin/messaging/send-now', withEntityHeaders({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -417,7 +417,7 @@ export default function NgoAdminBulkSmsPage() {
           body: messageBody.trim(),
           useCase,
         }),
-      });
+      }));
       const data = (await res.json()) as {
         jobId?: string;
         sent?: number;
@@ -465,7 +465,7 @@ export default function NgoAdminBulkSmsPage() {
     setTplSaving(true);
     try {
       const token = await authUser?.getIdToken();
-      const res = await fetch('/api/ngo-admin/messaging/templates', {
+      const res = await fetch('/api/ngo-admin/messaging/templates', withEntityHeaders({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -476,7 +476,7 @@ export default function NgoAdminBulkSmsPage() {
           body: tplBody.trim(),
           category: tplCategory,
         }),
-      });
+      }));
       const data = (await res.json()) as { id?: string; message?: string };
       if (!res.ok) {
         toast({

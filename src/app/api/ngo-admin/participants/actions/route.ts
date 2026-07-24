@@ -26,8 +26,10 @@ const MAX_IDS = 2000;
 
 const OWNER_EMAIL = 'ismailhilmi@hangel.org';
 
-interface Identity { uid: string; managedNgoId?: string; role?: string; email?: string; token: string; }
+interface Identity { uid: string; managedNgoId?: string; managedBrandId?: string; managedClubId?: string; role?: string; email?: string; token: string; }
 interface CallerContext { uid: string; ngoId: string; token: string; }
+
+type OrgKind = 'ngo' | 'brand' | 'club';
 
 async function identify(req: NextRequest): Promise<Identity | null> {
   const authHeader = req.headers.get('authorization') || '';
@@ -37,26 +39,44 @@ async function identify(req: NextRequest): Promise<Identity | null> {
     const decoded = (await getAdminAuth().verifyIdToken(idToken)) as { uid: string; email?: string };
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
-    const d = snap.data() as { role?: string; managedNgoId?: string };
-    return { uid: decoded.uid, managedNgoId: d?.managedNgoId, role: d?.role, email: decoded.email, token: idToken };
+    const d = snap.data() as { role?: string; managedNgoId?: string; managedBrandId?: string; managedClubId?: string };
+    return { uid: decoded.uid, managedNgoId: d?.managedNgoId, managedBrandId: d?.managedBrandId, managedClubId: d?.managedClubId, role: d?.role, email: decoded.email, token: idToken };
   } catch {
     return null;
   }
 }
 
-// super-admin/sahip body'deki ngoId'yi kullanır; ngo-admin kendi managedNgoId'sine sabit.
+// AKTİF kurum çözümü: client'ın gönderdiği x-org-id + x-org-kind header'ları esas alır.
+// - header varsa: caller'ın o kuruma üye olduğu (managed{Ngo,Brand,Club}Id) VEYA super-admin/sahip
+//   olduğu doğrulanır; değilse yetkisiz.
+// - header yoksa: eski davranış — managedNgoId → managedBrandId → managedClubId ilk dolu olan.
+// super-admin/sahip body'deki ngoId'yi de kullanabilir (header'ı doğrulamadan).
 // Ayrıca loadOwnedContacts her id'nin bu ngoId'ye ait olduğunu doğruladığından
-// cross-tenant yazma yine engellenir.
-function resolveNgo(id: Identity, requestedNgoId: string | null): CallerContext | null {
+// cross-tenant yazma yine engellenir. (ngoId artık brand/club id'si de olabilir.)
+function resolveNgo(id: Identity, requestedNgoId: string | null, hdrOrgId?: string, hdrKind?: OrgKind): CallerContext | null {
   const isOwner = id.role === 'super-admin' || id.email === OWNER_EMAIL;
   if (isOwner) {
-    const target = (requestedNgoId || '').trim() || id.managedNgoId;
+    const target = (hdrOrgId || '').trim() || (requestedNgoId || '').trim() || id.managedNgoId || id.managedBrandId || id.managedClubId;
     if (!target) return null;
     return { uid: id.uid, ngoId: target, token: id.token };
   }
-  if (id.role !== 'ngo-admin' || !id.managedNgoId) return null;
-  if (requestedNgoId && requestedNgoId.trim() && requestedNgoId.trim() !== id.managedNgoId) return null;
-  return { uid: id.uid, ngoId: id.managedNgoId, token: id.token };
+
+  // Aktif kurum header'ı verilmişse: üyelik doğrula.
+  if (hdrOrgId && hdrKind) {
+    const owns =
+      (hdrKind === 'ngo' && id.managedNgoId === hdrOrgId) ||
+      (hdrKind === 'brand' && id.managedBrandId === hdrOrgId) ||
+      (hdrKind === 'club' && id.managedClubId === hdrOrgId);
+    if (!owns) return null;
+    if (requestedNgoId && requestedNgoId.trim() && requestedNgoId.trim() !== hdrOrgId) return null;
+    return { uid: id.uid, ngoId: hdrOrgId, token: id.token };
+  }
+
+  // Eski davranış: ilk dolu managed* alanı.
+  const fallback = id.managedNgoId || id.managedBrandId || id.managedClubId;
+  if (!fallback) return null;
+  if (requestedNgoId && requestedNgoId.trim() && requestedNgoId.trim() !== fallback) return null;
+  return { uid: id.uid, ngoId: fallback, token: id.token };
 }
 
 /** Verilen id'lerin bu STK'ya ait olduğunu doğrula + doc verilerini döndür. */
@@ -74,7 +94,10 @@ export async function POST(req: NextRequest) {
   }
   let body: { action?: string; ids?: unknown; value?: string; channel?: string; message?: string; subject?: string; assignedToUid?: string | null; assignedToName?: string; ngoId?: string };
   try { body = await req.json(); } catch { body = {}; }
-  const ctx = resolveNgo(id, body.ngoId ?? null);
+  const hdrKindRaw = req.headers.get('x-org-kind');
+  const hdrKind = (hdrKindRaw === 'ngo' || hdrKindRaw === 'brand' || hdrKindRaw === 'club') ? hdrKindRaw : undefined;
+  const hdrOrgId = req.headers.get('x-org-id') || undefined;
+  const ctx = resolveNgo(id, body.ngoId ?? null, hdrOrgId, hdrKind);
   if (!ctx) {
     return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Bu STK için yetkiniz yok.' }, { status: 403 });
   }

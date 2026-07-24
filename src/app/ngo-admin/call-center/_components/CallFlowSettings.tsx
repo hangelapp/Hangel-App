@@ -23,11 +23,13 @@ import {
   Loader2, Save, Plus, Trash2, Phone, Menu, Users, Voicemail, PhoneForwarded, Clock, Upload, CheckCircle2,
 } from 'lucide-react';
 import { defaultCallFlow, type CallFlow, type IvrOption } from '@/lib/santral/call-flow';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 const DAYS = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 
 export function CallFlowSettings() {
   const { user } = useUser();
+  const { withEntityHeaders } = useActiveEntity();
   const { toast } = useToast();
   const [cf, setCf] = useState<CallFlow>(defaultCallFlow());
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ export function CallFlowSettings() {
     setLoading(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/call-flow', { headers: { authorization: `Bearer ${token}` } });
+      const res = await fetch('/api/ngo-admin/call-center/call-flow', withEntityHeaders({ headers: { authorization: `Bearer ${token}` } }));
       const data = await res.json();
       if (res.ok && data.callFlow) setCf(data.callFlow);
     } catch { /* varsayılan kalır */ } finally { setLoading(false); }
@@ -52,11 +54,11 @@ export function CallFlowSettings() {
     setSaving(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/call-flow', {
+      const res = await fetch('/api/ngo-admin/call-center/call-flow', withEntityHeaders({
         method: 'POST',
         headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
         body: JSON.stringify({ callFlow: cf }),
-      });
+      }));
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Kaydedilemedi.');
       if (data.callFlow) setCf(data.callFlow);
@@ -74,9 +76,9 @@ export function CallFlowSettings() {
       const fd = new FormData();
       fd.append('file', file);
       fd.append('slot', slot);
-      const res = await fetch('/api/ngo-admin/call-center/call-flow/audio', {
+      const res = await fetch('/api/ngo-admin/call-center/call-flow/audio', withEntityHeaders({
         method: 'POST', headers: { authorization: `Bearer ${token}` }, body: fd,
-      });
+      }));
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Yüklenemedi.');
       apply(data.url);

@@ -72,14 +72,28 @@ export async function resolveOrgAdminCtx(
   const isFounder = (decoded.email || '').toLowerCase() === FOUNDER_EMAIL;
   const isSuperAdmin = decoded.role === 'super-admin' || c.role === 'super-admin' || isFounder;
 
+  // Aktif kuruluş çözümleme önceliği:
+  //  1) Açık override (route'un body/query'den geçtiği orgId+kind)
+  //  2) x-org-id / x-org-kind header'ları (client withEntityHeaders ile yollar —
+  //     ÜST SWITCHER'daki aktif kurum; çoklu kurum yöneten kullanıcı için KRİTİK)
+  //  3) caller'ın tek managed*Id'si (fallback — tek kurum yönetenler)
+  const hdrId = (req.headers.get('x-org-id') || '').trim() || null;
+  const hdrKindRaw = (req.headers.get('x-org-kind') || '').trim().toLowerCase();
+  const hdrKind = (['ngo', 'brand', 'club'] as const).includes(hdrKindRaw as OrgKind) ? (hdrKindRaw as OrgKind) : null;
+
   let kind: OrgKind | null = null;
   let orgId: string | null = null;
   const validKind = override?.kind && (['ngo', 'brand', 'club'] as const).includes(override.kind);
+  // Açık override VEYA header ile hedef gelmişse "explicit" sayılır → yetki doğrulaması yapılır.
+  const explicitTarget = Boolean((override?.orgId && validKind) || (hdrId && hdrKind));
   if (override?.orgId && validKind) {
     kind = override.kind as OrgKind;
     orgId = override.orgId;
+  } else if (hdrId && hdrKind) {
+    kind = hdrKind;
+    orgId = hdrId;
   } else {
-    // Override yoksa caller'ın tek yönettiği kuruluş.
+    // Hiçbir hedef yoksa caller'ın tek yönettiği kuruluş.
     if (c.managedNgoId) { kind = 'ngo'; orgId = c.managedNgoId as string; }
     else if (c.managedBrandId) { kind = 'brand'; orgId = c.managedBrandId as string; }
     else if (c.managedClubId) { kind = 'club'; orgId = c.managedClubId as string; }
@@ -93,8 +107,10 @@ export async function resolveOrgAdminCtx(
   const ownerUserId = o.adminUserId ?? null;
   const managedThisOrg = c[KIND_TO_MANAGED[kind]] === orgId;
 
-  // Açık hedef (override) verildiyse non-super caller'ın o kuruluşu yönetebildiğini doğrula.
-  if (override?.orgId && validKind && !isSuperAdmin && !managedThisOrg && ownerUserId !== decoded.uid) {
+  // Açık hedef (override VEYA header) verildiyse non-super caller'ın o kuruluşu
+  // gerçekten yönetebildiğini doğrula (managed{kind}Id == orgId ya da sahibi).
+  // Böylece başka kurumun id'sini header'a koyup yetkisiz erişim yapılamaz.
+  if (explicitTarget && !isSuperAdmin && !managedThisOrg && ownerUserId !== decoded.uid) {
     return { ok: false, error: 'Bu kuruluş için yetkiniz yok', status: 403 };
   }
 

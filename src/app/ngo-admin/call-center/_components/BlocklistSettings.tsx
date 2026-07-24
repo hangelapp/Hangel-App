@@ -10,11 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useUser } from '@/firebase';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { useToast } from '@/hooks/use-toast';
 import { Ban, Plus, Trash2, Loader2 } from 'lucide-react';
 
 export function BlocklistSettings() {
   const { user } = useUser();
+  const { withEntityHeaders } = useActiveEntity();
   const { toast } = useToast();
   const [numbers, setNumbers] = useState<string[]>([]);
   const [draft, setDraft] = useState('');
@@ -25,7 +27,7 @@ export function BlocklistSettings() {
     if (!user) return;
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/blocklist', { headers: { authorization: `Bearer ${token}` } });
+      const res = await fetch('/api/ngo-admin/call-center/blocklist', withEntityHeaders({ headers: { authorization: `Bearer ${token}` } }));
       const data = await res.json();
       if (res.ok && Array.isArray(data.numbers)) setNumbers(data.numbers);
     } catch { /* boş kalır */ } finally { setLoading(false); }
@@ -38,10 +40,10 @@ export function BlocklistSettings() {
     setBusy(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/blocklist', {
+      const res = await fetch('/api/ngo-admin/call-center/blocklist', withEntityHeaders({
         method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
         body: JSON.stringify({ number: draft.trim() }),
-      });
+      }));
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Eklenemedi.');
       setNumbers(data.numbers || []); setDraft('');
@@ -54,9 +56,9 @@ export function BlocklistSettings() {
     if (!user) return;
     try {
       const token = await user.getIdToken();
-      const res = await fetch(`/api/ngo-admin/call-center/blocklist?number=${encodeURIComponent(num)}`, {
+      const res = await fetch(`/api/ngo-admin/call-center/blocklist?number=${encodeURIComponent(num)}`, withEntityHeaders({
         method: 'DELETE', headers: { authorization: `Bearer ${token}` },
-      });
+      }));
       const data = await res.json();
       if (res.ok) setNumbers(data.numbers || []);
     } catch { /* sessiz */ }

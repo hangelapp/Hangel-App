@@ -44,10 +44,36 @@ async function authorize(req: NextRequest): Promise<CallerContext | null> {
     const decoded = await getAdminAuth().verifyIdToken(idToken);
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
-    const d = snap.data() as { role?: string; managedNgoId?: string } | undefined;
-    if (!d?.managedNgoId) return null;
+    const d = snap.data() as
+      | { role?: string; managedNgoId?: string; managedBrandId?: string; managedClubId?: string }
+      | undefined;
+    if (!d) return null;
     if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
-    return { uid: decoded.uid, ngoId: d.managedNgoId };
+    const isSuperAdmin = d.role === 'super-admin';
+    // Aktif kurum: üst switcher x-org-id + x-org-kind header'ıyla gelir (çoklu
+    // kurum yöneten kullanıcı için kritik). Header'daki kuruma ÜYE olan (ilgili
+    // managed*Id header'a eşit) ya da super-admin caller header'daki kurumu
+    // kullanır; yoksa managedNgoId → managedBrandId → managedClubId sırasıyla
+    // ilk dolu olana düşer. Çözülen değer ngoId alanına yazılır (imza korunur;
+    // brand/club id'si de olabilir).
+    const hdrOrgId = req.headers.get('x-org-id') || undefined;
+    const hdrKindRaw = req.headers.get('x-org-kind');
+    const hdrKind =
+      hdrKindRaw === 'ngo' || hdrKindRaw === 'brand' || hdrKindRaw === 'club' ? hdrKindRaw : undefined;
+
+    let activeOrgId = '';
+    if (hdrOrgId && hdrKind) {
+      const isMember =
+        (hdrKind === 'ngo' && d.managedNgoId === hdrOrgId) ||
+        (hdrKind === 'brand' && d.managedBrandId === hdrOrgId) ||
+        (hdrKind === 'club' && d.managedClubId === hdrOrgId);
+      if (!isMember && !isSuperAdmin) return null;
+      activeOrgId = hdrOrgId;
+    } else {
+      activeOrgId = d.managedNgoId || d.managedBrandId || d.managedClubId || '';
+    }
+    if (!activeOrgId) return null;
+    return { uid: decoded.uid, ngoId: activeOrgId };
   } catch {
     return null;
   }

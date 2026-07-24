@@ -26,6 +26,7 @@ import {
   CheckCircle2, Loader2, KeyRound, Phone, ChevronRight,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -51,6 +52,7 @@ export function CommunicationHub({
   onGoToCallCenter: () => void;
 }) {
   const { user } = useUser();
+  const { withEntityHeaders } = useActiveEntity();
   const { toast } = useToast();
 
   // Faz 1 — numara doğrulama (contact-otp endpoint'i; WhatsApp/SMS/ekran)
@@ -72,11 +74,11 @@ export function CommunicationHub({
     setSending(true); setErr('');
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/contact-otp/send', {
+      const res = await fetch('/api/ngo-admin/call-center/contact-otp/send', withEntityHeaders({
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ phone: phone.trim() }),
-      });
+      }));
       const data = await res.json();
       if (!res.ok || !data.ok) { setErr(data.message || 'Kod gönderilemedi.'); return; }
       setOtpSent(true);
@@ -92,11 +94,11 @@ export function CommunicationHub({
     setVerifying(true); setErr('');
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/contact-otp/verify', {
+      const res = await fetch('/api/ngo-admin/call-center/contact-otp/verify', withEntityHeaders({
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ phone: phone.trim(), code: otpCode.trim() }),
-      });
+      }));
       const data = await res.json();
       if (!res.ok || !data.verified) { setErr(data.message || 'Kod hatalı.'); return; }
       setVerified(true);

@@ -119,7 +119,7 @@ function EmptyState({ message }: { message: string }) {
 
 export default function OrgCertificatesPage() {
   const { user } = useUser();
-  const { id: orgId, kind, isLoading: entityLoading } = useActiveEntity();
+  const { id: orgId, kind, isLoading: entityLoading, withEntityHeaders } = useActiveEntity();
   const { toast } = useToast();
 
   const [orgName, setOrgName] = useState('');
@@ -146,8 +146,8 @@ export default function OrgCertificatesPage() {
         const idToken = await user.getIdToken();
         const headers = { Authorization: `Bearer ${idToken}` };
         const [impactRes, certsRes] = await Promise.all([
-          fetch(`/api/ngo-admin/impact-certificate?orgId=${encodeURIComponent(orgId)}&kind=${encodeURIComponent(kind)}`, { headers }),
-          fetch(`/api/ngo-admin/certificates?orgId=${encodeURIComponent(orgId)}&kind=${encodeURIComponent(kind)}`, { headers }),
+          fetch(`/api/ngo-admin/impact-certificate?orgId=${encodeURIComponent(orgId)}&kind=${encodeURIComponent(kind)}`, withEntityHeaders({ headers })),
+          fetch(`/api/ngo-admin/certificates?orgId=${encodeURIComponent(orgId)}&kind=${encodeURIComponent(kind)}`, withEntityHeaders({ headers })),
         ]);
         const impact = (await impactRes.json().catch(() => null)) as ImpactResponse | null;
         const certs = (await certsRes.json().catch(() => null)) as { ok?: boolean; issued?: CertRow[] } | null;

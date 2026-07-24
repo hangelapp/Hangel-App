@@ -133,7 +133,7 @@ export default function WhatsAppBusinessNumbersPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user: authUser, isUserLoading } = useUser();
-  const { id: ngoId, isLoading: entityLoading } = useActiveEntity();
+  const { id: ngoId, isLoading: entityLoading, withEntityHeaders } = useActiveEntity();
 
   const [numbers, setNumbers] = useState<WabaNumber[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,9 +145,9 @@ export default function WhatsAppBusinessNumbersPage() {
     setLoading(true);
     try {
       const token = await authUser.getIdToken();
-      const res = await fetch('/api/ngo-admin/whatsapp-business/numbers', {
+      const res = await fetch('/api/ngo-admin/whatsapp-business/numbers', withEntityHeaders({
         headers: { Authorization: `Bearer ${token}` },
-      });
+      }));
       if (!res.ok) {
         const data = await res.json().catch(() => null) as { message?: string } | null;
         toast({
@@ -162,7 +162,7 @@ export default function WhatsAppBusinessNumbersPage() {
     } finally {
       setLoading(false);
     }
-  }, [authUser, toast]);
+  }, [authUser, toast, withEntityHeaders]);
 
   useEffect(() => {
     fetchNumbers();
@@ -173,10 +173,10 @@ export default function WhatsAppBusinessNumbersPage() {
     setPausing(true);
     try {
       const token = await authUser.getIdToken();
-      const res = await fetch(`/api/ngo-admin/whatsapp-business/numbers/${pauseTarget.id}`, {
+      const res = await fetch(`/api/ngo-admin/whatsapp-business/numbers/${pauseTarget.id}`, withEntityHeaders({
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
-      });
+      }));
       if (!res.ok) {
         const data = await res.json().catch(() => null) as { message?: string } | null;
         toast({

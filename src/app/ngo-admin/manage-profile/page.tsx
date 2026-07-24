@@ -201,7 +201,7 @@ export default function ManageProfilePage() {
   // Eski adminUserId / managedNgoId / selfNgo zinciri çoklu-kurum adminlerde
   // hep ilk STK'yı seçiyordu; artık layout banner'ı hangi kurumu gösteriyorsa
   // form da o kurumun verisini yükler.
-  const { id: activeIdFromCtx, kind: activeKind, subType: activeSubType, isLoading: activeLoading } = useActiveEntity();
+  const { id: activeIdFromCtx, kind: activeKind, subType: activeSubType, isLoading: activeLoading, withEntityHeaders } = useActiveEntity();
   const { data: activeDoc } = useActiveEntityDoc<EntityDoc>();
 
   const activeEntity = useMemo<{ kind: EntityKind; data: EntityDoc } | null>(() => {
@@ -487,11 +487,11 @@ export default function ManageProfilePage() {
         // kriterleri otomatik karşılar; kart/liste/profildeki % anında güncellenir.
         if (activeEntity.kind === 'ngo') {
           authUser?.getIdToken?.().then((tk) => {
-            if (tk) fetch('/api/ngo-admin/transparency/refresh', {
+            if (tk) fetch('/api/ngo-admin/transparency/refresh', withEntityHeaders({
               method: 'POST',
               headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json' },
               body: JSON.stringify({ ngoId: activeEntity.data.id }),
-            }).catch(() => {});
+            })).catch(() => {});
           }).catch(() => {});
         }
         toast({ title: t('ngo_admin_manage_profile.toastSaved'), description: t('ngo_admin_manage_profile.toastSavedDesc') });

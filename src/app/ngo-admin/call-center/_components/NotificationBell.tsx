@@ -13,6 +13,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Bell, PhoneMissed, Clock3, Check, Loader2 } from 'lucide-react';
@@ -36,6 +37,7 @@ function fmtWhen(iso: string | null): string {
 
 export function NotificationBell() {
   const { user } = useUser();
+  const { withEntityHeaders } = useActiveEntity();
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -45,7 +47,7 @@ export function NotificationBell() {
     setLoading(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/notifications', { headers: { authorization: `Bearer ${token}` } });
+      const res = await fetch('/api/ngo-admin/call-center/notifications', withEntityHeaders({ headers: { authorization: `Bearer ${token}` } }));
       const data = await res.json();
       if (res.ok && Array.isArray(data.items)) setItems(data.items);
     } catch { /* sessiz */ } finally { setLoading(false); }
@@ -62,10 +64,10 @@ export function NotificationBell() {
     setItems((prev) => prev.filter((i) => !(i.id === item.id && i.kind === item.kind)));
     try {
       const token = await user.getIdToken();
-      await fetch('/api/ngo-admin/call-center/notifications', {
+      await fetch('/api/ngo-admin/call-center/notifications', withEntityHeaders({
         method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
         body: JSON.stringify({ id: item.id, kind: item.kind }),
-      });
+      }));
     } catch { void load(); }
   };
 

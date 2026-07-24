@@ -24,19 +24,41 @@ const CONTACTS = 'santralContacts';
 
 const OWNER_EMAIL = 'ismailhilmi@hangel.org';
 
-interface Identity { uid: string; managedNgoId?: string; role?: string; email?: string; }
+type OrgKind = 'ngo' | 'brand' | 'club';
+interface Identity {
+  uid: string;
+  managedNgoId?: string;
+  managedBrandId?: string;
+  managedClubId?: string;
+  role?: string;
+  email?: string;
+  hdrKind?: OrgKind;
+  hdrOrgId?: string;
+}
 interface CallerContext { uid: string; ngoId: string; }
 
 async function identify(req: NextRequest): Promise<Identity | null> {
   const authHeader = req.headers.get('authorization') || '';
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
   if (!idToken) return null;
+  const hdrKindRaw = req.headers.get('x-org-kind');
+  const hdrKind = (hdrKindRaw === 'ngo' || hdrKindRaw === 'brand' || hdrKindRaw === 'club') ? hdrKindRaw : undefined;
+  const hdrOrgId = req.headers.get('x-org-id') || undefined;
   try {
     const decoded = (await getAdminAuth().verifyIdToken(idToken)) as { uid: string; email?: string };
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
-    const d = snap.data() as { role?: string; managedNgoId?: string };
-    return { uid: decoded.uid, managedNgoId: d?.managedNgoId, role: d?.role, email: decoded.email };
+    const d = snap.data() as { role?: string; managedNgoId?: string; managedBrandId?: string; managedClubId?: string };
+    return {
+      uid: decoded.uid,
+      managedNgoId: d?.managedNgoId,
+      managedBrandId: d?.managedBrandId,
+      managedClubId: d?.managedClubId,
+      role: d?.role,
+      email: decoded.email,
+      hdrKind,
+      hdrOrgId,
+    };
   } catch {
     return null;
   }
@@ -44,17 +66,34 @@ async function identify(req: NextRequest): Promise<Identity | null> {
 
 // Yetkiyi çöz: super-admin/sahip query'deki ngoId'yi kullanır (üst switcher ile başka
 // STK'ya bakabilir); ngo-admin yalnız kendi managedNgoId'sini yönetir.
+// AKTİF kurum: client x-org-id + x-org-kind gönderirse o kuruma üyelik doğrulanır
+// (ngo/brand/club). Yoksa eski davranış (managedNgoId → managedBrandId → managedClubId).
 function resolveNgo(id: Identity, requestedNgoId: string | null): CallerContext | null {
   const isOwner = id.role === 'super-admin' || id.email === OWNER_EMAIL;
+
+  // Aktif kurum header'ları
+  if (id.hdrOrgId && id.hdrKind) {
+    if (isOwner) {
+      return { uid: id.uid, ngoId: id.hdrOrgId };
+    }
+    const owns =
+      (id.hdrKind === 'ngo' && id.managedNgoId === id.hdrOrgId) ||
+      (id.hdrKind === 'brand' && id.managedBrandId === id.hdrOrgId) ||
+      (id.hdrKind === 'club' && id.managedClubId === id.hdrOrgId);
+    if (!owns) return null;
+    return { uid: id.uid, ngoId: id.hdrOrgId };
+  }
+
   if (isOwner) {
-    const target = (requestedNgoId || '').trim() || id.managedNgoId;
+    const target = (requestedNgoId || '').trim() || id.managedNgoId || id.managedBrandId || id.managedClubId;
     if (!target) return null;
     return { uid: id.uid, ngoId: target };
   }
-  if (id.role !== 'ngo-admin' || !id.managedNgoId) return null;
-  // ngo-admin başka STK istese bile kendi STK'sına sabitlenir.
-  if (requestedNgoId && requestedNgoId.trim() && requestedNgoId.trim() !== id.managedNgoId) return null;
-  return { uid: id.uid, ngoId: id.managedNgoId };
+  const own = id.managedNgoId || id.managedBrandId || id.managedClubId;
+  if (!own) return null;
+  // ngo-admin başka kurum istese bile kendi kurumuna sabitlenir.
+  if (requestedNgoId && requestedNgoId.trim() && requestedNgoId.trim() !== own) return null;
+  return { uid: id.uid, ngoId: own };
 }
 
 function tsToIso(value: unknown): string | null {

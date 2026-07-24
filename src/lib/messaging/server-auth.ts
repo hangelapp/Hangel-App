@@ -61,17 +61,22 @@ export interface NgoAdminContext {
   email: string | null;
   ngoId: string;            // Server tarafında zorlanır — clientten gelenle override edilir
   isSuperAdmin: boolean;
+  /** Aktif kurumun türü ('ngo'|'brand'|'club'). Çok-kurumlu destekte doldurulur;
+   *  eski çağrılarda (kind gönderilmeyen) varsayılan 'ngo'. */
+  kind?: 'ngo' | 'brand' | 'club';
 }
 
 /**
- * NGO admin kontrolü: user.managedNgoId == requested ngoId (varsa).
- * Süper admin geçtiyse her NGO için tam yetkili.
- * Dönen `ngoId` her zaman ya kullanıcının kendi managedNgoId'si ya da süper admin için
- * client'ın gönderdiği targetNgoId (gerekirse).
+ * NGO/Marka/Kulüp admin kontrolü. AKTİF kurum önceliği:
+ *   1) targetOrgId+targetKind (client'ın panelde seçili kurumu) — non-super
+ *      caller'ın o kuruma ÜYE olduğu (managed{kind}Id eşleşmesi) doğrulanır.
+ *   2) Eski targetNgoId (yalnız ngo) — geriye dönük.
+ *   3) caller'ın kendi managedNgoId'si (tek-kurum eski davranış).
+ * Süper admin her kuruma tam yetkili.
  */
 export async function requireNgoAdmin(
   req: Request,
-  options?: { allowSuperAdmin?: boolean; targetNgoId?: string; scope?: NgoScope; requireNgoId?: boolean }
+  options?: { allowSuperAdmin?: boolean; targetNgoId?: string; targetOrgId?: string; targetKind?: 'ngo' | 'brand' | 'club'; scope?: NgoScope; requireNgoId?: boolean }
 ): Promise<
   | { error: NextResponse; actor?: undefined }
   | { actor: NgoAdminContext; error?: undefined }
@@ -93,7 +98,25 @@ export async function requireNgoAdmin(
   const allowSuperAdmin = options?.allowSuperAdmin ?? true;
 
   const userSnap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
-  const userData = userSnap.exists ? (userSnap.data() as { role?: string; managedNgoId?: string; roleTitle?: string | null }) : null;
+  const userData = userSnap.exists ? (userSnap.data() as { role?: string; managedNgoId?: string; managedBrandId?: string; managedClubId?: string; roleTitle?: string | null }) : null;
+
+  // Aktif kurum (client seçili) → id + kind. Öncelik:
+  //   1) options.targetOrgId+targetKind (route açıkça geçtiyse)
+  //   2) x-org-id + x-org-kind HTTP header'ları (client apiFetch otomatik ekler —
+  //      27 route'un gövdesine dokunmadan aktif kurumu taşımanın tek noktalı yolu)
+  //   3) eski options.targetNgoId (yalnız ngo)
+  const KIND_MANAGED = { ngo: 'managedNgoId', brand: 'managedBrandId', club: 'managedClubId' } as const;
+  const hdrKindRaw = req.headers.get('x-org-kind');
+  const hdrKind = (hdrKindRaw === 'ngo' || hdrKindRaw === 'brand' || hdrKindRaw === 'club') ? hdrKindRaw : undefined;
+  const hdrOrgId = req.headers.get('x-org-id') || undefined;
+  const activeKind: 'ngo' | 'brand' | 'club' | undefined =
+    (options?.targetOrgId && options?.targetKind) ? options.targetKind
+    : (hdrOrgId && hdrKind) ? hdrKind
+    : undefined;
+  const activeOrgId: string | undefined =
+    (options?.targetOrgId && options?.targetKind) ? options.targetOrgId
+    : activeKind ? hdrOrgId
+    : options?.targetNgoId;
 
   // P0-4b: claim-only super-admin check (Firestore role-doc fallback removed).
   // NGO-admin still uses userData.managedNgoId since that's the scoped identity,
@@ -109,7 +132,7 @@ export async function requireNgoAdmin(
     // super-admin için TAMAMEN kırılıyordu — bu rotalar zaten super-admin'i
     // ownership kontrolünden `!actor.isSuperAdmin && ...` ile muaf tutuyor, yani
     // boş ngoId onlar için sorun değil.
-    const ngoId = options?.targetNgoId ?? userData?.managedNgoId ?? '';
+    const ngoId = activeOrgId ?? userData?.managedNgoId ?? '';
     // 400 SADECE ngoId'yi doküman anahtarı olarak kullanan rotalar için (ads/mail).
     // Bu rotalar server-auth.requireNgoAdmin'i DOĞRUDAN çağırır; varsayılan
     // requireNgoId=true olduğundan davranışları hiç değişmez (boş ngoId → 400,
@@ -121,10 +144,12 @@ export async function requireNgoAdmin(
         error: NextResponse.json({ error: 'targetNgoId gerekli (super-admin için)' }, { status: 400 }),
       };
     }
-    return { actor: { uid: decoded.uid, email, ngoId, isSuperAdmin: true } };
+    return { actor: { uid: decoded.uid, email, ngoId, isSuperAdmin: true, kind: activeKind ?? 'ngo' } };
   }
 
-  if (userData?.role !== 'ngo-admin' || !userData.managedNgoId) {
+  // Non-super caller ngo-admin olmalı ve en az bir kurum yönetmeli (ngo/brand/club).
+  const anyManaged = userData?.managedNgoId || userData?.managedBrandId || userData?.managedClubId;
+  if (userData?.role !== 'ngo-admin' || !anyManaged) {
     return { error: NextResponse.json({ error: 'NGO admin yetkisi yok' }, { status: 403 }) };
   }
 
@@ -133,5 +158,20 @@ export async function requireNgoAdmin(
     return { error: NextResponse.json({ error: 'Bu işlem için yetkiniz yok (rol kısıtlaması)' }, { status: 403 }) };
   }
 
-  return { actor: { uid: decoded.uid, email, ngoId: userData.managedNgoId, isSuperAdmin: false } };
+  // Hedef kurum çözümü: aktif kurum verildiyse (client seçili) ÜYELİĞİ doğrula,
+  // yoksa caller'ın ilk yönettiği kurum (ngo→brand→club, eski davranış).
+  let resolvedKind: 'ngo' | 'brand' | 'club';
+  let resolvedId: string;
+  if (activeKind && activeOrgId) {
+    const managedField = KIND_MANAGED[activeKind];
+    if (userData[managedField] !== activeOrgId) {
+      return { error: NextResponse.json({ error: 'Bu kuruluş için yetkiniz yok' }, { status: 403 }) };
+    }
+    resolvedKind = activeKind;
+    resolvedId = activeOrgId;
+  } else if (userData.managedNgoId) { resolvedKind = 'ngo'; resolvedId = userData.managedNgoId; }
+  else if (userData.managedBrandId) { resolvedKind = 'brand'; resolvedId = userData.managedBrandId; }
+  else { resolvedKind = 'club'; resolvedId = userData.managedClubId as string; }
+
+  return { actor: { uid: decoded.uid, email, ngoId: resolvedId, isSuperAdmin: false, kind: resolvedKind } };
 }

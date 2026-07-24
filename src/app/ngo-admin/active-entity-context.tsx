@@ -99,6 +99,8 @@ type ActiveEntityValue = {
   setActive: (org: { id: string; type: EntityType }) => void;
   /** Append the active ?id&type to an in-panel href, preserving any hash. */
   withEntityParams: (href: string) => string;
+  /** Aktif kurumun x-org-id + x-org-kind header'larını fetch init'ine ekler. */
+  withEntityHeaders: (init?: RequestInit) => RequestInit;
 };
 
 const KIND_TO_TYPE: Record<EntityKind, EntityType> = {
@@ -372,6 +374,21 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
     [active.id, active.type],
   );
 
+  // ngo-admin API fetch'lerine aktif kurumu (x-org-id + x-org-kind) header olarak
+  // ekler. Sunucuda requireNgoAdmin bu header'ları okuyup İŞLEMİ AKTİF kuruma yapar
+  // (çok-kurumlu yöneticide yanlış-kurum bug'ının tek noktalı çözümü). Kullanım:
+  // fetch(url, withEntityHeaders({ method:'POST', body })).
+  const withEntityHeaders = useCallback(
+    (init: RequestInit = {}): RequestInit => {
+      if (!active.id || !active.kind) return init;
+      const headers = new Headers(init.headers);
+      headers.set('x-org-id', active.id);
+      headers.set('x-org-kind', active.kind);
+      return { ...init, headers };
+    },
+    [active.id, active.kind],
+  );
+
   // Aktif kurumun spesifik alt tipi (managedList'ten; yoksa null → kind varsayılanı kullanılır).
   const activeSubType = useMemo<string | null>(() => {
     if (!active.id || !active.kind) return null;
@@ -388,8 +405,9 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
       isLoading,
       setActive,
       withEntityParams,
+      withEntityHeaders,
     }),
-    [active.id, active.kind, active.type, activeSubType, managedList, isLoading, setActive, withEntityParams],
+    [active.id, active.kind, active.type, activeSubType, managedList, isLoading, setActive, withEntityParams, withEntityHeaders],
   );
 
   return <ActiveEntityContext.Provider value={value}>{children}</ActiveEntityContext.Provider>;

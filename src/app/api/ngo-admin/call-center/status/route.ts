@@ -23,6 +23,8 @@ const OWNER_EMAIL = 'ismailhilmi@hangel.org';
 interface CallerContext {
   uid: string;
   managedNgoId?: string;
+  managedBrandId?: string;
+  managedClubId?: string;
   role?: string;
   email?: string;
 }
@@ -35,8 +37,15 @@ async function authorize(req: NextRequest): Promise<CallerContext | null> {
     const decoded = (await getAdminAuth().verifyIdToken(idToken)) as { uid: string; email?: string };
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
-    const d = snap.data() as { role?: string; managedNgoId?: string };
-    return { uid: decoded.uid, managedNgoId: d?.managedNgoId, role: d?.role, email: decoded.email };
+    const d = snap.data() as { role?: string; managedNgoId?: string; managedBrandId?: string; managedClubId?: string };
+    return {
+      uid: decoded.uid,
+      managedNgoId: d?.managedNgoId,
+      managedBrandId: d?.managedBrandId,
+      managedClubId: d?.managedClubId,
+      role: d?.role,
+      email: decoded.email,
+    };
   } catch {
     return null;
   }
@@ -55,7 +64,8 @@ export async function GET(req: NextRequest) {
   }
 
   const isOwner = ctx.role === 'super-admin' || ctx.email === OWNER_EMAIL;
-  const managesThis = ctx.managedNgoId === ngoId;
+  // Aktif kurum ngoId query'den; caller ngo/brand/club üyeliğinden biriyle eşleşmeli.
+  const managesThis = ctx.managedNgoId === ngoId || ctx.managedBrandId === ngoId || ctx.managedClubId === ngoId;
   if (!isOwner && !managesThis) {
     return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Bu STK için yetkiniz yok.' }, { status: 403 });
   }

@@ -16,6 +16,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import {
   Card,
   CardContent,
@@ -146,6 +147,7 @@ function renderPreviewBody(body: string): string {
 export default function WhatsAppTemplatesPage() {
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
+  const { withEntityHeaders } = useActiveEntity();
 
   const [templates, setTemplates] = useState<TemplateRow[] | null>(null);
   const [numbers, setNumbers] = useState<NumberRow[] | null>(null);
@@ -167,14 +169,14 @@ export default function WhatsAppTemplatesPage() {
     try {
       const token = await user.getIdToken();
       const [tplRes, numRes] = await Promise.all([
-        fetch('/api/ngo-admin/whatsapp-business/templates', {
+        fetch('/api/ngo-admin/whatsapp-business/templates', withEntityHeaders({
           headers: { Authorization: `Bearer ${token}` },
           cache: 'no-store',
-        }),
-        fetch('/api/ngo-admin/whatsapp-business/numbers', {
+        })),
+        fetch('/api/ngo-admin/whatsapp-business/numbers', withEntityHeaders({
           headers: { Authorization: `Bearer ${token}` },
           cache: 'no-store',
-        }),
+        })),
       ]);
       const tplJson = (await tplRes.json().catch(() => null)) as
         | { templates?: TemplateRow[] }
@@ -199,7 +201,7 @@ export default function WhatsAppTemplatesPage() {
     } finally {
       setIsFetching(false);
     }
-  }, [user]);
+  }, [user, withEntityHeaders]);
 
   useEffect(() => {
     if (user) {
@@ -214,10 +216,10 @@ export default function WhatsAppTemplatesPage() {
       const token = await user.getIdToken();
       const res = await fetch(
         `/api/ngo-admin/whatsapp-business/templates/${encodeURIComponent(pendingDelete.id)}`,
-        {
+        withEntityHeaders({
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }),
       );
       const payload = (await res.json().catch(() => null)) as
         | { ok?: boolean; metaSkipped?: boolean }
@@ -256,14 +258,14 @@ export default function WhatsAppTemplatesPage() {
     setIsSyncing(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/whatsapp-business/templates/sync', {
+      const res = await fetch('/api/ngo-admin/whatsapp-business/templates/sync', withEntityHeaders({
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ wabaPhoneNumberId: syncPhoneId }),
-      });
+      }));
       const payload = (await res.json().catch(() => null)) as
         | { synced?: number; added?: number; updated?: number }
         | ApiError

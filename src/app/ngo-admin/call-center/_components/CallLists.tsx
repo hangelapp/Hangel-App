@@ -20,6 +20,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import {
   Card,
   CardContent,
@@ -136,6 +137,7 @@ function formatCount(n: number): string {
 
 export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
   const { user, isUserLoading } = useUser();
+  const { withEntityHeaders } = useActiveEntity();
   const { toast } = useToast();
   const router = useRouter();
   const [campaignStartingId, setCampaignStartingId] = useState<string | null>(null);
@@ -150,7 +152,7 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
       const token = await user.getIdToken();
       const res = await fetch(
         `/api/ngo-admin/call-center/campaign/next?listId=${encodeURIComponent(list.id)}`,
-        { headers: { authorization: `Bearer ${token}` } },
+        withEntityHeaders({ headers: { authorization: `Bearer ${token}` } }),
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Kampanya başlatılamadı.');
@@ -164,7 +166,7 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
     } finally {
       setCampaignStartingId(null);
     }
-  }, [user, router, toast]);
+  }, [user, router, toast, withEntityHeaders]);
 
   const [lists, setLists] = useState<ListRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -198,10 +200,10 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
     setLoadError(null);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/lists', {
+      const res = await fetch('/api/ngo-admin/call-center/lists', withEntityHeaders({
         headers: { Authorization: `Bearer ${token}` },
         cache: 'no-store',
-      });
+      }));
       const payload = (await res.json().catch(() => null)) as
         | { lists?: ListRow[] }
         | ApiError
@@ -216,7 +218,7 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
     } finally {
       setIsFetching(false);
     }
-  }, [user]);
+  }, [user, withEntityHeaders]);
 
   useEffect(() => {
     if (user) {
@@ -348,10 +350,10 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
       const token = await user.getIdToken();
       const res = await fetch(
         `/api/ngo-admin/call-center/lists/${encodeURIComponent(pendingDelete.id)}`,
-        {
+        withEntityHeaders({
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }),
       );
       const payload = (await res.json().catch(() => null)) as
         | { ok?: boolean }
@@ -392,14 +394,14 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
       try {
         const token = await user.getIdToken();
         const [tplRes, phoneRes] = await Promise.all([
-          fetch('/api/ngo-admin/whatsapp-business/templates?status=approved', {
+          fetch('/api/ngo-admin/whatsapp-business/templates?status=approved', withEntityHeaders({
             headers: { Authorization: `Bearer ${token}` },
             cache: 'no-store',
-          }),
-          fetch('/api/ngo-admin/whatsapp-business/numbers', {
+          })),
+          fetch('/api/ngo-admin/whatsapp-business/numbers', withEntityHeaders({
             headers: { Authorization: `Bearer ${token}` },
             cache: 'no-store',
-          }),
+          })),
         ]);
         const tplPayload = (await tplRes.json().catch(() => null)) as {
           templates?: WhatsAppTemplateRow[];
@@ -420,7 +422,7 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
         setWaLoading(false);
       }
     },
-    [user],
+    [user, withEntityHeaders],
   );
 
   const selectedWaTemplate = useMemo(
@@ -459,7 +461,7 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
       const token = await user.getIdToken();
       const res = await fetch(
         `/api/ngo-admin/call-center/lists/${encodeURIComponent(waList.id)}/whatsapp-blast`,
-        {
+        withEntityHeaders({
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -470,7 +472,7 @@ export function CallLists({ ngoId: _ngoId }: { ngoId?: string | null } = {}) {
             wabaPhoneNumberId: waSelectedPhoneId,
             variables: waVariableValues,
           }),
-        },
+        }),
       );
       const payload = (await res.json().catch(() => null)) as
         | (BlastResult & { ok?: boolean })

@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import {
     Loader2,
     Send,
@@ -112,6 +113,7 @@ function StatusIcon({ status }: { status: string | null }) {
 export default function WhatsAppBusinessInboxPage() {
     const { toast } = useToast();
     const { user: authUser, isUserLoading } = useUser();
+    const { withEntityHeaders } = useActiveEntity();
 
     const [conversations, setConversations] = useState<ConversationRow[]>([]);
     const [filter, setFilter] = useState<FilterKey>('all');
@@ -137,7 +139,7 @@ export default function WhatsAppBusinessInboxPage() {
                 params.set('limit', '100');
                 const res = await fetch(
                     `/api/ngo-admin/whatsapp-business/conversations?${params.toString()}`,
-                    { headers: { Authorization: `Bearer ${token}` } },
+                    withEntityHeaders({ headers: { Authorization: `Bearer ${token}` } }),
                 );
                 if (!res.ok) {
                     if (!opts?.silent) {
@@ -164,7 +166,7 @@ export default function WhatsAppBusinessInboxPage() {
                 if (!opts?.silent) setListLoading(false);
             }
         },
-        [authUser, filter, toast],
+        [authUser, filter, toast, withEntityHeaders],
     );
 
     const fetchDetail = useCallback(
@@ -173,9 +175,9 @@ export default function WhatsAppBusinessInboxPage() {
             if (!opts?.silent) setDetailLoading(true);
             try {
                 const token = await authUser.getIdToken();
-                const res = await fetch(`/api/ngo-admin/whatsapp-business/conversations/${id}`, {
+                const res = await fetch(`/api/ngo-admin/whatsapp-business/conversations/${id}`, withEntityHeaders({
                     headers: { Authorization: `Bearer ${token}` },
-                });
+                }));
                 if (!res.ok) {
                     const data = (await res.json().catch(() => null)) as { message?: string } | null;
                     toast({
@@ -205,7 +207,7 @@ export default function WhatsAppBusinessInboxPage() {
                 if (!opts?.silent) setDetailLoading(false);
             }
         },
-        [authUser, toast],
+        [authUser, toast, withEntityHeaders],
     );
 
     // İlk yükleme ve filtre değişiminde
@@ -277,14 +279,14 @@ export default function WhatsAppBusinessInboxPage() {
             const token = await authUser.getIdToken();
             const res = await fetch(
                 `/api/ngo-admin/whatsapp-business/conversations/${selectedId}`,
-                {
+                withEntityHeaders({
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify({ type: 'text', body }),
-                },
+                }),
             );
             const data = (await res.json().catch(() => null)) as {
                 ok?: boolean;
@@ -312,7 +314,7 @@ export default function WhatsAppBusinessInboxPage() {
         } finally {
             setSending(false);
         }
-    }, [authUser, selectedId, replyBody, detail, toast, fetchDetail, fetchConversations]);
+    }, [authUser, selectedId, replyBody, detail, toast, fetchDetail, fetchConversations, withEntityHeaders]);
 
     const renderMessageBody = (m: MessageRow) => {
         if (m.type === 'template') {

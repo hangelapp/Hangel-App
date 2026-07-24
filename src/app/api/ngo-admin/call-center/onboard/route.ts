@@ -55,11 +55,38 @@ async function authorize(req: NextRequest): Promise<CallerContext | null> {
     const decoded = await getAdminAuth().verifyIdToken(idToken) as { uid: string; role?: string; email?: string };
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
-    const d = snap.data() as { role?: string; managedNgoId?: string };
-    if (!d?.managedNgoId) return null;
-    // ngo-admin veya super-admin rolü kabul; managedNgoId tenant'ı verir.
+    const d = snap.data() as {
+      role?: string;
+      managedNgoId?: string;
+      managedBrandId?: string;
+      managedClubId?: string;
+    };
+    if (!d) return null;
+    // ngo-admin veya super-admin rolü kabul.
     if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
-    return { uid: decoded.uid, ngoId: d.managedNgoId, role: d.role, email: decoded.email };
+    // Aktif kurum: üst switcher x-org-id + x-org-kind header'ı (çoklu kurum için kritik).
+    const hdrKindRaw = req.headers.get('x-org-kind');
+    const hdrKind = (hdrKindRaw === 'ngo' || hdrKindRaw === 'brand' || hdrKindRaw === 'club')
+      ? hdrKindRaw
+      : undefined;
+    const hdrOrgId = req.headers.get('x-org-id') || undefined;
+    const isSuperAdmin = d.role === 'super-admin';
+
+    let ngoId = '';
+    if (hdrOrgId && hdrKind) {
+      // Caller'ın gönderdiği aktif kurumu, üyelik doğrulamasıyla kullan.
+      const isMember =
+        (hdrKind === 'ngo' && d.managedNgoId === hdrOrgId) ||
+        (hdrKind === 'brand' && d.managedBrandId === hdrOrgId) ||
+        (hdrKind === 'club' && d.managedClubId === hdrOrgId);
+      if (!isMember && !isSuperAdmin) return null;
+      ngoId = hdrOrgId;
+    } else {
+      // Eski davranış: ilk dolu olan managed kurum id'si.
+      ngoId = d.managedNgoId || d.managedBrandId || d.managedClubId || '';
+    }
+    if (!ngoId) return null;
+    return { uid: decoded.uid, ngoId, role: d.role, email: decoded.email };
   } catch {
     return null;
   }

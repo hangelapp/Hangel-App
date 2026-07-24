@@ -46,7 +46,7 @@ export default function MailManagementPage() {
     const router = useRouter();
     const db = useFirestore();
     const { user: authUser } = useUser();
-    const { id: ngoId } = useActiveEntity();
+    const { id: ngoId, withEntityHeaders } = useActiveEntity();
     const { data: entityDoc } = useActiveEntityDoc<{ name?: string; contact?: { phone?: string; email?: string; website?: string } }>();
 
     const [recipientsRaw, setRecipientsRaw] = useState('');
@@ -84,9 +84,9 @@ export default function MailManagementPage() {
             if (!authUser) return;
             try {
                 const token = await authUser.getIdToken();
-                const res = await fetch('/api/ngo-admin/messaging/setup', {
+                const res = await fetch('/api/ngo-admin/messaging/setup', withEntityHeaders({
                     headers: { Authorization: `Bearer ${token}` },
-                });
+                }));
                 if (!res.ok) return;
                 const data = (await res.json()) as { setup?: { status?: 'not_started' | 'pending' | 'active' } };
                 if (!cancelled) setSetupStatus(data.setup?.status ?? 'not_started');
@@ -102,9 +102,9 @@ export default function MailManagementPage() {
         if (!authUser) return;
         try {
             const token = await authUser.getIdToken();
-            const res = await fetch('/api/ngo-admin/mail/connection', {
+            const res = await fetch('/api/ngo-admin/mail/connection', withEntityHeaders({
                 headers: { Authorization: `Bearer ${token}` },
-            });
+            }));
             if (!res.ok) return;
             const data = (await res.json()) as MailConnection;
             setConnection({
@@ -158,7 +158,7 @@ export default function MailManagementPage() {
         setWsConnecting(true);
         try {
             const token = await authUser?.getIdToken();
-            const res = await fetch('/api/ngo-admin/mail/connect', {
+            const res = await fetch('/api/ngo-admin/mail/connect', withEntityHeaders({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
@@ -169,7 +169,7 @@ export default function MailManagementPage() {
                     smtpUser: wsFromEmail.trim(),
                     smtpPassword: wsSmtpPassword,
                 }),
-            });
+            }));
             if (!res.ok) {
                 toast({ variant: 'destructive', title: 'Bağlanamadı', description: 'Bilgileri kontrol edip tekrar deneyin.' });
                 return;
@@ -188,10 +188,10 @@ export default function MailManagementPage() {
         setWsDisconnecting(true);
         try {
             const token = await authUser?.getIdToken();
-            const res = await fetch('/api/ngo-admin/mail/disconnect', {
+            const res = await fetch('/api/ngo-admin/mail/disconnect', withEntityHeaders({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            });
+            }));
             if (!res.ok) {
                 toast({ variant: 'destructive', title: 'Bağlantı kaldırılamadı' });
                 return;
@@ -226,7 +226,7 @@ export default function MailManagementPage() {
         setWsSending(true);
         try {
             const token = await authUser?.getIdToken();
-            const res = await fetch('/api/ngo-admin/mail/campaign', {
+            const res = await fetch('/api/ngo-admin/mail/campaign', withEntityHeaders({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
@@ -240,7 +240,7 @@ export default function MailManagementPage() {
                         inlineRecipients: wsSegmentId === '__list' ? wsList.map((email) => ({ email })) : undefined,
                     },
                 }),
-            });
+            }));
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
                 if (res.status === 409 && data?.errorCode === 'NOT_CONNECTED') {
@@ -311,11 +311,11 @@ export default function MailManagementPage() {
         setWsSigSaving(true);
         try {
             const token = await authUser?.getIdToken();
-            const res = await fetch('/api/ngo-admin/mail/connection', {
+            const res = await fetch('/api/ngo-admin/mail/connection', withEntityHeaders({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ signature: wsSignature }),
-            });
+            }));
             if (!res.ok) { toast({ variant: 'destructive', title: 'İmza kaydedilemedi' }); return; }
             toast({ title: 'İmza kaydedildi', description: 'Her mailin altına otomatik eklenecek.' });
             setWsSigEditing(false);
@@ -362,11 +362,11 @@ export default function MailManagementPage() {
         setIsSending(true);
         try {
             const token = await authUser?.getIdToken();
-            const res = await fetch('/api/ngo-admin/messaging/send', {
+            const res = await fetch('/api/ngo-admin/messaging/send', withEntityHeaders({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ ngoId, channel: 'mail', recipients, message: message.trim(), subject: subject.trim() }),
-            });
+            }));
             const data = await res.json();
             if (!res.ok) {
                 if (res.status === 409) {

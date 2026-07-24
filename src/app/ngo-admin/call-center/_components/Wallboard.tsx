@@ -7,6 +7,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@/firebase';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, PhoneCall, CheckCircle2, Clock3, PhoneMissed, Users } from 'lucide-react';
 
@@ -18,6 +19,7 @@ interface WallboardData {
 
 export function Wallboard() {
   const { user } = useUser();
+  const { withEntityHeaders } = useActiveEntity();
   const [data, setData] = useState<WallboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +27,7 @@ export function Wallboard() {
     if (!user) return;
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/wallboard', { headers: { authorization: `Bearer ${token}` } });
+      const res = await fetch('/api/ngo-admin/call-center/wallboard', withEntityHeaders({ headers: { authorization: `Bearer ${token}` } }));
       const json = await res.json();
       if (res.ok) setData(json);
     } catch { /* sessiz */ } finally { setLoading(false); }

@@ -10,6 +10,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Clock3, PhoneMissed, UserPlus, Phone, Sun } from 'lucide-react';
@@ -35,6 +36,7 @@ function fmtWhen(iso: string | null): string {
 
 export function MyDayPanel() {
   const { user } = useUser();
+  const { withEntityHeaders } = useActiveEntity();
   const [data, setData] = useState<MyDayResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +45,7 @@ export function MyDayPanel() {
     setLoading(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/my-day', { headers: { authorization: `Bearer ${token}` } });
+      const res = await fetch('/api/ngo-admin/call-center/my-day', withEntityHeaders({ headers: { authorization: `Bearer ${token}` } }));
       const json = await res.json();
       if (res.ok) setData(json);
     } catch { /* sessiz */ } finally { setLoading(false); }

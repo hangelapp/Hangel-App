@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, TrendingUp, Users, HandCoins, Target } from 'lucide-react';
 import { STAGE_TONE_CLASS, type PipelineStage } from '@/lib/santral/pipeline';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 interface StageRow {
   key: string; label: string; tone: PipelineStage['tone'];
@@ -31,6 +32,7 @@ function fmtTL(n: number): string {
 
 export function PipelineBoard() {
   const { user } = useUser();
+  const { withEntityHeaders } = useActiveEntity();
   const [data, setData] = useState<PipelineResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +41,7 @@ export function PipelineBoard() {
     setLoading(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/pipeline', { headers: { authorization: `Bearer ${token}` } });
+      const res = await fetch('/api/ngo-admin/call-center/pipeline', withEntityHeaders({ headers: { authorization: `Bearer ${token}` } }));
       const json = await res.json();
       if (res.ok) setData(json);
     } catch { /* sessiz */ } finally { setLoading(false); }

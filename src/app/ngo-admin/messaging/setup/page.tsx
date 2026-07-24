@@ -34,7 +34,7 @@ interface SetupState {
 
 export default function MessagingSetupPage() {
   const { user: authUser, isUserLoading } = useUser();
-  const { id: ngoId, isLoading: entityLoading } = useActiveEntity();
+  const { id: ngoId, isLoading: entityLoading, withEntityHeaders } = useActiveEntity();
   const [setup, setSetup] = useState<SetupState | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,9 +45,9 @@ export default function MessagingSetupPage() {
       setLoading(true);
       try {
         const token = await authUser.getIdToken();
-        const res = await fetch('/api/ngo-admin/messaging/setup', {
+        const res = await fetch('/api/ngo-admin/messaging/setup', withEntityHeaders({
           headers: { Authorization: `Bearer ${token}` },
-        });
+        }));
         if (!res.ok) return;
         const data = (await res.json()) as { setup: SetupState };
         if (!cancelled) setSetup(data.setup);

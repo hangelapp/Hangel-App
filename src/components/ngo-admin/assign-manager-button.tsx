@@ -24,6 +24,7 @@ import { UserCog, UserPlus, Loader2, X } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 interface AssignManagerButtonProps {
   kind: 'event' | 'volunteering';
@@ -43,6 +44,7 @@ export function AssignManagerButton({
 }: AssignManagerButtonProps) {
   const { user: authUser } = useUser();
   const { toast } = useToast();
+  const { withEntityHeaders } = useActiveEntity();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [phone, setPhone] = useState('');
@@ -62,11 +64,11 @@ export function AssignManagerButton({
   const post = async (payload: Record<string, unknown>) => {
     if (!authUser) throw new Error('Oturum gerekli');
     const token = await authUser.getIdToken();
-    const res = await fetch('/api/ngo-admin/listings/assign-manager', {
+    const res = await fetch('/api/ngo-admin/listings/assign-manager', withEntityHeaders({
       method: 'POST',
       headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}` },
       body: JSON.stringify({ kind, listingId, ...payload }),
-    });
+    }));
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'İşlem başarısız.');
     return data as { ok: boolean; userId: string; name: string };

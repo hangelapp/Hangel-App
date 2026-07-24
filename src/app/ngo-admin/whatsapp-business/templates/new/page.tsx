@@ -20,6 +20,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import {
   Card,
   CardContent,
@@ -143,6 +144,7 @@ export default function NewWhatsAppTemplatePage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
+  const { withEntityHeaders } = useActiveEntity();
 
   const [numbers, setNumbers] = useState<NumberRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -165,10 +167,10 @@ export default function NewWhatsAppTemplatePage() {
     (async () => {
       try {
         const token = await user.getIdToken();
-        const res = await fetch('/api/ngo-admin/whatsapp-business/numbers', {
+        const res = await fetch('/api/ngo-admin/whatsapp-business/numbers', withEntityHeaders({
           headers: { Authorization: `Bearer ${token}` },
           cache: 'no-store',
-        });
+        }));
         const payload = (await res.json().catch(() => null)) as
           | { numbers?: NumberRow[] }
           | ApiError
@@ -310,14 +312,14 @@ export default function NewWhatsAppTemplatePage() {
         }),
         variables: examples.map((v) => v.trim()),
       };
-      const res = await fetch('/api/ngo-admin/whatsapp-business/templates', {
+      const res = await fetch('/api/ngo-admin/whatsapp-business/templates', withEntityHeaders({
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-      });
+      }));
       const json = (await res.json().catch(() => null)) as
         | { id?: string; status?: string }
         | ApiError

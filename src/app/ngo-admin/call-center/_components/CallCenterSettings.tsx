@@ -19,6 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Save, Plus, Trash2, Hash, Phone, Mic, ShieldCheck, PhoneIncoming, CheckCircle2, X, MessageCircle } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 interface ExtensionRow {
   ext: string;
@@ -62,6 +63,7 @@ const DEFAULT_EXTENSIONS: ExtensionRow[] = [
 export function CallCenterSettings({ ngoId, ccDoc }: { ngoId: string; ccDoc: CcDocLite }) {
   const { user } = useUser();
   const { toast } = useToast();
+  const { withEntityHeaders } = useActiveEntity();
 
   const [extensions, setExtensions] = useState<ExtensionRow[]>(
     ccDoc.extensions && ccDoc.extensions.length > 0 ? ccDoc.extensions : DEFAULT_EXTENSIONS,
@@ -92,7 +94,7 @@ export function CallCenterSettings({ ngoId, ccDoc }: { ngoId: string; ccDoc: CcD
         const token = await user.getIdToken();
         const res = await fetch(
           `/api/ngo-admin/users/list?q=${encodeURIComponent(agentQuery.trim())}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          withEntityHeaders({ headers: { Authorization: `Bearer ${token}` } }),
         );
         if (!res.ok) return;
         const data = (await res.json()) as { users: UserSearchRow[] };
@@ -132,7 +134,7 @@ export function CallCenterSettings({ ngoId, ccDoc }: { ngoId: string; ccDoc: CcD
           assignedToUid: r.assignedToUid ?? null,
         }))
         .filter((r) => r.ext);
-      const res = await fetch('/api/ngo-admin/call-center/settings', {
+      const res = await fetch('/api/ngo-admin/call-center/settings', withEntityHeaders({
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -146,7 +148,7 @@ export function CallCenterSettings({ ngoId, ccDoc }: { ngoId: string; ccDoc: CcD
             inboundAgentName: inboundAgentName || null,
           },
         }),
-      });
+      }));
       const data = await res.json();
       if (!res.ok || !data.ok) {
         toast({ variant: 'destructive', title: 'Kaydedilemedi', description: data.message || 'Ayarlar kaydedilemedi.' });

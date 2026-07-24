@@ -83,7 +83,7 @@ export function MessagingSetupWizard({ ngoId, initialSetup }: Props) {
   const router = useRouter();
   const { toast } = useToast();
   const { user: authUser } = useUser();
-  const { kind } = useActiveEntity();
+  const { kind, withEntityHeaders } = useActiveEntity();
 
   const [stepIdx, setStepIdx] = useState(0);
   const [setup, setSetup] = useState<SetupState>(initialSetup);
@@ -108,11 +108,11 @@ export function MessagingSetupWizard({ ngoId, initialSetup }: Props) {
       toast({ variant: 'destructive', title: 'Oturum bulunamadı' });
       return null;
     }
-    const res = await fetch('/api/ngo-admin/messaging/setup', {
+    const res = await fetch('/api/ngo-admin/messaging/setup', withEntityHeaders({
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(payload),
-    });
+    }));
     const data = await res.json();
     if (!res.ok) {
       toast({

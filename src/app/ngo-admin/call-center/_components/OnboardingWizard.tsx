@@ -27,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { celebrate } from '@/lib/celebrate';
 import { messagingFetch } from '@/lib/messaging/client';
 import { cn } from '@/lib/utils';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 const NUMBER_POOL = 'santralNumberPool';
 const PACKAGES = 'santralPackages';
@@ -166,6 +167,7 @@ Bu protokolü onaylayarak hangel'in 3. parti yazılım sağlayıcı rolünü kab
 export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: OnboardingWizardProps) {
   const { toast } = useToast();
   const db = useFirestore();
+  const { withEntityHeaders } = useActiveEntity();
 
   // Kurum tipi STK profilinden gelir ve KİLİTLİDİR (değiştirilemez).
   const lockedCompanyType = mapNgoType(ngoType);
@@ -225,7 +227,7 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
         const url = userSearchQuery.trim()
           ? `/api/ngo-admin/users/list?q=${encodeURIComponent(userSearchQuery.trim())}`
           : '/api/ngo-admin/users/list';
-        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(url, withEntityHeaders({ headers: { Authorization: `Bearer ${token}` } }));
         if (!res.ok) return;
         const data = (await res.json()) as { users: typeof userResults };
         if (!cancelled) setUserResults(data.users);
@@ -245,9 +247,9 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
       setDocsLoading(true);
       try {
         const token = await authedUser.getIdToken();
-        const res = await fetch('/api/ngo-admin/documents/list', {
+        const res = await fetch('/api/ngo-admin/documents/list', withEntityHeaders({
           headers: { Authorization: `Bearer ${token}` },
-        });
+        }));
         if (!res.ok) return;
         const data = (await res.json()) as { documents: typeof archivedDocs };
         if (!cancelled) setArchivedDocs(data.documents);
@@ -322,11 +324,11 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
     setOtpError('');
     try {
       const token = await authedUser.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/contact-otp/send', {
+      const res = await fetch('/api/ngo-admin/call-center/contact-otp/send', withEntityHeaders({
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ phone: contactPhone, contactName: contactPerson }),
-      });
+      }));
       const data = await res.json();
       if (!res.ok || !data.ok) {
         setOtpError(data.message || 'Kod gönderilemedi.');
@@ -357,11 +359,11 @@ export function OnboardingWizard({ ngoId, ngoName, ngoType, ngoKutukNo }: Onboar
     setOtpError('');
     try {
       const token = await authedUser.getIdToken();
-      const res = await fetch('/api/ngo-admin/call-center/contact-otp/verify', {
+      const res = await fetch('/api/ngo-admin/call-center/contact-otp/verify', withEntityHeaders({
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ phone: contactPhone, code: otpCode.trim() }),
-      });
+      }));
       const data = await res.json();
       if (!res.ok || !data.verified) {
         setOtpError(data.message || 'Kod hatalı.');

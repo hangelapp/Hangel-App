@@ -31,10 +31,30 @@ async function authorize(req: NextRequest): Promise<Ctx | null> {
     const decoded = await getAdminAuth().verifyIdToken(idToken);
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
-    const d = snap.data() as { role?: string; managedNgoId?: string; displayName?: string; name?: string };
-    if (!d?.managedNgoId) return null;
+    const d = snap.data() as { role?: string; managedNgoId?: string; managedBrandId?: string; managedClubId?: string; displayName?: string; name?: string };
+    if (!d) return null;
     if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
-    return { uid: decoded.uid, ngoId: d.managedNgoId, name: d.displayName || d.name || null };
+    const isSuperAdmin = d.role === 'super-admin';
+    // Aktif kurum: üst switcher x-org-id + x-org-kind header'ıyla gelir (çoklu kurum
+    // yöneten kullanıcı için kritik). Caller o kuruma üyeyse (managedNgoId/BrandId/ClubId
+    // == header) ya da super-admin ise header'daki kurum kullanılır; yoksa eski davranışa
+    // (managedNgoId → managedBrandId → managedClubId ilk dolu olan) düşer.
+    const hdrKindRaw = req.headers.get('x-org-kind');
+    const hdrKind = (hdrKindRaw === 'ngo' || hdrKindRaw === 'brand' || hdrKindRaw === 'club') ? hdrKindRaw : undefined;
+    const hdrOrgId = req.headers.get('x-org-id') || undefined;
+    let __activeNgoId = '';
+    if (hdrOrgId && hdrKind) {
+      const isMember =
+        (hdrKind === 'ngo' && d.managedNgoId === hdrOrgId) ||
+        (hdrKind === 'brand' && d.managedBrandId === hdrOrgId) ||
+        (hdrKind === 'club' && d.managedClubId === hdrOrgId);
+      if (isSuperAdmin || isMember) __activeNgoId = hdrOrgId;
+      else return null;
+    } else {
+      __activeNgoId = d.managedNgoId || d.managedBrandId || d.managedClubId || '';
+    }
+    if (!__activeNgoId) return null;
+    return { uid: decoded.uid, ngoId: __activeNgoId, name: d.displayName || d.name || null };
   } catch {
     return null;
   }

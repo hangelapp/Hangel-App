@@ -57,7 +57,7 @@ export default function NewUserPage() {
     // Aktif kurum (panelde hangi kurumdaysa) — context URL/localStorage/fallback ile
     // çözer. invite route'una orgId+kind geçmek için ŞART: yoksa çok-kurumlu yönetici
     // yanlış (ilk) kuruma davet eder. searchParams.get('id') yalnız yedek.
-    const { id: activeId, kind: activeKind } = useActiveEntity();
+    const { id: activeId, kind: activeKind, withEntityHeaders } = useActiveEntity();
     const ngoId = activeId || searchParams.get('id') || authUser?.uid || null;
 
     // Tüm üyeleri çek (telefon eşleştirmesi için)
@@ -147,7 +147,7 @@ export default function NewUserPage() {
             // notifications kayıtlarını atomik tek batch'te oluşturur.
             const token = await authUser?.getIdToken();
             if (!token) throw new Error('Auth token alınamadı');
-            const apiRes = await fetch('/api/ngo-admin/users/invite', {
+            const apiRes = await fetch('/api/ngo-admin/users/invite', withEntityHeaders({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 // orgId + kind: AKTİF kuruma ata (çok-kurumlu yöneticide doğru kurum).
@@ -156,7 +156,7 @@ export default function NewUserPage() {
                     role,
                     ...(activeId && activeKind ? { orgId: activeId, kind: activeKind } : {}),
                 }),
-            });
+            }));
             const apiJson = await apiRes.json().catch(() => ({} as Record<string, unknown>));
             if (!apiRes.ok) {
                 const errMsg = (apiJson as { error?: string }).error || `HTTP ${apiRes.status}`;

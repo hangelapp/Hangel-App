@@ -58,9 +58,18 @@ async function authorize(req: NextRequest): Promise<NgoCaller | null> {
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
     const d = snap.data() as { role?: string; managedNgoId?: string };
-    if (!d?.managedNgoId) return null;
+    if (!d) return null;
     if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
-    return { uid: decoded.uid, ngoId: d.managedNgoId, role: d.role };
+    // Aktif kurum: üst switcher x-org-id header'ıyla gelir (çoklu kurum yöneten
+    // kullanıcı için kritik). Caller onu yönetiyorsa (managedNgoId==header) ya da
+    // super-admin ise header'daki STK kullanılır; yoksa managedNgoId'ye düşer.
+    const __hdrId = (req.headers.get('x-org-id') || '').trim();
+    const __hdrKind = (req.headers.get('x-org-kind') || '').trim().toLowerCase();
+    const __activeNgoId = (__hdrId && __hdrKind === 'ngo' && (d.role === 'super-admin' || d.managedNgoId === __hdrId))
+      ? __hdrId
+      : (d.managedNgoId || '');
+    if (!__activeNgoId) return null;
+    return { uid: decoded.uid, ngoId: __activeNgoId, role: d.role };
   } catch {
     return null;
   }

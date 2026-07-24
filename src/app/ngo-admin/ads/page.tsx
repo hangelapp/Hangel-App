@@ -187,7 +187,7 @@ const PLATFORM_HERO: Record<AdPlatform, { title: string; subtitle: string; Icon:
 
 export default function AdsPage() {
     const { user } = useUser();
-    const { id: entityId, kind: entityKind, isLoading } = useActiveEntity();
+    const { id: entityId, kind: entityKind, isLoading, withEntityHeaders } = useActiveEntity();
     const { data: activeDoc } = useActiveEntityDoc<EntityDoc>();
     const { toast } = useToast();
 
@@ -251,9 +251,9 @@ export default function AdsPage() {
         (async () => {
             try {
                 const idToken = await user.getIdToken();
-                const res = await fetch('/api/ngo-admin/ads/select', {
+                const res = await fetch('/api/ngo-admin/ads/select', withEntityHeaders({
                     headers: { Authorization: `Bearer ${idToken}` },
-                });
+                }));
                 if (!res.ok) return;
                 const data = (await res.json().catch(() => null)) as { plans?: SavedPlan[] } | null;
                 if (cancelled || !data?.plans) return;
@@ -282,9 +282,9 @@ export default function AdsPage() {
         if (!user) return;
         try {
             const idToken = await user.getIdToken();
-            const res = await fetch('/api/ngo-admin/ads/connection', {
+            const res = await fetch('/api/ngo-admin/ads/connection', withEntityHeaders({
                 headers: { Authorization: `Bearer ${idToken}` },
-            });
+            }));
             if (!res.ok) return;
             const data = (await res.json().catch(() => null)) as Partial<ConnectionState> | null;
             if (!data) return;
@@ -316,9 +316,9 @@ export default function AdsPage() {
         (async () => {
             try {
                 const idToken = await user.getIdToken();
-                const res = await fetch('/api/ngo-admin/ads/metrics', {
+                const res = await fetch('/api/ngo-admin/ads/metrics', withEntityHeaders({
                     headers: { Authorization: `Bearer ${idToken}` },
-                });
+                }));
                 if (!res.ok) return;
                 const data = (await res.json().catch(() => null)) as { campaigns?: AdsCampaignMetric[] } | null;
                 if (cancelled || !data?.campaigns) return;
@@ -335,9 +335,9 @@ export default function AdsPage() {
         if (!user) return;
         try {
             const idToken = await user.getIdToken();
-            const res = await fetch('/api/ngo-admin/ads/meta/connection', {
+            const res = await fetch('/api/ngo-admin/ads/meta/connection', withEntityHeaders({
                 headers: { Authorization: `Bearer ${idToken}` },
-            });
+            }));
             if (!res.ok) return;
             const data = (await res.json().catch(() => null)) as Partial<MetaConnectionState> | null;
             if (!data) return;
@@ -366,9 +366,9 @@ export default function AdsPage() {
         if (!user) return;
         try {
             const idToken = await user.getIdToken();
-            const res = await fetch('/api/ngo-admin/ads/tiktok/connection', {
+            const res = await fetch('/api/ngo-admin/ads/tiktok/connection', withEntityHeaders({
                 headers: { Authorization: `Bearer ${idToken}` },
-            });
+            }));
             if (!res.ok) return;
             const data = (await res.json().catch(() => null)) as Partial<TiktokConnectionState> | null;
             if (!data) return;
@@ -434,10 +434,10 @@ export default function AdsPage() {
         setConnecting(true);
         try {
             const idToken = await user.getIdToken();
-            const res = await fetch('/api/ngo-admin/ads/google/start', {
+            const res = await fetch('/api/ngo-admin/ads/google/start', withEntityHeaders({
                 method: 'POST',
                 headers: { Authorization: `Bearer ${idToken}` },
-            });
+            }));
             const data = (await res.json().catch(() => null)) as { authorizeUrl?: string; errorCode?: string; message?: string } | null;
             if (res.status === 503 || data?.errorCode === 'ADS_NOT_CONFIGURED') {
                 setConnection((prev) => ({ ...prev, configured: false }));
@@ -466,11 +466,11 @@ export default function AdsPage() {
         setPublishingId(planId);
         try {
             const idToken = await user.getIdToken();
-            const res = await fetch('/api/ngo-admin/ads/publish', {
+            const res = await fetch('/api/ngo-admin/ads/publish', withEntityHeaders({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
                 body: JSON.stringify({ planId }),
-            });
+            }));
             const data = (await res.json().catch(() => null)) as { ok?: boolean; status?: PlanStatus; errorCode?: string; message?: string; detail?: string } | null;
             if (res.status === 503 || data?.errorCode === 'ADS_NOT_CONFIGURED') {
                 toast({ title: 'Yapılandırma bekleniyor', description: 'hangel ekibi Google Ads bağlantısını yapılandırıyor — çok yakında.' });
@@ -508,10 +508,10 @@ export default function AdsPage() {
         setMetaConnecting(true);
         try {
             const idToken = await user.getIdToken();
-            const res = await fetch('/api/ngo-admin/ads/meta/start', {
+            const res = await fetch('/api/ngo-admin/ads/meta/start', withEntityHeaders({
                 method: 'POST',
                 headers: { Authorization: `Bearer ${idToken}` },
-            });
+            }));
             const data = (await res.json().catch(() => null)) as { authorizeUrl?: string; errorCode?: string; message?: string } | null;
             if (res.status === 503 || data?.errorCode === 'META_NOT_CONFIGURED') {
                 setMetaConnection((prev) => ({ ...prev, configured: false }));

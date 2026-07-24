@@ -9,6 +9,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@/firebase';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarChart3, Loader2, PhoneCall, CheckCircle2, Timer, PhoneForwarded } from 'lucide-react';
@@ -38,6 +39,7 @@ function pct(v: number): string { return `%${Math.round(v * 100)}`; }
 
 export function AgentStatsPanel() {
   const { user } = useUser();
+  const { withEntityHeaders } = useActiveEntity();
   const [days, setDays] = useState(7);
   const [data, setData] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ export function AgentStatsPanel() {
     setLoading(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch(`/api/ngo-admin/call-center/agent-stats?days=${days}`, { headers: { authorization: `Bearer ${token}` } });
+      const res = await fetch(`/api/ngo-admin/call-center/agent-stats?days=${days}`, withEntityHeaders({ headers: { authorization: `Bearer ${token}` } }));
       const json = await res.json();
       if (res.ok) setData(json);
     } catch { /* sessiz */ } finally { setLoading(false); }

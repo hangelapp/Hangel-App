@@ -257,6 +257,7 @@ export default function ActiveCallPage() {
   // Aktif kurum — STK ise originate'e hedef ngoId olarak gönderilir
   // (super-admin başka STK'ya bakıyorsa doğru tenant'ta session açılsın).
   const activeEntity = useActiveEntity();
+  const { withEntityHeaders } = activeEntity;
   const activeNgoId = activeEntity.kind === 'ngo' ? activeEntity.id : null;
 
   // Gelen-arama gate'i için current uid.
@@ -379,7 +380,7 @@ export default function ActiveCallPage() {
     (async () => {
       try {
         const token = await user.getIdToken();
-        const res = await fetch('/api/ngo-admin/call-center/note-templates', { headers: { authorization: `Bearer ${token}` } });
+        const res = await fetch('/api/ngo-admin/call-center/note-templates', withEntityHeaders({ headers: { authorization: `Bearer ${token}` } }));
         if (!res.ok) return;
         const data = await res.json();
         if (active && Array.isArray(data.templates)) setNoteTemplates(data.templates);
@@ -695,7 +696,7 @@ export default function ActiveCallPage() {
     (async () => {
       try {
         const token = await user.getIdToken();
-        const res = await fetch('/api/ngo-admin/users/managers', { headers: { authorization: `Bearer ${token}` } });
+        const res = await fetch('/api/ngo-admin/users/managers', withEntityHeaders({ headers: { authorization: `Bearer ${token}` } }));
         if (!res.ok) return;
         const data = await res.json();
         if (active && Array.isArray(data.managers)) {

@@ -26,10 +26,30 @@ async function authorize(req: NextRequest): Promise<Ctx | null> {
     const decoded = await getAdminAuth().verifyIdToken(idToken);
     const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
     if (!snap.exists) return null;
-    const d = snap.data() as { role?: string; managedNgoId?: string };
-    if (!d?.managedNgoId) return null;
+    const d = snap.data() as { role?: string; managedNgoId?: string; managedBrandId?: string; managedClubId?: string };
+    if (!d) return null;
     if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
-    return { uid: decoded.uid, ngoId: d.managedNgoId };
+    // Aktif kurum: üst switcher x-org-id + x-org-kind header'ıyla gelir (çoklu
+    // kurum yöneten kullanıcı için kritik). Caller o kuruma üyeyse (managed*Id
+    // eşleşmesi) ya da super-admin ise header'daki kurum kullanılır; yoksa eski
+    // davranış: managedNgoId → managedBrandId → managedClubId ilk dolu olan.
+    const hdrKindRaw = req.headers.get('x-org-kind');
+    const hdrKind = (hdrKindRaw === 'ngo' || hdrKindRaw === 'brand' || hdrKindRaw === 'club') ? hdrKindRaw : undefined;
+    const hdrOrgId = (req.headers.get('x-org-id') || '').trim() || undefined;
+    const isSuper = d.role === 'super-admin';
+    let __activeNgoId = '';
+    if (hdrOrgId && hdrKind) {
+      const member =
+        (hdrKind === 'ngo' && d.managedNgoId === hdrOrgId) ||
+        (hdrKind === 'brand' && d.managedBrandId === hdrOrgId) ||
+        (hdrKind === 'club' && d.managedClubId === hdrOrgId);
+      if (!member && !isSuper) return null;
+      __activeNgoId = hdrOrgId;
+    } else {
+      __activeNgoId = d.managedNgoId || d.managedBrandId || d.managedClubId || '';
+    }
+    if (!__activeNgoId) return null;
+    return { uid: decoded.uid, ngoId: __activeNgoId };
   } catch {
     return null;
   }
