@@ -49,7 +49,11 @@ export function EventCheckinQR({ eventId, logoUrl }: { eventId: string; logoUrl?
 
   const scanUrl = useCallback((m: Mode) => {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
-    return `${origin}/e/${eventId}/${m}`;
+    // Kayıt QR/link → önce ETKİNLİK DETAY sayfası açılsın (kişi ne olduğunu görüp
+    // oradan kaydolsun); gönüllülükle simetrik. Check-in ise yoklama aksiyonu →
+    // doğrudan /e/{id}/checkin. (Önceki: kayıt da /e/{id}/kayit aksiyon ekranına
+    // gidiyordu, detay görünmüyordu.)
+    return m === 'kayit' ? `${origin}/events/${eventId}` : `${origin}/e/${eventId}/checkin`;
   }, [eventId]);
 
   const loadList = useCallback(async () => {

@@ -24,18 +24,21 @@ function UnitBoxes({ ms, live, size = 'md', className }: {
     { v: minutes, label: 'dk' },
     { v: seconds, label: 'sn' },
   ];
-  // Apple-temiz: kenarlık/kutu YOK — büyük tabular sayı + altında minik etiket,
-  // birimler boşlukla ayrılır (iki nokta yok). Canlıda yalnız kırmızı metin vurgusu.
+  // Apple-temiz: kenarlık/kutu YOK — büyük tabular sayı + altında minik etiket.
+  // Her birim SABİT genişlikte bir kolon (min-w) + ortalanmış → sayılar/etiketler
+  // hizada kalır, saniye değişince kayma olmaz. Etikette tracking'i azalttık ki
+  // "saat" kolon genişliğini taşırmasın.
   const numCls = size === 'lg' ? 'text-3xl sm:text-4xl' : size === 'sm' ? 'text-lg' : 'text-2xl';
-  const gapCls = size === 'lg' ? 'gap-5 sm:gap-7' : size === 'sm' ? 'gap-3' : 'gap-4';
+  const gapCls = size === 'lg' ? 'gap-3 sm:gap-5' : size === 'sm' ? 'gap-2.5' : 'gap-3.5';
+  const colCls = size === 'lg' ? 'min-w-[3ch]' : size === 'sm' ? 'min-w-[2.5ch]' : 'min-w-[2.75ch]';
   return (
     <div className={cn('inline-flex items-start', gapCls, className)}>
       {units.map((u) => (
-        <div key={u.label} className="flex flex-col items-center">
+        <div key={u.label} className={cn('flex flex-col items-center', colCls)}>
           <span className={cn('font-semibold leading-none tabular-nums tracking-tight', numCls, live ? 'text-red-600 dark:text-red-400' : 'text-foreground')}>
             {String(u.v).padStart(2, '0')}
           </span>
-          <span className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">{u.label}</span>
+          <span className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">{u.label}</span>
         </div>
       ))}
     </div>
