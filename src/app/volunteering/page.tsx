@@ -308,6 +308,15 @@ const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
                         </div>
                     )}
 
+                    {/* Sosyal kanıt: kaç kişi başvurdu (denormalize sayaç — ekstra sorgu yok).
+                        Boş/0 ise gösterme (sıfır başvuru caydırıcı olmasın). */}
+                    {(opp.volunteerCount?.applications ?? 0) > 0 && (
+                        <p className="text-[11px] font-semibold text-muted-foreground">
+                            <span className="text-foreground">{opp.volunteerCount.applications}</span> kişi başvurdu
+                            {(opp.volunteerCount?.needed ?? 0) > 0 && <span> · {opp.volunteerCount.needed} kişi aranıyor</span>}
+                        </p>
+                    )}
+
                     {/* Alt: tek durum (başvuru → o, yoksa geri sayım) + puan */}
                     <div className="mt-auto flex items-center justify-between gap-2 pt-1">
                         {appStatus ? (

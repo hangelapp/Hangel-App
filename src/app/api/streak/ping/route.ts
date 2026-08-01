@@ -26,6 +26,7 @@ import {
   type StreakSignal,
 } from '@/lib/streak';
 import { notifyUser } from '@/lib/notify-user';
+import { awardBadgesForUser } from '@/lib/award-badges';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -147,6 +148,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     } catch (e) {
       console.warn('[streak/ping] freeze notify failed', e instanceof Error ? e.message : String(e));
     }
+  }
+
+  // Koşulsuz "hangel Ailesi" rozetini ver (erken kazanım anı). awardBadgesForUser
+  // idempotenttir — zaten kazanılmışsa tekrar vermez, bildirim de göndermez.
+  // Best-effort: seri yanıtını bloklamaz. (Rozet motoru diğer hak edilenleri de
+  // bu vesileyle senkron eder.)
+  try {
+    await awardBadgesForUser(db, uid, { notify: true });
+  } catch (e) {
+    console.warn('[streak/ping] badge award failed', e instanceof Error ? e.message : String(e));
   }
 
   return NextResponse.json({

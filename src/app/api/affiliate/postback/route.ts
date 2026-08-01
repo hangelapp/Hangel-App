@@ -296,7 +296,11 @@ async function handle(req: Request) {
   }
 
   const split = computeDonationSplit(commission, rates, supportedNgoIds.length);
-  const assigned = supportedNgoIds.length === 2;
+  // Kullanıcı EN AZ 1 STK destekliyorsa bağış atanır (eskiden tam 2 şartı vardı;
+  // 1 STK destekleyen kullanıcının bağışı "atanmamış" kalıp STK paneline hiç
+  // düşmüyordu). computeDonationSplit zaten perNgo = ngoShareTotal/ngoCount ile
+  // doğru böler (1 STK → tamamı o STK'ya).
+  const assigned = supportedNgoIds.length >= 1;
   const perNgoEntries = supportedNgoIds.map((nid, i) => ({ ngoId: nid, ngoName: ngoNames[i] || nid, amount: split.perNgo }));
 
   let createdDonationId: string;
@@ -372,10 +376,42 @@ async function handle(req: Request) {
       });
 
       if (userSnap.exists) {
+        // impactScore, gerçekten STK'lara giden net tutar (ngoShareTotal) kadar
+        // artar — brüt komisyon değil (eskiden brütten artıyor, etkiyi şişiriyordu).
         tx.update(userRef, {
-          impactScore: FieldValue.increment(commission),
+          impactScore: FieldValue.increment(split.ngoShareTotal),
           updatedAt: FieldValue.serverTimestamp(),
         });
+      }
+
+      // STK profillerine yansıt: her desteklenen STK'nın stats.totalDonation'ına
+      // kendi payı (perNgo), donationCount'una +1. Böylece STK public profili +
+      // STK-admin dashboard'u "toplanan bağış" rakamını gösterir.
+      // (ngoIds atanmışsa; atanmamışsa STK yok, atlanır.)
+      if (assigned) {
+        for (const nid of supportedNgoIds) {
+          const nRef = db.collection(COLLECTIONS.ngos).doc(nid);
+          tx.set(nRef, {
+            stats: {
+              totalDonation: FieldValue.increment(split.perNgo),
+              donationCount: FieldValue.increment(1),
+            },
+            updatedAt: FieldValue.serverTimestamp(),
+          }, { merge: true });
+        }
+      }
+
+      // Marka profiline yansıt: markanın stats.totalDonation'ına brüt bağış (commission).
+      // Marka mağaza profili (/market/[id]) "Toplam Bağış Hacmi" bunu okur.
+      if (brandKey) {
+        const bRef = db.collection(COLLECTIONS.brands).doc(brandKey);
+        tx.set(bRef, {
+          stats: {
+            totalDonation: FieldValue.increment(commission),
+            donationCount: FieldValue.increment(1),
+          },
+          updatedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
       }
     });
     createdDonationId = donationRef.id;

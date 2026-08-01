@@ -217,6 +217,8 @@ export interface PushSendResult {
     failureCount: number;
     removedTokens: string[];
     errorMessages?: string[];
+    /** true: kullanıcının bildirim tercihi (notificationSettings) push'u kapattığı için gönderilmedi. */
+    skippedByPreference?: boolean;
 }
 
 async function getTokensForUid(uid: string): Promise<string[]> {

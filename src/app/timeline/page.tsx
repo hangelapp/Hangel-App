@@ -39,6 +39,7 @@ import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { COLLECTIONS } from '@/firebase/collections';
 import { TimelineBanner } from '@/components/shared/timeline-banner';
+import { StreakCard } from '@/components/streak/streak-card';
 import { ListenButton } from '@/components/shared/listen-button';
 import { useTranslation } from '@/components/providers/language-provider';
 
@@ -510,6 +511,12 @@ export default function TimelinePage() {
   return (
     <div className="animate-in fade-in-0 bg-secondary">
        <TimelineBanner />
+       {/* Bağlılık kancası — günlük seri kartı. Yeni kullanıcıya "Hadi başla"
+           boş durumu göstererek geri dönüşü teşvik eder (2026-07: StreakCard
+           hiçbir yerde render edilmiyordu → seri sistemi görünmezdi). */}
+       <div className="px-2 pt-2 sm:px-4">
+         <StreakCard />
+       </div>
        <Tabs defaultValue="special" className="w-full">
             <div className="p-2 sm:p-4 border-b bg-background sticky top-12 z-10 space-y-4">
                  <div className="flex gap-2 items-center">

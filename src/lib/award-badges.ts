@@ -81,6 +81,20 @@ interface MilestoneBadgeDef {
 
 const MILESTONE_BADGES: MilestoneBadgeDef[] = [
   {
+    // KOŞULSUZ ilk kazanım — hesabı olan herkes hak eder. Erken bir "başardım"
+    // anı yaşatır (2026-07: 238 kullanıcıda toplam 1 rozet kazanılmıştı çünkü
+    // tüm rozetler admin-onaylı tamamlama gerektiriyordu). streak/ping'te (her
+    // kullanıcının ilk açılışta geçtiği yol) tetiklenir; idempotent olduğundan
+    // tekrar verilmez.
+    id: 'milestone-hos-geldin',
+    name: 'hangel Ailesi',
+    description: 'hangel’e katıldın — iyilik yolculuğun başladı! 🧡',
+    emoji: '🎊',
+    level: 'Bakır',
+    threshold: 0,
+    unlocked: () => true,
+  },
+  {
     id: 'milestone-ilk-adim',
     name: 'İlk Adım',
     description: 'İlk gönüllülük/etkinlik tamamlaman onaylandı.',

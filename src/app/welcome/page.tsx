@@ -18,6 +18,8 @@ import { maybeRequestAttPermission } from '@/lib/native-att';
 import { registerNativePushToken } from '@/lib/native-push';
 import { requestContactsPermission } from '@/lib/native-contacts-permission';
 import { trackOnboardingStep } from '@/lib/onboarding-analytics';
+import { Input } from '@/components/ui/input';
+import { allProvinces } from '@/lib/data';
 
 type IntentKey =
   | 'donate'
@@ -54,6 +56,7 @@ export default function WelcomePage() {
   const { t } = useTranslation();
   const [step, setStep] = useState<'welcome' | 'intents'>('welcome');
   const [selected, setSelected] = useState<Set<IntentKey>>(new Set());
+  const [city, setCity] = useState('');
   const [saving, setSaving] = useState(false);
 
   // Intent (amaç) ekranı görüntülendiğinde analitik 'view' olayı.
@@ -98,9 +101,16 @@ export default function WelcomePage() {
     setSaving(true);
     try {
       const intents = Array.from(selected);
+      // Şehir girildiyse (il listesinde geçerli eşleşme) profile yaz. Dot-path:
+      // updateDoc nested objeyi REPLACE eder, bu yüzden diğer address alanlarını
+      // ezmemek için tek tek path yazılır. Profil %17→ yükseltir + il/ilçe mail
+      // hedeflemesini açar (2026-07 UX raporu).
+      const matchedCity = allProvinces.find((p) => p.toLocaleLowerCase('tr') === city.trim().toLocaleLowerCase('tr'));
+      const cityFields = matchedCity ? { 'personalInfo.address.city': matchedCity } : {};
       await updateDoc(doc(firestore, COLLECTIONS.users, user.uid), {
         'preferences.intents': intents,
         'preferences.intentsSelectedAt': serverTimestamp(),
+        ...cityFields,
       });
       // Konum + ATT + Push + Contacts izinleri paralel iste (her zaman, fail open).
       // - Konum: yakın etkinlik, kan ilanı, acil çağrı için
@@ -177,6 +187,26 @@ export default function WelcomePage() {
               <p className="text-[11px] text-primary font-bold">{selected.size} {t('welcomeExtra.selectionSuffix')}</p>
             )}
           </div>
+
+          {/* Şehir — isteğe bağlı ama teşvikli. Yakın etkinlik/STK/kan çağrısını
+              gösterebilmek + size özel içerik için. Zorunlu değil (sürtünmesiz). */}
+          <div className="space-y-1.5">
+            <label htmlFor="welcome-city" className="text-xs font-semibold text-foreground/80">
+              Hangi şehirdesin? <span className="font-normal text-muted-foreground">(size yakın fırsatları göstermek için)</span>
+            </label>
+            <Input
+              id="welcome-city"
+              list="welcome-province-list"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="Örn. İstanbul"
+              className="h-11 rounded-xl"
+            />
+            <datalist id="welcome-province-list">
+              {allProvinces.map((p) => <option key={p} value={p} />)}
+            </datalist>
+          </div>
+
           <div className="space-y-2">
             {INTENT_KEYS.map((key) => {
               const checked = selected.has(key);

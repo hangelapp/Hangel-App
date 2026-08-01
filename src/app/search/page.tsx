@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { collection, query } from 'firebase/firestore';
+import { collection, query, limit } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { searchMatch } from '@/lib/search-match';
@@ -69,11 +69,14 @@ function GlobalSearchPageInner() {
         try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* noop */ }
     };
 
-    const ngosRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.ngos)) : null, [db, active]);
-    const brandsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.brands)) : null, [db, active]);
-    const clubsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.clubs)) : null, [db, active]);
-    const eventsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.events)) : null, [db, active]);
-    const oppsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.volunteering)) : null, [db, active]);
+    // MALİYET (2026-07-24): limit(50) — eskiden 5 koleksiyon LİMİTSİZ iniyordu
+    // (arama başına ~2.500 okuma). Sonuçlar zaten client-side filtrelenip .slice(0,8)
+    // ile 8'e kısıldığından 50 doküman/koleksiyon fazlasıyla yeter → ~250 okuma/arama.
+    const ngosRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.ngos), limit(50)) : null, [db, active]);
+    const brandsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.brands), limit(50)) : null, [db, active]);
+    const clubsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.clubs), limit(50)) : null, [db, active]);
+    const eventsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.events), limit(50)) : null, [db, active]);
+    const oppsRef = useMemoFirebase(() => (db && active) ? query(collection(db, COLLECTIONS.volunteering), limit(50)) : null, [db, active]);
 
     const { data: ngos } = useCollection<SearchableEntity>(ngosRef);
     const { data: brands } = useCollection<SearchableEntity>(brandsRef);

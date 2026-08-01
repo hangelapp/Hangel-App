@@ -45,9 +45,13 @@ export interface EarnedSpecialBadge {
 /** Marka narçiçeği (özel rozet varsayılan vurgu rengi). */
 export const SPECIAL_BADGE_DEFAULT_COLOR = '#E34234';
 
-/** Bu rozet kaydı "özel/dönemsel" mi (my-badges'te en üstte gösterilir)? */
+/** Bu rozet kaydı "özel/dönemsel/başarı" mı (my-badges'te en üstte gösterilir)?
+ *  'milestone' de dahil: awardBadgesForUser başarı rozetlerini kind:'milestone'
+ *  yazıyordu ama bu filtre onları dışarıda bıraktığından my-badges'te HİÇ
+ *  görünmüyorlardı (2026-07: 238 kullanıcıda "1 rozet" görünmesinin bir nedeni).
+ *  Artık kazanılan başarı rozetleri (İlk Adım vb.) da listede görünür. */
 export function isSpecialKind(kind: string | undefined | null): boolean {
-  return kind === 'special' || kind === 'seasonal';
+  return kind === 'special' || kind === 'seasonal' || kind === 'milestone';
 }
 
 /** Dönemsel rozet şu an aktif mi (tarih penceresi + active bayrağı)? */

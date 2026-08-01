@@ -103,6 +103,48 @@ export interface NotifyUserResult {
 const HANGEL_SYSTEM_UID = 'hangel-system';
 const HANGEL_SYSTEM_NAME = 'hangel Resmi';
 
+// Bildirim tipini kullanıcı ayar kategorisine eşler (settings/notifications sayfası
+// `${kategori}-push` anahtarlarını `users/{uid}.notificationSettings`'e yazar).
+// Eşlemesi olmayan tipler (welcome, application_*, blood_emergency, disaster_alert
+// gibi kritik/işlemsel) DAİMA gönderilir — bunlar kapatılamaz.
+// ⚠️ 2026-07: Bu ayarlar UI'da vardı ama gönderim yolunda HİÇ okunmuyordu; push
+// bildirim okunma oranı %7 idi. Artık kullanıcının kapattığı kategori push almaz.
+const TYPE_TO_PREF_CATEGORY: Record<string, string> = {
+  badge_earned: 'new-badge',
+  event_reminder: 'event-reminder',
+  event_created: 'event-reminder',
+  opportunity: 'new-opportunity',
+  volunteer_task: 'new-opportunity',
+  'onboarding-nudge': 'announcements',
+  announcement: 'announcements',
+  impact_report: 'impact-report',
+  social: 'social',
+};
+
+/**
+ * Kullanıcı bu bildirim TİPİ için PUSH almak istiyor mu?
+ * - Kategori eşlemesi yoksa (kritik/işlemsel) → true (her zaman gönder).
+ * - Eşleme varsa notificationSettings'teki `${kategori}-push` değerine bak
+ *   (kayıt yoksa/okunamazsa varsayılan true — mevcut davranışı bozmadan).
+ */
+async function pushAllowedForUser(
+  db: FirebaseFirestore.Firestore,
+  userId: string,
+  type: string,
+): Promise<boolean> {
+  const category = TYPE_TO_PREF_CATEGORY[type];
+  if (!category) return true; // eşlemesiz tip = kritik, her zaman push
+  try {
+    const snap = await db.collection(COLLECTIONS.users).doc(userId).get();
+    const settings = (snap.data()?.notificationSettings ?? {}) as Record<string, boolean>;
+    const key = `${category}-push`;
+    // Açıkça false ise atla; değilse (true veya tanımsız) gönder.
+    return settings[key] !== false;
+  } catch {
+    return true; // ayar okunamazsa engelleme
+  }
+}
+
 /**
  * Convert an arbitrary `data` record into the string-only map FCM requires
  * for `data` payloads. Non-string values are JSON-encoded; nullish dropped.
@@ -202,13 +244,21 @@ export async function notifyUser(args: NotifyUserArgs): Promise<NotifyUserResult
       })()
     : Promise.resolve<string | null>(null);
 
-  // Channel 3 — FCM push (best-effort; no tokens = success with 0 sent)
-  const pushPromise = sendPushToUser(userId, {
-    title,
-    body,
-    clickAction: link,
-    data: toPushData(data, { type: String(type) }),
-  });
+  // Channel 3 — FCM push (best-effort; no tokens = success with 0 sent).
+  // Kullanıcı bu bildirim kategorisi için push'u KAPATTIYSA atla (in-app
+  // notification yine yazılır — sadece cihaz banner'ı gönderilmez).
+  const pushPromise = (async (): Promise<PushSendResult> => {
+    const allowed = await pushAllowedForUser(db, userId, String(type));
+    if (!allowed) {
+      return { ok: true, successCount: 0, failureCount: 0, removedTokens: [], skippedByPreference: true };
+    }
+    return sendPushToUser(userId, {
+      title,
+      body,
+      clickAction: link,
+      data: toPushData(data, { type: String(type) }),
+    });
+  })();
 
   const [notifRes, msgRes, pushRes] = await Promise.allSettled([
     notificationPromise,

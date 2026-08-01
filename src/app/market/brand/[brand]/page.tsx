@@ -29,7 +29,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
-import { collection, limit, query, where, getCountFromServer } from 'firebase/firestore';
+import { collection, limit, query, where, getDocs } from 'firebase/firestore';
 import type { CanonicalProduct } from '@/lib/feed/types';
 import type { Brand } from '@/lib/types';
 
@@ -91,24 +91,26 @@ export default function BrandProfilePage() {
   const { data: products, isLoading } = useCollection<CanonicalProduct>(productsQuery);
 
   // Mağaza (satıcı) katalogu — gerçek logo + oran + profil linki için.
-  const storesQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.brands) : null), [db]);
-  const { data: allStores } = useCollection<Brand>(storesQuery);
+  // MALİYET (2026-07-24): eskiden TÜM brands koleksiyonu CANLI + limitsiz dinleniyordu
+  // (her marka sayfası ziyaretinde). Artık tek seferlik getDocs (limit 500) → satıcı
+  // sayısı zaten birkaç yüz; canlı dinleyiciye gerek yok.
+  const [allStores, setAllStores] = useState<Brand[]>([]);
+  useEffect(() => {
+    if (!db) return;
+    let alive = true;
+    getDocs(query(collection(db, COLLECTIONS.brands), limit(500)))
+      .then((snap) => { if (alive) setAllStores(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Brand)); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [db]);
   const storeByName = useMemo(() => {
     const m = new Map<string, Brand>();
     for (const b of allStores ?? []) if (b?.name) m.set(normStore(b.name), b);
     return m;
   }, [allStores]);
 
-  // TAM ürün sayısı (sunucudan) — "120+" değil gerçek toplam.
-  const [totalCount, setTotalCount] = useState<number | null>(null);
-  useEffect(() => {
-    if (!db || !key) return;
-    let alive = true;
-    getCountFromServer(query(collection(db, COLLECTIONS.products), where('productBrandKey', '==', key)))
-      .then((s) => { if (alive) setTotalCount(s.data().count); })
-      .catch(() => {});
-    return () => { alive = false; };
-  }, [db, key]);
+  // Not: Ürün sayısı için getCountFromServer kaldırıldı (her ziyarette pahalıydı —
+  // büyük markada yüzlerce okuma). Yüklenen ürün sayısını (limit 120) "120+" gösteriyoruz.
 
   // Görünen marka adı = ürünlerdeki productBrand (kanonik, tek yazım).
   const brandName = useMemo(() => products?.find((p) => p.productBrand)?.productBrand || key, [products, key]);
@@ -255,9 +257,9 @@ export default function BrandProfilePage() {
         <div className="min-w-0">
           <h2 className="truncate text-lg font-black text-foreground">{brandName}</h2>
           <p className="mt-0.5 text-xs font-medium text-muted-foreground">
-            {totalCount != null
-              ? `${totalCount.toLocaleString('tr-TR')} ürün`
-              : (products?.length ? `${products.length.toLocaleString('tr-TR')} ürün` : 'Ürünler yükleniyor…')}
+            {products?.length
+              ? `${products.length.toLocaleString('tr-TR')}${products.length >= 120 ? '+' : ''} ürün`
+              : 'Ürünler yükleniyor…'}
             {topRate > 0 && <> · en yüksek <span className="text-primary font-bold">%{topRate}</span> bağış</>}
           </p>
         </div>
